@@ -1,0 +1,27 @@
+{
+  "name": "arweave-web-wallet",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build"
+  },
+  "dependencies": {
+    "ardb": "^1.0.8",
+    "arweave": "^1.10.13",
+    "arweave-id": "^2.0.11",
+    "arweave-mnemonic-keys": "^0.0.9",
+    "core-js": "^3.6.5",
+    "identicon.js": "^2.3.3",
+    "jshashes": "^1.0.8",
+    "vue": "^3.0.0",
+    "vue-router": "^4.0.0-0",
+    "vue-slicksort": "^2.0.0-alpha.5"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "~4.5.0",
+    "@vue/cli-plugin-router": "~4.5.0",
+    "@vue/cli-service": "~4.5.0",
+    "@vue/compiler-sfc": "^3.0.0"
+  }
+}

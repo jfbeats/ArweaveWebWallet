@@ -1,0 +1,34 @@
+---Wallet---
+Wallet | Create / Import / Export / Save on weave
+Password | Add / Change
+QR | Address / Payment
+Passphrase
+Multisig
+arweaveID global store
+History | Take current balance and backtrack
+
+---TX---
+Pending TX
+Send Money
+File upload
+NFTs | Create / View
+PSTs | Create / View
+Sign and check message
+Web worker retries
+Infinite scroll
+View TX data
+
+---App---
+Internationalization | Currency / Content
+Data max update rate
+Donate
+
+---Integration---
+Integration script
+detect IFramed :
+	window.self !== window.top
+	document.referrer // parent url
+
+---External---
+Weave mail
+Arverify
