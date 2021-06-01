@@ -1,7 +1,8 @@
 <template>
 	<div class="tx-card">
 		<div class="left">
-			<TxIcon class="icon" :direction="direction" :isValue="isValue" :isData="isData" />
+
+			<TxIcon class="tx-icon" :direction="direction" :isValue="isValue" :isData="isData" />
 
 			<div v-if="isValue">
 				<div>
@@ -11,9 +12,10 @@
 					<LocaleCurrency :ar="value" />
 				</div>
 			</div>
-
 			<div v-else>
-				<div> {{ tx.node.data.type.split('/').join(' ') }} </div>
+				<div>
+					{{ tx.node.data.type.split('/').join(' ') }}
+				</div>
 				<div class="bottom">
 					{{ dataInfo }}
 				</div>
@@ -21,18 +23,29 @@
 
 		</div>
 		<div class="right">
-			<div class="right-content">
 
+			<div class="right-content">
+				<div class="right-text">
 					<Address v-if="relativeAddress" class="address" :address="relativeAddress" />
 					<div v-else class="ellipsis">
 						<Ar :ar="tx.node.fee.ar" /> /
 						<LocaleCurrency :ar="tx.node.fee.ar" />
 					</div>
 					<div class="bottom ellipsis">{{ date + ' ' + time }}</div>
-
+				</div>
+				<div class="margin"></div>
 			</div>
-			<AddressIcon v-if="relativeAddress" class="profile" :address="relativeAddress" />
-			<span v-else class="profile"><img class="file-type" src="cloud.svg"></span>
+
+			<MoreInfo v-if="relativeAddress">
+				<template v-slot:icon>
+					<AddressIcon :address="relativeAddress" />
+				</template>
+				<template v-slot:content>
+					<div>Info here</div>
+				</template>
+			</MoreInfo>
+			<span v-else class="cloud"><img class="file-type" src="cloud.svg"></span>
+
 		</div>
 	</div>
 </template>
@@ -43,10 +56,11 @@ import Ar from '@/components/atomic/Ar'
 import TxIcon from '@/components/atomic/TxIcon'
 import AddressIcon from '@/components/atomic/AddressIcon'
 import LocaleCurrency from '@/components/atomic/LocaleCurrency'
+import MoreInfo from '@/components/MoreInfo'
 import { ArweaveStore } from '@/store/ArweaveStore'
 
 export default {
-	components: { Address, Ar, TxIcon, AddressIcon, LocaleCurrency },
+	components: { Address, Ar, TxIcon, AddressIcon, LocaleCurrency, MoreInfo },
 	props: ['tx'],
 	computed: {
 		date () {
@@ -118,6 +132,7 @@ export default {
 	min-width: 0;
 	/* display: flex; */
 	justify-content: flex-end;
+	display: flex;
 }
 
 .right-text {
@@ -135,25 +150,21 @@ export default {
 	margin-left: auto;
 }
 
-.icon {
-	flex: 0 0 auto;
+.tx-icon {
 	width: 48px;
 	height: 48px;
 	padding: 8px;
-	margin-right: var(--spacing);
 	border-radius: var(--border-radius2);
 	background: var(--background);
+	flex: 0 0 auto;
+
+	margin-right: var(--spacing);
 }
 
-.profile {
-	/* flex: 0 0 auto; */
-	/* width: 48px;
-	height: 48px; */
-	/* padding: 14px; */
-	border-radius: var(--border-radius2);
-	background: var(--background);
-
-	margin-left: var(--spacing);
+.cloud {
+	width: 48px;
+	height: 48px;
+	padding: 8px;
 }
 
 .file-type {
