@@ -25,7 +25,7 @@ export default {
 <style scoped>
 .settings {
 	padding: 32px;
-	background: var(--background2);
+	/* background: var(--background2); */
 	/* box-shadow: 0 0 32px 0 #00000033; */
 }
 
@@ -36,7 +36,7 @@ export default {
 }
 
 .wallet-options {
-	background: var(--background);
+	/* background: var(--background); */
 	border-radius: var(--border-radius);
 }
 </style>

@@ -54,12 +54,12 @@ export default {
 }
 
 .balance {
-	flex: 1 1 auto;
+	flex: 1 1 400px;
 	min-width: 0;
 }
 
 .history {
-	flex: 1.2 1 auto;
+	flex: 1.2 1 500px;
 	min-width: 0;
 }
 </style>

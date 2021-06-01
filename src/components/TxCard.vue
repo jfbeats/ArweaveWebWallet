@@ -22,15 +22,14 @@
 		</div>
 		<div class="right">
 			<div class="right-content">
-				<div class="right-text">
+
 					<Address v-if="relativeAddress" class="address" :address="relativeAddress" />
 					<div v-else class="ellipsis">
 						<Ar :ar="tx.node.fee.ar" /> /
 						<LocaleCurrency :ar="tx.node.fee.ar" />
 					</div>
 					<div class="bottom ellipsis">{{ date + ' ' + time }}</div>
-				</div>
-				<div class="margin"></div>
+
 			</div>
 			<AddressIcon v-if="relativeAddress" class="profile" :address="relativeAddress" />
 			<span v-else class="profile"><img class="file-type" src="cloud.svg"></span>
@@ -98,14 +97,15 @@ export default {
 }
 
 .left {
-	flex: 1 0 auto;
+	flex: 0 0 auto;
 	display: flex;
 	align-items: center;
 }
 
 .right {
-	flex: 0 1 auto;
+	flex: 1 1 0;
 	display: flex;
+	justify-content: flex-end;
 	align-items: center;
 	min-width: 0;
 	text-align: right;
@@ -114,9 +114,10 @@ export default {
 }
 
 .right-content {
-	flex: 0 1 auto;
+	flex: 1 1 0;
 	min-width: 0;
-	display: flex;
+	/* display: flex; */
+	justify-content: flex-end;
 }
 
 .right-text {
@@ -131,6 +132,7 @@ export default {
 
 .address {
 	max-width: 150px;
+	margin-left: auto;
 }
 
 .icon {
@@ -144,12 +146,14 @@ export default {
 }
 
 .profile {
-	flex: 0 0 auto;
-	width: 48px;
-	height: 48px;
-	padding: 14px;
+	/* flex: 0 0 auto; */
+	/* width: 48px;
+	height: 48px; */
+	/* padding: 14px; */
 	border-radius: var(--border-radius2);
 	background: var(--background);
+
+	margin-left: var(--spacing);
 }
 
 .file-type {

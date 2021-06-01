@@ -2,13 +2,15 @@
 	<div class="wallet-options">
 		<div class="left">
 			<AddressIcon class="profile" :address="wallet.key" />
+			<div class="profile-info">
+				Username
+				<Address class="address" :address="wallet.key" />
+			</div>
 		</div>
 		<div class="content">
-			<Address class="address" :address="wallet.key" />
 			<div class="bottom">
-				-
+				Export wallet
 				<!-- Save to cloud -->
-				<!-- Export wallet -->
 				<!-- Delete -->
 
 			</div>
@@ -30,14 +32,19 @@ export default {
 <style scoped>
 .wallet-options {
 	display: flex;
-	padding: 16px 16px 16px 0;
-	background: var(--background2);
+	flex-direction: column;
+	/* padding: 16px 16px 16px 0; */
+	/* background: var(--background2); */
+	overflow: hidden;
 }
 
 .left {
+	/* align-self: center; */
 	flex: 0 0 auto;
 	display: flex;
-	/* align-items: center; */
+	/* flex-direction: column; */
+	/* background: var(--background3); */
+	align-items: center;
 	/* gap: var(--spacing); */
 }
 
@@ -46,11 +53,11 @@ export default {
 	min-width: 0;
 	display: flex;
 	flex-direction: column;
+	padding: 24px;
 }
 
 .bottom {
-	padding: 24px;
-	background: var(--background2);
+	/* background: var(--background2); */
 	border-radius: var(--border-radius);
 }
 
@@ -58,13 +65,20 @@ export default {
 	flex: 0 0 auto;
 	width: 92px;
 	height: 92px;
-	/* background: var(--background); */
+	background: var(--background);
+	border-bottom-right-radius: var(--border-radius);
 	/* border-radius: 50%; */
 	padding: 24px;
 }
 
-.address {
-	line-height: 4;
+.profile-info {
+	min-width: 0;
+	padding: 0 var(--spacing) 0 var(--spacing);
+}
 
+.address {
+	/* line-height: 4; */
+	font-size: 0.75em;
+	color: var(--element-secondary);
 }
 </style>
