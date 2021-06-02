@@ -4,7 +4,11 @@ import Arweave from 'arweave'
 import ArDB from 'ardb'
 import axios from 'axios'
 
-const arweave = Arweave.init()
+const arweave = Arweave.init({
+    host: 'arweave.net',
+    port: 443,
+    protocol: 'https'
+})
 const arDB = new ArDB(arweave)
 
 export const ArweaveStore = reactive({
