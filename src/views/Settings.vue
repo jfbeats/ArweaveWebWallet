@@ -4,6 +4,7 @@
 		<div class="wallets">
 		<WalletOptions class="wallet-options" v-for="wallet in ArweaveStore.wallets" :key="wallet.id" :wallet="wallet" />
 		</div>
+		<h2>App Settings</h2>
 	</div>
 </template>
 

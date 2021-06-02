@@ -9,9 +9,6 @@
 		</div>
 		<div class="content">
 			<div class="bottom">
-				Export wallet
-				<!-- Save to cloud -->
-				<!-- Delete -->
 
 			</div>
 		</div>
@@ -66,7 +63,7 @@ export default {
 	width: 92px;
 	height: 92px;
 	background: var(--background);
-	border-bottom-right-radius: var(--border-radius);
+	border-radius: var(--border-radius);
 	/* border-radius: 50%; */
 	padding: 24px;
 }

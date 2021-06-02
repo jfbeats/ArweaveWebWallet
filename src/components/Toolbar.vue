@@ -9,7 +9,7 @@
 			</SlickItem>
 		</SlickList>
 		<div class="controls">
-			<div class="icon control" @click="newPassphrase()"><img class="small" src="add_box.svg"></div>
+			<div class="icon control" @click="createWallet()"><img class="small" src="add_box.svg"></div>
 			<router-link class="icon control" to="/settings"><img class="small" src="settings.svg"></router-link>
 		</div>
 	</div>
@@ -39,6 +39,10 @@ export default {
 		}
 	},
 	methods: {
+		async createWallet () {
+			const id = await newWallet()
+			this.$router.push({ name: 'EditWallet', query: { wallet: id } })
+		},
 		async droppedFiles (e) {
 			const idPromises = []
 			for (const file of e.dataTransfer.files) {
