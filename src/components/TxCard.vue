@@ -36,7 +36,7 @@
 				<div class="margin"></div>
 			</div>
 
-			<MoreInfo v-if="relativeAddress">
+			<MoreInfo v-if="relativeAddress" :key="relativeAddress">
 				<template v-slot:icon>
 					<AddressIcon :address="relativeAddress" />
 				</template>
