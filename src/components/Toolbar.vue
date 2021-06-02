@@ -1,6 +1,6 @@
 <template>
 	<div id="nav" @drop.prevent="droppedFiles" @dragover.prevent>
-		<SlickList class="wallets" lockAxis="y" v-model:list="ArweaveStore.wallets" :distance="10">
+		<SlickList class="wallets" :axis="axis" :lockAxis="axis" v-model:list="ArweaveStore.wallets" :distance="10">
 			<SlickItem v-for="(wallet, i) in ArweaveStore.wallets" :index="i" :key="wallet.key">
 				<router-link class="icon wallet" :to="{name: 'Wallet', query: {wallet: wallet.id}}" :class="{'active': wallet === ArweaveStore.currentWallet}" draggable="false">
 					<!-- <img src="ArLogo.svg" draggable="false"> -->
@@ -20,6 +20,7 @@ import AddressIcon from '@/components/atomic/AddressIcon'
 import { SlickList, SlickItem } from 'vue-slicksort';
 import { ArweaveStore } from '@/store/ArweaveStore'
 import { newWallet, newPassphrase } from '@/functions/Wallets.js'
+import { computed, onMounted, onUnmounted, ref } from "vue"
 
 export default {
 	name: 'Toolbar',
@@ -27,8 +28,14 @@ export default {
 		AddressIcon, SlickList, SlickItem,
 	},
 	setup () {
+		let windowWidth = ref(window.innerWidth)
+		const onWidthChange = () => windowWidth.value = window.innerWidth
+		onMounted(() => window.addEventListener('resize', onWidthChange))
+		onUnmounted(() => window.removeEventListener('resize', onWidthChange))
+		const axis = computed(() => windowWidth.value < 600 ? 'x' : 'y')
+
 		return {
-			ArweaveStore, newWallet, newPassphrase
+			ArweaveStore, newWallet, newPassphrase, axis
 		}
 	},
 	methods: {
