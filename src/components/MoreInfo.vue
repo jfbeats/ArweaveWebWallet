@@ -4,7 +4,7 @@
 			<slot name="icon"></slot>
 		</div>
 		<transition name="fade">
-			<div class="content" v-if="expand">
+			<div v-if="expand" class="content" @click.stop>
 				<slot name="content"></slot>
 			</div>
 		</transition>
@@ -27,10 +27,15 @@ export default {
 	width: 48px;
 	height: 48px;
 	transition: all 0.4s ease;
-	overflow: hidden;
 	border-radius: var(--border-radius2);
 	background: var(--background);
-	border: 1px solid transparent;
+	scrollbar-width: none;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+.wrapper::-webkit-scrollbar {
+  display: none;
 }
 
 .icon {
@@ -39,16 +44,13 @@ export default {
 }
 
 .content {
-	flex: 1 1 0;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
+	padding: var(--spacing);
 }
 
 .expand {
 	height: auto;
 	width: 100%;
-	height: 300px;
+	height: 400px;
 }
 
 .expand .icon {

@@ -122,8 +122,6 @@ export default {
 	justify-content: flex-end;
 	align-items: center;
 	min-width: 0;
-	text-align: right;
-	white-space: nowrap;
 	overflow: hidden;
 }
 
@@ -138,6 +136,8 @@ export default {
 .right-text {
 	flex: 0 1 auto;
 	min-width: 0;
+	text-align: right;
+	white-space: nowrap;
 }
 
 .margin {
