@@ -54,10 +54,9 @@ export default {
 	justify-content: space-between;
 }
 
-#nav,
 .wallets {
 	display: flex;
-	flex-direction: column;
+	flex-direction: inherit;
 }
 
 .icon {
@@ -96,7 +95,6 @@ export default {
 }
 
 .profile {
-	/* box-shadow: 0 0 0 2px #aaa; */
 	background: var(--background3);
 	padding: 12px;
 	width: 100%;
@@ -116,6 +114,13 @@ export default {
 	box-shadow: -2px 0 0 0 var(--element-secondary);
 	border-radius: var(--border-radius3);
 	opacity: 1;
+}
+
+@media only screen and (max-width: 600px) {
+	.control.router-link-active,
+	.wallet.active.router-link-active {
+		box-shadow: 0 -2px 0 0 var(--element-secondary);
+	}
 }
 
 .wallet.active.router-link-active .profile {

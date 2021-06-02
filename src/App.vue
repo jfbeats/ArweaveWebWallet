@@ -26,6 +26,12 @@ export default {
 	scrollbar-width: none;
 }
 
+@media only screen and (max-width: 600px) {
+	.toolbar {
+		flex-direction: row;
+	}
+}
+
 .toolbar::-webkit-scrollbar {
   display: none;
 }
@@ -77,6 +83,12 @@ body {
 	margin: 0;
 	padding: 0;
 	display: flex;
+}
+
+@media only screen and (max-width: 600px) {
+	#app {
+		flex-direction: column;
+	}
 }
 
 *,
