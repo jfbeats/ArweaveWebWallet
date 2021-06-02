@@ -1,5 +1,7 @@
 # Arweave Web Wallet
 
+Preview of the progress so far https://jfbeats.github.io/ArweaveWebWallet
+
 ## Dev
 ```
 npm install
