@@ -1,8 +1,8 @@
 <template>
 	<div id="nav" @drop.prevent="droppedFiles" @dragover.prevent>
-		<SlickList class="wallets" :axis="axis" :lockAxis="axis" v-model:list="ArweaveStore.wallets" :distance="10">
+		<SlickList class="wallets" :axis="axis" :lockAxis="axis" v-model:list="ArweaveStore.wallets" :pressDelay="100" helperClass="dragging">
 			<SlickItem v-for="(wallet, i) in ArweaveStore.wallets" :index="i" :key="wallet.key">
-				<router-link class="icon wallet" :to="{name: 'Wallet', query: {wallet: wallet.id}}" :class="{'active': wallet === ArweaveStore.currentWallet}" draggable="false">
+				<router-link class="icon wallet" :to="{name: 'Wallet', query: {wallet: wallet.id}}" :class="{'active': wallet === ArweaveStore.currentWallet, 'axis-x': axis === 'x'}" draggable="false">
 					<!-- <img src="ArLogo.svg" draggable="false"> -->
 					<AddressIcon class="profile" :address="wallet.key" draggable="false" />
 				</router-link>
@@ -32,7 +32,7 @@ export default {
 		const onWidthChange = () => windowWidth.value = window.innerWidth
 		onMounted(() => window.addEventListener('resize', onWidthChange))
 		onUnmounted(() => window.removeEventListener('resize', onWidthChange))
-		const axis = computed(() => windowWidth.value < 600 ? 'x' : 'y')
+		const axis = computed(() => windowWidth.value <= 600 ? 'x' : 'y')
 
 		return {
 			ArweaveStore, newWallet, newPassphrase, axis
@@ -81,6 +81,14 @@ export default {
 .wallet {
 	border-radius: 18px;
 	opacity: var(--element-disabled-opacity);
+}
+
+.dragging .wallet {
+	transform: translateX(100%);
+}
+
+.dragging .wallet.axis-x {
+	transform: translateY(100%);
 }
 
 .wallet:hover {

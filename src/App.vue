@@ -22,7 +22,7 @@ export default {
 	display: flex;
 	flex-direction: column;
 	outline: 1px solid var(--border);
-	overflow: hidden scroll;
+	overflow: scroll;
 	scrollbar-width: none;
 }
 
