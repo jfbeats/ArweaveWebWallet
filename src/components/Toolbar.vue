@@ -84,11 +84,12 @@ export default {
 }
 
 .dragging .wallet {
-	transform: translateX(100%);
+	transform: translateX(calc(100% + var(--spacing)));
+	opacity: 1;
 }
 
 .dragging .wallet.axis-x {
-	transform: translateY(100%);
+	transform: translateY(calc(100% + var(--spacing)));
 }
 
 .wallet:hover {
