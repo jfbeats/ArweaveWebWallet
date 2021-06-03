@@ -1,5 +1,3 @@
 module.exports = {
-	publicPath: process.env.NODE_ENV === 'production'
-		? '/ArweaveWebWallet/'
-		: '/'
+	publicPath: process.env.GITHUB_ACTIONS ? '/ArweaveWebWallet/' : '/'
 }
