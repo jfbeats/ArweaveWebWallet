@@ -1,7 +1,7 @@
 <template>
 	<div class="address-icon">
 		<img class="identicon" :src="identicon" draggable="false">
-		<img class="profile" v-if="url" :src="url" draggable="false">
+		<img class="image" v-if="url" :src="url" draggable="false">
 	</div>
 </template>
 
@@ -62,7 +62,7 @@ export default {
 	object-fit: contain;
 }
 
-.profile {
+.image {
 	position: absolute;
 	width: 100%;
 	height: 100%;
