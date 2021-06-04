@@ -1,9 +1,8 @@
 <template>
 	<div id="nav" @drop.prevent="droppedFiles" @dragover.prevent>
 		<SlickList class="wallets" :axis="axis" :lockAxis="axis" v-model:list="ArweaveStore.wallets" :pressDelay="100" helperClass="dragging">
-			<SlickItem v-for="(wallet, i) in ArweaveStore.wallets" :index="i" :key="wallet.key">
+			<SlickItem v-for="(wallet, i) in ArweaveStore.wallets" :index="i" :key="wallet.key" draggable="false">
 				<router-link class="icon wallet" :to="{name: 'Wallet', query: {wallet: wallet.id}}" :class="{'active': wallet === ArweaveStore.currentWallet, 'axis-x': axis === 'x'}" draggable="false">
-					<!-- <img src="ArLogo.svg" draggable="false"> -->
 					<AddressIcon class="profile" :address="wallet.key" draggable="false" />
 				</router-link>
 			</SlickItem>
@@ -90,6 +89,7 @@ export default {
 .dragging .wallet {
 	transform: translateX(calc(100% + var(--spacing)));
 	opacity: 1;
+	padding: 0;
 }
 
 .dragging .wallet.axis-x {
@@ -121,7 +121,12 @@ export default {
 	height: 100%;
 	border-radius: var(--border-radius3);
 	position: relative;
-	transition: box-shadow 0.2s ease;
+	transition: 0.2s ease;
+}
+
+.dragging .profile {
+	padding: 18px;
+	box-shadow: 0 0 24px 0 #00000033;
 }
 
 .small {
@@ -141,9 +146,5 @@ export default {
 	.wallet.active.router-link-active {
 		box-shadow: 0 -2px 0 0 var(--element-secondary);
 	}
-}
-
-.wallet.active.router-link-active .profile {
-	/* box-shadow: 0 0 8px 0 #1e1e1e; */
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
 	<div class="wrapper" @click="expand=!expand" :class="{expand: expand}">
-		<div class="icon">
+		<div class="header">
 			<slot name="icon"></slot>
 		</div>
 		<transition name="fade">
@@ -26,6 +26,7 @@ export default {
 	align-items: center;
 	width: 48px;
 	height: 48px;
+	max-height: 48px;
 	transition: all 0.4s ease;
 	border-radius: var(--border-radius2);
 	background: var(--background);
@@ -38,23 +39,31 @@ export default {
   display: none;
 }
 
-.icon {
+.header {
+	flex: 0 0 auto;
 	cursor: pointer;
 	transition: all 0.4s ease;
+	overflow: hidden;
+	width: 100%;
+	height: 48px;
+	max-height: 48px;
 }
 
 .content {
 	padding: var(--spacing);
 }
 
-.expand {
+.wrapper.expand {
 	height: auto;
 	width: 100%;
-	height: 400px;
+	height: 60vh;
+	max-height: 500px;
 }
 
-.expand .icon {
-	padding: 48px 0;
+.wrapper.expand .header {
+	/* padding: 48px 0; */
+	height: 40vh;
+	max-height: 300px;
 }
 
 .fade-enter-active,
