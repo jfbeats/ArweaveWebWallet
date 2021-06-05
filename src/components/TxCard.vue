@@ -36,7 +36,7 @@
 				<div class="margin"></div>
 			</div>
 
-			<MoreInfo v-if="relativeAddress" :key="relativeAddress">
+			<MoreInfo v-if="relativeAddress" :key="relativeAddress" class="no-select">
 				<template v-slot:icon>
 					<AddressIcon :address="relativeAddress" />
 				</template>
@@ -44,7 +44,7 @@
 					<div>Info here</div>
 				</template>
 			</MoreInfo>
-			<span v-else class="cloud"><img class="file-type" src="cloud.svg"></span>
+			<span v-else class="cloud"><img class="file-type no-select" src="cloud.svg" draggable="false"></span>
 
 		</div>
 	</div>

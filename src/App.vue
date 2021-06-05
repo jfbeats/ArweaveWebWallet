@@ -103,7 +103,33 @@ body {
   text-overflow: ellipsis;
 }
 
+.no-select {
+	user-select: none;
+}
+
 ::selection {
 	background: #ffffff22;
+}
+
+::-webkit-scrollbar {
+    background-color: var(--background2);
+    color: #aaaaaa;
+	width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #444;
+}
+
+::-webkit-scrollbar-thumb:active {
+    background-color: #333;
+}
+
+::-webkit-scrollbar-corner {
+    background-color: #181a1b;
 }
 </style>
