@@ -22,7 +22,8 @@ export default {
 	display: flex;
 	flex-direction: column;
 	outline: 1px solid var(--border);
-	overflow: scroll;
+	overflow: auto;
+	overflow: overlay;
 	scrollbar-width: none;
 }
 
@@ -38,7 +39,8 @@ export default {
 
 .main {
 	flex: 1 1 auto;
-	overflow: hidden scroll;
+	overflow: hidden auto;
+	overflow: hidden overlay;
 }
 </style>
 
@@ -52,12 +54,12 @@ html {
 	background: #0f0f0f;
 
 	--spacing: 24px;
-	--background: #141414;
+	--background: #151515;
 	--background2: #181818;
 	--background3: #262626;
 	--border: #222;
 	--border-radius: 8px;
-	--border-radius2: 8px;
+	--border-radius2: 12px;
 	--border-radius3: 12px;
 	--element-secondary: #ccc;
 	--element-secondary-opacity: 0.75;

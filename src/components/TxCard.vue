@@ -14,7 +14,7 @@
 			</div>
 			<div v-else>
 				<div>
-					{{ tx.node.data.type.split('/').join(' ') }}
+					{{ tx.node.data.type ? tx.node.data.type.split('/').join(' ') : 'Data' }}
 				</div>
 				<div class="bottom">
 					{{ dataInfo }}

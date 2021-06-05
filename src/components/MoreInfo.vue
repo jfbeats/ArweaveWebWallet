@@ -32,6 +32,7 @@ export default {
 	background: var(--background);
 	scrollbar-width: none;
 	overflow-y: auto;
+	overflow-y: overlay;
 	overflow-x: hidden;
 }
 
@@ -56,13 +57,13 @@ export default {
 .wrapper.expand {
 	height: auto;
 	width: 100%;
-	height: 60vh;
+	height: 50vh;
 	max-height: 500px;
 }
 
 .wrapper.expand .header {
 	/* padding: 48px 0; */
-	height: 40vh;
+	height: 35vh;
 	max-height: 300px;
 }
 
