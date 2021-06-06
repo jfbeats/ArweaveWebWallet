@@ -1,5 +1,5 @@
 <template>
-	<div>
+	<div class="container">
 		<div class="wallet">
 			<Balance class="balance" :wallet="ArweaveStore.currentWallet" />
 			<TxList class="history" :txs="txs" />
@@ -44,7 +44,21 @@ export default {
 </script>
 
 <style scoped>
+.container {
+	display: flex;
+	justify-content: center;
+	background: url("/background.svg");
+	background-repeat: no-repeat;
+	background-attachment: fixed;
+	background-position: center;
+	background-size: cover;
+}
+
 .wallet {
+	flex: 1 1 0;
+	min-width: 400px;
+	height: fit-content;
+	max-width: 1700px;
 	display: flex;
 	justify-content: center;
 	align-items: flex-start;

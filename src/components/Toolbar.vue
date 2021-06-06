@@ -1,6 +1,6 @@
 <template>
 	<div id="nav" @drop.prevent="droppedFiles" @dragover.prevent>
-		<SlickList class="wallets" :axis="axis" :lockAxis="axis" v-model:list="ArweaveStore.wallets" :pressDelay="100" helperClass="dragging">
+		<SlickList class="wallets" :axis="axis" :lockAxis="axis" v-model:list="ArweaveStore.wallets" :pressDelay="200" helperClass="dragging">
 			<SlickItem v-for="(wallet, i) in ArweaveStore.wallets" :index="i" :key="wallet.key" draggable="false">
 				<router-link class="icon wallet" :to="{name: 'Wallet', query: {wallet: wallet.id}}" :class="{'active': wallet === ArweaveStore.currentWallet, 'axis-x': axis === 'x'}" draggable="false">
 					<AddressIcon class="profile" :address="wallet.key" draggable="false" />

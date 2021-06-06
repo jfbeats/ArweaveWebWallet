@@ -23,26 +23,31 @@ export default {
 
 <style scoped>
 .balance {
-	border: 1px solid var(--border);
-	border-radius: var(--border-radius);
+	--gradient1: var(--background2);
+	--gradient2: var(--border);
+	border-radius: 24px;
 	overflow: hidden;
-	background: var(--background2);
-
 }
 
 .amounts {
-	padding: var(--spacing);
+	padding: 48px var(--spacing);
 	font-size: 2em;
+	line-height: 1.2;
 }
 
 .currency {
-	font-size: 0.75em;
+	font-size: 0.5em;
 }
 
 .info {
 	padding: var(--spacing);
 	font-size: 0.75em;
 	color: var(--element-secondary);
+}
+
+.actions {
+	padding: var(--spacing);
 	background: var(--background);
+	display: flex;
 }
 </style>
