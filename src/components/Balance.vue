@@ -7,6 +7,11 @@
 		<div class="info">
 			<Address :address="wallet.key" />
 		</div>
+		<div class="actions">
+			<Action img="north_east.svg">Send</Action>
+			<Action img="swap.svg">Transactions</Action>
+			<Action img="cloud_circle.svg">Tokens</Action>
+		</div>
 	</div>
 </template>
 
@@ -14,25 +19,31 @@
 import Address from '@/components/atomic/Address'
 import Ar from '@/components/atomic/Ar'
 import LocaleCurrency from '@/components/atomic/LocaleCurrency'
+import Action from '@/components/atomic/Action'
 
-export default {
-	components: { Address, Ar, LocaleCurrency },
+export default 	{
+	components: { Address, Ar, LocaleCurrency, Action },
 	props: ['wallet'],
 }
 </script>
 
 <style scoped>
 .balance {
-	--gradient1: var(--background2);
-	--gradient2: var(--border);
 	border-radius: 24px;
 	overflow: hidden;
+	line-height: 1.2;
+	padding: var(--spacing) 0;
+	display: flex;
+	flex-direction: column;
+}
+
+.balance > * {
+	padding: var(--spacing);
+	margin-bottom: var(--spacing);
 }
 
 .amounts {
-	padding: 48px var(--spacing);
 	font-size: 2em;
-	line-height: 1.2;
 }
 
 .currency {
@@ -40,14 +51,25 @@ export default {
 }
 
 .info {
-	padding: var(--spacing);
 	font-size: 0.75em;
 	color: var(--element-secondary);
 }
 
 .actions {
-	padding: var(--spacing);
-	background: var(--background);
-	display: flex;
+	padding: 0;
 }
+
+.action {
+	padding: var(--spacing);
+	margin: calc(var(--spacing) / 2) 0;
+	border-radius: var(--border-radius);
+	transition: 0.1s ease;;
+}
+
+.action:hover {
+	background: #00000022;
+	
+}
+
+
 </style>

@@ -155,7 +155,7 @@ export default {
 	height: 48px;
 	padding: 8px;
 	border-radius: var(--border-radius2);
-	background: var(--background);
+	/* background: var(--background); */
 	flex: 0 0 auto;
 
 	margin-right: var(--spacing);
