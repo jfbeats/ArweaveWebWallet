@@ -2,22 +2,29 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 import { ArweaveStore } from '@/store/ArweaveStore'
 import Wallet from '../views/Wallet.vue'
 import EditWallet from '../views/EditWallet.vue'
+import TxList from '../views/TxList.vue'
 
 const routes = [
 	{
 		path: '/',
-		name: 'Wallet',
 		component: Wallet,
+		children: [
+			{
+				name: 'Wallet',
+				path: '',
+				component: TxList,
+				props: (route) => {
+					return { wallet: route.query.wallet || 0 }
+				},
+			}
+		],
 		beforeEnter: (to, from, next) => {
 			if (ArweaveStore.wallets.length == 0) {
 				next(false)
-			} else if (!ArweaveStore.getWalletById(to.query.wallet)) {
-				console.log('returning to first wallet')
-				next({ query: { wallet: ArweaveStore.wallets[0].id } })
 			} else {
 				next()
 			}
-		}
+		},
 	},
 	{
 		path: '/edit',

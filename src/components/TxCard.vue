@@ -14,7 +14,7 @@
 			</div>
 			<div v-else>
 				<div>
-					{{ tx.node.data.type ? tx.node.data.type.split('/').join(' ') : 'Data' }}
+					{{ dataType }}
 				</div>
 				<div class="bottom">
 					{{ dataInfo }}
@@ -87,6 +87,13 @@ export default {
 			// return this.tx.node.fee.ar
 			return this.tx.node.quantity.ar
 		},
+		dataType () {
+			const type = this.tx.node.data.type
+			if (type) {
+				return type.split('/').join(' ')
+			}
+			return 'Data'
+		},
 		dataInfo () {
 			for (const tag of this.tx.node.tags) {
 				if (tag.name == 'Service') { return tag.value }
@@ -146,7 +153,7 @@ export default {
 }
 
 .address {
-	max-width: 150px;
+	max-width: 200px;
 	margin-left: auto;
 }
 

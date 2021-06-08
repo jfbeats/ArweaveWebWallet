@@ -2,21 +2,19 @@
 	<div class="container">
 		<div class="wallet">
 			<Balance class="balance" :wallet="ArweaveStore.currentWallet" />
-			<TxList class="history" :txs="txs" />
+			<router-view class="wallet-view"></router-view>
 		</div>
 	</div>
 </template>
 
 <script>
 import Balance from '@/components/Balance'
-import TxList from '@/components/TxList'
 import { ArweaveStore } from '@/store/ArweaveStore'
 
 export default {
 	name: 'Wallet',
 	components: {
 		Balance,
-		TxList,
 	},
 	setup () {
 		return { ArweaveStore }
@@ -27,18 +25,9 @@ export default {
 				const wallet = ArweaveStore.getWalletById(walletId)
 				if (!wallet) { ArweaveStore.setCurrentWallet(ArweaveStore.wallets[0]) }
 				else { ArweaveStore.setCurrentWallet(wallet) }
-				ArweaveStore.updateReceived(ArweaveStore.currentWallet)
-				ArweaveStore.updateSent(ArweaveStore.currentWallet)
 			},
 			immediate: true
 		},
-	},
-	computed: {
-		txs () {
-			const view = this.$route.query.view
-			if (!view || view === 'Received') { return ArweaveStore.currentWallet.received }
-			if (view === 'Sent') { return ArweaveStore.currentWallet.sent }
-		}
 	},
 }
 </script>
@@ -72,8 +61,8 @@ export default {
 	min-width: 0;
 }
 
-.history {
-	flex: 1.2 1 500px;
+.wallet-view {
+	flex: 1.5 1 500px;
 	min-width: 0;
 }
 </style>

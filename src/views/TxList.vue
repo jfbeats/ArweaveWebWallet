@@ -8,10 +8,11 @@
 <script>
 import TxCard from '@/components/TxCard'
 import Tabs from '@/components/atomic/Tabs'
+import { ArweaveStore } from '@/store/ArweaveStore'
 
 export default {
 	components: { TxCard, Tabs },
-	props: ['txs'],
+	props: ['wallet'],
 	data () {
 		return {
 			tabs: [
@@ -20,6 +21,23 @@ export default {
 			]
 		}
 	},
+	computed: {
+		txs () {
+			const view = this.$route.query.view
+			if (!view || view === 'Received') { return ArweaveStore.currentWallet.received }
+			if (view === 'Sent') { return ArweaveStore.currentWallet.sent }
+		}
+	},
+	watch: {
+		wallet: {
+			handler: function () {
+				ArweaveStore.updateReceived(ArweaveStore.currentWallet)
+				ArweaveStore.updateSent(ArweaveStore.currentWallet)
+			},
+			immediate: true
+		}
+		
+	}
 }
 </script>
 
