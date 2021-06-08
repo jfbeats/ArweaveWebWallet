@@ -24,15 +24,15 @@ export default {
 	computed: {
 		txs () {
 			const view = this.$route.query.view
-			if (!view || view === 'Received') { return ArweaveStore.currentWallet.received }
-			if (view === 'Sent') { return ArweaveStore.currentWallet.sent }
+			if (!view || view === 'received') { return this.wallet.received }
+			if (view === 'sent') { return this.wallet.sent }
 		}
 	},
 	watch: {
 		wallet: {
 			handler: function () {
-				ArweaveStore.updateReceived(ArweaveStore.currentWallet)
-				ArweaveStore.updateSent(ArweaveStore.currentWallet)
+				ArweaveStore.updateReceived(this.wallet)
+				ArweaveStore.updateSent(this.wallet)
 			},
 			immediate: true
 		}

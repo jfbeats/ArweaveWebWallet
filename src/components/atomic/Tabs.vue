@@ -1,6 +1,6 @@
 <template>
 	<div class="tabs">
-		<router-link class="tab" v-for="tab in tabs" :key="tab.name" :to="{query: { ...$route.query, [query]: tab.name }}" :style="{'--color': tab.color}" :class="{active: isActive(tab)}" replace>
+		<router-link class="tab" v-for="tab in tabs" :key="tab.name" :to="{query: { ...$route.query, [query]: tab.name.toLowerCase() }}" :style="{'--color': tab.color}" :class="{active: isActive(tab)}" replace>
 			{{ tab.name }}
 		</router-link>
 	</div>
@@ -13,13 +13,8 @@ export default {
 		isActive (tab) {
 			const currentQuery = this.$route.query[this.query]
 			return currentQuery 
-				? currentQuery === tab.name
+				? currentQuery === tab.name.toLowerCase()
 				: this.tabs.indexOf(tab) === 0
-		}
-	},
-	mounted () {
-		if (!this.$route.query[this.query]) {
-			// this.$router.replace({query: {...this.$route.query, [this.query]: this.tabs[0].name}})
 		}
 	},
 }

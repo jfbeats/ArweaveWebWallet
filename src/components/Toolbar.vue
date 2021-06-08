@@ -126,7 +126,7 @@ export default {
 
 .dragging .profile {
 	padding: 18px;
-	box-shadow: 0 0 24px 0 #00000033;
+	box-shadow: 0 0 12px 1px #00000044;
 }
 
 .small {
