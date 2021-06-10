@@ -55,7 +55,6 @@ export default {
 }
 
 .wrapper.expand {
-	height: auto;
 	width: 100%;
 	height: 50vh;
 	max-height: 500px;

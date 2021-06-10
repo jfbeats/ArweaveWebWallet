@@ -71,7 +71,6 @@ export default {
 
 .icon {
 	padding: 10px;
-	display: inline-block;
 	width: 72px;
 	height: 72px;
 	display: flex;

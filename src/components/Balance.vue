@@ -63,12 +63,11 @@ export default 	{
 	padding: var(--spacing);
 	margin: calc(var(--spacing) / 2) 0;
 	border-radius: var(--border-radius);
-	transition: 0.1s ease;;
+	transition: 0.1s ease;
 }
 
 .action:hover {
 	background: #00000022;
-	
 }
 
 
