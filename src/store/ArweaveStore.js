@@ -1,13 +1,13 @@
-import { reactive } from 'vue'
-import { loadWallets } from './StateFunctions'
 import Arweave from 'arweave'
 import ArDB from 'ardb'
 import axios from 'axios'
+import { reactive } from 'vue'
+import { loadWallets } from './StateFunctions'
 
 const arweave = Arweave.init({
-    host: 'arweave.net',
-    port: 443,
-    protocol: 'https'
+	host: 'arweave.net',
+	port: 443,
+	protocol: 'https'
 })
 const arDB = new ArDB(arweave)
 
@@ -21,15 +21,22 @@ export const ArweaveStore = reactive({
 			id: 0,
 			key: 'TId0Wix2KFl1gArtAT6Do1CbWU_0wneGvS5X9BfW5PE',
 			balance: null,
-			received: [],
-			sent: [],
+			queries: {},
+			completedQueries: {},
 		},
 		{
 			id: 1,
 			key: 'Bf3pWqxD1qwwF2fcE9bPNyQp_5TSlAYPJ3JNMgJSj4c',
 			balance: null,
-			received: [],
-			sent: [],
+			queries: {},
+			completedQueries: {},
+		},
+		{
+			id: 2,
+			key: 'vLRHFqCw1uHu75xqB4fCDW-QxpkpJxBtFD9g4QYUbfw',
+			balance: null,
+			queries: {},
+			completedQueries: {},
 		},
 	],
 
@@ -65,22 +72,27 @@ export const ArweaveStore = reactive({
 		return wallet.balance
 	},
 
-	async updateReceived (wallet) {
-		const received = await arDB.search().to(wallet.key).find()
-		wallet.received = received
-		console.log('Received transactions', wallet.received)
-		return wallet.received
-	},
-
-	async updateSent (wallet) {
-		const sent = await arDB.search().from(wallet.key).find()
-		wallet.sent = sent
-		console.log('Sent transactions ', wallet.sent)
-		return wallet.sent
+	async fetchTransactions (wallet, query) {
+		const queries = {
+			received: () => arDB.search().to(wallet.key),
+			sent: () => arDB.search().from(wallet.key),
+		}
+		let result
+		if (wallet.queries[query] && wallet.queries[query].length > 0) {
+			const lastTxIndex = wallet.queries[query].length - 1
+			const cursor = wallet.queries[query][lastTxIndex].cursor
+			result = await queries[query]().cursor(cursor).find()
+		} else {
+			wallet.queries[query] = []
+			result = await queries[query]().find()
+		}
+		if (result.length < 10) { wallet.completedQueries[query] = true }
+		wallet.queries[query].push(...result)
+		return wallet.queries[query]
 	},
 
 	async updateConversionRate () {
-		if (this.currency.limestone) {return}
+		if (this.currency.limestone) { return }
 		this.currency.limestone = 0
 		const res = await axios.get('https://api.limestone.finance/prices?symbol=AR&provider=limestone')
 		this.currency.limestone = res.data[0].value
