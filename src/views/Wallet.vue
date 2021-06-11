@@ -22,6 +22,7 @@ export default {
 	watch: {
 		'$route.query.wallet': {
 			handler: function (walletId) {
+				if (!walletId) { return }
 				const wallet = ArweaveStore.getWalletById(walletId)
 				if (!wallet) { ArweaveStore.setCurrentWallet(ArweaveStore.wallets[0]) }
 				else { ArweaveStore.setCurrentWallet(wallet) }
