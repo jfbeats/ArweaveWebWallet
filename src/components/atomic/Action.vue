@@ -1,10 +1,10 @@
 <template>
-	<div class="action">
+	<router-link class="action">
 		<img class="img" :src="img">
 		<span class="text">
 			<slot></slot>
 		</span>
-	</div>
+	</router-link>
 </template>
 
 <script>
@@ -19,6 +19,8 @@ export default {
 	display: flex;
 	align-items: flex-end;
 	cursor: pointer;
+	color: inherit;
+	text-decoration: none;
 }
 
 .text {

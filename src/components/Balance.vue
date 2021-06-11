@@ -8,9 +8,9 @@
 			<Address :address="wallet.key" />
 		</div>
 		<div class="actions">
-			<Action img="north_east.svg">Send</Action>
-			<Action img="swap.svg">Transactions</Action>
-			<Action img="cloud_circle.svg">Tokens</Action>
+			<Action :to="{name: 'Send', query: {...$route.query}}" img="north_east.svg">Send</Action>
+			<Action :to="{name: 'Tx', query: {...$route.query}}" img="swap.svg">Transactions</Action>
+			<Action :to="{name: 'Tokens', query: {...$route.query}}" img="cloud_circle.svg">Tokens</Action>
 		</div>
 	</div>
 </template>
