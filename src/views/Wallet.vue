@@ -1,6 +1,6 @@
 <template>
 	<div class="container">
-		<div class="wallet">
+		<div v-if="ArweaveStore.currentWallet" class="wallet">
 			<Balance class="balance" :wallet="ArweaveStore.currentWallet" />
 			<router-view class="wallet-view"></router-view>
 		</div>

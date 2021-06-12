@@ -22,21 +22,21 @@ export const ArweaveStore = reactive({
 			key: 'TId0Wix2KFl1gArtAT6Do1CbWU_0wneGvS5X9BfW5PE',
 			balance: null,
 			queries: {},
-			completedQueries: {},
+			queriesStatus: {},
 		},
 		{
 			id: 1,
 			key: 'Bf3pWqxD1qwwF2fcE9bPNyQp_5TSlAYPJ3JNMgJSj4c',
 			balance: null,
 			queries: {},
-			completedQueries: {},
+			queriesStatus: {},
 		},
 		{
 			id: 2,
 			key: 'vLRHFqCw1uHu75xqB4fCDW-QxpkpJxBtFD9g4QYUbfw',
 			balance: null,
 			queries: {},
-			completedQueries: {},
+			queriesStatus: {},
 		},
 	],
 
@@ -61,7 +61,6 @@ export const ArweaveStore = reactive({
 	setCurrentWallet (wallet) {
 		this.currentWallet = wallet
 		this.updateWalletBalance(wallet)
-		this.updateConversionRate()
 		console.log('Current wallet set to ', wallet)
 	},
 
@@ -73,6 +72,7 @@ export const ArweaveStore = reactive({
 	},
 
 	async fetchTransactions (wallet, query) {
+		if (!wallet) { return }
 		const queries = {
 			received: () => arDB.search().to(wallet.key),
 			sent: () => arDB.search().from(wallet.key),
@@ -86,14 +86,15 @@ export const ArweaveStore = reactive({
 			wallet.queries[query] = []
 			result = await queries[query]().find()
 		}
-		if (result.length < 10) { wallet.completedQueries[query] = true }
+		if (result.length < 10) {
+			if (!wallet.queriesStatus[query]) { wallet.queriesStatus[query] = {} }
+			wallet.queriesStatus[query].completed = true
+		}
 		wallet.queries[query].push(...result)
 		return wallet.queries[query]
 	},
 
 	async updateConversionRate () {
-		if (this.currency.limestone) { return }
-		this.currency.limestone = 0
 		const res = await axios.get('https://api.limestone.finance/prices?symbol=AR&provider=limestone')
 		this.currency.limestone = res.data[0].value
 		console.log('Conversion Rate', this.currency.limestone)
@@ -104,3 +105,7 @@ export const ArweaveStore = reactive({
 
 
 if (ArweaveStore.wallets.length > 0) { ArweaveStore.currentWallet = ArweaveStore.wallets[0] }
+ArweaveStore.updateConversionRate()
+window.setInterval(() => {
+	ArweaveStore.updateConversionRate()
+}, 600000)

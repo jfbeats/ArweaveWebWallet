@@ -2,7 +2,7 @@
 	<div id="nav" @drop.prevent="droppedFiles" @dragover.prevent>
 		<SlickList class="wallets" :axis="axis" :lockAxis="axis" v-model:list="ArweaveStore.wallets" :pressDelay="200" helperClass="dragging">
 			<SlickItem v-for="(wallet, i) in ArweaveStore.wallets" :index="i" :key="wallet.key" draggable="false">
-				<router-link class="icon wallet" :to="{name: navTo, query: {wallet: wallet.id}}" :class="{'active': wallet === ArweaveStore.currentWallet, 'axis-x': axis === 'x'}" draggable="false">
+				<router-link class="icon wallet" :to="{name: navTo, query: { ...$route.query, wallet: wallet.id}}" :class="{'active': wallet === ArweaveStore.currentWallet, 'axis-x': axis === 'x'}" draggable="false">
 					<AddressIcon class="profile" :address="wallet.key" draggable="false" />
 				</router-link>
 			</SlickItem>
@@ -23,19 +23,14 @@ import { computed, onMounted, onUnmounted, ref } from "vue"
 
 export default {
 	name: 'Toolbar',
-	components: {
-		AddressIcon, SlickList, SlickItem,
-	},
+	components: { AddressIcon, SlickList, SlickItem },
 	setup () {
 		let windowWidth = ref(window.innerWidth)
 		const onWidthChange = () => windowWidth.value = window.innerWidth
 		onMounted(() => window.addEventListener('resize', onWidthChange))
 		onUnmounted(() => window.removeEventListener('resize', onWidthChange))
 		const axis = computed(() => windowWidth.value <= 600 ? 'x' : 'y')
-
-		return {
-			ArweaveStore, newWallet, newPassphrase, axis
-		}
+		return { ArweaveStore, newWallet, newPassphrase, axis }
 	},
 	methods: {
 		async createWallet () {

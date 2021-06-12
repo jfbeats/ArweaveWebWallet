@@ -16,9 +16,6 @@ export default {
 			return num.toFixed(2)
 		}
 	},
-	async mounted () {
-		ArweaveStore.updateConversionRate()
-	}
 }
 </script>
 
