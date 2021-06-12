@@ -37,7 +37,7 @@ export default {
 .container {
 	display: flex;
 	justify-content: center;
-	background: url("/background.svg");
+	background: url("~@/../public/background.svg");
 	background-repeat: no-repeat;
 	background-attachment: fixed;
 	background-position: center;
