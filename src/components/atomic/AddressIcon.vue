@@ -9,7 +9,7 @@
 
 <script>
 import { get, getIdenticon } from 'arweave-id'
-import { ArweaveStore } from '@/store/ArweaveStore'
+import ArweaveStore from '@/store/ArweaveStore'
 import Identicon from 'identicon.js'
 import { SHA256 } from 'jshashes'
 

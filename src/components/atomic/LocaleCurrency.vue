@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import { ArweaveStore } from '@/store/ArweaveStore'
+import ArweaveStore from '@/store/ArweaveStore'
 
 export default {
 	props: ['ar'],

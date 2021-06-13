@@ -11,7 +11,7 @@ const arweave = Arweave.init({
 })
 const arDB = new ArDB(arweave)
 
-export const ArweaveStore = reactive({
+const ArweaveStore = reactive({
 	arweave,
 
 	currentWallet: null,
@@ -102,10 +102,8 @@ export const ArweaveStore = reactive({
 	},
 })
 
-
-
 if (ArweaveStore.wallets.length > 0) { ArweaveStore.currentWallet = ArweaveStore.wallets[0] }
 ArweaveStore.updateConversionRate()
-window.setInterval(() => {
-	ArweaveStore.updateConversionRate()
-}, 600000)
+setInterval(() => { ArweaveStore.updateConversionRate() }, 600000)
+
+export default ArweaveStore

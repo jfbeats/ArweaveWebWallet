@@ -1,16 +1,31 @@
 <template>
-	<Toolbar class="toolbar" />
-	<router-view class="main" />
+	<Toolbar class="toolbar" @drop.prevent="droppedFiles" @dragover.prevent />
+	<router-view class="main" @drop.prevent="droppedFiles" @dragover.prevent />
 </template>
 
 
 
 <script>
 import Toolbar from '@/components/Toolbar'
+import { newWallet } from '@/functions/Wallets.js'
+
 export default {
 	components: {
 		Toolbar
 	},
+	methods: {
+		async droppedFiles (e) {
+			const idPromises = []
+			for (const file of e.dataTransfer.files) {
+				const idPromise = newWallet(JSON.parse(await file.text()))
+				idPromises.push(idPromise)
+			}
+			const ids = (await Promise.all(idPromises)).filter(e => e !== null)
+			if (ids.length > 0) {
+				this.$router.push({ name: 'EditWallet', query: { wallet: ids } })
+			}
+		}
+	}
 }
 </script>
 
@@ -35,7 +50,7 @@ export default {
 }
 
 .toolbar::-webkit-scrollbar {
-  display: none;
+	display: none;
 }
 
 .main {
@@ -101,9 +116,9 @@ body {
 }
 
 .ellipsis {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .no-select {
@@ -115,24 +130,24 @@ body {
 }
 
 ::-webkit-scrollbar {
-    background-color: var(--background2);
-    color: #aaaaaa;
+	background-color: var(--background2);
+	color: #aaaaaa;
 	width: 8px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: var(--border);
+	background-color: var(--border);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background-color: #444;
+	background-color: #444;
 }
 
 ::-webkit-scrollbar-thumb:active {
-    background-color: #333;
+	background-color: #333;
 }
 
 ::-webkit-scrollbar-corner {
-    background-color: #181a1b;
+	background-color: #181a1b;
 }
 </style>

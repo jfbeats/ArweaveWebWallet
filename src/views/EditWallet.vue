@@ -7,22 +7,20 @@
 
 <script>
 import WalletOptions from '@/components/WalletOptions'
-import { ArweaveStore } from '@/store/ArweaveStore'
+import ArweaveStore from '@/store/ArweaveStore'
 
 export default {
 	components: { WalletOptions },
 	computed: {
 		wallets () {
 			const editWallet = this.$route.query.wallet
-			if (Array.isArray(editWallet)) {
-				const wallets = []
-				for (const wallet of editWallet) { wallets.push(ArweaveStore.getWalletById(wallet)) }
-				return wallets
-			} else if (editWallet) {
-				return [ArweaveStore.getWalletById(editWallet)]
-			} else {
-				return
+			const editWalletArray = Array.isArray(editWallet) ? editWallet : [editWallet]
+			const result = []
+			for (const wallet of editWalletArray) {
+				const walletObject = ArweaveStore.getWalletById(wallet)
+				if (walletObject) { result.push(walletObject) }
 			}
+			return result
 		},
 	},
 }
@@ -31,7 +29,6 @@ export default {
 <style scoped>
 .edit-wallet {
 	padding: 32px;
-
 }
 
 .wallet-options {
@@ -39,6 +36,4 @@ export default {
 	background: var(--background2);
 	border-radius: var(--border-radius);
 }
-
-
 </style>

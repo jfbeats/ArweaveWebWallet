@@ -12,7 +12,7 @@
 
 <script>
 import WalletOptions from '@/components/WalletOptions'
-import { ArweaveStore } from '@/store/ArweaveStore'
+import ArweaveStore from '@/store/ArweaveStore'
 
 export default {
 	components: { WalletOptions },

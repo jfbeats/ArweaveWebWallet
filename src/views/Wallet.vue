@@ -9,7 +9,7 @@
 
 <script>
 import Balance from '@/components/Balance'
-import { ArweaveStore } from '@/store/ArweaveStore'
+import ArweaveStore from '@/store/ArweaveStore'
 
 export default {
 	name: 'Wallet',

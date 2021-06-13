@@ -57,7 +57,7 @@ import TxIcon from '@/components/atomic/TxIcon'
 import AddressIcon from '@/components/atomic/AddressIcon'
 import LocaleCurrency from '@/components/atomic/LocaleCurrency'
 import MoreInfo from '@/components/MoreInfo'
-import { ArweaveStore } from '@/store/ArweaveStore'
+import ArweaveStore from '@/store/ArweaveStore'
 
 export default {
 	components: { Address, Ar, TxIcon, AddressIcon, LocaleCurrency, MoreInfo },

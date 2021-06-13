@@ -1,10 +1,9 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import { ArweaveStore } from '@/store/ArweaveStore'
-import Wallet from '../views/Wallet.vue'
-import EditWallet from '../views/EditWallet.vue'
-import TxList from '../views/TxList.vue'
-import Send from '../views/Send.vue'
-import Tokens from '../views/Tokens.vue'
+import ArweaveStore from '@/store/ArweaveStore'
+import Wallet from '@/views/Wallet.vue'
+import TxList from '@/views/TxList.vue'
+import Send from '@/views/Send.vue'
+import Tokens from '@/views/Tokens.vue'
 
 const routes = [
 	{
@@ -17,7 +16,7 @@ const routes = [
 				path: '',
 				component: TxList,
 				props: () => { return { wallet: ArweaveStore.currentWallet } },
-			}, 
+			},
 			{
 				name: 'Send',
 				path: 'send',
@@ -31,7 +30,7 @@ const routes = [
 		],
 		beforeEnter: (to, from, next) => {
 			if (ArweaveStore.wallets.length == 0) {
-				next(false)
+				next({ name: 'Welcome' })
 			} else {
 				next()
 			}
@@ -40,12 +39,17 @@ const routes = [
 	{
 		path: '/edit',
 		name: 'EditWallet',
-		component: EditWallet,
+		component: () => import('@/views/EditWallet.vue'),
 	},
 	{
 		path: '/settings',
 		name: 'Settings',
-		component: () => import('../views/Settings.vue')
+		component: () => import('@/views/Settings.vue')
+	},
+	{
+		path: '/welcome',
+		name: 'Welcome',
+		component: () => import('@/views/Welcome.vue')
 	}
 ]
 

@@ -9,7 +9,7 @@
 <script>
 import TxCard from '@/components/TxCard'
 import Tabs from '@/components/atomic/Tabs'
-import { ArweaveStore } from '@/store/ArweaveStore'
+import ArweaveStore from '@/store/ArweaveStore'
 import { computed, onMounted, onBeforeUnmount, ref, watch } from '@vue/runtime-core'
 import { useRoute } from 'vue-router'
 

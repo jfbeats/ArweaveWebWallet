@@ -1,5 +1,5 @@
 <template>
-	<div id="nav" @drop.prevent="droppedFiles" @dragover.prevent>
+	<div id="nav">
 		<SlickList class="wallets" :axis="axis" :lockAxis="axis" v-model:list="ArweaveStore.wallets" :pressDelay="200" helperClass="dragging">
 			<SlickItem v-for="(wallet, i) in ArweaveStore.wallets" :index="i" :key="wallet.key" draggable="false">
 				<router-link class="icon wallet" :to="{name: navTo, query: { ...$route.query, wallet: wallet.id}}" :class="{'active': wallet === ArweaveStore.currentWallet, 'axis-x': axis === 'x'}" draggable="false">
@@ -17,8 +17,8 @@
 <script>
 import AddressIcon from '@/components/atomic/AddressIcon'
 import { SlickList, SlickItem } from 'vue-slicksort';
-import { ArweaveStore } from '@/store/ArweaveStore'
-import { newWallet, newPassphrase } from '@/functions/Wallets.js'
+import ArweaveStore from '@/store/ArweaveStore'
+import { newWallet } from '@/functions/Wallets.js'
 import { computed, onMounted, onUnmounted, ref } from "vue"
 
 export default {
@@ -30,24 +30,13 @@ export default {
 		onMounted(() => window.addEventListener('resize', onWidthChange))
 		onUnmounted(() => window.removeEventListener('resize', onWidthChange))
 		const axis = computed(() => windowWidth.value <= 600 ? 'x' : 'y')
-		return { ArweaveStore, newWallet, newPassphrase, axis }
+		return { ArweaveStore, axis }
 	},
 	methods: {
 		async createWallet () {
 			const id = await newWallet()
 			this.$router.push({ name: 'EditWallet', query: { wallet: id } })
 		},
-		async droppedFiles (e) {
-			const idPromises = []
-			for (const file of e.dataTransfer.files) {
-				const idPromise = newWallet(JSON.parse(await file.text()))
-				idPromises.push(idPromise)
-			}
-			const ids = (await Promise.all(idPromises)).filter(e => e !== null)
-			if (ids.length > 0) {
-				this.$router.push({ name: 'EditWallet', query: { wallet: ids } })
-			}
-		}
 	},
 	computed: {
 		navTo () { return this.$route.matched[0]?.name === 'Wallet' ? null : 'Tx' }

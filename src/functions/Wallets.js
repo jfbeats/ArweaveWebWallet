@@ -1,4 +1,4 @@
-import { ArweaveStore } from '@/store/ArweaveStore'
+import ArweaveStore from '@/store/ArweaveStore'
 import { generateMnemonic, getKeyFromMnemonic } from "arweave-mnemonic-keys";
 
 export async function newWallet (jwkObj) {
