@@ -15,12 +15,12 @@ export default {
 	},
 	methods: {
 		async droppedFiles (e) {
-			const idPromises = []
+			const walletPromises = []
 			for (const file of e.dataTransfer.files) {
-				const idPromise = newWallet(JSON.parse(await file.text()))
-				idPromises.push(idPromise)
+				const walletPromise = newWallet(JSON.parse(await file.text()))
+				walletPromises.push(walletPromise)
 			}
-			const ids = (await Promise.all(idPromises)).filter(e => e !== null)
+			const ids = (await Promise.all(walletPromises)).filter(e => e !== null).map(e => e.id)
 			if (ids.length > 0) {
 				this.$router.push({ name: 'EditWallet', query: { wallet: ids } })
 			}

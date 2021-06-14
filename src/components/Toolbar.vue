@@ -34,8 +34,8 @@ export default {
 	},
 	methods: {
 		async createWallet () {
-			const id = await newWallet()
-			this.$router.push({ name: 'EditWallet', query: { wallet: id } })
+			const wallet = await newWallet()
+			this.$router.push({ name: 'EditWallet', query: { wallet: wallet.id } })
 		},
 	},
 	computed: {

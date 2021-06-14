@@ -1,24 +1,27 @@
 import ArweaveStore from '@/store/ArweaveStore'
-import { generateMnemonic, getKeyFromMnemonic } from "arweave-mnemonic-keys";
+import Ledger from '@/functions/Ledger'
+import { generateMnemonic, getKeyFromMnemonic } from "arweave-mnemonic-keys"
 
 export async function newWallet (jwkObj) {
 	const jwk = jwkObj || await ArweaveStore.arweave.wallets.generate()
 	const key = await ArweaveStore.arweave.wallets.jwkToAddress(jwk)
-	if (ArweaveStore.getWalletByKey(key)) { return null }
-	const wallet = { id: ArweaveStore.getNewId(), key, jwk }
 	if (!jwkObj) { download(key, JSON.stringify(jwk)) }
-	ArweaveStore.wallets.push(wallet)
-	return wallet.id
+	const wallet = { key, jwk }
+	return ArweaveStore.pushWallet(wallet)
 }
 
 export async function newPassphrase (passphrase) {
-	console.log("started")
 	const currentPassphrase = passphrase || await generateMnemonic()
-	console.log(currentPassphrase)
 	const jwk = await getKeyFromMnemonic(currentPassphrase)
-	console.log(jwk)
 	newWallet(jwk)
 	return currentPassphrase
+}
+
+export async function newLedger () {
+	const address = (await Ledger.getAddress())?.address
+	if (!address) { return }
+	const wallet = { key: address }
+	return ArweaveStore.pushWallet(wallet)
 }
 
 function download (filename, text) {
