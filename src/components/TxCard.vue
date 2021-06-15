@@ -4,20 +4,15 @@
 
 			<TxIcon class="tx-icon" :direction="direction" :isValue="isValue" :isData="isData" />
 
-			<div v-if="isValue">
-				<div>
-					<Ar class="ar" :ar="value" />
+			<div>
+				<div v-if="isValue">
+					<Ar class="ar" :ar="value" />&nbsp;&nbsp;<LocaleCurrency class="small" :ar="value">|</LocaleCurrency>
 				</div>
-				<div class="bottom">
-					<LocaleCurrency :ar="value" />
+				<div v-else>
+					{{ dataType || 'Data' }}
 				</div>
-			</div>
-			<div v-else>
-				<div>
-					{{ dataType }}
-				</div>
-				<div class="bottom">
-					{{ dataInfo }}
+				<div class="small">
+					{{ context }}
 				</div>
 			</div>
 
@@ -28,10 +23,9 @@
 				<div class="right-text">
 					<Address v-if="relativeAddress" class="address" :address="relativeAddress" />
 					<div v-else class="ellipsis">
-						<Ar :ar="tx.node.fee.ar" /> /
-						<LocaleCurrency :ar="tx.node.fee.ar" />
+						<Ar :ar="tx.node.fee.ar" />&nbsp;&nbsp;<LocaleCurrency class="small" :ar="tx.node.fee.ar">|</LocaleCurrency>
 					</div>
-					<div class="bottom ellipsis">{{ date + ' ' + time }}</div>
+					<div class="small ellipsis">{{ date + ' ' + time }}</div>
 				</div>
 				<div class="margin"></div>
 			</div>
@@ -64,9 +58,11 @@ export default {
 	props: ['tx'],
 	computed: {
 		date () {
+			if (!this.tx.node.block) { return 'pending' }
 			return new Date(this.tx.node.block.timestamp * 1000).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
 		},
 		time () {
+			if (!this.tx.node.block) { return '' }
 			return new Date(this.tx.node.block.timestamp * 1000).toLocaleTimeString()
 		},
 		direction () {
@@ -92,7 +88,6 @@ export default {
 			if (type) {
 				return type.split('/').join(' ')
 			}
-			return 'Data'
 		},
 		dataInfo () {
 			for (const tag of this.tx.node.tags) {
@@ -103,6 +98,15 @@ export default {
 			}
 			for (const tag of this.tx.node.tags) {
 				if (tag.name == 'User-Agent') { return tag.value.split('/')[0] }
+			}
+		},
+		context () {
+			if (this.isValue && this.isData) {
+				return this.dataInfo || this.dataType || 'Payment | Data'
+			} else if (this.isValue) {
+				return this.dataInfo || this.dataType || 'Payment'
+			} else if (this.isData) {
+				return this.dataInfo || 'Data'
 			}
 		}
 	}
@@ -180,7 +184,7 @@ export default {
 	opacity: 0.2;
 }
 
-.bottom {
+.small {
 	font-size: 0.75em;
 	color: var(--element-secondary);
 }

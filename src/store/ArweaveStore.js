@@ -2,7 +2,6 @@ import Arweave from 'arweave'
 import ArDB from 'ardb'
 import axios from 'axios'
 import { reactive } from 'vue'
-import Ledger from '@/functions/Ledger'
 
 const arweave = Arweave.init({
 	host: 'arweave.net',
@@ -46,9 +45,9 @@ const ArweaveStore = reactive({
 
 	async pushWallet (wallet) {
 		Object.assign(wallet, { queries: {}, queriesStatus: {} })
-		if (!wallet.id) { wallet.id = this.getNewId() }
 		if (!wallet.key && wallet.jwk) { wallet.key = await arweave.wallets.jwkToAddress(wallet.jwk) }
-		if (this.getWalletByKey(wallet.key)) { return }
+		if (this.getWalletByKey(wallet.key)) { return this.getWalletByKey(wallet.key) }
+		if (!wallet.id) { wallet.id = this.getNewId() }
 		this.wallets.push(wallet)
 		return wallet
 	},
