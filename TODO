@@ -25,6 +25,7 @@ Profile picture / Identicon
 Username / Address
 Send
 Related txs
+Save to addrs book
 
 ---Settings---
 App
@@ -41,6 +42,7 @@ Wallet
 Integration script
 detect IFramed
 Faucet
+Smartweave
 
 ---Ideas---
 History | Take current balance and backtrack

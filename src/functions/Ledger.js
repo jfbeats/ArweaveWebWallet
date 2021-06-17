@@ -38,32 +38,14 @@ async function appInfo () {
 	} finally { transport.close() }
 }
 
-async function getAddress () {
+async function getActiveAddress (request = false) {
 	const transport = await getTransport()
 	try {
 		const app = new ArweaveApp(transport)
 		let response = await app.getVersion()
 		console.info(`App Version ${response.major}.${response.minor}.${response.patch}`, response)
 		console.info("Requesting address")
-		response = await app.getAddress()
-		if (response.returnCode !== ArweaveApp.ErrorCode.NoError) {
-			console.error(`Error [${response.returnCode}] ${response.errorMessage}`)
-			return
-		}
-		console.info("Response received!", response)
-		return response
-	} finally { transport.close() }
-}
-
-async function showAddress () {
-	const transport = await getTransport()
-	try {
-		const app = new ArweaveApp(transport)
-		let response = await app.getVersion()
-		console.info(`App Version ${response.major}.${response.minor}.${response.patch}`, response)
-		console.info("Sending Request..")
-		console.info("Please click in the device")
-		response = await app.showAddress()
+		response = request ? await app.showAddress() : await app.getAddress()
 		if (response.returnCode !== ArweaveApp.ErrorCode.NoError) {
 			console.error(`Error [${response.returnCode}] ${response.errorMessage}`)
 			return
@@ -81,8 +63,7 @@ async function sign (transaction) {
 		let response = await app.getVersion()
 		console.info(`App Version ${response.major}.${response.minor}.${response.patch}`, response)
 		let addr = await app.getAddress()
-		let owner = addr.owner
-		transaction.owner = owner
+		transaction.owner = addr.owner
 		response = await app.sign(transaction)
 		let id = await arweave.crypto.hash(response.signature)
 		let sigjs = {
@@ -95,6 +76,6 @@ async function sign (transaction) {
 	} finally { transport.close() }
 }
 
-const Ledger = { getVersion, appInfo, getAddress, showAddress, sign }
+const Ledger = { getVersion, appInfo, getActiveAddress, sign }
 
 export default Ledger
