@@ -17,7 +17,6 @@ export default {
 .action {
 	font-size: 1.2em;
 	display: flex;
-	align-items: flex-end;
 	cursor: pointer;
 	color: inherit;
 	text-decoration: none;

@@ -1,5 +1,7 @@
 <template>
-
+	<div>
+		tokens
+	</div>
 </template>
 
 <script>

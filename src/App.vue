@@ -1,6 +1,10 @@
 <template>
 	<Toolbar class="toolbar" @drop.prevent="droppedFiles" @dragover.prevent />
-	<router-view class="main" @drop.prevent="droppedFiles" @dragover.prevent />
+	<router-view class="main" @drop.prevent="droppedFiles" @dragover.prevent v-slot="{ Component, route }">
+		<transition :name="route.meta.mainTransitionName" mode="out-in">
+			<component :is="Component" :key="$route.path.split('/').slice(0,3).join('')"/>
+		</transition>
+	</router-view>
 </template>
 
 
@@ -8,10 +12,23 @@
 <script>
 import Toolbar from '@/components/Toolbar'
 import { newWallet } from '@/functions/Wallets.js'
+import { useRouter } from 'vue-router'
 
 export default {
 	components: {
 		Toolbar
+	},
+	setup () {
+		const router = useRouter()
+		router.afterEach((to, from) => {
+			const routes = router.options.routes
+			const toIndex = routes.findIndex(el => el.path === to.path)
+			const fromIndex = routes.findIndex(el => el.path === from.path)
+			if (toIndex === fromIndex) { to.meta.mainTransitionName = 
+				to.params.walletId < from.params.walletId ? 'slide-down' : 'slide-up' 
+			}
+			else { to.meta.mainTransitionName = toIndex < fromIndex ? 'slide-down' : 'slide-up' }
+		})
 	},
 	methods: {
 		async droppedFiles (e) {
@@ -41,6 +58,7 @@ export default {
 	overflow: overlay;
 	scrollbar-width: none;
 	z-index: 1;
+	background: var(--background);
 }
 
 @media only screen and (max-width: 600px) {
@@ -77,7 +95,7 @@ html {
 	--border-radius: 8px;
 	--border-radius2: 12px;
 	--border-radius3: 12px;
-	--element-secondary: #ccc;
+	--element-secondary: #bbb;
 	--element-secondary-opacity: 0.75;
 	--element-disabled-opacity: 0.5;
 }
@@ -89,6 +107,11 @@ body {
 	width: 100%;
 	height: 100%;
 	line-height: 2;
+	background: url("~@/assets/background.svg");
+	background-repeat: no-repeat;
+	background-attachment: fixed;
+	background-position: center;
+	background-size: cover;
 }
 
 #app {
@@ -101,6 +124,7 @@ body {
 	margin: 0;
 	padding: 0;
 	display: flex;
+	overflow: hidden;
 }
 
 @media only screen and (max-width: 600px) {

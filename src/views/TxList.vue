@@ -1,7 +1,11 @@
 <template>
 	<div class="txs">
 		<Tabs query="view" :tabs="tabs" />
-		<TxCard v-for="tx in txs" :key="tx.id" class="tx" :tx="tx" />
+		<transition :name="transitionName" mode="out-in">
+			<div class="list" :key="selectedQuery">
+				<TxCard v-for="tx in txs" :key="tx.id" class="tx" :tx="tx" />
+			</div>
+		</transition>
 		<div ref="bottom" v-show="!loading && !completedQuery"></div>
 	</div>
 </template>
@@ -39,20 +43,29 @@ export default {
 		}, { threshold: [0] })
 		onMounted(() => { observer.observe(bottom.value) })
 		onBeforeUnmount(() => { observer.unobserve(bottom.value) })
-		return { loading, txs, completedQuery, bottom }
-	},
-	data () {
-		return {
-			tabs: [
-				{ name: 'Received', color: '#a3be8c' },
-				{ name: 'Sent', color: '#bf616a' },
-			]
-		}
+		const tabs = [
+			{ name: 'Received', color: '#a3be8c' },
+			{ name: 'Sent', color: '#bf616a' },
+		]
+		const transitionName = ref(null)
+		watch(() => selectedQuery.value, (state, prevState) => {
+			const toIndex = tabs.findIndex(el => el.name.toLowerCase() === state)
+			const fromIndex = tabs.findIndex(el => el.name.toLowerCase() === prevState)
+			transitionName.value = toIndex < fromIndex ? 'slide-right' : 'slide-left'
+			console.log(fromIndex, toIndex,state)
+		})
+		return { loading, txs, completedQuery, bottom, selectedQuery, transitionName, tabs }
 	},
 }
 </script>
 
 <style scoped>
+.list {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing);
+}
+
 .txs {
 	display: flex;
 	flex-direction: column;

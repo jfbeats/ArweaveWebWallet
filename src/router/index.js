@@ -8,14 +8,15 @@ import Tokens from '@/views/Tokens.vue'
 const routes = [
 	{
 		name: 'Wallet',
-		path: '/',
+		path: '/wallet/:walletId(\\d+)',
 		component: Wallet,
+		props: (route) => { return { wallet: ArweaveStore.getWalletById(route.params.walletId) } },
 		children: [
 			{
 				name: 'Tx',
-				path: '',
+				path: 'tx',
 				component: TxList,
-				props: () => { return { wallet: ArweaveStore.currentWallet } },
+				props: (route) => { return { wallet: ArweaveStore.getWalletById(route.params.walletId) } },
 			},
 			{
 				name: 'Send',
@@ -26,13 +27,13 @@ const routes = [
 				name: 'Tokens',
 				path: 'tokens',
 				component: Tokens,
-			}
+			},
 		],
-		beforeEnter: (to, from, next) => {
+		beforeEnter: (to, from) => {
 			if (ArweaveStore.wallets.length == 0) {
-				next({ name: 'Welcome' })
-			} else {
-				next()
+				return { name: 'Welcome' }
+			} else if (!to.params.walletId) {
+				return { name: 'Wallet', params: { walletId: ArweaveStore.wallets[0].id } }
 			}
 		},
 	},
@@ -50,7 +51,11 @@ const routes = [
 		path: '/welcome',
 		name: 'Welcome',
 		component: () => import('@/views/Welcome.vue')
-	}
+	},
+	{
+		path: '/:pathMatch(.*)*',
+		redirect: { name: 'Tx', params: { walletId: ArweaveStore.wallets[0].id } }
+	},
 ]
 
 const router = createRouter({
