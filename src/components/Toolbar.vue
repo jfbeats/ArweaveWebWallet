@@ -8,8 +8,8 @@
 			</SlickItem>
 		</SlickList>
 		<div class="controls">
-			<div class="icon control" @click="createWallet()"><img class="small" src="add_box.svg"></div>
-			<router-link class="icon control" to="/settings"><img class="small" src="settings.svg"></router-link>
+			<div class="icon control" @click="createWallet()"><img class="small" src="@/assets/icons/add_box.svg"></div>
+			<router-link class="icon control" to="/settings"><img class="small" src="@/assets/icons/settings.svg"></router-link>
 		</div>
 	</div>
 </template>

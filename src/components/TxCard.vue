@@ -38,7 +38,7 @@
 					<div>Info here</div>
 				</template>
 			</MoreInfo>
-			<span v-else class="cloud"><img class="file-type no-select" src="cloud.svg" draggable="false"></span>
+			<span v-else class="cloud"><img class="file-type no-select" src="@/assets/icons/cloud.svg" draggable="false"></span>
 
 		</div>
 	</div>

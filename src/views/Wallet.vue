@@ -28,9 +28,9 @@ export default {
 	props: ['wallet'],
 	setup () {
 		const actions = [
-			{ name: 'Send', img: 'north_east.svg', text: 'Send' },
-			{ name: 'Tx', img: 'swap.svg', text: 'Transactions' },
-			{ name: 'Tokens', img: 'cloud_circle.svg', text: 'Tokens' },
+			{ name: 'Send', img: require('@/assets/icons/north_east.svg'), text: 'Send' },
+			{ name: 'Tx', img: require('@/assets/icons/swap.svg'), text: 'Transactions' },
+			{ name: 'Tokens', img: require('@/assets/icons/cloud_circle.svg'), text: 'Tokens' },
 		]
 		const router = useRouter()
 		router.afterEach((to, from) => {
