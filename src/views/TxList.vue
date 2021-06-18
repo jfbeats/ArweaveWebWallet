@@ -52,7 +52,6 @@ export default {
 			const toIndex = tabs.findIndex(el => el.name.toLowerCase() === state)
 			const fromIndex = tabs.findIndex(el => el.name.toLowerCase() === prevState)
 			transitionName.value = toIndex < fromIndex ? 'slide-right' : 'slide-left'
-			console.log(fromIndex, toIndex,state)
 		})
 		return { loading, txs, completedQuery, bottom, selectedQuery, transitionName, tabs }
 	},

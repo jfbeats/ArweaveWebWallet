@@ -1,5 +1,5 @@
 <template>
-	<div id="nav">
+	<nav id="nav">
 		<SlickList class="wallets" :axis="axis" :lockAxis="axis" v-model:list="ArweaveStore.wallets" :pressDelay="200" helperClass="dragging">
 			<SlickItem v-for="(wallet, i) in ArweaveStore.wallets" :index="i" :key="wallet.key" draggable="false" class="drag-container">
 				<router-link class="icon wallet" :to="{name: navTo, params: { walletId: wallet.id}, query: { ...$route.query }}" :class="{'active': wallet.id == $route.params.walletId, 'axis-x': axis === 'x'}" draggable="false">
@@ -11,7 +11,7 @@
 			<div class="icon control" @click="createWallet()"><img class="small" src="@/assets/icons/add_box.svg"></div>
 			<router-link class="icon control" to="/settings"><img class="small" src="@/assets/icons/settings.svg"></router-link>
 		</div>
-	</div>
+	</nav>
 </template>
 
 <script>
