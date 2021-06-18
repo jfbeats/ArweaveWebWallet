@@ -5,6 +5,5 @@ import { plugin as Slicksort } from 'vue-slicksort'
 import '@/assets/animations.css'
 
 const app = createApp(App)
-app.use(router)
-app.use(Slicksort)
+app.use(router, Slicksort)
 app.mount('#app')

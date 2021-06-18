@@ -2,7 +2,7 @@
 	<Toolbar class="toolbar" @drop.prevent="droppedFiles" @dragover.prevent />
 	<router-view class="main" @drop.prevent="droppedFiles" @dragover.prevent v-slot="{ Component, route }">
 		<transition :name="route.meta.mainTransitionName" mode="out-in">
-			<component :is="Component" :key="$route.path.split('/').slice(0,3).join('')"/>
+			<component :is="Component" :key="$route.path.split('/').slice(0,3).join('')" />
 		</transition>
 	</router-view>
 </template>
@@ -24,8 +24,9 @@ export default {
 			const routes = router.options.routes
 			const toIndex = routes.findIndex(el => el.path === to.path)
 			const fromIndex = routes.findIndex(el => el.path === from.path)
-			if (toIndex === fromIndex) { to.meta.mainTransitionName = 
-				to.params.walletId < from.params.walletId ? 'slide-down' : 'slide-up' 
+			if (toIndex === fromIndex) {
+				to.meta.mainTransitionName =
+				to.params.walletId < from.params.walletId ? 'slide-down' : 'slide-up'
 			}
 			else { to.meta.mainTransitionName = toIndex < fromIndex ? 'slide-down' : 'slide-up' }
 		})
