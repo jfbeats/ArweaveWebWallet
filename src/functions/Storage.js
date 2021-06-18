@@ -11,5 +11,4 @@ function saveWallets (wallets) {
 	localStorage.setItem('wallets', wallets)
 }
 
-
 export { loadWallets, saveWallets }

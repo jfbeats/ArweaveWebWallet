@@ -13,6 +13,7 @@
 import Toolbar from '@/components/Toolbar'
 import { newWallet } from '@/functions/Wallets.js'
 import { useRouter } from 'vue-router'
+import ArweaveStore from './store/ArweaveStore'
 
 export default {
 	components: {
@@ -24,9 +25,11 @@ export default {
 			const routes = router.options.routes
 			const toIndex = routes.findIndex(el => el.path === to.path)
 			const fromIndex = routes.findIndex(el => el.path === from.path)
-			if (toIndex === fromIndex) {
+			if (toIndex === fromIndex && to.params.walletId && from.params.walletId) {
+				const toWalletIndex = ArweaveStore.wallets.findIndex(el => el.id == to.params.walletId)
+				const fromWalletIndex = ArweaveStore.wallets.findIndex(el => el.id == from.params.walletId)
 				to.meta.mainTransitionName =
-				to.params.walletId < from.params.walletId ? 'slide-down' : 'slide-up'
+					toWalletIndex < fromWalletIndex ? 'slide-down' : 'slide-up'
 			}
 			else { to.meta.mainTransitionName = toIndex < fromIndex ? 'slide-down' : 'slide-up' }
 		})

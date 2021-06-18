@@ -6,7 +6,7 @@
 				<TxCard v-for="tx in txs" :key="tx.id" class="tx" :tx="tx" />
 			</div>
 		</transition>
-		<div ref="bottom" v-show="!loading && !completedQuery"></div>
+		<div ref="bottom" class="bottom" v-show="!loading && !completedQuery"></div>
 	</div>
 </template>
 
@@ -32,7 +32,7 @@ export default {
 			console.log('Queried', selectedQuery.value)
 			loading.value = true
 			await ArweaveStore.fetchTransactions(props.wallet, selectedQuery.value)
-			setTimeout(() => loading.value = false, 1000)
+			setTimeout(() => loading.value = false, 500)
 		}
 		watch(() => route.query, () => {
 			loading.value = true
@@ -69,11 +69,19 @@ export default {
 	display: flex;
 	flex-direction: column;
 	gap: var(--spacing);
+	position: relative;
 }
 
 .tx {
 	padding: var(--spacing);
 	background: var(--background2);
 	border-radius: var(--border-radius);
+}
+
+.bottom {
+	position: absolute;
+	bottom: 0;
+	height: 200px;
+	width: 100%;
 }
 </style>
