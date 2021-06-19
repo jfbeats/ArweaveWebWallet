@@ -26,7 +26,7 @@ export default {
 		const route = useRoute()
 		const selectedQuery = computed(() => route.query.view || 'received')
 		const txs = computed(() => props.wallet?.queries[selectedQuery.value] || [])
-		const completedQuery = computed(() => props.wallet?.queriesStatus[selectedQuery.value]?.completed)
+		const completedQuery = computed(() => props.wallet?.queriesStatus?.[selectedQuery.value]?.completed)
 		const updateQuery = async () => {
 			if (loading.value) { return }
 			console.log('Queried', selectedQuery.value)

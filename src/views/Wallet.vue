@@ -1,5 +1,4 @@
 <template>
-	<div class="container">
 		<div v-if="wallet" class="wallet">
 			<div class="wallet-info">
 				<Balance :wallet="wallet" />
@@ -13,7 +12,6 @@
 				</transition>
 			</router-view>
 		</div>
-	</div>
 </template>
 
 <script>
@@ -61,7 +59,6 @@ export default {
 .wallet {
 	flex: 1 1 0;
 	min-width: 400px;
-	height: fit-content;
 	max-width: 1700px;
 	display: flex;
 	justify-content: center;

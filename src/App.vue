@@ -1,12 +1,10 @@
 <template>
-	<div class="app" :class="{ verticalLayout }">
-		<Toolbar class="toolbar" :class="{ verticalLayout }" @drop.prevent="droppedFiles" @dragover.prevent />
-		<router-view class="main" @drop.prevent="droppedFiles" @dragover.prevent v-slot="{ Component, route }">
-			<transition :name="route.meta.mainTransitionName" mode="out-in">
-				<component :is="Component" :key="$route.path.split('/').slice(0,3).join('')" />
-			</transition>
-		</router-view>
-	</div>
+	<Toolbar class="toolbar" :class="{ verticalLayout }" @drop.prevent="droppedFiles" @dragover.prevent />
+	<router-view class="main" @drop.prevent="droppedFiles" @dragover.prevent v-slot="{ Component, route }">
+		<transition :name="route.meta.mainTransitionName" mode="out-in">
+			<component :is="Component" :key="$route.path.split('/').slice(0,3).join('')" />
+		</transition>
+	</router-view>
 </template>
 
 
@@ -126,11 +124,6 @@ body {
 #app {
 	width: 100%;
 	height: 100%;
-}
-
-.app {
-	width: 100%;
-	height: 100%;
 	font-family: Avenir, Helvetica, Arial, sans-serif;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
@@ -141,7 +134,7 @@ body {
 	overflow: hidden;
 }
 
-.app.verticalLayout {
+#app.verticalLayout {
 	flex-direction: column;
 }
 
