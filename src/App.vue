@@ -24,20 +24,21 @@ export default {
 		Toolbar
 	},
 	setup () {
+		const verticalLayout = computed(() => InterfaceStore.breakpoints.verticalLayout)
 		const router = useRouter()
 		router.afterEach((to, from) => {
 			const routes = router.options.routes
-			const toIndex = routes.findIndex(el => el.path === to.path)
-			const fromIndex = routes.findIndex(el => el.path === from.path)
+			let toIndex = routes.findIndex(el => el.path === to.path)
+			let fromIndex = routes.findIndex(el => el.path === from.path)
 			if (toIndex === fromIndex && to.params.walletId && from.params.walletId) {
-				const toWalletIndex = ArweaveStore.wallets.findIndex(el => el.id == to.params.walletId)
-				const fromWalletIndex = ArweaveStore.wallets.findIndex(el => el.id == from.params.walletId)
-				to.meta.mainTransitionName =
-					toWalletIndex < fromWalletIndex ? 'slide-down' : 'slide-up'
+				toIndex = ArweaveStore.wallets.findIndex(el => el.id == to.params.walletId)
+				fromIndex = ArweaveStore.wallets.findIndex(el => el.id == from.params.walletId)
 			}
-			else { to.meta.mainTransitionName = toIndex < fromIndex ? 'slide-down' : 'slide-up' }
+			to.meta.mainTransitionName =
+				verticalLayout.value
+					? toIndex < fromIndex ? 'slide-right' : 'slide-left'
+					: toIndex < fromIndex ? 'slide-down' : 'slide-up'
 		})
-		const verticalLayout = computed(() => InterfaceStore.breakpoints.verticalLayout)
 		return { verticalLayout }
 	},
 	methods: {
