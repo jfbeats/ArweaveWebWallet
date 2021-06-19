@@ -2,35 +2,33 @@
 	<nav id="nav">
 		<SlickList class="wallets" :axis="axis" :lockAxis="axis" v-model:list="ArweaveStore.wallets" :pressDelay="200" helperClass="dragging">
 			<SlickItem v-for="(wallet, i) in ArweaveStore.wallets" :index="i" :key="wallet.key" draggable="false" class="drag-container">
-				<router-link class="icon wallet" :to="{name: navTo, params: { walletId: wallet.id}, query: { ...$route.query }}" :class="{'active': wallet.id == $route.params.walletId, 'axis-x': axis === 'x'}" draggable="false">
+				<router-link class="icon wallet" :to="{ name: navTo, params: { walletId: wallet.id }, query: { ...$route.query } }" :class="{ active: wallet.id == $route.params.walletId, verticalLayout }" draggable="false">
 					<AddressIcon class="profile" :address="wallet.key" draggable="false" />
 				</router-link>
 			</SlickItem>
 		</SlickList>
 		<div class="controls">
 			<div class="icon control" @click="createWallet()"><img class="small" src="@/assets/icons/add_box.svg"></div>
-			<router-link class="icon control" to="/settings"><img class="small" src="@/assets/icons/settings.svg"></router-link>
+			<router-link class="icon control" :class="{ verticalLayout }" to="/settings"><img class="small" src="@/assets/icons/settings.svg"></router-link>
 		</div>
 	</nav>
 </template>
 
 <script>
 import AddressIcon from '@/components/atomic/AddressIcon'
-import { SlickList, SlickItem } from 'vue-slicksort';
+import { SlickList, SlickItem } from 'vue-slicksort'
 import ArweaveStore from '@/store/ArweaveStore'
+import InterfaceStore from '@/store/InterfaceStore'
 import { newWallet } from '@/functions/Wallets.js'
-import { computed, onMounted, onUnmounted, ref } from "vue"
+import { computed } from 'vue'
 
 export default {
 	name: 'Toolbar',
 	components: { AddressIcon, SlickList, SlickItem },
 	setup () {
-		let windowWidth = ref(window.innerWidth)
-		const onWidthChange = () => windowWidth.value = window.innerWidth
-		onMounted(() => window.addEventListener('resize', onWidthChange))
-		onUnmounted(() => window.removeEventListener('resize', onWidthChange))
-		const axis = computed(() => windowWidth.value <= 600 ? 'x' : 'y')
-		return { ArweaveStore, axis }
+		const verticalLayout = computed(() => InterfaceStore.breakpoints.verticalLayout)
+		const axis = computed(() => InterfaceStore.breakpoints.verticalLayout ? 'x' : 'y')
+		return { ArweaveStore, verticalLayout, axis }
 	},
 	methods: {
 		async createWallet () {
@@ -82,7 +80,7 @@ export default {
 	transform: translateX(calc(100% + var(--spacing)));
 }
 
-.dragging .wallet.axis-x {
+.dragging .wallet.verticalLayout {
 	transform: translateY(calc(100% + var(--spacing)));
 }
 
@@ -131,10 +129,8 @@ export default {
 	opacity: 1;
 }
 
-@media only screen and (max-width: 600px) {
-	.control.router-link-active,
-	.wallet.active.router-link-active {
-		box-shadow: 0 -2px 0 0 var(--element-secondary);
-	}
+.control.router-link-active.verticalLayout,
+.wallet.active.router-link-active.verticalLayout {
+	box-shadow: 0 -2px 0 0 var(--element-secondary);
 }
 </style>

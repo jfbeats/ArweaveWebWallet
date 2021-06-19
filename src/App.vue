@@ -1,19 +1,23 @@
 <template>
-	<Toolbar class="toolbar" @drop.prevent="droppedFiles" @dragover.prevent />
-	<router-view class="main" @drop.prevent="droppedFiles" @dragover.prevent v-slot="{ Component, route }">
-		<transition :name="route.meta.mainTransitionName" mode="out-in">
-			<component :is="Component" :key="$route.path.split('/').slice(0,3).join('')" />
-		</transition>
-	</router-view>
+	<div class="app" :class="{ verticalLayout }">
+		<Toolbar class="toolbar" :class="{ verticalLayout }" @drop.prevent="droppedFiles" @dragover.prevent />
+		<router-view class="main" @drop.prevent="droppedFiles" @dragover.prevent v-slot="{ Component, route }">
+			<transition :name="route.meta.mainTransitionName" mode="out-in">
+				<component :is="Component" :key="$route.path.split('/').slice(0,3).join('')" />
+			</transition>
+		</router-view>
+	</div>
 </template>
 
 
 
 <script>
 import Toolbar from '@/components/Toolbar'
+import ArweaveStore from './store/ArweaveStore'
+import InterfaceStore from '@/store/InterfaceStore'
 import { newWallet } from '@/functions/Wallets.js'
 import { useRouter } from 'vue-router'
-import ArweaveStore from './store/ArweaveStore'
+import { computed } from '@vue/runtime-core'
 
 export default {
 	components: {
@@ -33,6 +37,8 @@ export default {
 			}
 			else { to.meta.mainTransitionName = toIndex < fromIndex ? 'slide-down' : 'slide-up' }
 		})
+		const verticalLayout = computed(() => InterfaceStore.breakpoints.verticalLayout)
+		return { verticalLayout }
 	},
 	methods: {
 		async droppedFiles (e) {
@@ -65,10 +71,8 @@ export default {
 	background: var(--background);
 }
 
-@media only screen and (max-width: 600px) {
-	.toolbar {
-		flex-direction: row;
-	}
+.toolbar.verticalLayout {
+	flex-direction: row;
 }
 
 .toolbar::-webkit-scrollbar {
@@ -121,6 +125,11 @@ body {
 #app {
 	width: 100%;
 	height: 100%;
+}
+
+.app {
+	width: 100%;
+	height: 100%;
 	font-family: Avenir, Helvetica, Arial, sans-serif;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
@@ -131,10 +140,8 @@ body {
 	overflow: hidden;
 }
 
-@media only screen and (max-width: 600px) {
-	#app {
-		flex-direction: column;
-	}
+.app.verticalLayout {
+	flex-direction: column;
 }
 
 *,
