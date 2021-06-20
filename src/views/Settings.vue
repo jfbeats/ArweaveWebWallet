@@ -27,6 +27,7 @@ export default {
 .settings {
 	padding: 32px;
 	background: var(--background2);
+	min-height: 100vh;
 	/* box-shadow: 0 0 32px 0 #00000033; */
 }
 

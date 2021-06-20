@@ -1,6 +1,6 @@
 <template>
 	<Toolbar class="toolbar" ref="toolbar" :class="{ verticalLayout }" @drop.prevent="droppedFiles" @dragover.prevent />
-	<router-view :style="marginObject" class="main" @drop.prevent="droppedFiles" @dragover.prevent v-slot="{ Component, route }">
+	<router-view :style="marginObject" @drop.prevent="droppedFiles" @dragover.prevent v-slot="{ Component, route }">
 		<transition :name="route.meta.mainTransitionName" mode="out-in">
 			<component :is="Component" :key="$route.path.split('/').slice(0,3).join('')" />
 		</transition>
@@ -95,10 +95,6 @@ export default {
 
 .toolbar::-webkit-scrollbar {
 	display: none;
-}
-
-.main {
-	min-height: 100vh;
 }
 </style>
 
