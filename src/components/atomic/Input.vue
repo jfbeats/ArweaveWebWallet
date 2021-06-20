@@ -15,7 +15,6 @@ export default {
 .input {
 	display: flex;
 	border-radius: 4px;
-	/* height: 3em; */
 	padding: 4px;
 	align-items: center;
 	justify-content: center;
@@ -38,7 +37,7 @@ export default {
 	outline: none;
 	border: none;
 	flex: 1 1 auto;
-	height: 100%;
+	height: 2em;
 	background-color: transparent;
 	color: var(--element-secondary);
 }

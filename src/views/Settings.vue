@@ -26,7 +26,7 @@ export default {
 <style scoped>
 .settings {
 	padding: 32px;
-	/* background: var(--background2); */
+	background: var(--background2);
 	/* box-shadow: 0 0 32px 0 #00000033; */
 }
 

@@ -16,5 +16,6 @@ export default {
 .send {
 	padding: var(--spacing);
 	background: var(--background2);
+	border-radius: var(--border-radius);
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
 	<Toolbar class="toolbar" ref="toolbar" :class="{ verticalLayout }" @drop.prevent="droppedFiles" @dragover.prevent />
-	<router-view class="main" :style="marginObject" @drop.prevent="droppedFiles" @dragover.prevent v-slot="{ Component, route }">
+	<router-view :style="marginObject" @drop.prevent="droppedFiles" @dragover.prevent v-slot="{ Component, route }">
 		<transition :name="route.meta.mainTransitionName" mode="out-in">
 			<component :is="Component" :key="$route.path.split('/').slice(0,3).join('')" />
 		</transition>
@@ -97,11 +97,6 @@ export default {
 .toolbar::-webkit-scrollbar {
 	display: none;
 }
-
-.main {
-	overflow: hidden auto;
-	overflow: hidden overlay;
-}
 </style>
 
 
@@ -126,9 +121,8 @@ html {
 
 body {
 	margin: 0;
+	padding: 0;
 	min-height: 100vh;
-	width: 100%;
-	height: 100%;
 	line-height: 2;
 	background: url("~@/assets/background.svg");
 	background-repeat: no-repeat;
@@ -138,19 +132,11 @@ body {
 }
 
 #app {
-	width: 100%;
-	min-height: 100%;
 	font-family: Avenir, Helvetica, Arial, sans-serif;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	color: #eee;
-	margin: 0;
-	padding: 0;
 	overflow: hidden;
-}
-
-#app.verticalLayout {
-	flex-direction: column;
 }
 
 *,
