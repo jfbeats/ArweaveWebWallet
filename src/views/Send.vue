@@ -1,14 +1,20 @@
 <template>
-	<div>
-		Send
+	<div class="send">
+		<Input />
 	</div>
 </template>
 
 <script>
-export default {
+import Input from '@/components/atomic/Input.vue'
 
+export default {
+	components: { Input },
 }
 </script>
 
 <style scoped>
+.send {
+	padding: var(--spacing);
+	background: var(--background2);
+}
 </style>

@@ -1,17 +1,17 @@
 <template>
-		<div v-if="wallet" class="wallet">
-			<div class="wallet-info">
-				<Balance :wallet="wallet" />
-				<div class="actions">
-					<Action v-for="action in actions" :key="action.name" :to="{name: action.name, query: {...$route.query}}" :img="action.img">{{ action.text }}</Action>
-				</div>
+	<div v-if="wallet" class="wallet">
+		<div class="wallet-info">
+			<Balance :wallet="wallet" />
+			<div class="actions">
+				<Action v-for="action in actions" :key="action.name" :to="{name: action.name, query: {...$route.query}}" :img="action.img">{{ action.text }}</Action>
 			</div>
-			<router-view class="wallet-view" v-slot="{ Component, route }">
-				<transition :name="route.meta.subTransitionName" mode="out-in">
-					<component :is="Component" />
-				</transition>
-			</router-view>
 		</div>
+		<router-view class="wallet-view" v-slot="{ Component, route }">
+			<transition :name="route.meta.subTransitionName" mode="out-in">
+				<component :is="Component" />
+			</transition>
+		</router-view>
+	</div>
 </template>
 
 <script>
