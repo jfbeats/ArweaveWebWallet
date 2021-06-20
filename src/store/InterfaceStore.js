@@ -8,7 +8,10 @@ const InterfaceStore = reactive({
 
 const updateWindowState = () => {
 	InterfaceStore.windowWidth = window.innerWidth
-	InterfaceStore.breakpoints = { verticalLayout: InterfaceStore.windowWidth < 600 }
+	InterfaceStore.breakpoints = { 
+		verticalLayout: InterfaceStore.windowWidth < 600,
+		verticalContent: InterfaceStore.windowWidth < 1100
+	}
 }
 
 updateWindowState()

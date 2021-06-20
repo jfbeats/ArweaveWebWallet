@@ -1,6 +1,6 @@
 <template>
-	<Toolbar class="toolbar" :class="{ verticalLayout }" @drop.prevent="droppedFiles" @dragover.prevent />
-	<router-view class="main" @drop.prevent="droppedFiles" @dragover.prevent v-slot="{ Component, route }">
+	<Toolbar class="toolbar" ref="toolbar" :class="{ verticalLayout }" @drop.prevent="droppedFiles" @dragover.prevent />
+	<router-view class="main" :style="marginObject" @drop.prevent="droppedFiles" @dragover.prevent v-slot="{ Component, route }">
 		<transition :name="route.meta.mainTransitionName" mode="out-in">
 			<component :is="Component" :key="$route.path.split('/').slice(0,3).join('')" />
 		</transition>
@@ -15,13 +15,24 @@ import ArweaveStore from './store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { newWallet } from '@/functions/Wallets.js'
 import { useRouter } from 'vue-router'
-import { computed } from '@vue/runtime-core'
+import { computed, ref, onMounted, onBeforeUnmount, reactive } from '@vue/runtime-core'
 
 export default {
 	components: {
 		Toolbar
 	},
 	setup () {
+		const toolbar = ref(null)
+		const marginObject = reactive({ marginLeft: null, marginTop: null })
+		const observer = new ResizeObserver((entries) => {
+			const el = entries[0].target
+			console.log(entries[0])
+			marginObject.marginLeft = verticalLayout.value ? '0' : el.offsetWidth + 'px'
+			marginObject.marginTop = verticalLayout.value ? el.offsetHeight + 'px' : '0'
+		})
+		onMounted(() => { observer.observe(toolbar.value.$el) })
+		onBeforeUnmount(() => { observer.unobserve(toolbar.value.$el) })
+
 		const verticalLayout = computed(() => InterfaceStore.breakpoints.verticalLayout)
 		const router = useRouter()
 		router.afterEach((to, from) => {
@@ -37,7 +48,7 @@ export default {
 					? toIndex < fromIndex ? 'slide-right' : 'slide-left'
 					: toIndex < fromIndex ? 'slide-down' : 'slide-up'
 		})
-		return { verticalLayout }
+		return { toolbar, marginObject, verticalLayout }
 	},
 	methods: {
 		async droppedFiles (e) {
@@ -68,6 +79,15 @@ export default {
 	scrollbar-width: none;
 	z-index: 1;
 	background: var(--background);
+
+	height: 100%;
+	width: auto;
+	position: fixed;
+}
+
+.toolbar.verticalLayout {
+	height: auto;
+	width: 100%;
 }
 
 .toolbar.verticalLayout {
@@ -79,7 +99,6 @@ export default {
 }
 
 .main {
-	flex: 1 1 auto;
 	overflow: hidden auto;
 	overflow: hidden overlay;
 }
@@ -90,8 +109,6 @@ export default {
 <style>
 html {
 	box-sizing: border-box;
-	width: 100%;
-	height: 100%;
 	background: #0f0f0f;
 
 	--spacing: 24px;
@@ -109,7 +126,6 @@ html {
 
 body {
 	margin: 0;
-	background: var(--background);
 	min-height: 100vh;
 	width: 100%;
 	height: 100%;
@@ -123,14 +139,13 @@ body {
 
 #app {
 	width: 100%;
-	height: 100%;
+	min-height: 100%;
 	font-family: Avenir, Helvetica, Arial, sans-serif;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	color: #eee;
 	margin: 0;
 	padding: 0;
-	display: flex;
 	overflow: hidden;
 }
 

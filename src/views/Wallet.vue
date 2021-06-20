@@ -57,7 +57,6 @@ export default {
 }
 
 .wallet {
-	flex: 1 1 0;
 	min-width: 400px;
 	max-width: 1700px;
 	display: flex;
