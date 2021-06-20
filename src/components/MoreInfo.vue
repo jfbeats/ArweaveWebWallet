@@ -1,4 +1,5 @@
 <template>
+	<div class="placeholder"></div>
 	<div class="wrapper" @click="expand=!expand" :class="{expand: expand}">
 		<div class="header">
 			<slot name="icon"></slot>
@@ -20,7 +21,12 @@ export default {
 </script>
 
 <style scoped>
+.placeholder {
+	width: 48px;
+}
+
 .wrapper {
+	position: absolute;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -34,6 +40,12 @@ export default {
 	overflow-y: auto;
 	overflow-y: overlay;
 	overflow-x: hidden;
+	z-index: 1;
+	box-shadow: 0 0 0 1px transparent;
+}
+
+.wrapper:hover {
+	box-shadow: 0 0 0 1px var(--border);
 }
 
 .wrapper::-webkit-scrollbar {
@@ -58,6 +70,8 @@ export default {
 	width: 100%;
 	height: 50vh;
 	max-height: 500px;
+	z-index: 2;
+	box-shadow: 0 0 0 1px var(--border);
 }
 
 .wrapper.expand .header {

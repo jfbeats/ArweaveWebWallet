@@ -20,6 +20,12 @@ export default {
 	cursor: pointer;
 	color: inherit;
 	text-decoration: none;
+	box-shadow: 0 0 0 -8px #ffffff00;
+	transition: 0.2s ease;
+}
+
+.action.router-link-active {
+	box-shadow: -6px 0 0 -4px var(--element-secondary);
 }
 
 .text {

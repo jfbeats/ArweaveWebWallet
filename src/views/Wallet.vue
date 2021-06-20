@@ -85,7 +85,6 @@ export default {
 .action {
 	padding: var(--spacing);
 	border-radius: var(--border-radius);
-	transition: 0.1s ease;
 }
 
 .action:hover {

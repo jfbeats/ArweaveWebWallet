@@ -30,7 +30,7 @@
 				<div class="margin"></div>
 			</div>
 
-			<MoreInfo v-if="relativeAddress" :key="relativeAddress" class="no-select">
+			<MoreInfo v-if="relativeAddress" :key="relativeAddress">
 				<template v-slot:icon>
 					<AddressIcon :address="relativeAddress" />
 				</template>
@@ -133,13 +133,13 @@ export default {
 	justify-content: flex-end;
 	align-items: center;
 	min-width: 0;
-	overflow: hidden;
+	/* overflow: hidden; */
+	position: relative;
 }
 
 .right-content {
 	flex: 1 1 0;
 	min-width: 0;
-	/* display: flex; */
 	justify-content: flex-end;
 	display: flex;
 }
