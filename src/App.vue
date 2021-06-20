@@ -1,6 +1,6 @@
 <template>
 	<Toolbar class="toolbar" ref="toolbar" :class="{ verticalLayout }" @drop.prevent="droppedFiles" @dragover.prevent />
-	<router-view :style="marginObject" @drop.prevent="droppedFiles" @dragover.prevent v-slot="{ Component, route }">
+	<router-view :style="marginObject" class="main" @drop.prevent="droppedFiles" @dragover.prevent v-slot="{ Component, route }">
 		<transition :name="route.meta.mainTransitionName" mode="out-in">
 			<component :is="Component" :key="$route.path.split('/').slice(0,3).join('')" />
 		</transition>
@@ -23,12 +23,11 @@ export default {
 	},
 	setup () {
 		const toolbar = ref(null)
-		const marginObject = reactive({ marginLeft: null, marginTop: null })
+		const marginObject = reactive({ borderLeft: null, borderTop: null })
 		const observer = new ResizeObserver((entries) => {
 			const el = entries[0].target
-			console.log(entries[0])
-			marginObject.marginLeft = verticalLayout.value ? '0' : el.offsetWidth + 'px'
-			marginObject.marginTop = verticalLayout.value ? el.offsetHeight + 'px' : '0'
+			marginObject.borderLeft = (verticalLayout.value ? '0' : el.offsetWidth + 'px') + ' solid transparent'
+			marginObject.borderTop = (verticalLayout.value ? el.offsetHeight + 'px' : '0') + ' solid transparent'
 		})
 		onMounted(() => { observer.observe(toolbar.value.$el) })
 		onBeforeUnmount(() => { observer.unobserve(toolbar.value.$el) })
@@ -96,6 +95,10 @@ export default {
 
 .toolbar::-webkit-scrollbar {
 	display: none;
+}
+
+.main {
+	min-height: 100vh;
 }
 </style>
 
