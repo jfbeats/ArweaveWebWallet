@@ -1,5 +1,4 @@
 <template>
-	<div class="placeholder"></div>
 	<div class="wrapper" @click="expand=!expand" :class="{expand: expand}">
 		<div class="header">
 			<slot name="icon"></slot>
@@ -21,12 +20,7 @@ export default {
 </script>
 
 <style scoped>
-.placeholder {
-	width: 48px;
-}
-
 .wrapper {
-	position: absolute;
 	display: flex;
 	flex-direction: column;
 	align-items: center;

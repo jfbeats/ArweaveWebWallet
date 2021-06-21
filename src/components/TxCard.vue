@@ -2,7 +2,7 @@
 	<div class="tx-card">
 		<div class="left">
 
-			<TxIcon class="tx-icon" :direction="direction" :isValue="isValue" :isData="isData" />
+			<TxIcon class="tx-icon" :direction="direction" :isValue="isValue" :isData="isData" :isLoading="isLoading" />
 
 			<div>
 				<div v-if="isValue">
@@ -58,11 +58,11 @@ export default {
 	props: ['tx'],
 	computed: {
 		date () {
-			if (!this.tx.node.block) { return 'pending' }
+			if (this.isLoading) { return 'pending' }
 			return new Date(this.tx.node.block.timestamp * 1000).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
 		},
 		time () {
-			if (!this.tx.node.block) { return '' }
+			if (this.isLoading) { return '' }
 			return new Date(this.tx.node.block.timestamp * 1000).toLocaleTimeString()
 		},
 		direction () {
@@ -74,6 +74,7 @@ export default {
 		},
 		isData () { return this.tx.node.data.size !== "0" },
 		isValue () { return this.tx.node.quantity.winston !== "0" },
+		isLoading () { return !this.tx.node.block },
 		relativeAddress () {
 			if (this.direction === 'in') { return this.tx.node.owner.address }
 			if (this.direction === 'out') { return this.tx.node.recipient }
@@ -164,7 +165,6 @@ export default {
 .tx-icon {
 	width: 48px;
 	height: 48px;
-	padding: 8px;
 	border-radius: var(--border-radius2);
 	/* background: var(--background); */
 	flex: 0 0 auto;
