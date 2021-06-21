@@ -35,11 +35,6 @@ export default {
 	overflow-y: overlay;
 	overflow-x: hidden;
 	z-index: 1;
-	box-shadow: 0 0 0 1px transparent;
-}
-
-.wrapper:hover {
-	box-shadow: 0 0 0 1px var(--border);
 }
 
 .wrapper::-webkit-scrollbar {
@@ -65,11 +60,9 @@ export default {
 	height: 50vh;
 	max-height: 500px;
 	z-index: 2;
-	box-shadow: 0 0 0 1px var(--border);
 }
 
 .wrapper.expand .header {
-	/* padding: 48px 0; */
 	height: 35vh;
 	max-height: 300px;
 }
