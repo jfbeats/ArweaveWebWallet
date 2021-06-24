@@ -34,7 +34,6 @@ export default {
 	overflow-y: auto;
 	overflow-y: overlay;
 	overflow-x: hidden;
-	z-index: 1;
 }
 
 .wrapper::-webkit-scrollbar {
@@ -59,21 +58,10 @@ export default {
 	width: 100%;
 	height: 50vh;
 	max-height: 500px;
-	z-index: 2;
 }
 
 .wrapper.expand .header {
 	height: 35vh;
 	max-height: 300px;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-	transition: opacity 0.4s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-	opacity: 0;
 }
 </style>

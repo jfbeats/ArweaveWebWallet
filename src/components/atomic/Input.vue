@@ -22,6 +22,7 @@ export default {
 }
 
 .icon {
+	flex: 0 0 auto;
 	border-radius: inherit;
 	height: 3em;
 	width: 3em;
@@ -40,5 +41,6 @@ export default {
 	height: 2em;
 	background-color: transparent;
 	color: var(--element-secondary);
+	width: 100%;
 }
 </style>
