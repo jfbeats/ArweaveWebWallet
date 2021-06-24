@@ -1,6 +1,6 @@
 <template>
-	<Toolbar class="toolbar" ref="toolbar" :class="{ verticalLayout }" @drop.prevent="droppedFiles" @dragover.prevent />
-	<router-view :style="marginObject" @drop.prevent="droppedFiles" @dragover.prevent v-slot="{ Component, route }">
+	<Toolbar class="toolbar" :class="{ verticalLayout }" @drop.prevent="droppedFiles" @dragover.prevent />
+	<router-view class="router" @drop.prevent="droppedFiles" @dragover.prevent v-slot="{ Component, route }">
 		<transition :name="route.meta.mainTransitionName" mode="out-in">
 			<component :is="Component" :key="$route.path.split('/').slice(0,3).join('')" />
 		</transition>
@@ -15,7 +15,7 @@ import ArweaveStore from './store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { newWallet } from '@/functions/Wallets.js'
 import { useRouter } from 'vue-router'
-import { computed, ref, onMounted, onBeforeUnmount, reactive } from '@vue/runtime-core'
+import { computed, ref } from '@vue/runtime-core'
 
 export default {
 	components: {
@@ -23,15 +23,6 @@ export default {
 	},
 	setup () {
 		const toolbar = ref(null)
-		const marginObject = reactive({ borderLeft: null, borderTop: null })
-		const observer = new ResizeObserver((entries) => {
-			const el = entries[0].target
-			marginObject.borderLeft = (verticalLayout.value ? '0' : el.offsetWidth + 'px') + ' solid transparent'
-			marginObject.borderTop = (verticalLayout.value ? el.offsetHeight + 'px' : '0') + ' solid transparent'
-		})
-		onMounted(() => { observer.observe(toolbar.value.$el) })
-		onBeforeUnmount(() => { observer.unobserve(toolbar.value.$el) })
-
 		const verticalLayout = computed(() => InterfaceStore.breakpoints.verticalLayout)
 		const router = useRouter()
 		router.afterEach((to, from) => {
@@ -47,7 +38,7 @@ export default {
 					? toIndex < fromIndex ? 'slide-right' : 'slide-left'
 					: toIndex < fromIndex ? 'slide-down' : 'slide-up'
 		})
-		return { toolbar, marginObject, verticalLayout }
+		return { toolbar, verticalLayout }
 	},
 	methods: {
 		async droppedFiles (e) {
@@ -78,10 +69,8 @@ export default {
 	scrollbar-width: none;
 	z-index: 1;
 	background: var(--background);
-
 	height: 100%;
 	width: auto;
-	position: fixed;
 }
 
 .toolbar.verticalLayout {
@@ -96,12 +85,20 @@ export default {
 .toolbar::-webkit-scrollbar {
 	display: none;
 }
+
+.router {
+	width: 100%;
+	height: 100%;
+	overflow: auto;
+}
 </style>
 
 
 
 <style>
 html {
+	width: 100%;
+	height: 100%;
 	box-sizing: border-box;
 	background: #0f0f0f;
 
@@ -119,22 +116,28 @@ html {
 }
 
 body {
+	width: 100%;
+	height: 100%;
 	margin: 0;
 	padding: 0;
-	min-height: 100vh;
 	line-height: 2;
-	background: url("~@/assets/background.svg");
-	background-repeat: no-repeat;
-	background-attachment: fixed;
-	background-position: center;
-	background-size: cover;
 }
 
 #app {
+	width: 100%;
+	height: 100%;
 	font-family: Avenir, Helvetica, Arial, sans-serif;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	color: #eee;
+	overflow: hidden;
+	display: flex;
+	background: url("~@/assets/background.svg") no-repeat center center fixed;
+	background-size: cover;
+}
+
+#app.verticalLayout {
+	flex-direction: column;
 }
 
 *,
@@ -160,7 +163,6 @@ body {
 ::-webkit-scrollbar {
 	background-color: var(--background2);
 	color: #aaaaaa;
-	width: 8px;
 }
 
 ::-webkit-scrollbar-thumb {

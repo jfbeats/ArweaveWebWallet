@@ -1,16 +1,18 @@
 <template>
-	<div v-if="wallet" class="wallet">
-		<div class="wallet-info">
-			<Balance :wallet="wallet" />
-			<div class="actions">
-				<Action v-for="action in actions" :key="action.name" :to="{name: action.name, query: {...$route.query}}" :img="action.img">{{ action.text }}</Action>
+	<div class="container">
+		<div v-if="wallet" class="wallet">
+			<div class="wallet-info">
+				<Balance :wallet="wallet" />
+				<div class="actions">
+					<Action v-for="action in actions" :key="action.name" :to="{name: action.name, query: {...$route.query}}" :img="action.img">{{ action.text }}</Action>
+				</div>
 			</div>
+			<router-view class="wallet-view" v-slot="{ Component, route }">
+				<transition :name="route.meta.subTransitionName" mode="out-in">
+					<component :is="Component" />
+				</transition>
+			</router-view>
 		</div>
-		<router-view class="wallet-view" v-slot="{ Component, route }">
-			<transition :name="route.meta.subTransitionName" mode="out-in">
-				<component :is="Component" />
-			</transition>
-		</router-view>
 	</div>
 </template>
 
@@ -51,14 +53,8 @@ export default {
 </script>
 
 <style scoped>
-.container {
-	display: flex;
-	justify-content: center;
-}
-
 .wallet {
-	min-width: 400px;
-	max-width: 1700px;
+	max-width: 1500px;
 	display: flex;
 	justify-content: center;
 	align-items: flex-start;
@@ -68,12 +64,12 @@ export default {
 }
 
 .wallet-info {
-	flex: 1 1 400px;
+	flex: 1 1 auto;
 	min-width: 0;
 }
 
 .wallet-view {
-	flex: 1.5 1 500px;
+	flex: 2 1 500px;
 	min-width: 0;
 }
 
