@@ -25,7 +25,7 @@ export default {
 }
 
 .action.router-link-active {
-	box-shadow: -6px 0 0 -4px var(--element-secondary);
+	box-shadow: -5px 0 0 -3px var(--element-secondary);
 }
 
 .text {

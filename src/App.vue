@@ -66,11 +66,15 @@ export default {
 	outline: 1px solid var(--border);
 	overflow: auto;
 	overflow: overlay;
-	scrollbar-width: none;
 	z-index: 1;
 	background: var(--background);
 	height: 100%;
 	width: auto;
+	scrollbar-width: none;
+}
+
+.toolbar::-webkit-scrollbar {
+	display: none;
 }
 
 .toolbar.verticalLayout {
@@ -82,9 +86,6 @@ export default {
 	flex-direction: row;
 }
 
-.toolbar::-webkit-scrollbar {
-	display: none;
-}
 
 .router {
 	width: 100%;

@@ -124,13 +124,13 @@ export default {
 
 .control.router-link-active,
 .wallet.active.router-link-active {
-	box-shadow: -2px 0 0 0 var(--element-secondary);
+	box-shadow: -5px 0 0 -3px var(--element-secondary);
 	border-radius: var(--border-radius3);
 	opacity: 1;
 }
 
 .control.router-link-active.verticalLayout,
 .wallet.active.router-link-active.verticalLayout {
-	box-shadow: 0 -2px 0 0 var(--element-secondary);
+	box-shadow: 0 -5px 0 -3px var(--element-secondary);
 }
 </style>

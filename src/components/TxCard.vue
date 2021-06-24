@@ -1,5 +1,6 @@
 <template>
-	<div class="tx-card">
+<div class="tx-card">
+	<div class="tx-content">
 		<div class="left">
 
 			<TxIcon class="tx-icon" :direction="direction" :isValue="isValue" :isData="isData" :isLoading="isLoading" />
@@ -42,6 +43,7 @@
 
 		</div>
 	</div>
+</div>
 </template>
 
 <script>
@@ -116,6 +118,15 @@ export default {
 
 <style scoped>
 .tx-card {
+	overflow: auto;
+	scrollbar-width: none;
+}
+
+.tx-card::-webkit-scrollbar {
+	display: none;
+}
+
+.tx-content {
 	position: relative;
 	display: flex;
 	gap: var(--spacing);
@@ -130,11 +141,10 @@ export default {
 
 .right {
 	flex: 1 1 0;
+	min-width: 200px;
 	display: flex;
 	justify-content: flex-end;
 	align-items: center;
-	min-width: 0;
-	/* overflow: hidden; */
 	position: relative;
 }
 
