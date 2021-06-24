@@ -44,7 +44,7 @@ export default {
 
 <style scoped>
 #nav {
-	padding: 10px;
+	padding: 8px;
 	user-select: none;
 	justify-content: space-between;
 }
@@ -59,9 +59,9 @@ export default {
 }
 
 .icon {
-	padding: 10px;
-	width: 72px;
-	height: 72px;
+	padding: 8px;
+	width: 64px;
+	height: 64px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -113,13 +113,13 @@ export default {
 }
 
 .dragging .profile {
-	padding: 18px;
+	padding: 14px;
 	box-shadow: 0 0 12px 1px #00000044;
 }
 
 .small {
-	width: 50%;
-	height: 50%;
+	width: 24px;
+	height: 24px;
 }
 
 .control.router-link-active,
