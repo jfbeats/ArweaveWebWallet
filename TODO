@@ -6,7 +6,6 @@ Passphrase / KeyFile / Cloud
 Send | AR / NFT / PST
 Pending TX
 View TX data | NFT / PST
-Autocomplete local addrs
 
 ---Upload---
 NFT
@@ -31,7 +30,9 @@ Save to addrs book
 App
 	Gateway
 	Password
-	Currency
+	Lang, Currency
+	Settings cloud sync wallet
+	Permissions
 Wallet
 	Profile
 	Export
@@ -49,3 +50,4 @@ History | Take current balance and backtrack
 Multisig
 QR | Address / Payment
 Sign and check message
+Money request

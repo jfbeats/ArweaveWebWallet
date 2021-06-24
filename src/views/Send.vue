@@ -1,6 +1,9 @@
 <template>
 	<div class="send">
-		<Input />
+		<!-- to -> (what, amount), data? -->
+		<!-- fees -->
+		<!-- Autocomplete local addrs -->
+		<Input icon="arweaveLogo.svg" />
 	</div>
 </template>
 

@@ -1,12 +1,14 @@
 <template>
 	<div class="input">
-		<img class="icon" src="arweaveLogo.svg">
-		<input class="text" placeholder="">
+		<img class="icon" :src="icon">
+		<input class="text" :placeholder="placeholder">
+		<!-- QR -->
 	</div>
 </template>
 
 <script>
 export default {
+	props: ['icon', 'placeholder']
 
 }
 </script>

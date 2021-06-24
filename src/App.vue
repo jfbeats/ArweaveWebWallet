@@ -15,14 +15,13 @@ import ArweaveStore from './store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { newWallet } from '@/functions/Wallets.js'
 import { useRouter } from 'vue-router'
-import { computed, ref } from '@vue/runtime-core'
+import { computed } from 'vue'
 
 export default {
 	components: {
 		Toolbar
 	},
 	setup () {
-		const toolbar = ref(null)
 		const verticalLayout = computed(() => InterfaceStore.breakpoints.verticalLayout)
 		const router = useRouter()
 		router.afterEach((to, from) => {
@@ -38,7 +37,7 @@ export default {
 					? toIndex < fromIndex ? 'slide-right' : 'slide-left'
 					: toIndex < fromIndex ? 'slide-down' : 'slide-up'
 		})
-		return { toolbar, verticalLayout }
+		return { verticalLayout }
 	},
 	methods: {
 		async droppedFiles (e) {

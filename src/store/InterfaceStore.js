@@ -3,15 +3,16 @@ import { reactive, watch } from 'vue'
 const InterfaceStore = reactive({
 	windowWidth: window.innerWidth,
 	windowVisible: !document.hidden,
-	breakpoints: {},
+	breakpoints: {
+		verticalLayout: false,
+		verticalContent: false,
+	},
 })
 
 const updateWindowState = () => {
 	InterfaceStore.windowWidth = window.innerWidth
-	InterfaceStore.breakpoints = { 
-		verticalLayout: InterfaceStore.windowWidth < 600,
-		verticalContent: InterfaceStore.windowWidth < 1100
-	}
+	InterfaceStore.breakpoints.verticalLayout = InterfaceStore.windowWidth < 600
+	InterfaceStore.breakpoints.verticalContent = InterfaceStore.windowWidth < 1100
 }
 
 updateWindowState()

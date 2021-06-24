@@ -1,49 +1,49 @@
 <template>
-<div class="tx-card">
-	<div class="tx-content">
-		<div class="left">
+	<div class="tx-card">
+		<div class="tx-content" :class="{ verticalContent }">
+			<div class="left">
 
-			<TxIcon class="tx-icon" :direction="direction" :isValue="isValue" :isData="isData" :isLoading="isLoading" />
+				<TxIcon class="tx-icon" :direction="direction" :isValue="isValue" :isData="isData" :isLoading="isLoading" />
 
-			<div>
-				<div v-if="isValue">
-					<Ar class="ar" :ar="value" />&nbsp;&nbsp;<LocaleCurrency class="small" :ar="value">|</LocaleCurrency>
-				</div>
-				<div v-else>
-					{{ dataType || 'Data' }}
-				</div>
-				<div class="small">
-					{{ context }}
-				</div>
-			</div>
-
-		</div>
-		<div class="right">
-
-			<div class="right-content">
-				<div class="right-text">
-					<Address v-if="relativeAddress" class="address" :address="relativeAddress" />
-					<div v-else class="ellipsis">
-						<Ar :ar="tx.node.fee.ar" />&nbsp;&nbsp;<LocaleCurrency class="small" :ar="tx.node.fee.ar">|</LocaleCurrency>
+				<div>
+					<div v-if="isValue">
+						<Ar class="ar" :ar="value" />&nbsp;&nbsp;<LocaleCurrency class="small" :ar="value">|</LocaleCurrency>
 					</div>
-					<div class="small ellipsis">{{ date + ' ' + time }}</div>
+					<div v-else>
+						{{ dataType || 'Data' }}
+					</div>
+					<div class="small">
+						{{ context }}
+					</div>
 				</div>
-				<div class="margin"></div>
+
 			</div>
+			<div class="right">
 
-			<MoreInfo v-if="relativeAddress" :key="relativeAddress">
-				<template v-slot:icon>
-					<AddressIcon :address="relativeAddress" />
-				</template>
-				<template v-slot:content>
-					<div>Info here</div>
-				</template>
-			</MoreInfo>
-			<span v-else class="cloud"><img class="file-type no-select" src="@/assets/icons/cloud.svg" draggable="false"></span>
+				<div class="right-content">
+					<div class="right-text">
+						<Address v-if="relativeAddress" class="address" :address="relativeAddress" />
+						<div v-else class="ellipsis">
+							<Ar :ar="tx.node.fee.ar" />&nbsp;&nbsp;<LocaleCurrency class="small" :ar="tx.node.fee.ar">|</LocaleCurrency>
+						</div>
+						<div class="small ellipsis">{{ date + ' ' + time }}</div>
+					</div>
+					<div class="margin"></div>
+				</div>
 
+				<MoreInfo v-if="relativeAddress" :key="relativeAddress">
+					<template v-slot:icon>
+						<AddressIcon :address="relativeAddress" />
+					</template>
+					<template v-slot:content>
+						<div>Info here</div>
+					</template>
+				</MoreInfo>
+				<span v-else class="cloud"><img class="file-type no-select" src="@/assets/icons/cloud.svg" draggable="false"></span>
+
+			</div>
 		</div>
 	</div>
-</div>
 </template>
 
 <script>
@@ -54,6 +54,7 @@ import AddressIcon from '@/components/atomic/AddressIcon'
 import LocaleCurrency from '@/components/atomic/LocaleCurrency'
 import MoreInfo from '@/components/MoreInfo'
 import ArweaveStore from '@/store/ArweaveStore'
+import InterfaceStore from '@/store/InterfaceStore'
 
 export default {
 	components: { Address, Ar, TxIcon, AddressIcon, LocaleCurrency, MoreInfo },
@@ -111,7 +112,8 @@ export default {
 			} else if (this.isData) {
 				return this.dataInfo || 'Data'
 			}
-		}
+		},
+		verticalContent () { return InterfaceStore.breakpoints.verticalLayout }
 	}
 }
 </script>
@@ -133,6 +135,10 @@ export default {
 	justify-content: space-between;
 }
 
+.tx-content.verticalContent {
+	flex-direction: column;
+}
+
 .left {
 	flex: 0 0 auto;
 	display: flex;
@@ -141,7 +147,7 @@ export default {
 
 .right {
 	flex: 1 1 0;
-	min-width: 200px;
+	min-width: 256px;
 	display: flex;
 	justify-content: flex-end;
 	align-items: center;
@@ -168,7 +174,7 @@ export default {
 }
 
 .address {
-	max-width: 200px;
+	max-width: 220px;
 	margin-left: auto;
 }
 
