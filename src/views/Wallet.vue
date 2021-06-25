@@ -35,7 +35,7 @@ export default {
 	setup () {
 		const actions = [
 			{ name: 'Send', img: require('@/assets/icons/north_east.svg'), text: 'Send' },
-			{ name: 'Tx', img: require('@/assets/icons/swap.svg'), text: 'Transactions' },
+			{ name: 'TxList', img: require('@/assets/icons/swap.svg'), text: 'Transactions' },
 			{ name: 'Tokens', img: require('@/assets/icons/cloud_circle.svg'), text: 'Tokens' },
 		]
 		const router = useRouter()

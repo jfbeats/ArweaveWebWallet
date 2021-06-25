@@ -37,7 +37,7 @@ export default {
 		},
 	},
 	computed: {
-		navTo () { return this.$route.matched[0]?.name === 'Wallet' ? null : 'Tx' }
+		navTo () { return this.$route.matched[0]?.name === 'Wallet' ? null : 'TxList' }
 	}
 }
 </script>

@@ -13,20 +13,23 @@ const routes = [
 		props: (route) => { return { wallet: ArweaveStore.getWalletById(route.params.walletId) } },
 		children: [
 			{
-				name: 'Tx',
-				path: 'tx',
+				name: 'TxList',
+				path: 'tx-list',
 				component: TxList,
 				props: (route) => { return { wallet: ArweaveStore.getWalletById(route.params.walletId) } },
+				meta: { title: 'Wallet Transactions' },
 			},
 			{
 				name: 'Send',
 				path: 'send',
 				component: Send,
+				meta: { title: 'Wallet Send' },
 			},
 			{
 				name: 'Tokens',
 				path: 'tokens',
 				component: Tokens,
+				meta: { title: 'Wallet Tokens' },
 			},
 		],
 		beforeEnter: (to, from) => {
@@ -38,23 +41,33 @@ const routes = [
 		},
 	},
 	{
+		name: 'Tx',
+		path: '/tx/:txId',
+		component: () => import('@/views/Tx.vue'),
+		props: (route) => { return { txId: route.params.txId } },
+		meta: { title: 'Arweave Transaction' },
+	},
+	{
 		path: '/edit',
 		name: 'EditWallet',
 		component: () => import('@/views/EditWallet.vue'),
+		meta: { title: 'Edit Wallets' },
 	},
 	{
 		path: '/settings',
 		name: 'Settings',
-		component: () => import('@/views/Settings.vue')
+		component: () => import('@/views/Settings.vue'),
+		meta: { title: 'Settings' },
 	},
 	{
 		path: '/welcome',
 		name: 'Welcome',
-		component: () => import('@/views/Welcome.vue')
+		component: () => import('@/views/Welcome.vue'),
+		meta: { title: 'Welcome to the weave' },
 	},
 	{
 		path: '/:pathMatch(.*)*',
-		redirect: { name: 'Tx', params: { walletId: ArweaveStore.wallets[0].id } }
+		redirect: { name: 'TxList', params: { walletId: ArweaveStore.wallets[0].id } }
 	},
 ]
 

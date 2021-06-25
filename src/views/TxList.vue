@@ -3,7 +3,7 @@
 		<Tabs query="view" :tabs="tabs" />
 		<transition :name="transitionName" mode="out-in">
 			<div class="list" :key="selectedQuery">
-				<TxCard v-for="tx in txs" :key="tx.id" class="tx-card" :tx="tx" />
+				<TxCard v-for="tx in txs" :key="tx.node.id" class="tx-card" :tx="tx.node" />
 			</div>
 		</transition>
 		<div ref="bottom" class="bottom" v-show="!loading && !completedQuery"></div>

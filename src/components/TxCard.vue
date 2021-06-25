@@ -25,7 +25,7 @@
 					<div class="right-text">
 						<Address v-if="relativeAddress" class="address" :address="relativeAddress" />
 						<div v-else class="ellipsis">
-							<Ar :ar="tx.node.fee.ar" />&nbsp;&nbsp;<LocaleCurrency class="small" :ar="tx.node.fee.ar">|</LocaleCurrency>
+							<Ar :ar="tx.fee.ar" />&nbsp;&nbsp;<LocaleCurrency class="small" :ar="tx.fee.ar">|</LocaleCurrency>
 						</div>
 						<div class="small ellipsis">{{ date + ' ' + time }}</div>
 					</div>
@@ -63,45 +63,45 @@ export default {
 	computed: {
 		date () {
 			if (this.isLoading) { return 'pending' }
-			return new Date(this.tx.node.block.timestamp * 1000).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+			return new Date(this.tx.block.timestamp * 1000).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
 		},
 		time () {
 			if (this.isLoading) { return '' }
-			return new Date(this.tx.node.block.timestamp * 1000).toLocaleTimeString()
+			return new Date(this.tx.block.timestamp * 1000).toLocaleTimeString()
 		},
 		direction () {
 			if (!ArweaveStore.currentWallet) { return null }
 			const currentAddress = ArweaveStore.currentWallet.key
-			if (currentAddress === this.tx.node.recipient) { return 'in' }
-			else if (currentAddress === this.tx.node.owner.address) { return 'out' }
+			if (currentAddress === this.tx.recipient) { return 'in' }
+			else if (currentAddress === this.tx.owner.address) { return 'out' }
 			return null
 		},
-		isData () { return this.tx.node.data.size !== "0" },
-		isValue () { return this.tx.node.quantity.winston !== "0" },
-		isLoading () { return !this.tx.node.block },
+		isData () { return this.tx.data.size !== "0" },
+		isValue () { return this.tx.quantity.winston !== "0" },
+		isLoading () { return !this.tx.block },
 		relativeAddress () {
-			if (this.direction === 'in') { return this.tx.node.owner.address }
-			if (this.direction === 'out') { return this.tx.node.recipient }
+			if (this.direction === 'in') { return this.tx.owner.address }
+			if (this.direction === 'out') { return this.tx.recipient }
 			return null
 		},
 		value () {
-			// return this.tx.node.fee.ar
-			return this.tx.node.quantity.ar
+			// return this.tx.fee.ar
+			return this.tx.quantity.ar
 		},
 		dataType () {
-			const type = this.tx.node.data.type
+			const type = this.tx.data.type
 			if (type) {
 				return type.split('/').join(' ')
 			}
 		},
 		dataInfo () {
-			for (const tag of this.tx.node.tags) {
+			for (const tag of this.tx.tags) {
 				if (tag.name == 'Service') { return tag.value }
 			}
-			for (const tag of this.tx.node.tags) {
+			for (const tag of this.tx.tags) {
 				if (tag.name == 'App-Name') { return tag.value }
 			}
-			for (const tag of this.tx.node.tags) {
+			for (const tag of this.tx.tags) {
 				if (tag.name == 'User-Agent') { return tag.value.split('/')[0] }
 			}
 		},

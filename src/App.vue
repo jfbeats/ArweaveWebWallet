@@ -1,7 +1,7 @@
 <template>
 	<Toolbar class="toolbar" :class="{ verticalLayout }" @drop.prevent="droppedFiles" @dragover.prevent />
 	<router-view class="router" @drop.prevent="droppedFiles" @dragover.prevent v-slot="{ Component, route }">
-		<transition :name="route.meta.mainTransitionName" mode="out-in">
+		<transition :name="route.meta.mainTransitionName || 'slide-up'" mode="out-in">
 			<component :is="Component" :key="$route.path.split('/').slice(0,3).join('')" />
 		</transition>
 	</router-view>
@@ -51,7 +51,12 @@ export default {
 				this.$router.push({ name: 'EditWallet', query: { wallet: ids } })
 			}
 		}
-	}
+	},
+	watch: {
+		'$route' (to, from) {
+			document.title = to.meta.title || 'Arweave Wallet'
+		}
+	},
 }
 </script>
 
@@ -84,7 +89,6 @@ export default {
 .toolbar.verticalLayout {
 	flex-direction: row;
 }
-
 
 .router {
 	width: 100%;

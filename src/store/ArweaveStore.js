@@ -11,7 +11,8 @@ const arweave = Arweave.init({
 const arDB = new ArDB(arweave)
 
 const ArweaveStore = reactive({
-	arweave,
+	arweave, 
+	arDB,
 
 	currentWallet: null,
 
