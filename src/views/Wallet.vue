@@ -1,26 +1,32 @@
 <template>
-	<div class="container">
-		<div v-if="wallet" class="wallet">
+	<div class="wallet">
+		<div v-if="wallet" class="content" :class="{ verticalContent }">
 			<div class="wallet-info">
 				<Balance :wallet="wallet" />
 				<div class="actions">
 					<Action v-for="action in actions" :key="action.name" :to="{name: action.name, query: {...$route.query}}" :img="action.img">{{ action.text }}</Action>
 				</div>
 			</div>
-			<router-view class="wallet-view" v-slot="{ Component, route }">
-				<transition :name="route.meta.subTransitionName" mode="out-in">
-					<component :is="Component" />
-				</transition>
-			</router-view>
+			<div class="wallet-view">
+				<router-view v-slot="{ Component, route }" class="router-view">
+					<transition :name="route.meta.subTransitionName" mode="out-in">
+						<component :is="Component" />
+					</transition>
+				</router-view>
+			</div>
 		</div>
 	</div>
 </template>
+
+
 
 <script>
 import Balance from '@/components/Balance'
 import Action from '@/components/atomic/Action'
 import ArweaveStore from '@/store/ArweaveStore'
+import InterfaceStore from '@/store/InterfaceStore'
 import { useRouter } from 'vue-router'
+import { computed } from 'vue'
 
 export default {
 	name: 'Wallet',
@@ -38,7 +44,8 @@ export default {
 			const fromIndex = actions.findIndex(el => el.name === from.name)
 			to.meta.subTransitionName = toIndex < fromIndex ? 'slide-down' : 'slide-up'
 		})
-		return { ArweaveStore, actions }
+		const verticalContent = computed(() => InterfaceStore.breakpoints.verticalContent)
+		return { ArweaveStore, actions, verticalContent }
 	},
 	watch: {
 		wallet: {
@@ -52,25 +59,44 @@ export default {
 }
 </script>
 
+
+
 <style scoped>
-.wallet {
-	max-width: 1500px;
+.content {
+	width: 100%;
+	height: 100%;
 	display: flex;
 	justify-content: center;
 	align-items: flex-start;
-	flex-wrap: wrap;
-	gap: var(--spacing);
-	padding: var(--spacing);
+	overflow: hidden;
+}
+
+.content.verticalContent {
+	display: block;
+	overflow-y: auto;
 }
 
 .wallet-info {
 	flex: 1 1 auto;
 	min-width: 0;
+	max-width: 700px;
+	padding: var(--spacing);
 }
 
 .wallet-view {
+	height: 100%;
 	flex: 2 1 500px;
 	min-width: 0;
+	overflow-y: auto;
+	padding: var(--spacing);
+}
+
+.router-view {
+	max-width: 1000px;
+}
+
+.verticalContent .wallet-view {
+	height: auto;
 }
 
 .actions {

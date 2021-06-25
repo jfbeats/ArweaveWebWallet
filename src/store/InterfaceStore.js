@@ -23,5 +23,8 @@ watch(() => InterfaceStore.breakpoints.verticalLayout, (verticalLayout) => {
 		? document.getElementById('app').classList.add('verticalLayout')
 		: document.getElementById('app').classList.remove('verticalLayout')
 }, { immediate: true })
+if (navigator.appVersion.indexOf("Win") != -1) {
+	document.getElementById('app').classList.add('styleScroll')
+}
 
 export default InterfaceStore

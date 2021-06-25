@@ -4,7 +4,9 @@
 			<strong>
 				<slot></slot>
 			</strong>
-			{{ address }}
+			<span class="address">
+				{{ address }}
+			</span>
 		</span>
 	</div>
 </template>
@@ -16,18 +18,13 @@ export default {
 </script>
 
 <style scoped>
-mat-icon {
-	font-size: inherit;
-}
-
-a {
-	color: inherit;
-	cursor: pointer;
-}
-
 .address-container {
 }
 
 .address-tx {
+}
+
+.address {
+	user-select: all;
 }
 </style>

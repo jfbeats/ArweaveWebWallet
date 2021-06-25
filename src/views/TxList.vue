@@ -1,9 +1,9 @@
 <template>
-	<div class="txs">
+	<div class="tx-list">
 		<Tabs query="view" :tabs="tabs" />
 		<transition :name="transitionName" mode="out-in">
 			<div class="list" :key="selectedQuery">
-				<TxCard v-for="tx in txs" :key="tx.id" class="tx" :tx="tx" />
+				<TxCard v-for="tx in txs" :key="tx.id" class="tx-card" :tx="tx" />
 			</div>
 		</transition>
 		<div ref="bottom" class="bottom" v-show="!loading && !completedQuery"></div>
@@ -14,7 +14,7 @@
 import TxCard from '@/components/TxCard'
 import Tabs from '@/components/atomic/Tabs'
 import ArweaveStore from '@/store/ArweaveStore'
-import { computed, onMounted, onBeforeUnmount, ref, watch } from '@vue/runtime-core'
+import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 export default {
@@ -59,29 +59,32 @@ export default {
 </script>
 
 <style scoped>
-.list {
-	display: flex;
-	flex-direction: column;
-	gap: var(--spacing);
-}
-
-.txs {
+.tx-list {
 	display: flex;
 	flex-direction: column;
 	gap: var(--spacing);
 	position: relative;
 }
 
-.tx {
+.tabs {
+	z-index: 1;
+}
+
+.list {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing);
+	position: relative;
+}
+
+.tx-card {
 	padding: var(--spacing);
 	background: var(--background2);
 	border-radius: var(--border-radius);
+	border: 1px solid var(--border);
 }
 
 .bottom {
-	position: absolute;
-	bottom: 0;
-	height: 200px;
-	width: 100%;
+	width: 50%;
 }
 </style>

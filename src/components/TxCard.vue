@@ -4,6 +4,7 @@
 			<div class="left">
 
 				<TxIcon class="tx-icon" :direction="direction" :isValue="isValue" :isData="isData" :isLoading="isLoading" />
+				<div class="margin" />
 
 				<div>
 					<div v-if="isValue">
@@ -28,7 +29,7 @@
 						</div>
 						<div class="small ellipsis">{{ date + ' ' + time }}</div>
 					</div>
-					<div class="margin"></div>
+					<div class="margin" />
 				</div>
 
 				<MoreInfo v-if="relativeAddress" :key="relativeAddress">
@@ -137,6 +138,7 @@ export default {
 
 .tx-content.verticalContent {
 	flex-direction: column;
+	min-width: 256px;
 }
 
 .left {
@@ -147,7 +149,7 @@ export default {
 
 .right {
 	flex: 1 1 0;
-	min-width: 256px;
+	min-width: 200px;
 	display: flex;
 	justify-content: flex-end;
 	align-items: center;
@@ -174,7 +176,7 @@ export default {
 }
 
 .address {
-	max-width: 220px;
+	max-width: 200px;
 	margin-left: auto;
 }
 
@@ -184,8 +186,6 @@ export default {
 	border-radius: var(--border-radius2);
 	/* background: var(--background); */
 	flex: 0 0 auto;
-
-	margin-right: var(--spacing);
 }
 
 .cloud {
