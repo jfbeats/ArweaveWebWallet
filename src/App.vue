@@ -25,6 +25,7 @@ export default {
 		const verticalLayout = computed(() => InterfaceStore.breakpoints.verticalLayout)
 		const router = useRouter()
 		router.afterEach((to, from) => {
+			document.title = to.meta.title || 'Arweave Wallet'
 			const routes = router.options.routes
 			let toIndex = routes.findIndex(el => el.path === to.path)
 			let fromIndex = routes.findIndex(el => el.path === from.path)
@@ -32,6 +33,7 @@ export default {
 				toIndex = ArweaveStore.wallets.findIndex(el => el.id == to.params.walletId)
 				fromIndex = ArweaveStore.wallets.findIndex(el => el.id == from.params.walletId)
 			}
+			console.log(`from ${fromIndex} to ${toIndex}`) // to be fixed
 			to.meta.mainTransitionName =
 				verticalLayout.value
 					? toIndex < fromIndex ? 'slide-right' : 'slide-left'
@@ -50,11 +52,6 @@ export default {
 			if (ids.length > 0) {
 				this.$router.push({ name: 'EditWallet', query: { wallet: ids } })
 			}
-		}
-	},
-	watch: {
-		'$route' (to, from) {
-			document.title = to.meta.title || 'Arweave Wallet'
 		}
 	},
 }
