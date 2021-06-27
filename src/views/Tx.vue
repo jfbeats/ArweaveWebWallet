@@ -159,7 +159,7 @@ export default {
 	width: 100%;
 	height: 100%;
 	border: 0;
-	filter: brightness(0.6) contrast(1.4);
+	filter: brightness(0.6) contrast(1.1);
 }
 
 .img {
