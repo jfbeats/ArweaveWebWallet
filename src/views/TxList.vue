@@ -13,7 +13,7 @@
 <script>
 import TxCard from '@/components/TxCard'
 import Tabs from '@/components/atomic/Tabs'
-import ArweaveStore from '@/store/ArweaveStore'
+import { fetchTransactions } from '@/store/ArweaveStore'
 import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -31,7 +31,7 @@ export default {
 			if (loading.value) { return }
 			console.log('Queried', selectedQuery.value)
 			loading.value = true
-			await ArweaveStore.fetchTransactions(props.wallet, selectedQuery.value)
+			await fetchTransactions(props.wallet, selectedQuery.value)
 			setTimeout(() => loading.value = false, 500)
 		}
 		watch(() => route.query, () => {

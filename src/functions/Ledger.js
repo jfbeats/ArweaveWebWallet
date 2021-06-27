@@ -1,6 +1,6 @@
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import ArweaveApp from "@zondax/ledger-arweave"
-import ArweaveStore from '@/store/ArweaveStore'
+import { arweave } from '@/store/ArweaveStore'
 
 
 async function getTransport () {
@@ -58,7 +58,6 @@ async function getActiveAddress (request = false) {
 async function sign (transaction) {
 	const transport = await getTransport()
 	try {
-		const arweave = ArweaveStore.arweave
 		const app = new ArweaveApp(transport)
 		let response = await app.getVersion()
 		console.info(`App Version ${response.major}.${response.minor}.${response.patch}`, response)

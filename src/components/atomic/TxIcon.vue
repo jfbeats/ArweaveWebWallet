@@ -1,5 +1,5 @@
 <template>
-	<div class="tx-icon" :class="{ isLoading }" :style="styleObject">
+	<div class="tx-icon" :class="{ isPending }" :style="styleObject">
 		<svg v-if="direction==='in' && !isData" class="tx-fill" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
 			<rect x="0" y="0" width="24" height="24" style="fill:none;fill-rule:nonzero;" />
 			<g transform="matrix(6.12323e-17,1,-1,6.12323e-17,24,0)">
@@ -33,14 +33,14 @@
 			</g>
 		</svg>
 		<transition name="fade">
-			<div v-if="isLoading" class="loader"></div>
+			<div v-if="isPending" class="loader"></div>
 		</transition>
 	</div>
 </template>
 
 <script>
 export default {
-	props: ['direction', 'isValue', 'isData', 'isLoading'],
+	props: ['direction', 'isValue', 'isData', 'isPending'],
 	computed: {
 		styleObject () {
 			const color = this.isData && !this.isValue
@@ -67,7 +67,7 @@ export default {
 	transition: padding 0.4s ease;
 }
 
-.isLoading .tx-fill {
+.isPending .tx-fill {
 	padding: 25%;
 }
 

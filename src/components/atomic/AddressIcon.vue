@@ -9,7 +9,7 @@
 
 <script>
 import { get, getIdenticon } from 'arweave-id'
-import ArweaveStore from '@/store/ArweaveStore'
+import { arweave } from '@/store/ArweaveStore'
 import Identicon from 'identicon.js'
 import { SHA256 } from 'jshashes'
 
@@ -31,7 +31,7 @@ export default {
 				const hash = new SHA256
 				const identiconData = new Identicon(hash.hex(address), options).toString()
 				this.identicon = 'data:image/svg+xml;base64,' + identiconData
-				// const profile = await get(address, ArweaveStore.arweave)
+				// const profile = await get(address, arweave)
 				// if (profile.avatarDataUri) { this.url = profile.avatarDataUri }
 			},
 			immediate: true

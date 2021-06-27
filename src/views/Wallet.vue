@@ -23,7 +23,7 @@
 <script>
 import Balance from '@/components/Balance'
 import Action from '@/components/atomic/Action'
-import ArweaveStore from '@/store/ArweaveStore'
+import ArweaveStore, { setCurrentWallet } from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { useRouter } from 'vue-router'
 import { computed } from 'vue'
@@ -45,13 +45,13 @@ export default {
 			to.meta.subTransitionName = toIndex < fromIndex ? 'slide-down' : 'slide-up'
 		})
 		const verticalContent = computed(() => InterfaceStore.breakpoints.verticalContent)
-		return { ArweaveStore, actions, verticalContent }
+		return { actions, verticalContent }
 	},
 	watch: {
 		wallet: {
 			handler: function (wallet) {
-				if (!wallet) { ArweaveStore.setCurrentWallet(ArweaveStore.wallets[0]) }
-				else { ArweaveStore.setCurrentWallet(wallet) }
+				if (!wallet) { setCurrentWallet(ArweaveStore.wallets[0]) }
+				else { setCurrentWallet(wallet) }
 			},
 			immediate: true
 		},
@@ -80,7 +80,7 @@ export default {
 	flex: 1 1 auto;
 	min-width: 0;
 	max-width: 700px;
-	padding: var(--spacing);
+	padding: var(--spacing) 0 var(--spacing) var(--spacing);
 }
 
 .wallet-view {

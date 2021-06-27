@@ -1,5 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import ArweaveStore from '@/store/ArweaveStore'
+import ArweaveStore , { getWalletById } from '@/store/ArweaveStore'
 import Wallet from '@/views/Wallet.vue'
 import TxList from '@/views/TxList.vue'
 import Send from '@/views/Send.vue'
@@ -10,13 +10,13 @@ const routes = [
 		name: 'Wallet',
 		path: '/wallet/:walletId(\\d+)',
 		component: Wallet,
-		props: (route) => { return { wallet: ArweaveStore.getWalletById(route.params.walletId) } },
+		props: (route) => { return { wallet: getWalletById(route.params.walletId) } },
 		children: [
 			{
 				name: 'TxList',
 				path: 'tx-list',
 				component: TxList,
-				props: (route) => { return { wallet: ArweaveStore.getWalletById(route.params.walletId) } },
+				props: (route) => { return { wallet: getWalletById(route.params.walletId) } },
 				meta: { title: 'Wallet Transactions' },
 			},
 			{
@@ -44,7 +44,7 @@ const routes = [
 		name: 'Tx',
 		path: '/tx/:txId',
 		component: () => import('@/views/Tx.vue'),
-		props: (route) => { return { txId: route.params.txId } },
+		props: true,
 		meta: { title: 'Arweave Transaction' },
 	},
 	{
@@ -73,7 +73,14 @@ const routes = [
 
 const router = createRouter({
 	history: createWebHashHistory(),
-	routes
+	routes,
+	scrollBehavior (to, from, savedPosition) {
+		if (savedPosition) {
+			return savedPosition
+		} else {
+			return { top: 0 }
+		}
+	}
 })
 
 export default router

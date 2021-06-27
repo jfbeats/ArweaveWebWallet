@@ -1,13 +1,13 @@
-import ArweaveStore from '@/store/ArweaveStore'
+import { arweave, pushWallet } from '@/store/ArweaveStore'
 import Ledger from '@/functions/Ledger'
 import { generateMnemonic, getKeyFromMnemonic } from "arweave-mnemonic-keys"
 
 export async function newWallet (jwkObj) {
-	const jwk = jwkObj || await ArweaveStore.arweave.wallets.generate()
-	const key = await ArweaveStore.arweave.wallets.jwkToAddress(jwk)
+	const jwk = jwkObj || await arweave.wallets.generate()
+	const key = await arweave.wallets.jwkToAddress(jwk)
 	if (!jwkObj) { download(key, JSON.stringify(jwk)) }
 	const wallet = { key, jwk }
-	return ArweaveStore.pushWallet(wallet)
+	return pushWallet(wallet)
 }
 
 export async function newPassphrase (passphrase) {
@@ -18,10 +18,10 @@ export async function newPassphrase (passphrase) {
 }
 
 export async function newLedger () {
-	const address = (await Ledger.getAddress())?.address
-	if (!address) { return }
-	const wallet = { key: address }
-	return ArweaveStore.pushWallet(wallet)
+	const key = (await Ledger.getAddress())?.address
+	if (!key) { return }
+	const wallet = { key }
+	return pushWallet(wallet)
 }
 
 function download (filename, text) {

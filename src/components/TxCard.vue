@@ -3,7 +3,9 @@
 		<div class="tx-content" :class="{ verticalContent }">
 			<div class="left">
 
-				<TxIcon class="tx-icon" :direction="direction" :isValue="isValue" :isData="isData" :isLoading="isLoading" />
+				<router-link :to="{ name: 'Tx', params: { txId: tx.id } }">
+					<TxIcon class="tx-icon" :direction="direction" :isValue="isValue" :isData="isData" :isPending="isPending" />
+				</router-link>
 				<div class="margin" />
 
 				<div>
@@ -62,11 +64,11 @@ export default {
 	props: ['tx'],
 	computed: {
 		date () {
-			if (this.isLoading) { return 'pending' }
+			if (this.isPending) { return 'pending' }
 			return new Date(this.tx.block.timestamp * 1000).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
 		},
 		time () {
-			if (this.isLoading) { return '' }
+			if (this.isPending) { return '' }
 			return new Date(this.tx.block.timestamp * 1000).toLocaleTimeString()
 		},
 		direction () {
@@ -78,14 +80,13 @@ export default {
 		},
 		isData () { return this.tx.data.size !== "0" },
 		isValue () { return this.tx.quantity.winston !== "0" },
-		isLoading () { return !this.tx.block },
+		isPending () { return !this.tx.block },
 		relativeAddress () {
 			if (this.direction === 'in') { return this.tx.owner.address }
 			if (this.direction === 'out') { return this.tx.recipient }
 			return null
 		},
 		value () {
-			// return this.tx.fee.ar
 			return this.tx.quantity.ar
 		},
 		dataType () {

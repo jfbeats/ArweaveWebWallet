@@ -7,7 +7,7 @@
 
 <script>
 import WalletOptions from '@/components/WalletOptions'
-import ArweaveStore from '@/store/ArweaveStore'
+import { getWalletById } from '@/store/ArweaveStore'
 
 export default {
 	components: { WalletOptions },
@@ -17,7 +17,7 @@ export default {
 			const editWalletArray = Array.isArray(editWallet) ? editWallet : [editWallet]
 			const result = []
 			for (const wallet of editWalletArray) {
-				const walletObject = ArweaveStore.getWalletById(wallet)
+				const walletObject = getWalletById(wallet)
 				if (walletObject) { result.push(walletObject) }
 			}
 			return result
