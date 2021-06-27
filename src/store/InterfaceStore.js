@@ -1,4 +1,4 @@
-import { reactive, watch } from 'vue'
+import { reactive } from 'vue'
 
 const InterfaceStore = reactive({
 	windowWidth: window.innerWidth,
@@ -7,22 +7,46 @@ const InterfaceStore = reactive({
 		verticalLayout: false,
 		verticalContent: false,
 	},
+	dragOverlay: false
 })
 
-const updateWindowState = () => {
+const updateWindowSize = () => {
 	InterfaceStore.windowWidth = window.innerWidth
 	InterfaceStore.breakpoints.verticalLayout = InterfaceStore.windowWidth < 600
 	InterfaceStore.breakpoints.verticalContent = InterfaceStore.windowWidth < 1100
 }
+updateWindowSize()
+window.addEventListener('resize', updateWindowSize)
 
-updateWindowState()
-window.addEventListener('resize', updateWindowState)
 document.addEventListener('visibilitychange', () => InterfaceStore.windowVisible = !document.hidden)
-watch(() => InterfaceStore.breakpoints.verticalLayout, (verticalLayout) => {
-	verticalLayout
-		? document.getElementById('app').classList.add('verticalLayout')
-		: document.getElementById('app').classList.remove('verticalLayout')
-}, { immediate: true })
+
+let dragCount = 0
+document.addEventListener('dragenter', (e) => {
+	e.preventDefault()
+	if (e.dataTransfer.types[0] !== 'Files') { return }
+	if (dragCount === 1) { InterfaceStore.dragOverlay = true }
+	dragCount++
+})
+document.addEventListener('dragleave', (e) => {
+	e.preventDefault()
+	if (e.dataTransfer.types[0] !== 'Files') { return }
+	dragCount--
+	if (dragCount === 0) { InterfaceStore.dragOverlay = false }
+})
+document.addEventListener('dragend', (e) => {
+	e.preventDefault()
+	dragCount = 0
+	InterfaceStore.dragOverlay = false
+})
+document.addEventListener('dragover', (e) => {
+	e.preventDefault()
+})
+document.addEventListener('drop', (e) => {
+	e.preventDefault()
+	dragCount = 0
+	InterfaceStore.dragOverlay = false
+})
+
 if (navigator.appVersion.indexOf("Win") != -1) {
 	document.getElementById('app').classList.add('styleScroll')
 }

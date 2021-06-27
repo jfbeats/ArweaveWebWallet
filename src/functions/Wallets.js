@@ -6,7 +6,7 @@ export async function newWallet (jwkObj) {
 	const jwk = jwkObj || await arweave.wallets.generate()
 	const key = await arweave.wallets.jwkToAddress(jwk)
 	if (!jwkObj) { download(key, JSON.stringify(jwk)) }
-	const wallet = { key, jwk }
+	const wallet = { key, jwk, type: 'jwk' }
 	return pushWallet(wallet)
 }
 
@@ -20,7 +20,7 @@ export async function newPassphrase (passphrase) {
 export async function newLedger () {
 	const key = (await Ledger.getAddress())?.address
 	if (!key) { return }
-	const wallet = { key }
+	const wallet = { key, type: 'hwLedger' }
 	return pushWallet(wallet)
 }
 

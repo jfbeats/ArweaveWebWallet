@@ -1,10 +1,12 @@
 <template>
-	<Toolbar class="toolbar" :class="{ verticalLayout }" @drop.prevent="droppedFiles" @dragover.prevent />
-	<router-view class="router" @drop.prevent="droppedFiles" @dragover.prevent v-slot="{ Component, route }">
-		<transition :name="route.meta.mainTransitionName || 'slide-up'" mode="out-in">
-			<component :is="Component" :key="$route.path.split('/').slice(0,3).join('')" />
-		</transition>
-	</router-view>
+	<div class="app" :class="{ verticalLayout }">
+		<Toolbar class="toolbar" :class="{ verticalLayout, dragOverlay }" @drop.prevent="droppedFiles" />
+		<router-view class="router" v-slot="{ Component, route }" @drop.prevent="droppedFiles">
+			<transition :name="route.meta.mainTransitionName || 'slide-up'" mode="out-in">
+				<component :is="Component" :key="$route.path.split('/').slice(0,3).join('')" />
+			</transition>
+		</router-view>
+	</div>
 </template>
 
 
@@ -23,6 +25,7 @@ export default {
 	},
 	setup () {
 		const verticalLayout = computed(() => InterfaceStore.breakpoints.verticalLayout)
+		const dragOverlay = computed(() => InterfaceStore.dragOverlay)
 		const router = useRouter()
 		router.afterEach((to, from) => {
 			document.title = to.meta.title || 'Arweave Wallet'
@@ -39,7 +42,7 @@ export default {
 					? toIndex < fromIndex ? 'slide-right' : 'slide-left'
 					: toIndex < fromIndex ? 'slide-down' : 'slide-up'
 		})
-		return { verticalLayout }
+		return { verticalLayout, dragOverlay }
 	},
 	methods: {
 		async droppedFiles (e) {
@@ -60,6 +63,17 @@ export default {
 
 
 <style scoped>
+.app {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	display: flex;
+}
+
+.app.verticalLayout {
+	flex-direction: column;
+}
+
 .toolbar {
 	flex: 0 0 auto;
 	display: flex;
@@ -72,6 +86,7 @@ export default {
 	height: 100%;
 	width: auto;
 	scrollbar-width: none;
+	position: relative;
 }
 
 .toolbar::-webkit-scrollbar {
@@ -91,5 +106,48 @@ export default {
 	width: 100%;
 	height: 100%;
 	overflow: auto;
+	position: relative;
+}
+
+.dragOverlay::before {
+	content: "";
+	background-image: radial-gradient(circle at center, #333, #111);
+	background-position: center;
+	background-repeat: no-repeat;
+	background-origin: center;
+	background-size: cover;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	z-index: 99999;
+	opacity: 0.5;
+}
+
+.dragOverlay::after {
+	text-align: center;
+	content: "";
+	background-image: url("~@/assets/icons/drop.svg");
+	background-position: center;
+	background-repeat: no-repeat;
+	background-origin: center;
+	background-size: 48px 48px;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 0 16px;
+	padding-top: 200px;
+	z-index: 99999;
+	opacity: 0.5;
 }
 </style>

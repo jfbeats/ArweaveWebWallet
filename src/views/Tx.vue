@@ -5,7 +5,7 @@
 
 				<div>id {{ tx.id }}</div>
 				<div>block {{ !isPending ? tx.block.id : 'Pending' }}</div>
-				<div>date {{ date + ' ' + time }}</div>
+				<div>date {{ date }}</div>
 
 				<div>data.size {{ tx.data.size }}</div>
 				<div>fee.ar {{ tx.fee.ar }}</div>
@@ -28,7 +28,7 @@
 
 			<div v-if="data.handler" class="data-view">
 				<div v-if="data.handler === 'iframe'" class="frame-background">
-					<iframe  class="iframe" :src="ArweaveStore.gatewayURL + tx.id" />
+					<iframe class="iframe" :src="ArweaveStore.gatewayURL + tx.id" />
 				</div>
 				<div v-if="data.handler === 'img'" class="frame-background">
 					<img class="img" :src="ArweaveStore.gatewayURL + tx.id">
@@ -57,16 +57,28 @@ export default {
 			payload: null,
 			handler: null,
 		})
+
+		const isData = computed(() => tx.value.data?.size !== '0')
+		const isPending = computed(() => !tx.value.block)
+		const date = computed(() => {
+			if (isPending.value) { return '' }
+			const dateObj = new Date(tx.value.block.timestamp * 1000)
+			return dateObj.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+				+ ' ' + dateObj.toLocaleTimeString()
+		})
+		const verticalContent = computed(() => InterfaceStore.breakpoints.verticalContent)
+
 		watch(() => props.txId, async () => {
 			tx.value = await getTxById(props.txId)
 			data.handler = null
-			if (tx.value.data?.size === 0) {
+			if (!isData.value) {
 				return
 			} else if (tx.value.data?.type === 'text/html' || tx.value.data?.type === 'application/pdf') {
 				data.handler = 'iframe'
 			} else if (tx.value.data?.type?.split('/')[0] === 'image') {
 				data.handler = 'img'
 			} else {
+				console.log('getting data')
 				try {
 					data.payload = await arweave.transactions.getData(props.txId, { decode: true, string: true })
 					try {
@@ -78,20 +90,8 @@ export default {
 				} catch { }
 			}
 		}, { immediate: true })
-		const verticalContent = computed(() => InterfaceStore.breakpoints.verticalContent)
-		return { ArweaveStore, tx, data, verticalContent }
+		return { ArweaveStore, tx, data, isData, isPending, date, verticalContent }
 	},
-	computed: {
-		isPending () { return !this.tx.block },
-		date () {
-			if (this.isPending) { return 'pending' }
-			return new Date(this.tx.block.timestamp * 1000).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
-		},
-		time () {
-			if (this.isPending) { return '' }
-			return new Date(this.tx.block.timestamp * 1000).toLocaleTimeString()
-		},
-	}
 }
 </script>
 
@@ -160,7 +160,7 @@ export default {
 	width: 100%;
 	height: 100%;
 	border: 0;
-	filter: brightness(0.6) contrast(1.1);
+	filter: brightness(0.7) contrast(1.1);
 }
 
 .img {
