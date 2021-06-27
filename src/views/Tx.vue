@@ -112,9 +112,11 @@ export default {
 
 .meta {
 	flex: 1 1 0;
+	height: 100%;
 	min-width: 0;
 	max-width: 800px;
 	padding: var(--spacing) 0 var(--spacing) var(--spacing);
+	overflow: auto;
 }
 
 .verticalContent .meta {
@@ -127,7 +129,6 @@ export default {
 
 .tags {
 	white-space: nowrap;
-	overflow-x: auto;
 }
 
 .data-view {
