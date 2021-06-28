@@ -82,7 +82,7 @@ const router = createRouter({
 	history: createWebHashHistory(),
 	routes,
 	scrollBehavior: (to, from, savedPosition) => new Promise((resolve) => {
-		const position = savedPosition || { top: 0 }
+		const position = savedPosition || {}
 		setTimeout(() => { resolve(position) }, 200)
 	})
 })
