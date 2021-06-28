@@ -48,6 +48,13 @@ const routes = [
 		meta: { title: 'Arweave Transaction' },
 	},
 	{
+		name: 'Profile',
+		path: '/profile/:key',
+		component: () => import('@/views/Profile.vue'),
+		props: true,
+		meta: { title: 'Arweave Profile' },
+	},
+	{
 		path: '/edit',
 		name: 'EditWallet',
 		component: () => import('@/views/EditWallet.vue'),
@@ -74,13 +81,6 @@ const routes = [
 const router = createRouter({
 	history: createWebHashHistory(),
 	routes,
-	scrollBehavior (to, from, savedPosition) {
-		if (savedPosition) {
-			return savedPosition
-		} else {
-			return { top: 0 }
-		}
-	}
 })
 
 export default router

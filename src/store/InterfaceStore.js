@@ -48,7 +48,7 @@ document.addEventListener('drop', (e) => {
 })
 
 if (navigator.appVersion.indexOf("Win") != -1) {
-	document.getElementById('app').classList.add('styleScroll')
+	document.documentElement.classList.add('styleScroll')
 }
 
 export default InterfaceStore

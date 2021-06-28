@@ -1,6 +1,6 @@
 <template>
-	<div v-if="tx" class="tx">
-		<div class="content" :class="{ verticalContent }">
+	<FoldingLayout v-if="tx" :class="{ verticalContent }">
+		<template #left>
 			<div class="meta">
 
 				<div>id {{ tx.id }}</div>
@@ -25,7 +25,8 @@
 				<div v-if="tx.data.size > 0">link</div>
 
 			</div>
-
+		</template>
+		<template #right>
 			<div v-if="data.handler" class="data-view">
 				<div v-if="data.handler === 'iframe'" class="frame-background">
 					<iframe class="iframe" :src="ArweaveStore.gatewayURL + tx.id" />
@@ -33,21 +34,25 @@
 				<div v-if="data.handler === 'img'" class="frame-background">
 					<img class="img" :src="ArweaveStore.gatewayURL + tx.id">
 				</div>
-
-				<pre v-if="data.handler === 'json'" class="raw">{{ data.payload }}</pre>
-				<div v-if="data.handler === 'raw'" class="raw">{{ data.payload }}</div>
+				<div v-if="data.handler === 'json'" class="card-background">
+					<pre class="raw">{{ data.payload }}</pre>
+				</div>
+				<div v-if="data.handler === 'raw'" class="card-background">
+					<div class="raw">{{ data.payload }}</div>
+				</div>
 			</div>
-
-		</div>
-	</div>
+		</template>
+	</FoldingLayout>
 </template>
 
 <script>
+import FoldingLayout from '@/components/FoldingLayout.vue'
 import ArweaveStore, { arweave, getTxById } from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { reactive, watch, computed, ref } from 'vue'
 
 export default {
+	components: { FoldingLayout },
 	props: {
 		txId: String,
 	},
@@ -96,31 +101,9 @@ export default {
 </script>
 
 <style scoped>
-.content {
-	width: 100%;
-	height: 100%;
-	display: flex;
-	justify-content: flex-start;
-	align-items: flex-start;
-	overflow: hidden;
-}
-
-.content.verticalContent {
-	display: block;
-	overflow-y: auto;
-}
-
 .meta {
-	flex: 1 1 0;
-	height: 100%;
-	min-width: 0;
-	max-width: 800px;
+	max-width: 700px;
 	padding: var(--spacing) 0 var(--spacing) var(--spacing);
-	overflow: auto;
-}
-
-.verticalContent .meta {
-	height: auto;
 }
 
 .meta > div {
@@ -132,28 +115,25 @@ export default {
 }
 
 .data-view {
-	height: 100%;
-	flex: 1 1 0;
-	min-width: 0;
-	overflow: auto;
-	padding: var(--spacing);
-}
-
-.verticalContent .data-view {
-	height: auto;
+	/* padding: var(--spacing); */
 }
 
 .frame-background {
 	width: 100%;
-	height: 100%;
+	height: 100vh;
 	background: var(--background3);
-	border: 1px solid var(--border);
-	border-radius: var(--border-radius);
+	border: 2px solid #666;
+	border-radius: 32px 0 0 32px;
 	overflow: hidden;
 }
 
 .verticalContent .frame-background {
 	height: 80vh;
+	border-radius: 32px 32px 0 0;
+}
+
+.card-background {
+	padding: var(--spacing);
 }
 
 .iframe {

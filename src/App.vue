@@ -64,8 +64,9 @@ export default {
 
 <style scoped>
 .app {
-	width: 100%;
-	height: 100%;
+	/* width: 100%;
+	height: 100%; */
+	min-height: 100vh;
 	overflow: hidden;
 	display: flex;
 }
@@ -81,12 +82,12 @@ export default {
 	outline: 1px solid var(--border);
 	overflow: auto;
 	overflow: overlay;
-	z-index: 1;
+	z-index: 10;
 	background: var(--background);
 	height: 100%;
 	width: auto;
 	scrollbar-width: none;
-	position: relative;
+	position: fixed;
 }
 
 .toolbar::-webkit-scrollbar {
@@ -96,17 +97,23 @@ export default {
 .toolbar.verticalLayout {
 	height: auto;
 	width: 100%;
-}
-
-.toolbar.verticalLayout {
 	flex-direction: row;
 }
 
 .router {
-	width: 100%;
-	height: 100%;
-	overflow: auto;
+	/* width: 100%;
+	height: 100%; */
+	/* overflow: auto; */
 	position: relative;
+	margin-left: 80px;
+	min-height: 100vh;
+	/* transform: translateZ(0); */
+}
+
+.verticalLayout .router {
+	margin-top: 80px;
+	margin-left: 0;
+	min-height: calc(100vh - 80px);
 }
 
 .dragOverlay::before {

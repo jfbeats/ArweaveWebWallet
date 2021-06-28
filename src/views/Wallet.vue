@@ -1,12 +1,14 @@
 <template>
-	<div class="wallet">
-		<div v-if="wallet" class="content" :class="{ verticalContent }">
+	<FoldingLayout v-if="wallet" :class="{ verticalContent }">
+		<template #left>
 			<div class="wallet-info">
 				<Balance :wallet="wallet" />
 				<div class="actions">
 					<Action v-for="action in actions" :key="action.name" :to="{name: action.name, query: {...$route.query}}" :img="action.img">{{ action.text }}</Action>
 				</div>
 			</div>
+		</template>
+		<template #right>
 			<div class="wallet-view">
 				<router-view v-slot="{ Component, route }" class="router-view">
 					<transition :name="route.meta.subTransitionName" mode="out-in">
@@ -14,13 +16,14 @@
 					</transition>
 				</router-view>
 			</div>
-		</div>
-	</div>
+		</template>
+	</FoldingLayout>
 </template>
 
 
 
 <script>
+import FoldingLayout from '@/components/FoldingLayout.vue'
 import Balance from '@/components/Balance'
 import Action from '@/components/atomic/Action'
 import ArweaveStore, { setCurrentWallet } from '@/store/ArweaveStore'
@@ -30,7 +33,7 @@ import { computed } from 'vue'
 
 export default {
 	name: 'Wallet',
-	components: { Balance, Action },
+	components: { Balance, Action, FoldingLayout },
 	props: ['wallet'],
 	setup () {
 		const actions = [
@@ -62,41 +65,17 @@ export default {
 
 
 <style scoped>
-.content {
-	width: 100%;
-	height: 100%;
-	display: flex;
-	justify-content: center;
-	align-items: flex-start;
-	overflow: hidden;
-}
-
-.content.verticalContent {
-	display: block;
-	overflow-y: auto;
-}
-
 .wallet-info {
-	flex: 1 1 auto;
-	min-width: 0;
 	max-width: 700px;
 	padding: var(--spacing) 0 var(--spacing) var(--spacing);
 }
 
 .wallet-view {
-	height: 100%;
-	flex: 2 1 500px;
-	min-width: 0;
-	overflow-y: auto;
 	padding: var(--spacing);
 }
 
 .router-view {
 	max-width: 1000px;
-}
-
-.verticalContent .wallet-view {
-	height: auto;
 }
 
 .actions {

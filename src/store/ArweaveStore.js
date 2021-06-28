@@ -124,7 +124,7 @@ export async function fetchTransactions (wallet, query) {
 }
 
 export async function updateConversionRate () {
-	const res = await axios.get('https://api.limestone.finance/prices?symbol=AR&provider=limestone')
+	const res = await axios.get('https://api.redstone.finance/prices?symbol=AR&provider=redstone')
 	ArweaveStore.currency.limestone = res.data[0].value
 	console.log('Conversion Rate', ArweaveStore.currency.limestone)
 	return ArweaveStore.currency.limestone
