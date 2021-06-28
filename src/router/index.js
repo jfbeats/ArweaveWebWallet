@@ -1,5 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import ArweaveStore , { getWalletById } from '@/store/ArweaveStore'
+import ArweaveStore, { getWalletById } from '@/store/ArweaveStore'
 import Wallet from '@/views/Wallet.vue'
 import TxList from '@/views/TxList.vue'
 import Send from '@/views/Send.vue'
@@ -81,6 +81,10 @@ const routes = [
 const router = createRouter({
 	history: createWebHashHistory(),
 	routes,
+	scrollBehavior: (to, from, savedPosition) => new Promise((resolve) => {
+		const position = savedPosition || { top: 0 }
+		setTimeout(() => { resolve(position) }, 200)
+	})
 })
 
 export default router
