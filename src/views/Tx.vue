@@ -27,7 +27,7 @@
 			</div>
 		</template>
 		<template #right>
-			<div v-if="data.handler" class="data-view">
+			<div v-if="data.handler">
 				<div v-if="data.handler === 'iframe'" class="frame-background">
 					<iframe class="iframe" :src="ArweaveStore.gatewayURL + tx.id" />
 				</div>
@@ -112,10 +112,6 @@ export default {
 
 .tags {
 	white-space: nowrap;
-}
-
-.data-view {
-	/* padding: var(--spacing); */
 }
 
 .frame-background {

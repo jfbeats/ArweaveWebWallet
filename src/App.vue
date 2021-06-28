@@ -64,8 +64,6 @@ export default {
 
 <style scoped>
 .app {
-	/* width: 100%;
-	height: 100%; */
 	min-height: 100vh;
 	overflow: hidden;
 	display: flex;
@@ -101,9 +99,7 @@ export default {
 }
 
 .router {
-	/* width: 100%;
-	height: 100%; */
-	/* overflow: auto; */
+	min-width: 0;
 	position: relative;
 	margin-left: 80px;
 	min-height: 100vh;

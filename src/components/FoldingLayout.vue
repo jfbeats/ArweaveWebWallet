@@ -1,12 +1,10 @@
 <template>
 	<div class="folding-layout">
-		<div class="content">
-			<div class="left">
-				<slot name="left" />
-			</div>
-			<div class="right">
-				<slot name="right" />
-			</div>
+		<div class="left">
+			<slot name="left" />
+		</div>
+		<div class="right">
+			<slot name="right" />
 		</div>
 	</div>
 </template>
@@ -20,15 +18,6 @@ export default {
 <style scoped>
 .folding-layout {
 	width: 100%;
-	/* height: 100%; */
-	/* overflow: hidden; */
-	/* transform: translateZ(0); */
-}
-
-.content {
-	width: 100%;
-	/* height: 100%; */
-	/* overflow-y: auto; */
 	position: relative;
 }
 
@@ -36,9 +25,7 @@ export default {
 	position: fixed;
 	width: 40vw;
 	height: 100vh;
-	min-width: 0;
-	/* max-width: 700px; */
-	overflow-y: auto;
+	overflow: auto;
 	z-index: 1;
 }
 
@@ -51,8 +38,6 @@ export default {
 .right {
 	padding-left: 40vw;
 	width: 100%;
-	min-width: 0;
-	overflow-y: visible;
 }
 
 .verticalContent .right {

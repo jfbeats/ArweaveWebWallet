@@ -70,6 +70,10 @@ export default {
 	padding: var(--spacing) 0 var(--spacing) var(--spacing);
 }
 
+.verticalContent .wallet-info {
+	padding: var(--spacing);
+}
+
 .wallet-view {
 	padding: var(--spacing);
 }
