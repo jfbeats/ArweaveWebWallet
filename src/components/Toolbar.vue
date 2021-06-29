@@ -8,7 +8,7 @@
 			</SlickItem>
 		</SlickList>
 		<div class="controls">
-			<div class="icon control" @click="createWallet()"><img class="small" src="@/assets/icons/add_box.svg"></div>
+			<router-link class="icon control" :class="{ verticalLayout }" to="/add"><img class="small" src="@/assets/icons/add_box.svg"></router-link>
 			<router-link class="icon control" :class="{ verticalLayout }" to="/settings"><img class="small" src="@/assets/icons/settings.svg"></router-link>
 		</div>
 	</nav>
@@ -19,7 +19,6 @@ import AddressIcon from '@/components/atomic/AddressIcon'
 import { SlickList, SlickItem } from 'vue-slicksort'
 import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
-import { newWallet } from '@/functions/Wallets.js'
 import { computed } from 'vue'
 
 export default {
@@ -29,12 +28,6 @@ export default {
 		const verticalLayout = computed(() => InterfaceStore.breakpoints.verticalLayout)
 		const axis = computed(() => InterfaceStore.breakpoints.verticalLayout ? 'x' : 'y')
 		return { ArweaveStore, verticalLayout, axis }
-	},
-	methods: {
-		async createWallet () {
-			const wallet = await newWallet()
-			this.$router.push({ name: 'EditWallet', query: { wallet: wallet.id } })
-		},
 	},
 	computed: {
 		navTo () { return this.$route.matched[0]?.name === 'Wallet' ? null : 'TxList' }

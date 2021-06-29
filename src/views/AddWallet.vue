@@ -1,15 +1,36 @@
 <template>
-	<div>
+	<div class="add-wallet">
+		<div @click="create">Create</div>
 		<div>Passphrase / Import</div>
 		<div>Key file / Import</div>
+		<div @click="importLedger">Ledger</div>
 	</div>
 </template>
 
 <script>
-export default {
+import Ledger from '@/functions/Ledger.js'
+import { newWallet, importWallet } from '@/functions/Wallets.js'
 
+export default {
+	methods: {
+		async create () {
+			const wallet = await newWallet()
+			this.$router.push({ name: 'EditWallet', query: { wallet: wallet.id } })
+		},
+		async importLedger () {
+			const wallet = await importWallet(Ledger)
+			this.$router.push({ name: 'EditWallet', query: { wallet: wallet.id } })
+		}
+	},
 }
 </script>
 
 <style scoped>
+.add-wallet {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: space-evenly;
+}
 </style>

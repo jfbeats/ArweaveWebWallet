@@ -24,7 +24,7 @@ async function getVersion () {
 	return response
 }
 
-async function appInfo () {
+async function getAppInfo () {
 	const transport = await getTransport()
 	let response = null
 	try {
@@ -76,8 +76,9 @@ async function sign (transaction) {
 }
 
 const Ledger = {
+	metaData: { provider: 'Ledger' },
 	getVersion,
-	appInfo,
+	getAppInfo,
 	getActiveAddress: async () => (await getAddress()).address,
 	getActivePublicKey: async () => (await getAddress()).owner,
 	sign,

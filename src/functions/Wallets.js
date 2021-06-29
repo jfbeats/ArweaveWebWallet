@@ -1,5 +1,4 @@
 import { arweave, pushWallet } from '@/store/ArweaveStore'
-import Ledger from '@/functions/Ledger'
 import { generateMnemonic, getKeyFromMnemonic } from "arweave-mnemonic-keys"
 
 export async function newWallet (jwkObj) {
@@ -17,10 +16,10 @@ export async function newPassphrase (passphrase) {
 	return currentPassphrase
 }
 
-export async function newLedger () {
-	const key = await Ledger.getActiveAddress()
+export async function importWallet (arweaveWallet) {
+	const key = await arweaveWallet.getActiveAddress()
 	if (!key) { return }
-	const wallet = { key, type: 'hwLedger' }
+	const wallet = { key, metaData: arweaveWallet.metaData }
 	return pushWallet(wallet)
 }
 

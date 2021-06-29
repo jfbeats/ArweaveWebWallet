@@ -55,6 +55,12 @@ const routes = [
 		meta: { title: 'Arweave Profile' },
 	},
 	{
+		path: '/add',
+		name: 'AddWallet',
+		component: () => import('@/views/AddWallet.vue'),
+		meta: { title: 'Add Wallets' }
+	},
+	{
 		path: '/edit',
 		name: 'EditWallet',
 		component: () => import('@/views/EditWallet.vue'),

@@ -79,12 +79,22 @@ export function getWalletByKey (walletKey) {
 
 export async function getTxById (txId) {
 	for (const wallet of ArweaveStore.wallets) {
-		for (const query in wallet.queries) {
-			const tx = wallet.queries[query].find(el => el?.node?.id === txId)
+		for (const queryKey in wallet.queries) {
+			const tx = wallet.queries[queryKey].find(el => el?.node?.id === txId)
 			if (tx) { return tx.node }
 		}
 	}
 	return arDB.search('transaction').id(txId).find()
+}
+
+async function updatePendingTx () {
+	for (const queryKey in ArweaveStore.currentWallet.queries) {
+		for (const tx of ArweaveStore.currentWallet.queries[queryKey]) {
+			if (!tx.node.block) {
+
+			}
+		}
+	}
 }
 
 export function setCurrentWallet (wallet) {
@@ -135,6 +145,7 @@ export async function updateConversionRate () {
 updateArweave()
 updateConversionRate()
 setInterval(updateConversionRate, 600000)
+setInterval(updatePendingTx, 60000)
 
 if (ArweaveStore.wallets.length > 0) { ArweaveStore.currentWallet = ArweaveStore.wallets[0] }
 window.ArweaveStore = ArweaveStore

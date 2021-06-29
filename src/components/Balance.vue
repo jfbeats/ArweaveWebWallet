@@ -5,7 +5,7 @@
 			<LocaleCurrency class="currency" :ar="wallet.balance" />
 		</div>
 		<div>
-			<div class="wallet-info"><img src="arweaveLogo.svg"> &nbsp;&nbsp;Arweave wallet</div>
+			<div class="wallet-info"><img class="logo" :src="walletInfo.img">{{ walletInfo.name }}</div>
 			<Address :address="wallet.key" />
 		</div>
 	</div>
@@ -16,9 +16,15 @@ import Address from '@/components/atomic/Address'
 import Ar from '@/components/atomic/Ar'
 import LocaleCurrency from '@/components/atomic/LocaleCurrency'
 
-export default 	{
+export default {
 	components: { Address, Ar, LocaleCurrency },
 	props: ['wallet'],
+	computed: {
+		walletInfo () {
+			if (this.wallet.metaData?.provider === 'Ledger') { return { img: require('@/assets/logos/ledger.svg'), name: 'Ledger' } }
+			return { img: require('@/assets/logos/arweave.svg'), name: 'Arweave wallet' }
+		}
+	}
 }
 </script>
 
@@ -46,9 +52,14 @@ export default 	{
 }
 
 .wallet-info {
-	margin: 0  0 var(--spacing) 0;
+	margin: 0 0 var(--spacing) 0;
 	display: flex;
 	height: 1em;
+}
+
+.logo {
+	opacity: var(--element-secondary-opacity);
+	margin-right: 8px;
 }
 
 .address {
