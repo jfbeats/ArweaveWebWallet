@@ -1,6 +1,6 @@
 <template>
 	<div class="folding-layout">
-		<div class="left">
+		<div class="left" :class="{ hasRight: hasRight() }">
 			<slot name="left" />
 		</div>
 		<div class="right">
@@ -11,7 +11,10 @@
 
 <script>
 export default {
-
+	methods: {
+		hasLeft () { return !!this.$slots.left },
+		hasRight () { return !!this.$slots.right },
+	}
 }
 </script>
 
@@ -21,7 +24,7 @@ export default {
 	position: relative;
 }
 
-.left {
+.left.hasRight {
 	position: fixed;
 	width: 40vw;
 	height: 100vh;

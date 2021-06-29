@@ -18,7 +18,7 @@ export async function newPassphrase (passphrase) {
 }
 
 export async function newLedger () {
-	const key = (await Ledger.getAddress())?.address
+	const key = await Ledger.getActiveAddress()
 	if (!key) { return }
 	const wallet = { key, type: 'hwLedger' }
 	return pushWallet(wallet)
@@ -33,3 +33,8 @@ function download (filename, text) {
 	element.click()
 	document.body.removeChild(element)
 }
+
+
+
+
+window.newLedger = newLedger

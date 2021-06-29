@@ -10,71 +10,89 @@ async function getTransport () {
 
 async function getVersion () {
 	const transport = await getTransport()
+	let response = null
 	try {
 		const app = new ArweaveApp(transport)
 		console.info("Requesting version")
-		const response = await app.getVersion()
+		response = await app.getVersion()
 		if (response.returnCode !== ArweaveApp.ErrorCode.NoError) {
 			console.error(`Error [${response.returnCode}] ${response.errorMessage}`)
-			return
+		} else {
+			console.info(`App Version ${response.major}.${response.minor}.${response.patch}`, response)
 		}
-		console.info(`App Version ${response.major}.${response.minor}.${response.patch}`, response)
-		return response
 	} finally { transport.close() }
+	return response
 }
 
 async function appInfo () {
 	const transport = await getTransport()
+	let response = null
 	try {
 		const app = new ArweaveApp(transport)
 		console.info("Requesting app info")
-		const response = await app.appInfo()
+		response = await app.appInfo()
 		if (response.returnCode !== ArweaveApp.ErrorCode.NoError) {
 			console.error(`Error [${response.returnCode}] ${response.errorMessage}`)
-			return
+		} else {
+			console.info("Response received!", response)
 		}
-		console.info("Response received!", response)
-		return response
 	} finally { transport.close() }
+	return response
 }
 
-async function getActiveAddress (request = false) {
+async function getAddress (request = false) {
 	const transport = await getTransport()
+	let response = null
 	try {
 		const app = new ArweaveApp(transport)
-		let response = await app.getVersion()
-		console.info(`App Version ${response.major}.${response.minor}.${response.patch}`, response)
 		console.info("Requesting address")
 		response = request ? await app.showAddress() : await app.getAddress()
 		if (response.returnCode !== ArweaveApp.ErrorCode.NoError) {
 			console.error(`Error [${response.returnCode}] ${response.errorMessage}`)
-			return
+		} else {
+			console.info("Response received!", response)
 		}
-		console.info("Response received!", response)
-		return response
 	} finally { transport.close() }
+	return response
 }
 
 async function sign (transaction) {
 	const transport = await getTransport()
 	try {
 		const app = new ArweaveApp(transport)
-		let response = await app.getVersion()
-		console.info(`App Version ${response.major}.${response.minor}.${response.patch}`, response)
-		let addr = await app.getAddress()
+		const addr = await app.getAddress()
 		transaction.owner = addr.owner
-		response = await app.sign(transaction)
-		let id = await arweave.crypto.hash(response.signature)
-		let sigjs = {
+		const response = await app.sign(transaction)
+		const id = await arweave.crypto.hash(response.signature)
+		const sigjs = {
+			owner: addr.owner,
 			signature: await arweave.utils.bufferTob64Url(response.signature),
 			id: await arweave.utils.bufferTob64Url(id)
 		}
 		await transaction.setSignature(sigjs)
-		console.info("Transaction signed")
-		return transaction
+		console.info("Transaction signed", transaction)
 	} finally { transport.close() }
+	return transaction
 }
 
-const Ledger = { getVersion, appInfo, getActiveAddress, sign }
+const Ledger = {
+	getVersion,
+	appInfo,
+	getActiveAddress: async () => (await getAddress()).address,
+	getActivePublicKey: async () => (await getAddress()).owner,
+	sign,
+}
 
 export default Ledger
+
+
+
+// Testing
+
+window.arweaveWallet = Ledger
+
+window.testTx = async () => {
+	const tx = await arweave.createTransaction({ data: '😁', })
+	const signedTx = await window.arweaveWallet.sign(tx)
+	console.log(await arweave.transactions.post(signedTx))
+}
