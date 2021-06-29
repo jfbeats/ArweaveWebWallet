@@ -33,8 +33,3 @@ function download (filename, text) {
 	element.click()
 	document.body.removeChild(element)
 }
-
-
-
-
-window.newLedger = newLedger
