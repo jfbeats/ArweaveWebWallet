@@ -4,7 +4,8 @@
 			<Ar class="ar" :ar="wallet.balance" /><br>
 			<LocaleCurrency class="currency" :ar="wallet.balance" />
 		</div>
-		<div class="info">
+		<div>
+			<div class="wallet-info"><img src="arweaveLogo.svg"> &nbsp;&nbsp;Arweave wallet</div>
 			<Address :address="wallet.key" />
 		</div>
 	</div>
@@ -44,7 +45,13 @@ export default 	{
 	font-size: 0.5em;
 }
 
-.info {
+.wallet-info {
+	margin: 0  0 var(--spacing) 0;
+	display: flex;
+	height: 1em;
+}
+
+.address {
 	font-size: 0.75em;
 	color: var(--element-secondary);
 }

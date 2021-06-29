@@ -1,5 +1,5 @@
 <template>
-	<div class="address-container ellipsis">
+	<div class="tx-id ellipsis">
 		<span class="address-tx ellipsis">
 			<strong>
 				<slot></slot>
@@ -18,12 +18,6 @@ export default {
 </script>
 
 <style scoped>
-.address-container {
-}
-
-.address-tx {
-}
-
 .id {
 	user-select: all;
 }
