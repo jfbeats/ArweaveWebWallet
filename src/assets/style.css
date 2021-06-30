@@ -5,7 +5,6 @@ html {
 	background-position: center;
 	background-size: cover;
 	background-repeat: no-repeat;
-	background-origin: center;
 	background-attachment: fixed;
 	--spacing: 24px;
 	--background: #151515;

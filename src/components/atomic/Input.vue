@@ -6,19 +6,23 @@
 			</div>
 		</div>
 		<input class="text" :placeholder="placeholder" :autocomplete="autocomplete || 'off'">
-		<div v-for="action in actions" :key="action.icon" class="icon-container">
+		<div v-for="action in actions" class="icon-container" @click="action.function" :key="action.icon">
 			<div class="icon-background">
-				<img class="icon no-select" :src="icon" @click="action.function" draggable="false">
+				<img class="icon no-select" :src="icon" draggable="false">
 			</div>
 		</div>
 	</div>
 </template>
+
+
 
 <script>
 export default {
 	props: ['icon', 'placeholder', 'actions', 'autocomplete'],
 }
 </script>
+
+
 
 <style scoped>
 .input {

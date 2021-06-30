@@ -37,6 +37,7 @@ const ArweaveStore = reactive({
 			queriesStatus: {},
 		},
 	],
+	txs: {},
 	currency: {
 		limestone: null,
 	},
@@ -55,7 +56,7 @@ export function updateArweave (gatewaySettings = gatewayDefault) {
 }
 
 export async function pushWallet (wallet) {
-	Object.assign(wallet, { queries: {}, queriesStatus: {} })
+	Object.assign(wallet, { balance: null, queries: {}, queriesStatus: {} })
 	if (!wallet.key && wallet.jwk) { wallet.key = await arweave.wallets.jwkToAddress(wallet.jwk) }
 	if (getWalletByKey(wallet.key)) { return getWalletByKey(wallet.key) }
 	if (!wallet.id) { wallet.id = getNewId() }
@@ -87,12 +88,25 @@ export async function getTxById (txId) {
 	return arDB.search('transaction').id(txId).find()
 }
 
-async function updatePendingTx () {
-	for (const queryKey in ArweaveStore.currentWallet.queries) {
-		for (const tx of ArweaveStore.currentWallet.queries[queryKey]) {
-			if (!tx.node.block) {
-
-			}
+async function refreshTx () {
+	// Todo fetch new txs as well
+	const ids = []
+	const txs = []
+	for (const key in ArweaveStore.txs) {
+		if (!ArweaveStore.txs[key].block) { 
+			ids.push(key)
+			txs.push(ArweaveStore.txs[key])
+		}
+	}
+	if (ids.length === 0) { return }
+	const results = await arDB.search().ids(ids).findAll()
+	console.log('updating:', results)
+	for (const tx of txs) {
+		const updatedTx = results.find((el) => el?.node?.id === tx.id)?.node
+		if (updatedTx) {
+			Object.assign(tx, updatedTx)
+		} else {
+			console.error('tx missing? :0', tx)
 		}
 	}
 }
@@ -116,20 +130,24 @@ export async function fetchTransactions (wallet, query) {
 		received: () => arDB.search().to(wallet.key),
 		sent: () => arDB.search().from(wallet.key),
 	}
-	let result
+	let results
 	if (wallet.queries[query] && wallet.queries[query].length > 0) {
 		const lastTxIndex = wallet.queries[query].length - 1
 		const cursor = wallet.queries[query][lastTxIndex].cursor
-		result = await queries[query]().cursor(cursor).find()
+		results = await queries[query]().cursor(cursor).find()
 	} else {
 		wallet.queries[query] = []
-		result = await queries[query]().find()
+		results = await queries[query]().find()
 	}
-	if (result.length < 10) {
+	if (results.length < 10) {
 		if (!wallet.queriesStatus[query]) { wallet.queriesStatus[query] = {} }
 		wallet.queriesStatus[query].completed = true
 	}
-	wallet.queries[query].push(...result)
+	for (const result of results) {
+		if (!ArweaveStore.txs[result.node.id]) { ArweaveStore.txs[result.node.id] = {} }
+		result.node = Object.assign(ArweaveStore.txs[result.node.id], result.node)
+	}
+	wallet.queries[query].push(...results)
 	return wallet.queries[query]
 }
 
@@ -145,7 +163,13 @@ export async function updateConversionRate () {
 updateArweave()
 updateConversionRate()
 setInterval(updateConversionRate, 600000)
-setInterval(updatePendingTx, 60000)
+setInterval(refreshTx, 60000)
 
 if (ArweaveStore.wallets.length > 0) { ArweaveStore.currentWallet = ArweaveStore.wallets[0] }
+
+
+
+// Testing
 window.ArweaveStore = ArweaveStore
+
+pushWallet({id: 4, key: 'zYqPZuALSPa_f5Agvf8g2JHv94cqMn9aBtnH7GFHbuA'})

@@ -1,10 +1,11 @@
 <template>
 	<div class="send card">
-		<!-- to -> (what, amount), data? -->
-		<!-- fees -->
 		<!-- Autocomplete local addrs -->
 		<h2 class="heading"><img src="@/assets/icons/north_east.svg">Send</h2>
 		<Input :icon="require('@/assets/icons/person.svg')" placeholder="Arweave address" autocomplete="ar" />
+		<!-- ar amount -->
+		<!-- data upload handlers -->
+		<!-- display: fees -->
 		<!-- QR -->
 	</div>
 </template>
