@@ -27,18 +27,20 @@
 			</div>
 		</template>
 		<template #right v-if="data.handler">
-			<div v-if="data.handler === 'iframe'" class="frame-container">
-				<iframe class="iframe" :src="ArweaveStore.gatewayURL + tx.id" />
-			</div>
-			<div v-if="data.handler === 'img'" class="frame-container">
-				<img class="img" :src="ArweaveStore.gatewayURL + tx.id">
-			</div>
-			<div v-if="data.handler === 'json'" class="card-container">
-				<pre class="raw card">{{ data.payload }}</pre>
-			</div>
-			<div v-if="data.handler === 'raw'" class="card-container">
-				<div class="raw card">{{ data.payload }}</div>
-			</div>
+			<transition :name="verticalContent ? 'slide-up' : 'slide-left'" appear>
+				<div v-if="data.handler === 'iframe'" v-show="data.loaded" key="iframe" class="frame-container">
+					<iframe class="iframe" :src="ArweaveStore.gatewayURL + tx.id" @load="data.loaded=true" />
+				</div>
+				<div v-else-if="data.handler === 'img'" v-show="data.loaded" key="img" class="frame-container">
+					<img class="img" :src="ArweaveStore.gatewayURL + tx.id" @load="data.loaded=true">
+				</div>
+				<div v-else-if="data.handler === 'json'" key="json" class="card-container">
+					<pre class="raw card">{{ data.payload }}</pre>
+				</div>
+				<div v-else-if="data.handler === 'raw'" key="raw" class="card-container">
+					<div class="raw card">{{ data.payload }}</div>
+				</div>
+			</transition>
 		</template>
 	</FoldingLayout>
 </template>
@@ -59,6 +61,7 @@ export default {
 		const data = reactive({
 			payload: null,
 			handler: null,
+			loaded: false,
 		})
 
 		const isData = computed(() => tx.value.data?.size !== '0')
@@ -74,6 +77,7 @@ export default {
 		watch(() => props.txId, async () => {
 			tx.value = await getTxById(props.txId)
 			data.handler = null
+			data.loaded = false
 			if (!isData.value) {
 				return
 			} else if (tx.value.data?.type === 'text/html' || tx.value.data?.type === 'application/pdf') {
@@ -93,7 +97,11 @@ export default {
 				} catch { }
 			}
 		}, { immediate: true })
-		return { ArweaveStore, tx, data, isData, isPending, date, verticalContent }
+		const loaded = () => {
+			console.log('loaded')
+			data.loaded = true
+		}
+		return { ArweaveStore, tx, data, loaded, isData, isPending, date, verticalContent }
 	},
 }
 </script>
