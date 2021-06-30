@@ -1,5 +1,5 @@
 <template>
-	<div class="send">
+	<div class="send card">
 		<!-- to -> (what, amount), data? -->
 		<!-- fees -->
 		<!-- Autocomplete local addrs -->
@@ -18,13 +18,6 @@ export default {
 </script>
 
 <style scoped>
-.send {
-	padding: var(--spacing);
-	background: var(--background2);
-	border-radius: var(--border-radius);
-	border: 1px solid var(--border);
-}
-
 .heading {
 	display: flex;
 	gap: var(--spacing);

@@ -27,17 +27,17 @@
 			</div>
 		</template>
 		<template #right v-if="data.handler">
-			<div v-if="data.handler === 'iframe'" class="frame-background">
+			<div v-if="data.handler === 'iframe'" class="frame-container">
 				<iframe class="iframe" :src="ArweaveStore.gatewayURL + tx.id" />
 			</div>
-			<div v-if="data.handler === 'img'" class="frame-background">
+			<div v-if="data.handler === 'img'" class="frame-container">
 				<img class="img" :src="ArweaveStore.gatewayURL + tx.id">
 			</div>
-			<div v-if="data.handler === 'json'" class="card-background">
-				<pre class="raw">{{ data.payload }}</pre>
+			<div v-if="data.handler === 'json'" class="card-container">
+				<pre class="raw card">{{ data.payload }}</pre>
 			</div>
-			<div v-if="data.handler === 'raw'" class="card-background">
-				<div class="raw">{{ data.payload }}</div>
+			<div v-if="data.handler === 'raw'" class="card-container">
+				<div class="raw card">{{ data.payload }}</div>
 			</div>
 		</template>
 	</FoldingLayout>
@@ -112,7 +112,7 @@ export default {
 	white-space: nowrap;
 }
 
-.frame-background {
+.frame-container {
 	width: 100%;
 	height: 100vh;
 	background: var(--background3);
@@ -121,12 +121,12 @@ export default {
 	overflow: hidden;
 }
 
-.verticalContent .frame-background {
+.verticalContent .frame-container {
 	height: 80vh;
 	border-radius: 32px 32px 0 0;
 }
 
-.card-background {
+.card-container {
 	padding: var(--spacing);
 }
 
@@ -144,10 +144,6 @@ export default {
 }
 
 .raw {
-	padding: var(--spacing);
-	background: var(--background2);
-	border: 1px solid var(--border);
-	border-radius: var(--border-radius);
 	overflow: auto;
 }
 </style>

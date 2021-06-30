@@ -41,6 +41,13 @@ h1, h2, h3, h4, h5 {
 	box-sizing: inherit;
 }
 
+.card {
+	padding: var(--spacing);
+	background: var(--background2);
+	border-radius: var(--border-radius);
+	border: 1px solid var(--border);
+}
+
 .ellipsis {
 	white-space: nowrap;
 	overflow: hidden;

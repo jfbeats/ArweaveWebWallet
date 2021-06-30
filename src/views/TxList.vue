@@ -3,7 +3,9 @@
 		<Tabs query="view" :tabs="tabs" />
 		<transition :name="transitionName" mode="out-in">
 			<div class="list" :key="selectedQuery">
-				<TxCard v-for="tx in txs" :key="tx.node.id" class="tx-card" :tx="tx.node" />
+				<transition-group name="fade">
+					<TxCard class="card" v-for="tx in txs" :key="tx.node.id" :tx="tx.node" />
+				</transition-group>
 			</div>
 		</transition>
 		<div ref="bottom" class="bottom" v-show="!loading && !completedQuery"></div>
@@ -75,13 +77,6 @@ export default {
 	flex-direction: column;
 	gap: var(--spacing);
 	position: relative;
-}
-
-.tx-card {
-	padding: var(--spacing);
-	background: var(--background2);
-	border-radius: var(--border-radius);
-	border: 1px solid var(--border);
 }
 
 .bottom {

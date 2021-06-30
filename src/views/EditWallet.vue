@@ -1,7 +1,7 @@
 <template>
 	<div class="edit-wallet">
 		<h2>Edit New Wallets</h2>
-		<WalletOptions class="wallet-options" v-for="wallet in wallets" :key="wallet.id" :wallet="wallet" />
+		<WalletOptions class="wallet-options card" v-for="wallet in wallets" :key="wallet.id" :wallet="wallet" />
 	</div>
 </template>
 
@@ -29,11 +29,5 @@ export default {
 <style scoped>
 .edit-wallet {
 	padding: 32px;
-}
-
-.wallet-options {
-	padding: var(--spacing);
-	background: var(--background2);
-	border-radius: var(--border-radius);
 }
 </style>
