@@ -151,12 +151,14 @@ export async function updateTransactions (wallet, query) {
 		}
 		for (const result of results) {
 			result.node = Object.assign(ArweaveStore.txs[result.node.id] ??= {}, result.node)
-			if (result.node.block) { requireSort = true }
 			const matchingTx = wallet.queries[query].find(el => el.node.id === result.node.id)
 			if (matchingTx) {
 				fulfilled = true
 				matchingTx.cursor = result.cursor
-			} else { resultsFiltered.push(result) }
+			} else { 
+				resultsFiltered.push(result) 
+				if (result.node.block) { requireSort = true }
+			}
 		}
 	}
 	if (resultsFiltered.length > 0) { wallet.queries[query].splice(0, 0, ...resultsFiltered) }
