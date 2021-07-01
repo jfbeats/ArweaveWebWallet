@@ -3,8 +3,8 @@
 		<Tabs query="view" :tabs="tabs" />
 		<transition :name="transitionName" mode="out-in">
 			<div class="list" :key="selectedQuery">
-				<transition-group name="fade">
-					<TxCard class="card" v-for="tx in txs" :key="tx.node.id" :tx="tx.node" />
+				<transition-group name="fade-list">
+					<TxCard class="card fade-list-item" v-for="tx in txs" :key="tx.node.id" :tx="tx.node" />
 				</transition-group>
 			</div>
 		</transition>
@@ -15,7 +15,7 @@
 <script>
 import TxCard from '@/components/TxCard'
 import Tabs from '@/components/atomic/Tabs'
-import { fetchTransactions } from '@/store/ArweaveStore'
+import { fetchTransactions, updateTransactions } from '@/store/ArweaveStore'
 import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -24,6 +24,7 @@ export default {
 	props: ['wallet'],
 	setup (props) {
 		let loading = ref(false)
+		let liveUpdate
 		const bottom = ref(null)
 		const route = useRoute()
 		const selectedQuery = computed(() => route.query.view || 'received')
@@ -43,8 +44,14 @@ export default {
 		const observer = new IntersectionObserver((entries) => {
 			if (entries[0].isIntersecting === true) { updateQuery() }
 		}, { threshold: [0] })
-		onMounted(() => { observer.observe(bottom.value) })
-		onBeforeUnmount(() => { observer.unobserve(bottom.value) })
+		onMounted(() => {
+			observer.observe(bottom.value)
+			liveUpdate = setInterval(() => updateTransactions(props.wallet, selectedQuery.value), 10000)
+		})
+		onBeforeUnmount(() => {
+			observer.unobserve(bottom.value)
+			clearInterval(liveUpdate)
+		})
 		const tabs = [
 			{ name: 'Received', color: '#a3be8c' },
 			{ name: 'Sent', color: '#bf616a' },

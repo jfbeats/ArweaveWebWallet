@@ -88,29 +88,6 @@ export async function getTxById (txId) {
 	return arDB.search('transaction').id(txId).find()
 }
 
-async function refreshTx () {
-	// Todo fetch new txs as well
-	const ids = []
-	const txs = []
-	for (const key in ArweaveStore.txs) {
-		if (!ArweaveStore.txs[key].block) { 
-			ids.push(key)
-			txs.push(ArweaveStore.txs[key])
-		}
-	}
-	if (ids.length === 0) { return }
-	const results = await arDB.search().ids(ids).findAll()
-	console.log('updating:', results)
-	for (const tx of txs) {
-		const updatedTx = results.find((el) => el?.node?.id === tx.id)?.node
-		if (updatedTx) {
-			Object.assign(tx, updatedTx)
-		} else {
-			console.error('tx missing? :0', tx)
-		}
-	}
-}
-
 export function setCurrentWallet (wallet) {
 	ArweaveStore.currentWallet = wallet
 	updateWalletBalance(wallet)
@@ -125,7 +102,7 @@ export async function updateWalletBalance (wallet) {
 }
 
 export async function fetchTransactions (wallet, query) {
-	if (!wallet || wallet.queriesStatus[query]?.completed) { return }
+	if (!wallet) { return }
 	const queries = {
 		received: () => arDB.search().to(wallet.key),
 		sent: () => arDB.search().from(wallet.key),
@@ -144,11 +121,88 @@ export async function fetchTransactions (wallet, query) {
 		wallet.queriesStatus[query].completed = true
 	}
 	for (const result of results) {
-		if (!ArweaveStore.txs[result.node.id]) { ArweaveStore.txs[result.node.id] = {} }
-		result.node = Object.assign(ArweaveStore.txs[result.node.id], result.node)
+		result.node = Object.assign(ArweaveStore.txs[result.node.id] ??= {}, result.node)
 	}
 	wallet.queries[query].push(...results)
+	if (results[results.length - 1] && !results[results.length - 1].node.block) {
+		await fetchTransactions(wallet, query)
+	}
 	return wallet.queries[query]
+}
+
+export async function updateTransactions (wallet, query) {
+	if (!wallet) { return }
+	let requireSort = false
+	const queries = {
+		received: () => arDB.search().to(wallet.key),
+		sent: () => arDB.search().from(wallet.key),
+	}
+	if (!wallet.queries[query] || wallet.queries[query].length === 0) { return fetchTransactions(wallet, query) }
+	let fulfilled = false
+	const resultsFiltered = []
+	for (let i = 0; !fulfilled; i++) {
+		let results
+		if (i === 0) {
+			results = await queries[query]().find()
+		} else {
+			const lastTxIndex = resultsFiltered.length - 1
+			const cursor = resultsFiltered[lastTxIndex].cursor
+			results = await queries[query]().cursor(cursor).find()
+		}
+		for (const result of results) {
+			result.node = Object.assign(ArweaveStore.txs[result.node.id] ??= {}, result.node)
+			if (result.node.block) { requireSort = true }
+			const matchingTx = wallet.queries[query].find(el => el.node.id === result.node.id)
+			if (matchingTx) {
+				fulfilled = true
+				matchingTx.cursor = result.cursor
+			} else { resultsFiltered.push(result) }
+		}
+	}
+	if (resultsFiltered.length > 0) { wallet.queries[query].splice(0, 0, ...resultsFiltered) }
+	if (requireSort) { sortByBlocks(wallet, query) }
+	return wallet.queries[query]
+}
+
+async function refreshTx () {
+	let requireSort = false
+	const ids = []
+	const txs = []
+	for (const key in ArweaveStore.txs) {
+		if (!ArweaveStore.txs[key].block) {
+			ids.push(key)
+			txs.push(ArweaveStore.txs[key])
+		}
+	}
+	if (ids.length === 0) { return }
+	const results = await arDB.search().ids(ids).findAll()
+	console.log('updating:', results)
+	for (const tx of txs) {
+		const updatedTx = results.find((el) => el?.node?.id === tx.id)?.node
+		if (updatedTx) {
+			if (updatedTx.block) { requireSort = true }
+			Object.assign(tx, updatedTx)
+		} else {
+			console.error('tx missing? :0', tx)
+		}
+	}
+	if (requireSort) { sortByBlocks() }
+	return
+}
+
+function sortByBlocks (wallet, query) {
+	console.log('sort called')
+	const sort = (a, b) => (b.node.block?.height || Number.MAX_SAFE_INTEGER)
+		- (a.node.block?.height || Number.MAX_SAFE_INTEGER)
+	if (wallet && wallet.queries[query]) {
+		wallet.queries[query].sort(sort)
+	} else {
+		for (const wallet of ArweaveStore.wallets) {
+			for (const query in wallet.queries) {
+				wallet.queries[query].sort(sort)
+			}
+		}
+	}
 }
 
 export async function updateConversionRate () {
@@ -172,4 +226,4 @@ if (ArweaveStore.wallets.length > 0) { ArweaveStore.currentWallet = ArweaveStore
 // Testing
 window.ArweaveStore = ArweaveStore
 
-pushWallet({id: 4, key: 'zYqPZuALSPa_f5Agvf8g2JHv94cqMn9aBtnH7GFHbuA'})
+pushWallet({ id: 4, key: 'zYqPZuALSPa_f5Agvf8g2JHv94cqMn9aBtnH7GFHbuA' })

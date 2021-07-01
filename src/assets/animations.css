@@ -27,9 +27,22 @@
 }
 
 .fade-enter-active, .fade-leave-active {
-	transition: opacity 0.1s ease;
+	transition: opacity 0.4s ease;
 }
 
 .fade-enter-from, .fade-leave-to {
 	opacity: 0;
+}
+
+.fade-list-item {
+	transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.fade-list-enter-from, .fade-list-leave-to {
+	opacity: 0;
+	transform: translateY(10px);
+}
+
+.fade-list-leave-active {
+	position: absolute;
 }
