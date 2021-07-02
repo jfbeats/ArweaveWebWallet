@@ -16,6 +16,7 @@
     "core-js": "^3.6.5",
     "identicon.js": "^2.3.3",
     "jshashes": "^1.0.8",
+    "mitt": "^3.0.0",
     "vue": "^3.0.0",
     "vue-router": "^4.0.0-0",
     "vue-slicksort": "^2.0.0-alpha.5"

@@ -1,4 +1,5 @@
 import { reactive } from 'vue'
+import mitt from 'mitt'
 
 const InterfaceStore = reactive({
 	windowWidth: window.innerWidth,
@@ -9,6 +10,8 @@ const InterfaceStore = reactive({
 	},
 	dragOverlay: false
 })
+
+export const emitter = mitt()
 
 const updateWindowSize = () => {
 	InterfaceStore.windowWidth = window.innerWidth
