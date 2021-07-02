@@ -2,6 +2,7 @@ import Arweave from 'arweave'
 import ArDB from 'ardb'
 import axios from 'axios'
 import { reactive } from 'vue'
+import InterfaceStore from '@/store/InterfaceStore'
 
 
 
@@ -12,6 +13,7 @@ const gatewayDefault = {
 }
 
 const ArweaveStore = reactive({
+	gatewayDefault,
 	gatewayURL: null,
 	currentWallet: null,
 	wallets: [
@@ -117,8 +119,7 @@ export async function fetchTransactions (wallet, query) {
 		results = await queries[query]().find()
 	}
 	if (results.length < 10) {
-		if (!wallet.queriesStatus[query]) { wallet.queriesStatus[query] = {} }
-		wallet.queriesStatus[query].completed = true
+		(wallet.queriesStatus[query] ??= {}).completed = true
 	}
 	for (const result of results) {
 		result.node = Object.assign(ArweaveStore.txs[result.node.id] ??= {}, result.node)
@@ -131,17 +132,18 @@ export async function fetchTransactions (wallet, query) {
 }
 
 export async function updateTransactions (wallet, query) {
-	if (!wallet) { return }
+	if (!wallet || !InterfaceStore.windowVisible) { return }
 	let requireSort = false
 	const queries = {
 		received: () => arDB.search().to(wallet.key),
 		sent: () => arDB.search().from(wallet.key),
 	}
 	if (!wallet.queries[query] || wallet.queries[query].length === 0) { return fetchTransactions(wallet, query) }
+	// Grab batches of 10 until we reach known data
 	let fulfilled = false
+	let results
 	const resultsFiltered = []
 	for (let i = 0; !fulfilled; i++) {
-		let results
 		if (i === 0) {
 			results = await queries[query]().find()
 		} else {
@@ -155,18 +157,39 @@ export async function updateTransactions (wallet, query) {
 			if (matchingTx) {
 				fulfilled = true
 				matchingTx.cursor = result.cursor
-			} else { 
-				resultsFiltered.push(result) 
+			} else {
+				resultsFiltered.push(result)
 				if (result.node.block) { requireSort = true }
 			}
 		}
 	}
 	if (resultsFiltered.length > 0) { wallet.queries[query].splice(0, 0, ...resultsFiltered) }
-	if (requireSort) { sortByBlocks(wallet, query) }
+	// Refresh additional pendings txs
+	const ids = []
+	for (const tx of wallet.queries[query]) {
+		if (!tx.node.block && !results.find(el => el.node.id === tx.node.id)) {
+			ids.push(tx.node.id)
+		}
+	}
+	if (ids.length !== 0) {
+		results = await arDB.search().ids(ids).findAll()
+		console.log('updating:', results)
+		for (const id of ids) {
+			const result = results.find(el => el.node.id === id)
+			if (result) {
+				if (result.node.block) { requireSort = true }
+				Object.assign(ArweaveStore.txs[result.node.id] ??= {}, result.node)
+			} else {
+				console.error('tx missing? :0', tx)
+			}
+		}
+	}
+	if (requireSort) { sortByBlocks() }
 	return wallet.queries[query]
 }
 
 async function refreshTx () {
+	if (!InterfaceStore.windowVisible) { return }
 	let requireSort = false
 	const ids = []
 	const txs = []
@@ -193,7 +216,6 @@ async function refreshTx () {
 }
 
 function sortByBlocks (wallet, query) {
-	console.log('sort called')
 	const sort = (a, b) => (b.node.block?.height || Number.MAX_SAFE_INTEGER)
 		- (a.node.block?.height || Number.MAX_SAFE_INTEGER)
 	if (wallet && wallet.queries[query]) {
@@ -208,6 +230,7 @@ function sortByBlocks (wallet, query) {
 }
 
 export async function updateConversionRate () {
+	if (!InterfaceStore.windowVisible) { return }
 	const res = await axios.get('https://api.redstone.finance/prices?symbol=AR&provider=redstone')
 	ArweaveStore.currency.limestone = res.data[0].value
 	console.log('Conversion Rate', ArweaveStore.currency.limestone)
@@ -219,7 +242,6 @@ export async function updateConversionRate () {
 updateArweave()
 updateConversionRate()
 setInterval(updateConversionRate, 600000)
-setInterval(refreshTx, 60000)
 
 if (ArweaveStore.wallets.length > 0) { ArweaveStore.currentWallet = ArweaveStore.wallets[0] }
 

@@ -46,7 +46,12 @@ export default {
 		}, { threshold: [0] })
 		onMounted(() => {
 			observer.observe(bottom.value)
-			liveUpdate = setInterval(() => updateTransactions(props.wallet, selectedQuery.value), 10000)
+			liveUpdate = setInterval(async () => {
+				if (loading.value) { return }
+				loading.value = true
+				await updateTransactions(props.wallet, selectedQuery.value)
+				loading.value = false
+			}, 10000)
 		})
 		onBeforeUnmount(() => {
 			observer.unobserve(bottom.value)
