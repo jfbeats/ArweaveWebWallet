@@ -91,7 +91,6 @@ const router = createRouter({
 	scrollBehavior: (to, from, savedPosition) => new Promise((resolve) => {
 		const position = savedPosition || { top: 0 }
 		emitter.on('restoreScroll', () => {
-			console.log(position)
 			emitter.off('restoreScroll')
 			resolve(position)
 		})
