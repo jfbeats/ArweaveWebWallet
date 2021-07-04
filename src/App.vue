@@ -2,7 +2,7 @@
 	<div class="app" :class="{ verticalLayout }">
 		<Toolbar class="toolbar" :class="{ verticalLayout, dragOverlay }" @drop.prevent="droppedFiles" />
 		<router-view class="router" v-slot="{ Component, route }" @drop.prevent="droppedFiles">
-			<transition :name="route.meta.mainTransitionName || 'slide-up'" mode="out-in" @before-enter="emitter.emit('restoreScroll')">
+			<transition :name="route.meta.mainTransitionName || 'slide-up'" mode="out-in" @before-enter="emitter.emit('beforeEnter')" @after-enter="emitter.emit('afterEnter')" @before-leave="emitter.emit('beforeLeave')" @after-leave="emitter.emit('afterLeave')">
 				<component :is="Component" :key="$route.path.split('/').slice(0,3).join('')" />
 			</transition>
 		</router-view>
@@ -17,7 +17,7 @@ import ArweaveStore from './store/ArweaveStore'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import { newWallet } from '@/functions/Wallets.js'
 import { useRouter } from 'vue-router'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 export default {
 	components: {

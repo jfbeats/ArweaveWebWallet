@@ -1,6 +1,6 @@
 <template>
-	<div class="folding-layout">
-		<div class="left" :class="{ hasRight: hasRight() }">
+	<div class="folding-layout" :class="{ verticalContent }">
+		<div v-show="showLeft" class="left" :class="{ hasRight: hasRight() }" :style="{ top: scrollPosition }">
 			<slot name="left" />
 		</div>
 		<div class="right">
@@ -10,11 +10,43 @@
 </template>
 
 <script>
+import InterfaceStore, { emitter } from '@/store/InterfaceStore'
+import { ref, computed } from 'vue'
 export default {
+	setup () {
+		const scrollPosition = ref('0')
+		const showLeft = ref(true)
+		const scrollHandler = () => {
+			scrollPosition.value = window.scrollY + 'px'
+		}
+		const positionHandler = (val) => {
+			if (val) {
+				scrollHandler()
+				window.addEventListener('scroll', scrollHandler)
+			} else {
+				window.removeEventListener('scroll', scrollHandler)
+				scrollPosition.value = 0;
+			}
+		}
+		const verticalContent = computed(() => InterfaceStore.breakpoints.verticalContent)
+		emitter.once('beforeEnter', () => {
+			positionHandler(true)
+			emitter.once('afterEnter', () => {
+				positionHandler(false)
+				emitter.once('beforeLeave', () => {
+					positionHandler(true)
+					emitter.once('afterLeave', () => {
+						positionHandler(false)
+					})
+				})
+			})
+		})
+		return { scrollPosition, verticalContent, showLeft }
+	},
 	methods: {
 		hasLeft () { return !!this.$slots.left },
 		hasRight () { return !!this.$slots.right },
-	}
+	},
 }
 </script>
 

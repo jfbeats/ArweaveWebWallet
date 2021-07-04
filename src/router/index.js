@@ -90,10 +90,7 @@ const router = createRouter({
 	routes,
 	scrollBehavior: (to, from, savedPosition) => new Promise((resolve) => {
 		const position = savedPosition || { top: 0 }
-		emitter.on('restoreScroll', () => {
-			emitter.off('restoreScroll')
-			resolve(position)
-		})
+		emitter.once('beforeEnter', () => resolve(position))
 	})
 })
 

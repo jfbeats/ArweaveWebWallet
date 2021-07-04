@@ -104,42 +104,52 @@ export async function updateWalletBalance (wallet) {
 }
 
 export async function fetchTransactions (wallet, query) {
-	if (!wallet || wallet.queriesStatus[query]?.completed) { return }
+	if (!wallet || wallet.queriesStatus[query]?.completed
+		|| wallet.queriesStatus[query]?.fetchTransactions
+		|| wallet.queriesStatus[query]?.updateTransactions) { return }
+	wallet.queriesStatus[query] ??= {}
+	wallet.queriesStatus[query].fetchTransactions = true
+	let fulfilled = false
+	let results
 	const queries = {
 		received: () => arDB.search().to(wallet.key),
 		sent: () => arDB.search().from(wallet.key),
 	}
-	let results
-	if (!wallet.queries[query]) {
-		results = await queries[query]().find()
-	} else {
-		const lastTxIndex = wallet.queries[query].length - 1
-		const cursor = wallet.queries[query][lastTxIndex].cursor
-		results = await queries[query]().cursor(cursor).find()
+	for (let i = 0; !fulfilled; i++) {
+		if (!wallet.queries[query]) {
+			results = await queries[query]().find()
+		} else {
+			const lastTxIndex = wallet.queries[query].length - 1
+			const cursor = wallet.queries[query][lastTxIndex].cursor
+			results = await queries[query]().cursor(cursor).find()
+		}
+		for (const result of results) {
+			result.node = Object.assign(ArweaveStore.txs[result.node.id] ??= {}, result.node)
+		}
+		if (results.length < 10) { 
+			wallet.queriesStatus[query].completed = true 
+			fulfilled = true
+		}
+		if (results[results.length - 1]?.node.block) { fulfilled = true }
+		(wallet.queries[query] ??= []).push(...results)
 	}
-	if (results.length < 10) {
-		(wallet.queriesStatus[query] ??= {}).completed = true
-	}
-	for (const result of results) {
-		result.node = Object.assign(ArweaveStore.txs[result.node.id] ??= {}, result.node)
-	}
-	(wallet.queries[query] ??= []).push(...results)
-	if (results[results.length - 1] && !results[results.length - 1].node.block) {
-		await fetchTransactions(wallet, query)
-	}
+	wallet.queriesStatus[query].fetchTransactions = false
 	return wallet.queries[query]
 }
 
 export async function updateTransactions (wallet, query) {
-	if (!wallet || !InterfaceStore.windowVisible) { return }
+	if (!wallet.queries[query] || wallet.queries[query].length === 0) { return fetchTransactions(wallet, query) }
+	if (!wallet || !InterfaceStore.windowVisible 
+		|| wallet.queriesStatus[query]?.fetchTransactions
+		|| wallet.queriesStatus[query]?.updateTransactions) { return }
+	wallet.queriesStatus[query].updateTransactions = true
 	let requireSort = false
+	let fulfilled = false
+	let results
 	const queries = {
 		received: () => arDB.search().to(wallet.key),
 		sent: () => arDB.search().from(wallet.key),
 	}
-	if (!wallet.queries[query] || wallet.queries[query].length === 0) { return fetchTransactions(wallet, query) }
-	let fulfilled = false
-	let results
 	const resultsFiltered = []
 	for (let i = 0; !fulfilled; i++) {
 		if (i === 0) {
@@ -150,7 +160,7 @@ export async function updateTransactions (wallet, query) {
 			results = await queries[query]().cursor(cursor).find()
 		}
 		if (results.length < 10) {
-			(wallet.queriesStatus[query] ??= {}).completed = true
+			wallet.queriesStatus[query].completed = true
 			fulfilled = true
 		}
 		for (const result of results) {
@@ -168,6 +178,7 @@ export async function updateTransactions (wallet, query) {
 	}
 	if (resultsFiltered.length > 0) { wallet.queries[query].splice(0, 0, ...resultsFiltered) }
 	if (requireSort) { sortByBlocks() }
+	wallet.queriesStatus[query].updateTransactions = false
 	return wallet.queries[query]
 }
 

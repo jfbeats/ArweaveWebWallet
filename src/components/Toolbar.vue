@@ -2,8 +2,8 @@
 	<nav id="nav">
 		<SlickList class="wallets" :axis="axis" :lockAxis="axis" v-model:list="ArweaveStore.wallets" :pressDelay="200" helperClass="dragging">
 			<SlickItem v-for="(wallet, i) in ArweaveStore.wallets" :index="i" :key="wallet.key" draggable="false" class="drag-container">
-				<router-link class="icon wallet" :to="{ name: navTo, params: { walletId: wallet.id }, query: { ...$route.query } }" :class="{ active: wallet.id == $route.params.walletId, verticalLayout }" draggable="false">
-					<AddressIcon class="profile" :address="wallet.key" draggable="false" />
+				<router-link class="icon wallet" :to="{ name: navTo, params: { walletId: wallet.id }, query: { ...$route.query } }" :class="{ active: wallet.id == $route.params.walletId, verticalLayout }" draggable="false" @dragstart.prevent>
+					<AddressIcon class="profile" :address="wallet.key" />
 				</router-link>
 			</SlickItem>
 		</SlickList>

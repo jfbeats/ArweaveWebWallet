@@ -17,6 +17,7 @@ export default {
 .action {
 	font-size: 1.2em;
 	display: flex;
+	align-items: center;
 	cursor: pointer;
 	color: inherit;
 	text-decoration: none;
@@ -26,6 +27,10 @@ export default {
 
 .action.router-link-active {
 	box-shadow: -5px 0 0 -3px var(--element-secondary);
+}
+
+.img {
+	height: 1em;
 }
 
 .text {

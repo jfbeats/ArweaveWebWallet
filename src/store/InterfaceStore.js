@@ -13,6 +13,14 @@ const InterfaceStore = reactive({
 
 export const emitter = mitt()
 
+emitter.once = (eventName, fn) => {
+	const handler = () => {
+		emitter.off(eventName, handler)
+		fn()
+	}
+	emitter.on(eventName, handler)
+}
+
 const updateWindowSize = () => {
 	InterfaceStore.windowWidth = window.innerWidth
 	InterfaceStore.breakpoints.verticalLayout = InterfaceStore.windowWidth < 600

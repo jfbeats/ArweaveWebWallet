@@ -1,7 +1,7 @@
 <template>
 	<div class="address-icon no-select">
-		<img class="identicon" :src="identicon" alt="wallet logo" draggable="false">
-		<img class="image" v-if="url" :src="url" alt="wallet profile picture" draggable="false">
+		<img class="identicon" :src="identicon" alt="wallet logo" draggable="false" @dragstart.prevent>
+		<img class="image" v-if="url" :src="url" alt="wallet profile picture" draggable="false" @dragstart.prevent>
 	</div>
 </template>
 

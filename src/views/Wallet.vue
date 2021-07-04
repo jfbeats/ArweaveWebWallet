@@ -1,23 +1,25 @@
 <template>
-	<FoldingLayout v-if="wallet" :class="{ verticalContent }">
-		<template #left>
-			<div class="wallet-info">
-				<Balance :wallet="wallet" />
-				<div class="actions">
-					<Action v-for="action in actions" :key="action.name" :to="{name: action.name, query: {...$route.query}}" :img="action.img">{{ action.text }}</Action>
+	<div class="wallet" :class="{ verticalContent }">
+		<FoldingLayout v-if="wallet">
+			<template #left>
+				<div class="wallet-info">
+					<Balance :wallet="wallet" />
+					<div class="actions">
+						<Action v-for="action in actions" :key="action.name" :to="{name: action.name, query: {...$route.query}}" :img="action.img">{{ action.text }}</Action>
+					</div>
 				</div>
-			</div>
-		</template>
-		<template #right>
-			<div class="wallet-view">
-				<router-view v-slot="{ Component, route }" class="router-view">
-					<transition :name="route.meta.subTransitionName" mode="out-in">
-						<component :is="Component" />
-					</transition>
-				</router-view>
-			</div>
-		</template>
-	</FoldingLayout>
+			</template>
+			<template #right>
+				<div class="wallet-view">
+					<router-view v-slot="{ Component, route }" class="router-view">
+						<transition :name="route.meta.subTransitionName" mode="out-in">
+							<component :is="Component" />
+						</transition>
+					</router-view>
+				</div>
+			</template>
+		</FoldingLayout>
+	</div>
 </template>
 
 
@@ -65,6 +67,10 @@ export default {
 
 
 <style scoped>
+.wallet {
+	width: 100%;
+}
+
 .wallet-info {
 	max-width: 700px;
 	padding: var(--spacing) 0 var(--spacing) var(--spacing);
