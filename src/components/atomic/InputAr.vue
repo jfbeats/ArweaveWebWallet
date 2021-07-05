@@ -1,16 +1,16 @@
 <template>
-	<div class="input-ar">
+	<div class="input-ar" :class="{ focus }">
 		<div class="input">
 			<div class="icon-container">
 				<div class="icon-background">
 					<img class="icon no-select" src="@/assets/logos/arweave.svg" draggable="false">
 				</div>
 			</div>
-			<input inputmode="numeric" class="text" placeholder="AR">
+			<input inputmode="numeric" class="text" placeholder="AR" @focus="focus = true" @blur="focus = false">
 		</div>
-		<div class="spacer"><div /><div /><div /></div>
-		<div class="input">
-			<input inputmode="numeric" class="text right" placeholder="CUR">
+		<div v-if="currency" class="spacer"></div>
+		<div v-if="currency" class="input">
+			<input inputmode="numeric" class="text right" placeholder="CUR" @focus="focus = true" @blur="focus = false">
 			<div class="icon-container">
 				<div class="icon-background">
 					<img class="icon no-select" src="@/assets/currency/usd.svg" draggable="false">
@@ -24,9 +24,14 @@
 
 <script>
 import ArweaveStore from '@/store/ArweaveStore'
+import { computed, ref } from 'vue'
 
 export default {
-
+	setup () {
+		const currency = computed(() => ArweaveStore.redstone.currentPrice )
+		const focus = ref(false)
+		return { currency, focus }
+	}
 }
 </script>
 
@@ -35,35 +40,48 @@ export default {
 <style scoped>
 .input-ar {
 	display: flex;
+	align-items: center;
 	border-radius: 4px;
+	border: 1px solid #ffffff24;
+	background: #ffffff06;
+	transition: 0.3s ease;
+}
+
+.input-ar.focus {
+	border: 1px solid #ffffff48;
+	background: #ffffff08;
+
 }
 
 .input {
 	flex: 1 1 0;
-	height: 3em;
+	height: 4em;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: var(--background3);
+	/* background: var(--background3); */
 	border-radius: inherit;
+}
+
+.input:nth-child(1) {
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+}
+
+.input:nth-child(3) {
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
 }
 
 .spacer {
-	width: var(--spacing);
-	display: flex;
-	flex-direction: column;
-	background: var(--background3);
-	border-radius: inherit;
+	width: 1px;
+	height: 2em;
+	background: #ffffff18;
+	transition: 0.3s ease;
 }
 
-.spacer div {
-	flex: 0 0 1em;
-}
-
-.spacer div:not(:nth-child(2)) {
-	flex: 1 1 0;
-	background: var(--background2);
-	border-radius: inherit;
+.focus .spacer {
+	background: #ffffff40;
 }
 
 .icon-container {
@@ -77,7 +95,7 @@ export default {
 .icon-background {
 	width: 100%;
 	height: 100%;
-	background: var(--background2);
+	/* background: var(--background2); */
 	border-radius: inherit;
 	display: flex;
 	align-items: center;
@@ -89,6 +107,11 @@ export default {
 	height: 50%;
 	object-fit: contain;
 	opacity: var(--element-secondary-opacity);
+	transition: 0.3s ease;
+}
+
+.focus .icon {
+	opacity: 1;
 }
 
 .text {

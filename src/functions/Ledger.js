@@ -4,7 +4,7 @@ import { arweave } from '@/store/ArweaveStore'
 
 
 async function getTransport () {
-	console.log(`Trying to connect via WebUSB...`)
+	console.info(`Trying to connect via WebUSB...`)
 	return TransportWebUSB.create()
 }
 

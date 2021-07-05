@@ -6,9 +6,10 @@
 				<transition-group name="fade-list">
 					<TxCard class="card fade-list-item" v-for="tx in txs" :key="tx.node.id" :tx="tx.node" />
 				</transition-group>
+				<div class="loader" v-if="!completedQuery" />
 			</div>
 		</transition>
-		<div ref="bottom" class="bottom" v-show="!loading && !completedQuery"></div>
+		<div ref="bottom" class="bottom" v-show="!loading && !completedQuery" />
 	</div>
 </template>
 
@@ -96,5 +97,36 @@ export default {
 	bottom: 0;
 	width: 100%;
 	height: 200px;
+}
+
+.loader,
+.loader:after {
+	border-radius: 50%;
+	width: 64px;
+	height: 64px;
+}
+
+.loader {
+	margin: 64px auto;
+	border: 2px solid #ffffff11;
+	border-top: 2px solid #ffffff33;
+	animation: loader-animation 2s infinite linear;
+}
+
+@keyframes loader-animation {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+.fade-appear-enter-active {
+	transition: opacity 0.8s ease;
+}
+
+.fade-appear-enter-from {
+	opacity: 0;
 }
 </style>

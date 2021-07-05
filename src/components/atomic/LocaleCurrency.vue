@@ -11,8 +11,8 @@ export default {
 	props: ['ar'],
 	computed: {
 		converted () {
-			if (!this.ar || !ArweaveStore.currency.limestone) { return }
-			const num = ArweaveStore.currency.limestone * this.ar
+			if (!this.ar || !ArweaveStore.redstone.currentPrice) { return }
+			const num = ArweaveStore.redstone.currentPrice * this.ar
 			return num.toFixed(2)
 		}
 	},

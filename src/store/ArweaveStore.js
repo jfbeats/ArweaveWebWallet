@@ -1,6 +1,7 @@
 import Arweave from 'arweave'
 import ArDB from 'ardb'
 import axios from 'axios'
+import { getVerification } from "arverify"
 import { reactive } from 'vue'
 import InterfaceStore from '@/store/InterfaceStore'
 
@@ -40,8 +41,10 @@ const ArweaveStore = reactive({
 		},
 	],
 	txs: {},
-	currency: {
-		limestone: null,
+	arverify: {},
+	redstone: {
+		currentPrice: null,
+		selectedCurrency: 'usd',
 	},
 })
 
@@ -115,31 +118,33 @@ export async function fetchTransactions (wallet, query) {
 		received: () => arDB.search().to(wallet.key),
 		sent: () => arDB.search().from(wallet.key),
 	}
-	for (let i = 0; !fulfilled; i++) {
-		if (!wallet.queries[query]) {
-			results = await queries[query]().find()
-		} else {
-			const lastTxIndex = wallet.queries[query].length - 1
-			const cursor = wallet.queries[query][lastTxIndex].cursor
-			results = await queries[query]().cursor(cursor).find()
+	try {
+		for (let i = 0; !fulfilled; i++) {
+			if (!wallet.queries[query]) {
+				results = await queries[query]().find()
+			} else {
+				const lastTxIndex = wallet.queries[query].length - 1
+				const cursor = wallet.queries[query][lastTxIndex].cursor
+				results = await queries[query]().cursor(cursor).find()
+			}
+			for (const result of results) {
+				result.node = Object.assign(ArweaveStore.txs[result.node.id] ??= {}, result.node)
+			}
+			if (results.length < 10) {
+				wallet.queriesStatus[query].completed = true
+				console.log('completed')
+				fulfilled = true
+			}
+			if (results[results.length - 1]?.node.block) { fulfilled = true }
+			(wallet.queries[query] ??= []).push(...results)
 		}
-		for (const result of results) {
-			result.node = Object.assign(ArweaveStore.txs[result.node.id] ??= {}, result.node)
-		}
-		if (results.length < 10) { 
-			wallet.queriesStatus[query].completed = true 
-			fulfilled = true
-		}
-		if (results[results.length - 1]?.node.block) { fulfilled = true }
-		(wallet.queries[query] ??= []).push(...results)
-	}
-	wallet.queriesStatus[query].fetchTransactions = false
+	} finally { wallet.queriesStatus[query].fetchTransactions = false }
 	return wallet.queries[query]
 }
 
 export async function updateTransactions (wallet, query) {
 	if (!wallet.queries[query] || wallet.queries[query].length === 0) { return fetchTransactions(wallet, query) }
-	if (!wallet || !InterfaceStore.windowVisible 
+	if (!wallet || !InterfaceStore.windowVisible
 		|| wallet.queriesStatus[query]?.fetchTransactions
 		|| wallet.queriesStatus[query]?.updateTransactions) { return }
 	wallet.queriesStatus[query].updateTransactions = true
@@ -151,34 +156,35 @@ export async function updateTransactions (wallet, query) {
 		sent: () => arDB.search().from(wallet.key),
 	}
 	const resultsFiltered = []
-	for (let i = 0; !fulfilled; i++) {
-		if (i === 0) {
-			results = await queries[query]().find()
-		} else {
-			const lastTxIndex = results.length - 1
-			const cursor = results[lastTxIndex].cursor
-			results = await queries[query]().cursor(cursor).find()
-		}
-		if (results.length < 10) {
-			wallet.queriesStatus[query].completed = true
-			fulfilled = true
-		}
-		for (const result of results) {
-			const matchingTx = wallet.queries[query].find(el => el.node.id === result.node.id)
-			if (matchingTx) {
-				matchingTx.cursor = result.cursor
-				if (matchingTx.node.block) { fulfilled = true }
-				else if (result.node.block) { requireSort = true }
+	try {
+		for (let i = 0; !fulfilled; i++) {
+			if (i === 0) {
+				results = await queries[query]().find() // Todo - Use the number of pending txs as minimum
 			} else {
-				resultsFiltered.push(result)
-				if (result.node.block) { requireSort = true }
+				const lastTxIndex = results.length - 1
+				const cursor = results[lastTxIndex].cursor
+				results = await queries[query]().cursor(cursor).find()
 			}
-			result.node = Object.assign(ArweaveStore.txs[result.node.id] ??= {}, result.node)
+			if (results.length < 10) {
+				wallet.queriesStatus[query].completed = true
+				fulfilled = true
+			}
+			for (const result of results) {
+				const matchingTx = wallet.queries[query].find(el => el.node.id === result.node.id)
+				if (matchingTx) {
+					matchingTx.cursor = result.cursor
+					if (matchingTx.node.block) { fulfilled = true }
+					else if (result.node.block) { requireSort = true }
+				} else {
+					resultsFiltered.push(result)
+					if (result.node.block) { requireSort = true }
+				}
+				result.node = Object.assign(ArweaveStore.txs[result.node.id] ??= {}, result.node)
+			}
 		}
-	}
-	if (resultsFiltered.length > 0) { wallet.queries[query].splice(0, 0, ...resultsFiltered) }
-	if (requireSort) { sortByBlocks() }
-	wallet.queriesStatus[query].updateTransactions = false
+		if (resultsFiltered.length > 0) { wallet.queries[query].splice(0, 0, ...resultsFiltered) }
+		if (requireSort) { sortByBlocks() }
+	} finally { wallet.queriesStatus[query].updateTransactions = false }
 	return wallet.queries[query]
 }
 
@@ -223,12 +229,17 @@ function sortByBlocks (wallet, query) {
 	}
 }
 
+export async function getArverify (address) {
+	// TODO if is valid address
+	return ArweaveStore.arverify[address] ??= getVerification(address)
+}
+
 export async function updateConversionRate () {
 	if (!InterfaceStore.windowVisible) { return }
 	const res = await axios.get('https://api.redstone.finance/prices?symbol=AR&provider=redstone')
-	ArweaveStore.currency.limestone = res.data[0].value
-	console.log('Conversion Rate', ArweaveStore.currency.limestone)
-	return ArweaveStore.currency.limestone
+	ArweaveStore.redstone.currentPrice = res.data[0].value
+	console.log('Conversion Rate', ArweaveStore.redstone.currentPrice)
+	return ArweaveStore.redstone.currentPrice
 }
 
 

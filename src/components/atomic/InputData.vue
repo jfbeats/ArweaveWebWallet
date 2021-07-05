@@ -17,7 +17,8 @@ export default {
 <style scoped>
 .input-data {
 	height: 9em;
-	background: var(--background3);
+	background: #ffffff06;
+	border: 1px solid #ffffff24;
 	border-radius: 4px;
 }
 </style>

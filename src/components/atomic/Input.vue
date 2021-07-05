@@ -1,11 +1,11 @@
 <template>
-	<div class="input">
+	<div class="input" :class="{ focus }">
 		<div class="icon-container">
 			<div class="icon-background">
 				<img class="icon no-select" :src="icon" draggable="false">
 			</div>
 		</div>
-		<input class="text" :placeholder="placeholder" :autocomplete="autocomplete || 'off'">
+		<input class="text" :placeholder="placeholder" :autocomplete="autocomplete || 'off'" @focus="focus = true" @blur="focus = false">
 		<div v-for="action in actions" class="icon-container" @click="action.function" :key="action.icon">
 			<div class="icon-background">
 				<img class="icon no-select" :src="icon" draggable="false">
@@ -17,8 +17,14 @@
 
 
 <script>
+import { ref } from 'vue'
+
 export default {
 	props: ['icon', 'placeholder', 'actions', 'autocomplete'],
+	setup () {
+		const focus = ref(false)
+		return { focus }
+	}
 }
 </script>
 
@@ -26,12 +32,19 @@ export default {
 
 <style scoped>
 .input {
-	height: 3em;
+	height: 4em;
 	display: flex;
+	border: 1px solid #ffffff24;
 	border-radius: 4px;
 	align-items: center;
 	justify-content: center;
-	background: var(--background3);
+	background: #ffffff06;
+	transition: 0.3s ease;
+}
+
+.input.focus {
+	border: 1px solid #ffffff48;
+	background: #ffffff08;
 }
 
 .icon-container {
@@ -45,7 +58,7 @@ export default {
 .icon-background {
 	width: 100%;
 	height: 100%;
-	background: var(--background2);
+	/* background: var(--background2); */
 	border-radius: inherit;
 	display: flex;
 	align-items: center;
@@ -57,6 +70,11 @@ export default {
 	height: 50%;
 	object-fit: contain;
 	opacity: var(--element-secondary-opacity);
+	transition: 0.3s ease;
+}
+
+.focus .icon {
+	opacity: 1;
 }
 
 .text {

@@ -3,8 +3,10 @@
 		<!-- Autocomplete local addrs -->
 		<h2 class="heading"><img class="img" src="@/assets/icons/north_east.svg">Send</h2>
 		<Input :icon="require('@/assets/icons/person.svg')" placeholder="Arweave address" autocomplete="ar" />
-		<span class="row"><h3 class="heading">Amount</h3><div class="secondary">Max</div></span>
+		<div class="secondary row" style="justify-content: flex-end;"></div>
+		<h3 class="heading">Amount</h3>
 		<InputAr />
+		<div class="secondary row" style="justify-content: flex-end;">Max</div>
 		<h3 class="heading">Data</h3>
 		<!-- data upload handlers -->
 		<InputData />
@@ -26,20 +28,22 @@ export default {
 
 <style scoped>
 .send {
-	padding-top: 0;
+	/* padding-top: 0; */
 }
 
 .heading {
-	margin-top: calc(var(--spacing) * 2);
+	/* margin-top: calc(var(--spacing) * 2); */
 	display: flex;
 	align-items: center;
 	gap: var(--spacing);
 }
 
 .row {
+	min-height: 2em;
 	display: flex;
 	align-items: baseline;
 	justify-content: space-between;
+	margin: calc(var(--spacing) / 2) 0;
 }
 
 .img {
