@@ -19,6 +19,6 @@ export default {
 	height: 9em;
 	background: #ffffff06;
 	border: 1px solid #ffffff24;
-	border-radius: 4px;
+	border-radius: var(--border-radius);
 }
 </style>

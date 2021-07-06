@@ -8,9 +8,9 @@
 			</div>
 			<input inputmode="numeric" class="text" placeholder="AR" @focus="focus = true" @blur="focus = false">
 		</div>
-		<div v-if="currency" class="spacer"></div>
-		<div v-if="currency" class="input">
-			<input inputmode="numeric" class="text right" placeholder="CUR" @focus="focus = true" @blur="focus = false">
+		<div v-if="currentPrice" class="spacer"></div>
+		<div v-if="currentPrice" class="input">
+			<input inputmode="numeric" class="text right" :placeholder="currency" @focus="focus = true" @blur="focus = false">
 			<div class="icon-container">
 				<div class="icon-background">
 					<img class="icon no-select" src="@/assets/currency/usd.svg" draggable="false">
@@ -28,9 +28,10 @@ import { computed, ref } from 'vue'
 
 export default {
 	setup () {
-		const currency = computed(() => ArweaveStore.redstone.currentPrice )
+		const currentPrice = computed(() => ArweaveStore.redstone.currentPrice )
+		const currency = computed(() => ArweaveStore.redstone.currency )
 		const focus = ref(false)
-		return { currency, focus }
+		return { currentPrice, currency, focus }
 	}
 }
 </script>
@@ -41,7 +42,7 @@ export default {
 .input-ar {
 	display: flex;
 	align-items: center;
-	border-radius: 4px;
+	border-radius: var(--border-radius);
 	border: 1px solid #ffffff24;
 	background: #ffffff06;
 	transition: 0.3s ease;

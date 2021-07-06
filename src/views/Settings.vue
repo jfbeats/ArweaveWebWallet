@@ -2,9 +2,13 @@
 	<div class="settings">
 		<h2>Wallet Settings</h2>
 		<div class="wallets">
-		<WalletOptions class="wallet-options" v-for="wallet in ArweaveStore.wallets" :key="wallet.id" :wallet="wallet" />
+			<WalletOptions class="wallet-options" v-for="wallet in ArweaveStore.wallets" :key="wallet.id" :wallet="wallet" />
 		</div>
 		<h2>App Settings</h2>
+		<select v-model="ArweaveStore.redstone.currency" @change="updateConversionRate()">
+			<option>USD</option>
+			<option v-for="option in options" :key="option">{{ option }}</option>
+		</select>
 	</div>
 </template>
 
@@ -12,13 +16,22 @@
 
 <script>
 import WalletOptions from '@/components/WalletOptions'
-import ArweaveStore from '@/store/ArweaveStore'
+import ArweaveStore, { updateConversionRate } from '@/store/ArweaveStore'
+import axios from 'axios'
+import { reactive } from 'vue'
 
 export default {
 	components: { WalletOptions },
 	setup () {
-		return { ArweaveStore }
-	}
+		const options = reactive([])
+		axios.get('https://raw.githubusercontent.com/redstone-finance/redstone-app/main/src/assets/data/tokens.json').then(response => {
+			const results = response.data
+			for (const key in results) {
+				if (results[key].tags?.includes('currencies')) { options.push(key) }
+			}
+		})
+		return { ArweaveStore, updateConversionRate, options }
+	},
 }
 </script>
 
@@ -34,7 +47,7 @@ export default {
 .wallets {
 	display: flex;
 	flex-direction: column;
-	gap:var(--spacing);
+	gap: var(--spacing);
 }
 
 .wallet-options {
