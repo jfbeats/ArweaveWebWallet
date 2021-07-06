@@ -1,6 +1,6 @@
 <template>
 	<span class="locale-currency">
-		<slot></slot> {{ converted }} <span class="symbol">USD</span>
+		<slot></slot> {{ converted }} <span class="symbol">{{ currency }}</span>
 	</span>
 </template>
 
@@ -14,6 +14,9 @@ export default {
 			if (!this.ar || !ArweaveStore.redstone.currentPrice) { return }
 			const num = ArweaveStore.redstone.currentPrice * this.ar
 			return num.toFixed(2)
+		},
+		currency () {
+			return ArweaveStore.redstone.currency
 		}
 	},
 }

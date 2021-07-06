@@ -44,7 +44,7 @@ const ArweaveStore = reactive({
 	arverify: {},
 	redstone: {
 		currentPrice: null,
-		selectedCurrency: 'usd',
+		currency: 'USD',
 	},
 })
 
@@ -236,9 +236,15 @@ export async function getArverify (address) {
 
 export async function updateConversionRate () {
 	if (!InterfaceStore.windowVisible) { return }
-	const res = await axios.get('https://api.redstone.finance/prices?symbol=AR&provider=redstone')
-	ArweaveStore.redstone.currentPrice = res.data[0].value
-	console.log('Conversion Rate', ArweaveStore.redstone.currentPrice)
+	const currency = ArweaveStore.redstone.currency
+	let result
+	if (currency === 'USD') {
+		result = await axios.get('https://api.redstone.finance/prices/?symbols=AR&provider=redstone')
+		ArweaveStore.redstone.currentPrice = result.data['AR'].value
+	} else {
+		result = await axios.get( 'https://api.redstone.finance/prices/?symbols=AR,' + currency + '&provider=redstone')
+		ArweaveStore.redstone.currentPrice = result.data['AR'].value / result.data[currency].value
+	}
 	return ArweaveStore.redstone.currentPrice
 }
 

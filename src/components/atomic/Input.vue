@@ -43,7 +43,7 @@ export default {
 }
 
 .input.focus {
-	border: 1px solid #ffffff48;
+	border: 1px solid #ffffff88;
 	background: #ffffff08;
 }
 

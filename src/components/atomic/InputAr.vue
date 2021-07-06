@@ -48,7 +48,7 @@ export default {
 }
 
 .input-ar.focus {
-	border: 1px solid #ffffff48;
+	border: 1px solid #ffffff88;
 	background: #ffffff08;
 
 }
@@ -63,16 +63,6 @@ export default {
 	border-radius: inherit;
 }
 
-.input:nth-child(1) {
-	border-top-right-radius: 0;
-	border-bottom-right-radius: 0;
-}
-
-.input:nth-child(3) {
-	border-top-left-radius: 0;
-	border-bottom-left-radius: 0;
-}
-
 .spacer {
 	width: 1px;
 	height: 2em;
@@ -81,7 +71,7 @@ export default {
 }
 
 .focus .spacer {
-	background: #ffffff40;
+	background: #ffffff60;
 }
 
 .icon-container {
