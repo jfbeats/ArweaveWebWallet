@@ -40,6 +40,11 @@ h1, h2, h3, h4, h5 {
 	box-sizing: inherit;
 }
 
+input {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
 .card {
 	padding: var(--spacing);
 	background: var(--background2);

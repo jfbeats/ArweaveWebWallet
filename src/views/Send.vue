@@ -2,7 +2,7 @@
 	<div class="send card">
 		<!-- Autocomplete local addrs -->
 		<h2 class="heading"><img class="img" src="@/assets/icons/north_east.svg">Send</h2>
-		<div class="row"><Input v-model="form.address" :icon="require('@/assets/icons/person.svg')" placeholder="Arweave address" autocomplete="ar" /><AddressIcon class="address-icon" :address="form.address" /></div>
+		<div class="row"><Input v-model="form.address" :icon="require('@/assets/icons/person.svg')" placeholder="Arweave address" autocomplete="ar" @blur="validateAddress" /><AddressIcon class="address-icon" :address="form.address" /></div>
 		<div class="row" style="justify-content: flex-end;"></div>
 		<h3 class="heading">Amount</h3>
 		<InputAr v-model="form.amount" />
@@ -31,7 +31,12 @@ export default {
 			amount: '',
 			data: '',
 		})
-		return { form }
+		const validateAddress = (address) => {
+			if (!form.address.match(/^[a-z0-9_-]{43}$/i)) {
+				form.address = ''
+			}
+		}
+		return { form, validateAddress }
 	}
 }
 </script>

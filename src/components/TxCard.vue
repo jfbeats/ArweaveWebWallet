@@ -10,7 +10,7 @@
 
 				<div>
 					<div v-if="isValue">
-						<Ar class="ar" :ar="value" />&nbsp;&nbsp;<LocaleCurrency class="small" :ar="value">|</LocaleCurrency>
+						<Ar class="ar" :ar="value" /> <LocaleCurrency class="small" :ar="value">|</LocaleCurrency>
 					</div>
 					<div v-else>
 						{{ dataType || 'Data' }}

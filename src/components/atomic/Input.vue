@@ -5,7 +5,7 @@
 				<img class="icon no-select" :src="icon" draggable="false">
 			</div>
 		</div>
-		<input class="text" v-model="model" :placeholder="placeholder" :autocomplete="autocomplete || 'off'" @focus="focus = true" @blur="focus = false">
+		<input class="text" v-model="model" v-bind="$attrs" :placeholder="placeholder" :autocomplete="autocomplete || 'off'" @focus="focus = true" @blur="focus = false">
 		<div v-for="action in actions" class="icon-container" @click="action.function" :key="action.icon">
 			<div class="icon-background">
 				<img class="icon no-select" :src="icon" draggable="false">
@@ -20,6 +20,7 @@
 import { computed, ref } from 'vue'
 
 export default {
+	inheritAttrs: false,
 	props: ['modelValue', 'icon', 'placeholder', 'actions', 'autocomplete'],
 	setup (props, { emit }) {
 		const model = computed({
