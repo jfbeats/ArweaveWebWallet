@@ -3,10 +3,10 @@
 		<!-- Autocomplete local addrs -->
 		<h2 class="heading"><img class="img" src="@/assets/icons/north_east.svg">Send</h2>
 		<Input :icon="require('@/assets/icons/person.svg')" placeholder="Arweave address" autocomplete="ar" />
-		<div class="secondary row" style="justify-content: flex-end;"></div>
+		<div class="row" style="justify-content: flex-end;"></div>
 		<h3 class="heading">Amount</h3>
 		<InputAr />
-		<div class="secondary row" style="justify-content: flex-end;">Max</div>
+		<div class="row" style="justify-content: flex-end;"><span class="secondary">Max</span></div>
 		<h3 class="heading">Data</h3>
 		<!-- data upload handlers -->
 		<InputData />
