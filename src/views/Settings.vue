@@ -9,6 +9,7 @@
 			<option>USD</option>
 			<option v-for="option in options" :key="option">{{ option }}</option>
 		</select>
+		<div>Data provided by Redstone Finance</div>
 	</div>
 </template>
 

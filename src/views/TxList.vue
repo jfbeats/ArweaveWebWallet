@@ -107,9 +107,9 @@ export default {
 }
 
 .loader {
-	margin: 64px auto;
-	border: 2px solid #ffffff11;
-	border-top: 2px solid #ffffff33;
+	margin: 20vh auto 20vh auto;
+	border: 4px solid #ffffff11;
+	border-top: 4px solid #ffffff33;
 	animation: loader-animation 2s infinite linear;
 }
 

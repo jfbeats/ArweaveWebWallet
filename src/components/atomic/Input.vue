@@ -5,7 +5,7 @@
 				<img class="icon no-select" :src="icon" draggable="false">
 			</div>
 		</div>
-		<input class="text" :placeholder="placeholder" :autocomplete="autocomplete || 'off'" @focus="focus = true" @blur="focus = false">
+		<input class="text" v-model="model" :placeholder="placeholder" :autocomplete="autocomplete || 'off'" @focus="focus = true" @blur="focus = false">
 		<div v-for="action in actions" class="icon-container" @click="action.function" :key="action.icon">
 			<div class="icon-background">
 				<img class="icon no-select" :src="icon" draggable="false">
@@ -17,13 +17,17 @@
 
 
 <script>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 export default {
-	props: ['icon', 'placeholder', 'actions', 'autocomplete'],
-	setup () {
+	props: ['modelValue', 'icon', 'placeholder', 'actions', 'autocomplete'],
+	setup (props, { emit }) {
+		const model = computed({
+			get () { return props.modelValue },
+			set (value) { emit('update:modelValue', value) }
+		})
 		const focus = ref(false)
-		return { focus }
+		return { model, focus }
 	}
 }
 </script>
@@ -32,7 +36,6 @@ export default {
 
 <style scoped>
 .input {
-	height: 4em;
 	display: flex;
 	border: 1px solid #ffffff24;
 	border-radius: var(--border-radius);
@@ -84,7 +87,7 @@ export default {
 	outline: none;
 	border: none;
 	flex: 1 1 auto;
-	height: 3em;
+	height: 4em;
 	background-color: transparent;
 	color: var(--element-secondary);
 	width: 100%;

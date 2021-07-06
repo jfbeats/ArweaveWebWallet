@@ -2,11 +2,10 @@
 	<div class="send card">
 		<!-- Autocomplete local addrs -->
 		<h2 class="heading"><img class="img" src="@/assets/icons/north_east.svg">Send</h2>
-		<AddressIcon class="address-icon" :address="''" />
-		<Input :icon="require('@/assets/icons/person.svg')" placeholder="Arweave address" autocomplete="ar" />
+		<div class="row"><Input v-model="form.address" :icon="require('@/assets/icons/person.svg')" placeholder="Arweave address" autocomplete="ar" /><AddressIcon class="address-icon" :address="form.address" /></div>
 		<div class="row" style="justify-content: flex-end;"></div>
 		<h3 class="heading">Amount</h3>
-		<InputAr />
+		<InputAr v-model="form.amount" />
 		<div class="row" style="justify-content: flex-end;"><span class="secondary">Max</span></div>
 		<h3 class="heading">Data</h3>
 		<!-- data upload handlers -->
@@ -21,10 +20,19 @@
 import Input from '@/components/atomic/Input.vue'
 import InputAr from '@/components/atomic/InputAr.vue'
 import InputData from '@/components/atomic/InputData.vue'
-import AddressIcon from '@/components/atomic/AddressIcon'
+import AddressIcon from '@/components/atomic/AddressIcon.vue'
+import { reactive } from 'vue'
 
 export default {
 	components: { Input, InputAr, InputData, AddressIcon },
+	setup () {
+		const form = reactive({
+			address: '',
+			amount: '',
+			data: '',
+		})
+		return { form }
+	}
 }
 </script>
 
@@ -33,10 +41,15 @@ export default {
 	/* padding-top: 0; */
 }
 
+.input {
+	flex: 1 1 0;
+}
+
 .address-icon {
-	width: 124px;
-	height: 124px;
-	margin: 0 auto var(--spacing) auto;
+	flex: 0 0 auto;
+	width: 4em;
+	height: 4em;
+	padding: 0;
 }
 
 .heading {
@@ -49,9 +62,10 @@ export default {
 .row {
 	min-height: 2em;
 	display: flex;
-	align-items: baseline;
+	align-items: center;
 	justify-content: space-between;
 	margin: calc(var(--spacing) / 2) 0;
+	gap: var(--spacing);
 }
 
 .img {

@@ -6,11 +6,11 @@
 					<img class="icon no-select" src="@/assets/logos/arweave.svg" draggable="false">
 				</div>
 			</div>
-			<input inputmode="numeric" class="text" placeholder="AR" @focus="focus = true" @blur="focus = false">
+			<input v-model="model" inputmode="numeric" class="text" placeholder="AR" @focus="focus = 1" @blur="focus = 0">
 		</div>
 		<div v-if="currentPrice" class="spacer"></div>
 		<div v-if="currentPrice" class="input">
-			<input inputmode="numeric" class="text right" :placeholder="currency" @focus="focus = true" @blur="focus = false">
+			<input v-model="model2" inputmode="numeric" class="text right" :placeholder="currency" @focus="focus = 2" @blur="focus = 0">
 			<div class="icon-container">
 				<div class="icon-background">
 					<img class="icon no-select" src="@/assets/currency/usd.svg" draggable="false">
@@ -27,11 +27,31 @@ import ArweaveStore from '@/store/ArweaveStore'
 import { computed, ref } from 'vue'
 
 export default {
-	setup () {
-		const currentPrice = computed(() => ArweaveStore.redstone.currentPrice )
-		const currency = computed(() => ArweaveStore.redstone.currency )
-		const focus = ref(false)
-		return { currentPrice, currency, focus }
+	props: ['modelValue'],
+	setup (props, { emit }) {
+		const model = computed({
+			get () { return props.modelValue },
+			set (value) {
+				if (focus.value === 1) {
+					input2.value = value ? value * currentPrice.value : ''
+					emit('update:modelValue', value)
+				} 
+			}
+		})
+		const input2 = ref('')
+		const model2 = computed({
+			get () { return input2.value },
+			set (value) {
+				if (focus.value === 2) {
+					input2.value = value
+					emit('update:modelValue', value ? value / currentPrice.value : '')
+				}
+			}
+		})
+		const currentPrice = computed(() => ArweaveStore.redstone.currentPrice)
+		const currency = computed(() => ArweaveStore.redstone.currency)
+		const focus = ref(0)
+		return { model, model2, currentPrice, currency, focus }
 	}
 }
 </script>
@@ -56,7 +76,6 @@ export default {
 
 .input {
 	flex: 1 1 0;
-	height: 4em;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -111,7 +130,7 @@ export default {
 	outline: none;
 	border: none;
 	flex: 1 1 auto;
-	height: 3em;
+	height: 4em;
 	background-color: transparent;
 	color: var(--element-secondary);
 	width: 100%;
