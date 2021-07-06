@@ -1,7 +1,8 @@
 <template>
 	<div class="address-icon no-select">
-		<img class="identicon" :src="identicon" alt="wallet logo" draggable="false" @dragstart.prevent>
 		<img class="image" v-if="url" :src="url" alt="wallet profile picture" draggable="false" @dragstart.prevent>
+		<img class="identicon" v-else-if="address" :src="identicon" alt="wallet logo" draggable="false" @dragstart.prevent>
+		<img class="identicon cloud" v-else src="@/assets/icons/cloud.svg" draggable="false" @dragstart.prevent>
 	</div>
 </template>
 
@@ -71,5 +72,9 @@ export default {
 	right: 0;
 	bottom: 0;
 	object-fit: cover;
+}
+
+.cloud {
+	opacity: 0.2;
 }
 </style>

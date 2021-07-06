@@ -2,6 +2,7 @@
 	<div class="send card">
 		<!-- Autocomplete local addrs -->
 		<h2 class="heading"><img class="img" src="@/assets/icons/north_east.svg">Send</h2>
+		<AddressIcon class="address-icon" :address="''" />
 		<Input :icon="require('@/assets/icons/person.svg')" placeholder="Arweave address" autocomplete="ar" />
 		<div class="row" style="justify-content: flex-end;"></div>
 		<h3 class="heading">Amount</h3>
@@ -20,15 +21,22 @@
 import Input from '@/components/atomic/Input.vue'
 import InputAr from '@/components/atomic/InputAr.vue'
 import InputData from '@/components/atomic/InputData.vue'
+import AddressIcon from '@/components/atomic/AddressIcon'
 
 export default {
-	components: { Input, InputAr, InputData },
+	components: { Input, InputAr, InputData, AddressIcon },
 }
 </script>
 
 <style scoped>
 .send {
 	/* padding-top: 0; */
+}
+
+.address-icon {
+	width: 124px;
+	height: 124px;
+	margin: 0 auto var(--spacing) auto;
 }
 
 .heading {

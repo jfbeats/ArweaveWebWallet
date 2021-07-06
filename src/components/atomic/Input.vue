@@ -45,6 +45,7 @@ export default {
 .input.focus {
 	border: 1px solid #ffffff88;
 	background: #ffffff08;
+	box-shadow: 0 0 10px 0 #ffffff11;
 }
 
 .icon-container {
