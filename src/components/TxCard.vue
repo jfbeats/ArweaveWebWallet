@@ -27,7 +27,7 @@
 					<div class="right-text">
 						<Address v-if="relativeAddress" class="address" :address="relativeAddress" />
 						<div v-else class="ellipsis">
-							<Ar :ar="tx.fee.ar" />&nbsp;&nbsp;<LocaleCurrency class="small" :ar="tx.fee.ar">|</LocaleCurrency>
+							<Ar :ar="tx.fee.ar" /> <LocaleCurrency class="small" :ar="tx.fee.ar">|</LocaleCurrency>
 						</div>
 						<div class="small ellipsis">{{ date + ' ' + time }}</div>
 					</div>
