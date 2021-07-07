@@ -37,7 +37,7 @@ export default {
 				form.address = ''
 			}
 		}
-		watch(ArweaveStore.redstone.currency, () => '') // TODO clear amount
+		watch(() => ArweaveStore.redstone.currency, () => '') // TODO clear amount
 		return { form, validateAddress }
 	}
 }
