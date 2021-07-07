@@ -71,8 +71,8 @@ export default {
 }
 
 .icon {
-	width: 50%;
-	height: 50%;
+	width: 1.4em;
+	height: 1.4em;
 	object-fit: contain;
 	opacity: var(--element-secondary-opacity);
 	transition: 0.3s ease;

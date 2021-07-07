@@ -2,9 +2,7 @@
 	<div class="input-ar" :class="{ focus }">
 		<div class="input">
 			<div class="icon-container">
-				<div class="icon-background">
-					<img class="icon no-select" src="@/assets/logos/arweave.svg" draggable="false">
-				</div>
+				<img class="icon no-select" src="@/assets/logos/arweave.svg" draggable="false">
 			</div>
 			<input v-model="model" inputmode="numeric" class="text" placeholder="AR" @focus="focus = 1" @blur="focus = 0">
 		</div>
@@ -12,9 +10,7 @@
 		<div v-if="currentPrice" class="input">
 			<input v-model="model2" inputmode="numeric" class="text right" :placeholder="currency" @focus="focus = 2" @blur="focus = 0">
 			<div class="icon-container">
-				<div class="icon-background">
-					<img class="icon no-select" src="@/assets/currency/usd.svg" draggable="false">
-				</div>
+				<span class="symbol no-select">{{ currencySymbol }}</span>
 			</div>
 		</div>
 	</div>
@@ -32,10 +28,10 @@ export default {
 		const model = computed({
 			get () { return props.modelValue },
 			set (value) {
-				if (focus.value === 1) {
-					input2.value = value ? value * currentPrice.value : ''
+				if (focus.value === 1 || focus.value === 0) {
+					input2.value = value ? +(value * currentPrice.value).toFixed(2) : ''
 					emit('update:modelValue', value)
-				} 
+				}
 			}
 		})
 		const input2 = ref('')
@@ -50,8 +46,9 @@ export default {
 		})
 		const currentPrice = computed(() => ArweaveStore.redstone.currentPrice)
 		const currency = computed(() => ArweaveStore.redstone.currency)
+		const currencySymbol = computed(() => new Intl.NumberFormat(navigator.languages, { style: 'currency', currency: currency.value }).format(0).replace(/[\w\d\.\,\s]/g, '') || '$')
 		const focus = ref(0)
-		return { model, model2, currentPrice, currency, focus }
+		return { model, model2, currentPrice, currency, currencySymbol, focus }
 	}
 }
 </script>
@@ -100,27 +97,26 @@ export default {
 	width: 3em;
 	border-radius: inherit;
 	padding: 3px;
-}
-
-.icon-background {
-	width: 100%;
-	height: 100%;
-	/* background: var(--background2); */
-	border-radius: inherit;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 }
 
 .icon {
-	width: 50%;
-	height: 50%;
+	height: 1.4em;
+	width: 1.4em;
 	object-fit: contain;
 	opacity: var(--element-secondary-opacity);
 	transition: 0.3s ease;
 }
 
-.focus .icon {
+.symbol {
+	font-size: 1.4em;
+	opacity: var(--element-secondary-opacity);
+	transition: 0.3s ease;
+}
+
+.focus .icon, .focus .symbol {
 	opacity: 1;
 }
 

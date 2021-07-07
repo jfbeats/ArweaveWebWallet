@@ -21,7 +21,8 @@ import Input from '@/components/atomic/Input.vue'
 import InputAr from '@/components/atomic/InputAr.vue'
 import InputData from '@/components/atomic/InputData.vue'
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
-import { reactive } from 'vue'
+import ArweaveStore from '@/store/ArweaveStore'
+import { reactive, watch } from 'vue'
 
 export default {
 	components: { Input, InputAr, InputData, AddressIcon },
@@ -36,6 +37,7 @@ export default {
 				form.address = ''
 			}
 		}
+		watch(ArweaveStore.redstone.currency, () => '') // TODO clear amount
 		return { form, validateAddress }
 	}
 }

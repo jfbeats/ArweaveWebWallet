@@ -1,6 +1,6 @@
 <template>
 	<span class="locale-currency">
-		<slot></slot> {{ converted }} <span class="symbol">{{ currency }}</span>
+		<slot></slot> {{ converted }}
 	</span>
 </template>
 
@@ -13,11 +13,11 @@ export default {
 		converted () {
 			if (!this.ar || !ArweaveStore.redstone.currentPrice) { return }
 			const num = ArweaveStore.redstone.currentPrice * this.ar
-			return num.toFixed(2)
+			return new Intl.NumberFormat(navigator.languages, { style: 'currency', currency: this.currency }).format(num)
 		},
 		currency () {
 			return ArweaveStore.redstone.currency
-		}
+		},
 	},
 }
 </script>
@@ -25,9 +25,5 @@ export default {
 <style scoped>
 .locale-currency {
 	white-space: nowrap;
-}
-
-.symbol {
-	font-size: 0.75em;
 }
 </style>
