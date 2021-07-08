@@ -34,11 +34,8 @@ const routes = [
 			},
 		],
 		beforeEnter: (to, from) => {
-			if (ArweaveStore.wallets.length == 0) {
-				return { name: 'Welcome' }
-			} else if (!to.params.walletId) {
-				return { name: 'Wallet', params: { walletId: ArweaveStore.wallets[0].id } }
-			}
+			if (!ArweaveStore.wallets[0]) { return { name: 'Welcome' } }
+			if (!to.params.walletId) { to.params.walletId = ArweaveStore.wallets[0].id }
 		},
 	},
 	{
@@ -81,7 +78,9 @@ const routes = [
 	},
 	{
 		path: '/:pathMatch(.*)*',
-		redirect: { name: 'TxList', params: { walletId: ArweaveStore.wallets[0].id } }
+		redirect: () => ArweaveStore.wallets[0]
+			? { name: 'TxList', params: { walletId: ArweaveStore.wallets[0].id } }
+			: { name: 'Welcome' }
 	},
 ]
 
