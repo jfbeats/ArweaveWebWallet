@@ -4,7 +4,7 @@
 			<div class="icon-container">
 				<img class="icon no-select" src="@/assets/logos/arweave.svg" draggable="false">
 			</div>
-			<input v-model="model" inputmode="numeric" class="text" placeholder="AR" @focus="focus = 1" @blur="focus = 0">
+			<input v-model.trim="model" inputmode="numeric" class="text" placeholder="AR" @focus="focus = 1" @blur="focus = 0">
 		</div>
 		<div v-if="currentPrice" class="spacer"></div>
 		<div v-if="currentPrice" class="input">
@@ -49,12 +49,10 @@ export default {
 		const currencySymbol = computed(() => new Intl.NumberFormat(navigator.languages, { style: 'currency', currency: currency.value }).format(0).replace(/[\w\d\.\,\s]/g, '') || '$')
 		const focus = ref(0)
 		watch(() => model.value, (newVal, oldVal) => {
-			if (newVal == '.') { return }
-			if (focus.value === 1 && (isNaN(newVal) || newVal < 0)) { model.value = oldVal }
+			if (focus.value === 1 && !newVal.match(/^(?:\d*\.?\d*)?$/)) { model.value = oldVal }
 		})
 		watch(() => model2.value, (newVal, oldVal) => {
-			if (newVal == '.') { return }
-			if (focus.value === 2 && (isNaN(newVal) || newVal < 0)) { model2.value = oldVal }
+			if (focus.value === 2 && !newVal.match(/^(?:\d*\.?\d*)?$/)) { model2.value = oldVal }
 		})
 		return { model, model2, currentPrice, currency, currencySymbol, focus }
 	}
