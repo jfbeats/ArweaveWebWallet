@@ -16,16 +16,16 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/arweaveViewLandscape.svg"
   },
   {
-    "revision": "bf40ceaf92dbd04f4239",
-    "url": "/css/app.92e804f7.css"
+    "revision": "17d8c9426e1c4e637de0",
+    "url": "/css/app.655a9bd6.css"
   },
   {
     "revision": "a29ceb2b7a0a23b16ff0",
     "url": "/css/chunk-0bce9150.16b4f693.css"
   },
   {
-    "revision": "0e7033391f3190274502",
-    "url": "/css/chunk-211cab62.c193914a.css"
+    "revision": "b89ddb43660feb6f9c4d",
+    "url": "/css/chunk-4970192f.f38890a4.css"
   },
   {
     "revision": "e37f825e8f77c2665d4b",
@@ -36,8 +36,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/css/chunk-63555912.95a16442.css"
   },
   {
-    "revision": "4fd6096b1399ffbb1967",
-    "url": "/css/chunk-6757661e.ba857c75.css"
+    "revision": "52d46b44f720abcd472b",
+    "url": "/css/chunk-75cf44c8.75c634a5.css"
   },
   {
     "revision": "d7eb1418eafa36000ebfb5bbffe1d790",
@@ -84,24 +84,24 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/img/swap.4c056fd5.svg"
   },
   {
-    "revision": "e3ac29f75955a13155a17d398bd7d18a",
+    "revision": "1d37db179f270317e095302feb51a4ec",
     "url": "/index.html"
   },
   {
-    "revision": "bf40ceaf92dbd04f4239",
-    "url": "/js/app.8b6ee097.js"
+    "revision": "17d8c9426e1c4e637de0",
+    "url": "/js/app.d01d0417.js"
   },
   {
     "revision": "a29ceb2b7a0a23b16ff0",
     "url": "/js/chunk-0bce9150.2b63e631.js"
   },
   {
-    "revision": "0e7033391f3190274502",
-    "url": "/js/chunk-211cab62.c2d2bb95.js"
-  },
-  {
     "revision": "39b4da952d47efbf65d7",
     "url": "/js/chunk-2d2311c8.eafb2723.js"
+  },
+  {
+    "revision": "b89ddb43660feb6f9c4d",
+    "url": "/js/chunk-4970192f.df336cf3.js"
   },
   {
     "revision": "e37f825e8f77c2665d4b",
@@ -112,8 +112,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/js/chunk-63555912.01bec1c5.js"
   },
   {
-    "revision": "4fd6096b1399ffbb1967",
-    "url": "/js/chunk-6757661e.07d0a4c3.js"
+    "revision": "52d46b44f720abcd472b",
+    "url": "/js/chunk-75cf44c8.05b5b532.js"
   },
   {
     "revision": "9b17fa07049f12feca2f",
