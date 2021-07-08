@@ -21,21 +21,22 @@ Arverify
 Profile picture / Identicon
 Username / Address
 Send
-Related txs
+Interaction history
 Save to addrs book
 
 ---Settings---
 App
+	Wallet used as global settings
 	Gateway
 	Password
-	Lang, Currency
-	Settings cloud sync wallet
-	Permissions
+	Lang
 Wallet
 	Profile
 	Export
 	Move to cloud
 	Delete
+	Permissions
+	hidden txs
 
 ---Integration---
 Integration script

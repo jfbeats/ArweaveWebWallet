@@ -26,7 +26,13 @@ export default {
 	props: ['modelValue'],
 	setup (props, { emit }) {
 		const model = computed({
-			get () { return props.modelValue },
+			get () { 
+				const value = props.modelValue
+				if (focus.value === 0) {
+					input2.value = value && !isNaN(value) ? +(value * currentPrice.value).toFixed(2) : ''
+				}
+				return value
+			},
 			set (value) {
 				if (focus.value === 1 || focus.value === 0) {
 					input2.value = value && !isNaN(value) ? +(value * currentPrice.value).toFixed(2) : ''
@@ -63,13 +69,19 @@ export default {
 
 <style scoped>
 .input-ar {
-	height: 3.5em;
+	--height: 3.5em;
+	height: var(--height);
 	display: flex;
 	align-items: center;
 	border-radius: var(--border-radius);
 	border: 1px solid #ffffff24;
 	background: #ffffff06;
 	transition: 0.3s ease;
+}
+
+.vertical.input-ar {
+	--height: 7em;
+	flex-direction: column;
 }
 
 .input-ar.focus {
@@ -79,6 +91,7 @@ export default {
 }
 
 .input {
+	width: 100%;
 	height: inherit;
 	flex: 1 1 0;
 	display: flex;
@@ -88,11 +101,19 @@ export default {
 	border-radius: inherit;
 }
 
+.vertical .input {
+	height: calc(var(--height) / 2);
+}
+
 .spacer {
 	width: 1px;
 	height: 2em;
 	background: #ffffff18;
 	transition: 0.3s ease;
+}
+
+.vertical .spacer {
+	display: none;
 }
 
 .focus .spacer {

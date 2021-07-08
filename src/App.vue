@@ -1,6 +1,6 @@
 <template>
-	<div class="app" :class="{ verticalLayout }">
-		<Toolbar class="toolbar" :class="{ verticalLayout, dragOverlay }" @drop.prevent="droppedFiles" />
+	<div class="app" :class="{ verticalLayout, verticalContent }">
+		<Toolbar class="toolbar" :class="{ dragOverlay }" @drop.prevent="droppedFiles" />
 		<router-view class="router" v-slot="{ Component, route }" @drop.prevent="droppedFiles">
 			<transition :name="route.meta.mainTransitionName || 'slide-up'" mode="out-in" @before-enter="emitter.emit('beforeEnter')" @after-enter="emitter.emit('afterEnter')" @before-leave="emitter.emit('beforeLeave')" @after-leave="emitter.emit('afterLeave')">
 				<component :is="Component" :key="$route.path.split('/').slice(0,3).join('')" />
@@ -25,6 +25,7 @@ export default {
 	},
 	setup () {
 		const verticalLayout = computed(() => InterfaceStore.breakpoints.verticalLayout)
+		const verticalContent = computed(() => InterfaceStore.breakpoints.verticalContent)
 		const dragOverlay = computed(() => InterfaceStore.dragOverlay)
 		const router = useRouter()
 		router.afterEach((to, from) => {
@@ -42,7 +43,7 @@ export default {
 					? toIndex < fromIndex ? 'slide-right' : 'slide-left'
 					: toIndex < fromIndex ? 'slide-down' : 'slide-up'
 		})
-		return { verticalLayout, dragOverlay, emitter }
+		return { verticalLayout, verticalContent, dragOverlay, emitter }
 	},
 	methods: {
 		async droppedFiles (e) {
@@ -92,7 +93,7 @@ export default {
 	display: none;
 }
 
-.toolbar.verticalLayout {
+.verticalLayout .toolbar {
 	height: auto;
 	width: 100%;
 	flex-direction: row;

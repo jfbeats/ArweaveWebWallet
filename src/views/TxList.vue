@@ -6,7 +6,9 @@
 				<transition-group name="fade-list">
 					<TxCard class="card fade-list-item" v-for="tx in txs" :key="tx.node.id" :tx="tx.node" />
 				</transition-group>
-				<div class="loader" v-if="!completedQuery" />
+				<div class="loader-container" :class="{ collapse: completedQuery }">
+					<div v-if="!completedQuery" class="loader" />
+				</div>
 			</div>
 		</transition>
 		<div ref="bottom" class="bottom" v-show="!loading && !completedQuery" />
@@ -96,7 +98,19 @@ export default {
 	position: absolute;
 	bottom: 0;
 	width: 100%;
-	height: 200px;
+	height: calc(200px + 40vh);
+}
+
+.loader-container {
+	min-height: 40vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.loader-container.collapse {
+	transition: min-height 2s cubic-bezier(0.22, 1, 0.36, 1);
+	min-height: 0;
 }
 
 .loader,
@@ -107,7 +121,6 @@ export default {
 }
 
 .loader {
-	margin: 20vh auto 20vh auto;
 	border: 4px solid #ffffff11;
 	border-top: 4px solid #ffffff33;
 	animation: loader-animation 2s infinite linear;

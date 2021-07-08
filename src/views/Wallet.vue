@@ -1,17 +1,17 @@
 <template>
-	<div class="wallet" :class="{ verticalContent }">
+	<div class="wallet">
 		<FoldingLayout v-if="wallet">
 			<template #left>
 				<div class="wallet-info">
 					<Balance :wallet="wallet" />
 					<div class="actions">
-						<Action v-for="action in actions" :key="action.name" :to="{name: action.name, query: {...$route.query}}" :img="action.img">{{ action.text }}</Action>
+						<Action v-for="action in actions" :key="action.name" :to="{name: action.name, query: {...$route.query}}" :img="action.img" replace>{{ action.text }}</Action>
 					</div>
 				</div>
 			</template>
 			<template #right>
 				<div class="wallet-view">
-					<router-view v-slot="{ Component, route }" class="router-view">
+					<router-view v-slot="{ Component, route }" class="router-view" @before-enter="emitter.emit('beforeEnter')">
 						<transition :name="route.meta.subTransitionName" mode="out-in">
 							<component :is="Component" />
 						</transition>
@@ -29,9 +29,7 @@ import FoldingLayout from '@/components/FoldingLayout.vue'
 import Balance from '@/components/Balance'
 import Action from '@/components/atomic/Action'
 import ArweaveStore, { setCurrentWallet } from '@/store/ArweaveStore'
-import InterfaceStore from '@/store/InterfaceStore'
 import { useRouter } from 'vue-router'
-import { computed } from 'vue'
 
 export default {
 	name: 'Wallet',
@@ -49,8 +47,7 @@ export default {
 			const fromIndex = actions.findIndex(el => el.name === from.name)
 			to.meta.subTransitionName = toIndex < fromIndex ? 'slide-down' : 'slide-up'
 		})
-		const verticalContent = computed(() => InterfaceStore.breakpoints.verticalContent)
-		return { actions, verticalContent }
+		return { actions }
 	},
 	watch: {
 		wallet: {

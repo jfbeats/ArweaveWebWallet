@@ -1,6 +1,6 @@
 <template>
-	<div class="tx-card">
-		<div class="tx-content" :class="{ verticalContent }">
+	<div class="tx-card" :class="{ verticalElement }">
+		<div class="tx-content">
 			<div class="left">
 
 				<router-link :to="{ name: 'Tx', params: { txId: tx.id } }">
@@ -115,7 +115,7 @@ export default {
 				return this.dataInfo || 'Data'
 			}
 		},
-		verticalContent () { return InterfaceStore.breakpoints.verticalLayout }
+		verticalElement () { return InterfaceStore.breakpoints.verticalLayout }
 	}
 }
 </script>
@@ -137,7 +137,7 @@ export default {
 	justify-content: space-between;
 }
 
-.tx-content.verticalContent {
+.verticalElement .tx-content {
 	flex-direction: column;
 	min-width: 256px;
 }

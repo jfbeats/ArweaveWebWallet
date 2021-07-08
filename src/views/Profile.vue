@@ -1,5 +1,5 @@
 <template>
-	<FoldingLayout :class="{ verticalContent }">
+	<FoldingLayout>
 		<template #left>
 			<div class="test-left">hello</div>
 		</template>
@@ -11,15 +11,9 @@
 
 <script>
 import FoldingLayout from '@/components/FoldingLayout.vue'
-import InterfaceStore from '@/store/InterfaceStore'
-import { computed } from 'vue'
 
 export default {
 	components: { FoldingLayout },
-	setup () {
-		const verticalContent = computed(() => InterfaceStore.breakpoints.verticalContent)
-		return { verticalContent }
-	}
 }
 </script>
 

@@ -1,5 +1,5 @@
 <template>
-	<FoldingLayout v-if="tx" :class="{ verticalContent }">
+	<FoldingLayout v-if="tx">
 		<template #left>
 			<div class="meta">
 
