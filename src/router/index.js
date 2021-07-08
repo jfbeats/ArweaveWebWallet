@@ -93,8 +93,4 @@ const router = createRouter({
 	})
 })
 
-router.beforeResolve((to, from) => {
-	emitter.emit('beforeResolve', to, from)
-})
-
 export default router
