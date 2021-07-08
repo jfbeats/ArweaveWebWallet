@@ -17,29 +17,7 @@ const ArweaveStore = reactive({
 	gatewayDefault,
 	gatewayURL: null,
 	currentWallet: null,
-	wallets: [
-		{
-			id: 0,
-			key: 'TId0Wix2KFl1gArtAT6Do1CbWU_0wneGvS5X9BfW5PE',
-			balance: null,
-			queries: {},
-			queriesStatus: {},
-		},
-		{
-			id: 1,
-			key: 'Bf3pWqxD1qwwF2fcE9bPNyQp_5TSlAYPJ3JNMgJSj4c',
-			balance: null,
-			queries: {},
-			queriesStatus: {},
-		},
-		{
-			id: 2,
-			key: 'vLRHFqCw1uHu75xqB4fCDW-QxpkpJxBtFD9g4QYUbfw',
-			balance: null,
-			queries: {},
-			queriesStatus: {},
-		},
-	],
+	wallets: [],
 	txs: {},
 	arverify: {},
 	redstone: {
@@ -242,7 +220,7 @@ export async function updateConversionRate () {
 		result = await axios.get('https://api.redstone.finance/prices/?symbols=AR&provider=redstone')
 		ArweaveStore.redstone.currentPrice = result.data['AR'].value
 	} else {
-		result = await axios.get( 'https://api.redstone.finance/prices/?symbols=AR,' + currency + '&provider=redstone')
+		result = await axios.get('https://api.redstone.finance/prices/?symbols=AR,' + currency + '&provider=redstone')
 		ArweaveStore.redstone.currentPrice = result.data['AR'].value / result.data[currency].value
 	}
 	return ArweaveStore.redstone.currentPrice
@@ -259,6 +237,11 @@ if (ArweaveStore.wallets.length > 0) { ArweaveStore.currentWallet = ArweaveStore
 
 
 // Testing
-window.ArweaveStore = ArweaveStore
 
-pushWallet({ id: 4, key: 'zYqPZuALSPa_f5Agvf8g2JHv94cqMn9aBtnH7GFHbuA' })
+if (process.env.NODE_ENV === 'development') {
+	window.ArweaveStore = ArweaveStore
+	pushWallet({ key: 'TId0Wix2KFl1gArtAT6Do1CbWU_0wneGvS5X9BfW5PE' })
+	pushWallet({ key: 'Bf3pWqxD1qwwF2fcE9bPNyQp_5TSlAYPJ3JNMgJSj4c' })
+	pushWallet({ key: 'vLRHFqCw1uHu75xqB4fCDW-QxpkpJxBtFD9g4QYUbfw' })
+	pushWallet({ key: 'zYqPZuALSPa_f5Agvf8g2JHv94cqMn9aBtnH7GFHbuA' })
+}

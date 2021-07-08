@@ -90,10 +90,11 @@ export default Ledger
 
 // Testing
 
-window.arweaveWallet = Ledger
-
-window.testTx = async () => {
-	const tx = await arweave.createTransaction({ data: '😁', })
-	const signedTx = await arweave.transactions.sign(tx)
-	console.log(await arweave.transactions.post(signedTx))
+if (process.env.NODE_ENV === 'development') {
+	window.arweaveWallet = Ledger
+	window.testTx = async () => {
+		const tx = await arweave.createTransaction({ data: '😁', })
+		const signedTx = await arweave.transactions.sign(tx)
+		console.log(await arweave.transactions.post(signedTx))
+	}
 }

@@ -17,17 +17,20 @@
 
 
 <script>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 export default {
 	inheritAttrs: false,
-	props: ['modelValue', 'icon', 'placeholder', 'actions', 'autocomplete'],
+	props: ['modelValue', 'icon', 'placeholder', 'actions', 'autocomplete', 'mask'],
 	setup (props, { emit }) {
 		const model = computed({
 			get () { return props.modelValue },
 			set (value) { emit('update:modelValue', value) }
 		})
 		const focus = ref(false)
+		watch(() => model.value, (newVal, oldVal) => {
+			if (!props.mask(newVal)) { model.value = oldVal }
+		})
 		return { model, focus }
 	}
 }

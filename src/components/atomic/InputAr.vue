@@ -4,7 +4,7 @@
 			<div class="icon-container">
 				<img class="icon no-select" src="@/assets/logos/arweave.svg" draggable="false">
 			</div>
-			<input v-model.trim="model" inputmode="numeric" class="text" placeholder="AR" @focus="focus = 1" @blur="focus = 0">
+			<input v-model="model" inputmode="numeric" class="text" placeholder="AR" @focus="focus = 1" @blur="focus = 0">
 		</div>
 		<div v-if="currentPrice" class="spacer"></div>
 		<div v-if="currentPrice" class="input">
