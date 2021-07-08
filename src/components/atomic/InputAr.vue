@@ -57,6 +57,7 @@ export default {
 
 <style scoped>
 .input-ar {
+	height: 3.5em;
 	display: flex;
 	align-items: center;
 	border-radius: var(--border-radius);
@@ -126,7 +127,7 @@ export default {
 	outline: none;
 	border: none;
 	flex: 1 1 auto;
-	height: 4em;
+	height: inherit;
 	background-color: transparent;
 	color: var(--element-secondary);
 	width: 100%;

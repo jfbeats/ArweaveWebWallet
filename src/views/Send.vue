@@ -54,8 +54,8 @@ export default {
 
 .address-icon {
 	flex: 0 0 auto;
-	width: 4em;
-	height: 4em;
+	width: 3.5em;
+	height: 3.5em;
 	padding: 0;
 }
 

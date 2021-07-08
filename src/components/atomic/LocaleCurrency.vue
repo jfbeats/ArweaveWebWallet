@@ -25,5 +25,6 @@ export default {
 <style scoped>
 .locale-currency {
 	white-space: nowrap;
+	display: inline-block;
 }
 </style>

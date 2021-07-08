@@ -37,6 +37,7 @@ export default {
 
 <style scoped>
 .input {
+	height: 3.5em;
 	display: flex;
 	border: 1px solid #ffffff24;
 	border-radius: var(--border-radius);
@@ -83,12 +84,12 @@ export default {
 }
 
 .text {
+	height: inherit;
 	font-size: 1em;
 	padding: 0 var(--spacing);
 	outline: none;
 	border: none;
 	flex: 1 1 auto;
-	height: 4em;
 	background-color: transparent;
 	color: var(--element-secondary);
 	width: 100%;

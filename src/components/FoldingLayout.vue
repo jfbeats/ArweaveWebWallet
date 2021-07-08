@@ -20,7 +20,7 @@ export default {
 			scrollPosition.value = window.scrollY + 'px'
 		}
 		const positionHandler = (val) => {
-			if (val) {
+			if (val && !verticalContent.value) {
 				scrollHandler()
 				window.addEventListener('scroll', scrollHandler)
 			} else {

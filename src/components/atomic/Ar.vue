@@ -20,6 +20,7 @@ export default {
 <style scoped>
 .ar {
 	white-space: nowrap;
+	display: inline-block;
 }
 
 .symbol {
