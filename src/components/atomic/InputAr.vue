@@ -20,7 +20,7 @@
 
 <script>
 import ArweaveStore from '@/store/ArweaveStore'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 export default {
 	props: ['modelValue'],
@@ -29,7 +29,7 @@ export default {
 			get () { return props.modelValue },
 			set (value) {
 				if (focus.value === 1 || focus.value === 0) {
-					input2.value = value ? +(value * currentPrice.value).toFixed(2) : ''
+					input2.value = value && !isNaN(value) ? +(value * currentPrice.value).toFixed(2) : ''
 					emit('update:modelValue', value)
 				}
 			}
@@ -40,7 +40,7 @@ export default {
 			set (value) {
 				if (focus.value === 2) {
 					input2.value = value
-					emit('update:modelValue', value ? value / currentPrice.value : '')
+					emit('update:modelValue', value && !isNaN(value) ? value / currentPrice.value : '')
 				}
 			}
 		})
@@ -48,6 +48,14 @@ export default {
 		const currency = computed(() => ArweaveStore.redstone.currency)
 		const currencySymbol = computed(() => new Intl.NumberFormat(navigator.languages, { style: 'currency', currency: currency.value }).format(0).replace(/[\w\d\.\,\s]/g, '') || '$')
 		const focus = ref(0)
+		watch(() => model.value, (newVal, oldVal) => {
+			if (newVal == '.') { return }
+			if (focus.value === 1 && (isNaN(newVal) || newVal < 0)) { model.value = oldVal }
+		})
+		watch(() => model2.value, (newVal, oldVal) => {
+			if (newVal == '.') { return }
+			if (focus.value === 2 && (isNaN(newVal) || newVal < 0)) { model2.value = oldVal }
+		})
 		return { model, model2, currentPrice, currency, currencySymbol, focus }
 	}
 }
@@ -73,6 +81,7 @@ export default {
 }
 
 .input {
+	height: inherit;
 	flex: 1 1 0;
 	display: flex;
 	align-items: center;
@@ -117,17 +126,18 @@ export default {
 	transition: 0.3s ease;
 }
 
-.focus .icon, .focus .symbol {
+.focus .icon,
+.focus .symbol {
 	opacity: 1;
 }
 
 .text {
+	height: inherit;
 	font-size: 1em;
 	padding: 0 var(--spacing);
 	outline: none;
 	border: none;
 	flex: 1 1 auto;
-	height: inherit;
 	background-color: transparent;
 	color: var(--element-secondary);
 	width: 100%;

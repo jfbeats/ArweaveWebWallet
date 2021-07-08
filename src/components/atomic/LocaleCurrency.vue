@@ -1,6 +1,10 @@
 <template>
 	<span class="locale-currency">
-		<slot></slot> {{ converted }}
+		<transition name="fade-fast">
+			<span v-if="ar && currency">
+				<slot></slot> {{ converted }}
+			</span>
+		</transition>
 	</span>
 </template>
 
