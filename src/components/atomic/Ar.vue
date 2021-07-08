@@ -1,5 +1,5 @@
 <template>
-	<span class="ar">
+	<span v-if="ar" class="ar">
 		{{ amountRounded }} <span class="symbol">AR</span>
 	</span>
 </template>
