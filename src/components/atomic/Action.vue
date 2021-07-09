@@ -29,6 +29,10 @@ export default {
 	box-shadow: -5px 0 0 -3px var(--element-secondary);
 }
 
+[dir="rtl"] .action.router-link-active {
+	box-shadow: 5px 0 0 -3px var(--element-secondary);
+}
+
 .img {
 	height: 1em;
 }

@@ -11,7 +11,7 @@
 	transform: translate(0, 10px);
 }
 
-.slide-left-enter-from, .slide-right-leave-to {
+.slide-left-enter-from, .slide-right-leave-to, [dir="rtl"] .slide-left-leave-to, [dir="rtl"] .slide-right-enter-from {
 	opacity: 0;
 	transform: translate(10px, 0);
 }
@@ -21,7 +21,7 @@
 	transform: translate(0, -10px);
 }
 
-.slide-left-leave-to, .slide-right-enter-from {
+.slide-left-leave-to, .slide-right-enter-from, [dir="rtl"] .slide-left-enter-from, [dir="rtl"] .slide-right-leave-to {
 	opacity: 0;
 	transform: translate(-10px, 0);
 }

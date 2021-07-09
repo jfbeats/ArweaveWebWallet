@@ -8,7 +8,15 @@ const InterfaceStore = reactive({
 		verticalLayout: false,
 		verticalContent: false,
 	},
-	dragOverlay: false
+	dragOverlay: false,
+	wallet: {
+		send : {
+			address: '',
+			amount: '',
+			data: '',
+			tags: [],
+		},
+	},
 })
 
 export const emitter = mitt()

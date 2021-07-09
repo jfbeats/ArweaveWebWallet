@@ -109,7 +109,8 @@ export default {
 <style scoped>
 .meta {
 	max-width: 700px;
-	padding: var(--spacing) 0 var(--spacing) var(--spacing);
+	padding: var(--spacing);
+	padding-inline-end: 0;
 }
 
 .meta > div {

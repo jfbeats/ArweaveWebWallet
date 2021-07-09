@@ -3,7 +3,8 @@
 		<div @click="create">Create</div>
 		<div>Passphrase / Import</div>
 		<div>Key file / Import</div>
-		<div @click="importLedger">Ledger</div>
+		<div v-if="supportsWebUSB()" @click="importLedger">Ledger</div>
+		<div v-else>Ledger not supported for this browser</div>
 	</div>
 </template>
 
@@ -20,6 +21,9 @@ export default {
 		async importLedger () {
 			const wallet = await importWallet(Ledger)
 			this.$router.push({ name: 'EditWallet', query: { wallet: wallet.id } })
+		},
+		supportsWebUSB () {
+			return !!window.navigator.usb
 		}
 	},
 }

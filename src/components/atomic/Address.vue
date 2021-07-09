@@ -36,6 +36,6 @@ export default {
 .arverify {
 	flex: 0 0 auto;
 	height: 1em;
-	margin-left: 4px;
+	margin-inline-start: 4px;
 }
 </style>

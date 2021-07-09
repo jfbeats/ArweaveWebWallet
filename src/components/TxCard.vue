@@ -167,7 +167,7 @@ export default {
 .right-text {
 	flex: 0 1 auto;
 	min-width: 0;
-	text-align: right;
+	text-align: end;
 	white-space: nowrap;
 }
 
@@ -178,7 +178,7 @@ export default {
 
 .address {
 	max-width: 200px;
-	margin-left: auto;
+	margin-inline-start: auto;
 }
 
 .tx-icon {

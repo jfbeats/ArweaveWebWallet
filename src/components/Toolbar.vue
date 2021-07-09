@@ -1,6 +1,6 @@
 <template>
 	<nav id="nav">
-		<SlickList class="wallets" :axis="axis" :lockAxis="axis" v-model:list="ArweaveStore.wallets" :pressDelay="200" helperClass="dragging">
+		<SlickList class="wallets" :axis="axis" :lockAxis="axis" v-model:list="ArweaveStore.wallets" :pressDelay="200" helperClass="dragging" dir="ltr">
 			<SlickItem v-for="(wallet, i) in ArweaveStore.wallets" :index="i" :key="wallet.key" draggable="false" class="drag-container">
 				<router-link class="icon wallet" :to="{ name: navTo, params: { walletId: wallet.id }, query: { ...$route.query } }" :class="{ active: wallet.id == $route.params.walletId, verticalLayout }" draggable="false" @dragstart.prevent>
 					<AddressIcon class="profile" :address="wallet.key" />
@@ -73,6 +73,10 @@ export default {
 	transform: translateX(calc(100% + var(--spacing)));
 }
 
+[dir="rtl"] .dragging .wallet {
+	transform: translateX(calc(-100% - var(--spacing)));
+}
+
 .dragging .wallet.verticalLayout {
 	transform: translateY(calc(100% + var(--spacing)));
 }
@@ -117,9 +121,14 @@ export default {
 
 .control.router-link-active,
 .wallet.active.router-link-active {
-	box-shadow: -5px 0 0 -3px var(--element-secondary);
-	border-radius: var(--border-radius3);
 	opacity: 1;
+	border-radius: var(--border-radius3);
+	box-shadow: -5px 0 0 -3px var(--element-secondary);
+}
+
+[dir="rtl"] .control.router-link-active,
+[dir="rtl"] .wallet.active.router-link-active {
+	box-shadow: 5px 0 0 -3px var(--element-secondary);
 }
 
 .control.router-link-active.verticalLayout,

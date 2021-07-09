@@ -2,7 +2,7 @@ import Arweave from 'arweave'
 import ArDB from 'ardb'
 import axios from 'axios'
 import { getVerification } from "arverify"
-import { reactive } from 'vue'
+import { reactive, watch } from 'vue'
 import InterfaceStore from '@/store/InterfaceStore'
 
 
@@ -226,6 +226,7 @@ export async function updateConversionRate () {
 	return ArweaveStore.redstone.currentPrice
 }
 
+watch(() => ArweaveStore.redstone.currency, updateConversionRate)
 
 
 updateArweave()

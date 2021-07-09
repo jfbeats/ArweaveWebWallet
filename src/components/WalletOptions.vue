@@ -70,7 +70,7 @@ export default {
 
 .profile-info {
 	min-width: 0;
-	padding: 0 var(--spacing) 0 var(--spacing);
+	padding: 0 var(--spacing);
 }
 
 .address {

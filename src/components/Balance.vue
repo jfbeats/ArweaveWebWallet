@@ -59,7 +59,7 @@ export default {
 
 .logo {
 	opacity: var(--element-secondary-opacity);
-	margin-right: 8px;
+	margin-inline-end: 8px;
 }
 
 .address {

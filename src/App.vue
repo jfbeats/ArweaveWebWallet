@@ -102,14 +102,14 @@ export default {
 .router {
 	min-width: 0;
 	position: relative;
-	margin-left: 80px;
+	margin-inline-start: 80px;
 	min-height: 100vh;
 	/* transform: translateZ(0); */
 }
 
 .verticalLayout .router {
 	margin-top: 80px;
-	margin-left: 0;
+	margin-inline-start: 0;
 	min-height: calc(100vh - 80px);
 }
 

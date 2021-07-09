@@ -60,12 +60,12 @@ export default {
 }
 
 .right {
-	padding-left: 40vw;
+	padding-inline-start: 40vw;
 	width: 100%;
 }
 
 .verticalContent .right {
-	padding-left: 0;
+	padding-inline-start: 0;
 }
 
 .slide-up-enter-active .left,
