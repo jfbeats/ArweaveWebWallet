@@ -28,6 +28,7 @@ export default {
 }
 
 .tab {
+	padding: 0.5em 0;
 	flex: 1 1 0;
 	text-align: center;
 	cursor: pointer;

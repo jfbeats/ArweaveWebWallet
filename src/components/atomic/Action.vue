@@ -25,6 +25,10 @@ export default {
 	transition: 0.2s ease;
 }
 
+.action:hover {
+	background: #00000022;
+}
+
 .action.router-link-active {
 	box-shadow: -5px 0 0 -3px var(--element-secondary);
 }

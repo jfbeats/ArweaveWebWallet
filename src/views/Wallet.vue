@@ -95,8 +95,4 @@ export default {
 	padding: var(--spacing);
 	border-radius: var(--border-radius);
 }
-
-.action:hover {
-	background: #00000022;
-}
 </style>

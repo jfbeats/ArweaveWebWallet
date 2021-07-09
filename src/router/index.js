@@ -35,7 +35,9 @@ const routes = [
 		],
 		beforeEnter: (to, from) => {
 			if (!ArweaveStore.wallets[0]) { return { name: 'Welcome' } }
-			if (!to.params.walletId) { to.params.walletId = ArweaveStore.wallets[0].id }
+			if (!to.params.walletId || !getWalletById(to.params.walletId)) {
+				return { name: 'TxList', params: { walletId: ArweaveStore.wallets[0].id } }
+			}
 		},
 	},
 	{
