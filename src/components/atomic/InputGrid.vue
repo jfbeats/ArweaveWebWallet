@@ -6,10 +6,10 @@
 					<div v-if="input.icon" class="icon-container">
 						<img class="icon no-select" :src="input.icon" draggable="false">
 					</div>
-					<input v-model="input.value" v-bind="$attrs" class="text" :placeholder="input.name" @focus="focus=(index+1)*(inputIndex+1)" @blur="focus=0">
+					<input v-model="input.value" v-bind="{...$attrs, ...input.attrs}" class="text" :placeholder="input.name" @focus="focus=(index+1)*(inputIndex+1)" @blur="focus=0">
 				</div>
 			</div>
-			<button v-if="deletable" @click="removeRow(index)">
+			<button v-if="row.deletable" @click="removeRow(index)">
 				<div class="icon-container">
 					<img class="icon no-select" src="@/assets/icons/x.svg" draggable="false">
 				</div>
@@ -25,7 +25,7 @@ import { ref } from 'vue'
 
 export default {
 	inheritAttrs: false,
-	props: ['schema', 'deletable'],
+	props: ['schema'],
 	setup (props) {
 		const focus = ref(0)
 		const removeRow = (index) => props.schema.splice(index, 1)
@@ -137,7 +137,7 @@ export default {
 	transition: 0.3s ease;
 }
 
-.input-list:not(.vertical) .focus .input:not(.flip):not(:first-child)::before {
+.input-list:not(.vertical).focus .input:not(.flip):not(:first-child)::before {
 	background: #ffffff60;
 }
 
@@ -149,7 +149,7 @@ export default {
 	transition: 0.3s ease;
 }
 
-.input-list:not(.vertical) .focus .input.flip::after {
+.input-list:not(.vertical).focus .input.flip::after {
 	background: #ffffff60;
 }
 

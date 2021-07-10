@@ -107,7 +107,7 @@ export default {
 
 .spacer {
 	width: 1px;
-	height: 2em;
+	height: 1.2em;
 	background: #ffffff18;
 	transition: 0.3s ease;
 }

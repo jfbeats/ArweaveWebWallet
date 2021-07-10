@@ -47,7 +47,9 @@ export default {
 			items: [
 				{ name: 'Tag', value: '', icon: require('@/assets/icons/label.svg') },
 				{ name: 'Value', value: '' }
-			], key: Math.random()
+			], 
+			deletable: true,
+			key: Math.random()
 		})
 		// TODO validate tags length
 		const removeTag = function (index) { console.log(index) }
