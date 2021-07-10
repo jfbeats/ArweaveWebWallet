@@ -29,6 +29,15 @@ h1, h2, h3, h4, h5 {
 	font-weight: normal;
 }
 
+button {
+	background: none;
+	border: none;
+	margin: 0;
+	padding: 0;
+	font-size: 1em;
+	cursor: pointer;
+}
+
 #app {
 	font-family: Avenir, Helvetica, Arial, sans-serif;
 	-webkit-font-smoothing: antialiased;

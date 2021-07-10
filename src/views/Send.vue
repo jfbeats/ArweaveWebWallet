@@ -16,9 +16,9 @@
 		<InputData />
 		<div class="row" style="justify-content: flex-end;"></div>
 		<h3 class="heading">Tags</h3>
-		<div v-for="tag in InterfaceStore.wallet.send.tags" :key="tag.name">tag</div>
+		<InputGrid :schema="InterfaceStore.wallet.send.tags" :deletable="true" />
 		<div class="row" style="justify-content: flex-end;">
-			<button class="secondary" @click="InterfaceStore.wallet.send.tags.push({name:'', value:''})">Add</button>
+			<button class="secondary" @click="addTag">Add</button>
 		</div>
 
 		<!-- display: fees -->
@@ -31,18 +31,27 @@
 import Input from '@/components/atomic/Input.vue'
 import InputAr from '@/components/atomic/InputAr.vue'
 import InputData from '@/components/atomic/InputData.vue'
+import InputGrid from '@/components/atomic/InputGrid.vue'
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
 
 export default {
-	components: { Input, InputAr, InputData, AddressIcon },
+	components: { Input, InputAr, InputData, InputGrid, AddressIcon },
 	setup () {
 		const maskAddress = (address) => {
 			return address.match(/^[a-z0-9_-]{0,43}$/i)
 		}
 		const setMax = () => InterfaceStore.wallet.send.amount = ArweaveStore.currentWallet.balance
-		return { InterfaceStore, maskAddress, setMax }
+		const addTag = () => InterfaceStore.wallet.send.tags.push({
+			items: [
+				{ name: 'Tag', value: '', icon: require('@/assets/icons/label.svg') },
+				{ name: 'Value', value: '' }
+			], key: Math.random()
+		})
+		// TODO validate tags length
+		const removeTag = function (index) { console.log(index) }
+		return { InterfaceStore, maskAddress, setMax, addTag }
 	}
 }
 </script>
@@ -80,14 +89,5 @@ export default {
 
 .secondary {
 	color: var(--element-secondary);
-}
-
-button {
-	background:none;
-    border:none;
-    margin:0;
-    padding:0;
-	font-size: 1em;
-    cursor: pointer;
 }
 </style>
