@@ -18,7 +18,7 @@
 		<h3 class="heading">Tags</h3>
 		<InputGrid :schema="InterfaceStore.wallet.send.tags" :deletable="true" />
 		<div class="row" style="justify-content: flex-end;">
-			<button class="secondary" @click="addTag">Add</button>
+			<button class="secondary" @click="addTag()">Add</button>
 		</div>
 
 		<!-- display: fees -->
@@ -35,6 +35,7 @@ import InputGrid from '@/components/atomic/InputGrid.vue'
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
+import { watch } from 'vue'
 
 export default {
 	components: { Input, InputAr, InputData, InputGrid, AddressIcon },
@@ -43,16 +44,31 @@ export default {
 			return address.match(/^[a-z0-9_-]{0,43}$/i)
 		}
 		const setMax = () => InterfaceStore.wallet.send.amount = ArweaveStore.currentWallet.balance
-		const addTag = () => InterfaceStore.wallet.send.tags.push({
+
+		watch(() => InterfaceStore.wallet.send.data, (value) => {
+			let contentTypeTag = InterfaceStore.wallet.send.tags.find(row =>
+				row.items[0].value === 'Content-Type')
+			if (typeof value === 'object') {
+				if (!contentTypeTag) {
+					contentTypeTag = tagSchema('Content-Type')
+					addTag(contentTypeTag)
+				}
+				contentTypeTag.items[1].value = value.type
+			} else if (contentTypeTag) {
+				const index = InterfaceStore.wallet.send.tags.indexOf(contentTypeTag)
+				InterfaceStore.wallet.send.tags.splice(index, 1)
+			}
+		})
+		// TODO validate tags length
+		const tagSchema = (name, value) => ({
 			items: [
-				{ name: 'Tag', value: '', icon: require('@/assets/icons/label.svg') },
-				{ name: 'Value', value: '' }
-			], 
+				{ name: 'Tag', value: name || '', icon: require('@/assets/icons/label.svg') },
+				{ name: 'Value', value: value || '' }
+			],
 			deletable: true,
 			key: Math.random()
 		})
-		// TODO validate tags length
-		const removeTag = function (index) { console.log(index) }
+		const addTag = (tag) => InterfaceStore.wallet.send.tags.push(tag || tagSchema())
 		return { InterfaceStore, maskAddress, setMax, addTag }
 	}
 }

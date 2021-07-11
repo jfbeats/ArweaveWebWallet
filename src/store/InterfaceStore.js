@@ -45,26 +45,26 @@ document.addEventListener('dragenter', (e) => {
 	if (e.dataTransfer.types[0] !== 'Files') { return }
 	if (dragCount === 1) { InterfaceStore.dragOverlay = true }
 	dragCount++
-})
+}, true)
 document.addEventListener('dragleave', (e) => {
 	e.preventDefault()
 	if (e.dataTransfer.types[0] !== 'Files') { return }
 	dragCount--
 	if (dragCount === 0) { InterfaceStore.dragOverlay = false }
-})
+}, true)
 document.addEventListener('dragend', (e) => {
 	e.preventDefault()
 	dragCount = 0
 	InterfaceStore.dragOverlay = false
-})
+}, true)
 document.addEventListener('dragover', (e) => {
 	e.preventDefault()
-})
+}, true)
 document.addEventListener('drop', (e) => {
 	e.preventDefault()
 	dragCount = 0
 	InterfaceStore.dragOverlay = false
-})
+}, true)
 
 if (navigator.appVersion.indexOf("Win") != -1) {
 	document.documentElement.classList.add('styleScroll')

@@ -1,14 +1,22 @@
 <template>
-	<div class="input-data" :class="{ focus }">
-		<textarea v-model="model" @focus="focus=1" @blur="focus=0"></textarea>
+	<div class="input-data" :class="{ focus }" @drop.stop.prevent="droppedFiles">
+		<textarea v-show="!isFile" v-model="model" @focus="focus=1" @blur="focus=0"></textarea>
 		<transition name="fade">
-			<div v-if="!model && !dragOverlay" class="overlay">
-				<div class="icon-container"><img class="img" src="@/assets/icons/text.svg"></div>
+			<div v-if="!model && !dragOverlay" class="overlay passthrough">
+				<div class="big-icon-container"><img class="img" src="@/assets/icons/text.svg"></div>
 				<div class="spacer" />
-				<div class="file-picker icon-container">
+				<div class="big-icon-container not-passthrough">
 					<label for="file-picker" class="file-picker-label"><img class="img" src="@/assets/icons/drop.svg"></label>
-					<input type="file" id="file-picker" class="file-input">
+					<input type="file" id="file-picker" class="file-input" @change="selectedFile">
 				</div>
+			</div>
+			<div v-else-if="isFile" class="overlay">
+				<div class="big-icon-container focus"><img class="img" src="@/assets/icons/cloud.svg"></div>
+				<button class="clear" @click="model = ''">
+					<div class="icon-container">
+						<img class="icon no-select" src="@/assets/icons/x.svg" draggable="false">
+					</div>
+				</button>
 			</div>
 		</transition>
 		<DragOverlay />
@@ -32,7 +40,10 @@ export default {
 		})
 		const focus = ref(0)
 		const dragOverlay = computed(() => InterfaceStore.dragOverlay)
-		return { model, focus, dragOverlay }
+		const droppedFiles = (e) => model.value = e.dataTransfer.files[0]
+		const selectedFile = (e) => model.value = e.target.files[0]
+		const isFile = computed(() => typeof model.value === "object")
+		return { model, focus, dragOverlay, droppedFiles, selectedFile, isFile }
 	}
 }
 </script>
@@ -70,7 +81,6 @@ textarea {
 }
 
 .overlay {
-	pointer-events: none;
 	position: absolute;
 	top: 0;
 	bottom: 0;
@@ -95,13 +105,9 @@ textarea {
 	background: #ffffff60;
 }
 
-.icon-container {
+.big-icon-container {
 	width: 48px;
 	height: 48px;
-}
-
-.file-picker {
-	pointer-events: auto;
 	position: relative;
 }
 
@@ -148,5 +154,50 @@ textarea {
 
 .file-input:active::before {
 	background: var(--background3);
+}
+
+.clear {
+	position: absolute;
+	height: 100%;
+	right: 0;
+}
+
+.passthrough {
+	pointer-events: none;
+}
+
+.not-passthrough {
+	pointer-events: auto;
+}
+
+/* extract */
+.icon-container {
+	flex: 0 0 auto;
+	height: 3em;
+	width: 3em;
+	border-radius: inherit;
+	padding: 3px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.icon {
+	height: 1.4em;
+	width: 1.4em;
+	object-fit: contain;
+	opacity: var(--element-secondary-opacity);
+	transition: 0.3s ease;
+}
+
+.symbol {
+	font-size: 1.4em;
+	opacity: var(--element-secondary-opacity);
+	transition: 0.3s ease;
+}
+
+.focus .icon,
+.focus .symbol {
+	opacity: 1;
 }
 </style>
