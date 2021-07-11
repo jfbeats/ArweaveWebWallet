@@ -59,6 +59,7 @@ export default {
 	background: #ffffff06;
 	border: 1px solid #ffffff24;
 	transition: 0.3s ease;
+	display: flex;
 }
 
 .input-data.focus {

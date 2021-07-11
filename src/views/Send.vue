@@ -6,27 +6,32 @@
 			<Input v-model.trim="InterfaceStore.wallet.send.address" :icon="require('@/assets/icons/person.svg')" placeholder="Address" autocomplete="ar" :mask="maskAddress" />
 			<AddressIcon class="address-icon" :address="InterfaceStore.wallet.send.address" />
 		</div>
-		<div class="row" style="justify-content: flex-end;"></div>
+		<div class="row" style="justify-content:flex-end;"></div>
 
 		<h3 class="heading">Amount</h3>
 		<InputAr v-model="InterfaceStore.wallet.send.amount" />
-		<div class="row" style="justify-content: flex-end;">
+		<div class="row" style="justify-content:flex-end;">
 			<button class="secondary" @click="setMax">Max</button>
 		</div>
 
 		<h3 class="heading">Data</h3>
 		<InputData v-model="InterfaceStore.wallet.send.data" />
-		<div class="row" style="justify-content: flex-end;"></div>
+		<div class="row" style="justify-content:flex-end;"></div>
 
 		<h3 class="heading">Tags</h3>
 		<InputGrid :schema="InterfaceStore.wallet.send.tags" :deletable="true" />
-		<div class="row" style="justify-content: flex-end;">
+		<div class="row" style="justify-content:flex-end;">
 			<button class="secondary" @click="addTag()">Add</button>
 		</div>
-		
-		<div>Size {{ txSizeDisplay }}</div>
-		<div>Fee
-			<Ar class="ar" :ar="txFee" />&nbsp;<LocaleCurrency class="small" :ar="txFee">|</LocaleCurrency>
+
+		<div class="row" style="align-items:flex-end; margin-top:2em;">
+			<div>
+				<div>Size {{ txSizeDisplay }}</div>
+				<div>Fee
+					<Ar class="ar" :ar="txFee" />&nbsp;<LocaleCurrency class="small" :ar="txFee">|</LocaleCurrency>
+				</div>
+			</div>
+			<div>Submit</div>
 		</div>
 		<!-- submit -->
 		<!-- QR -->
