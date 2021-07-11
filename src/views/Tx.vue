@@ -56,6 +56,7 @@ import FoldingLayout from '@/components/FoldingLayout.vue'
 import InputGrid from '@/components/atomic/InputGrid.vue'
 import ArweaveStore, { arweave, getTxById } from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
+import { humanFileSize } from '@/functions/Utils'
 import { reactive, watch, computed, ref } from 'vue'
 
 export default {
@@ -121,11 +122,6 @@ export default {
 				})
 			}
 			return result
-		}
-
-		const humanFileSize = (size) => {
-			var i = Math.floor(Math.log(size) / Math.log(1024));
-			return (size / Math.pow(1024, i)).toFixed(2) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
 		}
 
 		return { ArweaveStore, tx, data, loaded, isData, isPending, date, verticalContent, buildTagsSchema, humanFileSize }

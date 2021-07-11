@@ -10,7 +10,8 @@
 
 				<div>
 					<div v-if="isValue">
-						<Ar class="ar" :ar="value" /> <LocaleCurrency class="small" :ar="value">|</LocaleCurrency>
+						<Ar class="ar" :ar="value" />&nbsp;
+						<LocaleCurrency class="small" :ar="value">|</LocaleCurrency>
 					</div>
 					<div v-else>
 						{{ dataType || 'Data' }}
@@ -27,7 +28,8 @@
 					<div class="right-text">
 						<Address v-if="relativeAddress" class="address" :address="relativeAddress" />
 						<div v-else class="ellipsis">
-							<Ar :ar="tx.fee.ar" /> <LocaleCurrency class="small" :ar="tx.fee.ar">|</LocaleCurrency>
+							<Ar :ar="tx.fee.ar" />&nbsp;
+							<LocaleCurrency class="small" :ar="tx.fee.ar">|</LocaleCurrency>
 						</div>
 						<div class="small ellipsis">{{ date + ' ' + time }}</div>
 					</div>
@@ -52,9 +54,9 @@
 <script>
 import Address from '@/components/atomic/Address'
 import Ar from '@/components/atomic/Ar'
+import LocaleCurrency from '@/components/atomic/LocaleCurrency'
 import TxIcon from '@/components/atomic/TxIcon'
 import AddressIcon from '@/components/atomic/AddressIcon'
-import LocaleCurrency from '@/components/atomic/LocaleCurrency'
 import MoreInfo from '@/components/MoreInfo'
 import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
