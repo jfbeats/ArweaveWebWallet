@@ -68,7 +68,7 @@ export async function getTxById (txId) {
 			if (tx) { return tx.node }
 		}
 	}
-	return arDB.search('transaction').id(txId).find()
+	return (await arDB.search().id(txId).find())[0]?.node
 }
 
 export function setCurrentWallet (wallet) {
@@ -86,8 +86,7 @@ export async function updateWalletBalance (wallet) {
 
 export async function fetchTransactions (wallet, query) {
 	if (!wallet || wallet.queriesStatus[query]?.completed
-		|| wallet.queriesStatus[query]?.fetchTransactions
-		|| wallet.queriesStatus[query]?.updateTransactions) { return }
+		|| wallet.queriesStatus[query]?.fetchTransactions) { return }
 	wallet.queriesStatus[query] ??= {}
 	wallet.queriesStatus[query].fetchTransactions = true
 	let fulfilled = false

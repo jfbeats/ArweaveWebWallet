@@ -3,26 +3,32 @@
 		<template #left>
 			<div class="meta">
 
-				<div>id {{ tx.id }}</div>
-				<div>block {{ !isPending ? tx.block.id : 'Pending' }}</div>
-				<div>date {{ date }}</div>
+				<h3>ID</h3>
+				<div>{{ tx.id }}</div>
+				<div v-if="tx.data.size > 0">Link</div>
+				<br>
 
-				<div>data.size {{ tx.data.size }}</div>
-				<div>fee.ar {{ tx.fee.ar }}</div>
+				<h3>Block</h3>
+				<div>{{ !isPending ? tx.block.id : 'Pending' }}</div>
+				<div>{{ date }}</div>
+				<br>
 
+				<h3>Data</h3>
+				<div>Data size {{ humanFileSize(tx.data.size) }}</div>
+				<div>Fee {{ tx.fee.ar }} AR</div>
+				<br>
+
+				<h3>Transaction</h3>
 				<div>owner.address {{ tx.owner.address }}</div>
 				<div>quantity.ar {{ tx.quantity.ar }}</div>
 				<div>recipient {{ tx.recipient }}</div>
+				<br>
 
-				<div>Tags
-					<ul class="tags">
-						<li v-for="tag in tx.tags" :key="tag.name">
-							{{ tag.name }} - {{ tag.value }}
-						</li>
-					</ul>
+				<h3>Tags</h3>
+				<div style="background: var(--background2);">
+					<InputGrid :schema="buildTagsSchema(tx.tags)" />
 				</div>
-
-				<div v-if="tx.data.size > 0">link</div>
+				<br>
 
 			</div>
 		</template>
@@ -47,12 +53,13 @@
 
 <script>
 import FoldingLayout from '@/components/FoldingLayout.vue'
+import InputGrid from '@/components/atomic/InputGrid.vue'
 import ArweaveStore, { arweave, getTxById } from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { reactive, watch, computed, ref } from 'vue'
 
 export default {
-	components: { FoldingLayout },
+	components: { FoldingLayout, InputGrid },
 	props: {
 		txId: String,
 	},
@@ -76,6 +83,7 @@ export default {
 
 		watch(() => props.txId, async () => {
 			tx.value = await getTxById(props.txId)
+			if (!tx.value) { return }
 			data.handler = null
 			data.loaded = false
 			if (!isData.value) {
@@ -101,7 +109,26 @@ export default {
 			console.log('loaded')
 			data.loaded = true
 		}
-		return { ArweaveStore, tx, data, loaded, isData, isPending, date, verticalContent }
+
+		const buildTagsSchema = (tags) => {
+			const result = []
+			for (const tag of tags) {
+				result.push({
+					items: [
+						{ name: 'Tag', value: tag.name, attrs: { disabled: true }, icon: require('@/assets/icons/label.svg') },
+						{ name: 'Value', value: tag.value, attrs: { disabled: true } }
+					]
+				})
+			}
+			return result
+		}
+
+		const humanFileSize = (size) => {
+			var i = Math.floor(Math.log(size) / Math.log(1024));
+			return (size / Math.pow(1024, i)).toFixed(2) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
+		}
+
+		return { ArweaveStore, tx, data, loaded, isData, isPending, date, verticalContent, buildTagsSchema, humanFileSize }
 	},
 }
 </script>
@@ -110,22 +137,13 @@ export default {
 .meta {
 	max-width: 700px;
 	padding: var(--spacing);
-	padding-inline-end: 0;
-}
-
-.meta > div {
-	padding: 1em 0;
-}
-
-.tags {
-	white-space: nowrap;
 }
 
 .frame-container {
 	width: 100%;
 	height: 100vh;
-	background: var(--background3);
-	box-shadow: 0 0 0 2px var(--element-secondary);
+	background: var(--background2);
+	box-shadow: 0 0 0 2px #aaa;
 	border-radius: 32px 0 0 32px;
 	overflow: hidden;
 }
@@ -143,7 +161,7 @@ export default {
 	width: 100%;
 	height: 100%;
 	border: 0;
-	filter: brightness(0.7) contrast(1.1);
+	opacity: 0.6;
 }
 
 .img {

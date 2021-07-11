@@ -1,6 +1,6 @@
 <template>
 	<div class="input-data">
-		
+		<!-- drag&drop icon + edit text icon -->
 	</div>
 </template>
 

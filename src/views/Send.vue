@@ -12,7 +12,7 @@
 			<button class="secondary" @click="setMax">Max</button>
 		</div>
 		<h3 class="heading">Data</h3>
-		<!-- data upload handlers -->
+		<!-- set Content-Type tag -->
 		<InputData />
 		<div class="row" style="justify-content: flex-end;"></div>
 		<h3 class="heading">Tags</h3>

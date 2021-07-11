@@ -49,7 +49,7 @@ button {
 	box-sizing: inherit;
 }
 
-input {
+input:not([disabled]) {
 	overflow: hidden;
 	text-overflow: ellipsis;
 }

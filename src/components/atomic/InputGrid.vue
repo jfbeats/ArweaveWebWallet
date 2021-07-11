@@ -6,7 +6,7 @@
 					<div v-if="input.icon" class="icon-container">
 						<img class="icon no-select" :src="input.icon" draggable="false">
 					</div>
-					<input v-model="input.value" v-bind="{...$attrs, ...input.attrs}" class="text" :placeholder="input.name" @focus="focus=(index+1)*(inputIndex+1)" @blur="focus=0">
+					<input v-model="input.value" v-bind="input.attrs" class="text" :placeholder="input.name" @focus="focus=(index+1)*(inputIndex+1)" @blur="focus=0">
 				</div>
 			</div>
 			<button v-if="row.deletable" @click="removeRow(index)">
@@ -24,7 +24,6 @@
 import { ref } from 'vue'
 
 export default {
-	inheritAttrs: false,
 	props: ['schema'],
 	setup (props) {
 		const focus = ref(0)
