@@ -1,8 +1,10 @@
 <template>
 	<div class="input" :class="{ focus }">
-		<Icon :icon="icon" />
-		<input class="text" v-model="model" :placeholder="placeholder" :autocomplete="autocomplete || 'off'" @focus="focus = true" @blur="focus = false">
-		<Icon v-for="action in actions" :key="action.icon" :icon="action.icon" @click="action.function" />
+		<Icon :icon="icon" style="left:0;" />
+		<select class="text" v-model="model" :placeholder="placeholder" @focus="focus = true" @blur="focus = false">
+			<option v-for="option in options" :key="option" :value="option.value">{{ option.text }}</option>
+		</select>
+		<Icon :icon="'⥥'" style="right:0;" />
 	</div>
 </template>
 
@@ -10,20 +12,17 @@
 
 <script>
 import Icon from '@/components/atomic/Icon.vue'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 
 export default {
 	components: { Icon },
-	props: ['modelValue', 'icon', 'placeholder', 'actions', 'autocomplete', 'mask'],
+	props: ['modelValue', 'options', 'icon', 'placeholder'],
 	setup (props, { emit }) {
 		const model = computed({
 			get () { return props.modelValue },
 			set (value) { emit('update:modelValue', value) }
 		})
 		const focus = ref(false)
-		watch(() => model.value, (newVal, oldVal) => {
-			if (!props.mask(newVal)) { model.value = oldVal }
-		})
 		return { model, focus }
 	}
 }
@@ -41,6 +40,7 @@ export default {
 	justify-content: center;
 	background: #ffffff06;
 	transition: 0.3s ease;
+	position: relative;
 }
 
 .input.focus {
@@ -50,7 +50,9 @@ export default {
 }
 
 .icon {
+	position: absolute;
 	opacity: var(--element-secondary-opacity);
+	pointer-events: none;
 }
 
 .focus .icon {
@@ -58,9 +60,10 @@ export default {
 }
 
 .text {
+	appearance: none;
 	height: inherit;
 	font-size: 1em;
-	padding: 0 var(--spacing);
+	padding: 0 calc(var(--spacing) + 3em);
 	outline: none;
 	border: none;
 	flex: 1 1 auto;

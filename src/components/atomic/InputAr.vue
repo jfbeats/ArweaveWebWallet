@@ -1,17 +1,13 @@
 <template>
 	<div class="input-ar" :class="{ focus }">
 		<div class="input">
-			<div class="icon-container">
-				<img class="icon no-select" src="@/assets/logos/arweave.svg" draggable="false">
-			</div>
+			<Icon :icon="require('@/assets/logos/arweave.svg')" />
 			<input v-model="model" inputmode="numeric" class="text" placeholder="AR" @focus="focus = 1" @blur="focus = 0">
 		</div>
 		<div v-if="currentPrice" class="spacer"></div>
 		<div v-if="currentPrice" class="input">
 			<input v-model="model2" inputmode="numeric" class="text right" :placeholder="currency" @focus="focus = 2" @blur="focus = 0">
-			<div class="icon-container">
-				<span class="symbol no-select">{{ currencySymbol }}</span>
-			</div>
+			<Icon :icon="currencySymbol" />
 		</div>
 	</div>
 </template>
@@ -19,10 +15,12 @@
 
 
 <script>
+import Icon from '@/components/atomic/Icon.vue'
 import ArweaveStore from '@/store/ArweaveStore'
 import { computed, ref, watch } from 'vue'
 
 export default {
+	components: { Icon },
 	props: ['modelValue'],
 	setup (props, { emit }) {
 		const model = computed({
@@ -120,33 +118,11 @@ export default {
 	background: #ffffff60;
 }
 
-.icon-container {
-	flex: 0 0 auto;
-	height: 3em;
-	width: 3em;
-	border-radius: inherit;
-	padding: 3px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
 .icon {
-	height: 1.4em;
-	width: 1.4em;
-	object-fit: contain;
 	opacity: var(--element-secondary-opacity);
-	transition: 0.3s ease;
 }
 
-.symbol {
-	font-size: 1.4em;
-	opacity: var(--element-secondary-opacity);
-	transition: 0.3s ease;
-}
-
-.focus .icon,
-.focus .symbol {
+.focus .icon {
 	opacity: 1;
 }
 

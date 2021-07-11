@@ -3,16 +3,12 @@
 		<div v-for="(row, index) in schema" :key="row.key" class="row">
 			<div class="inputs">
 				<div v-for="(input, inputIndex) in row.items" :key="row.key + input.name" class="input" :class="{ flip: row.items.length==2 && inputIndex==1 }">
-					<div v-if="input.icon" class="icon-container">
-						<img class="icon no-select" :src="input.icon" draggable="false">
-					</div>
+					<Icon :icon="input.icon" />
 					<input v-model="input.value" v-bind="input.attrs" class="text" :placeholder="input.name" @focus="focus=(index+1)*(inputIndex+1)" @blur="focus=0">
 				</div>
 			</div>
 			<button v-if="row.deletable" @click="removeRow(index)">
-				<div class="icon-container">
-					<img class="icon no-select" src="@/assets/icons/x.svg" draggable="false">
-				</div>
+				<Icon :icon="require('@/assets/icons/x.svg')" />
 			</button>
 		</div>
 	</div>
@@ -21,9 +17,11 @@
 
 
 <script>
+import Icon from '@/components/atomic/Icon.vue'
 import { ref } from 'vue'
 
 export default {
+	components: { Icon },
 	props: ['schema'],
 	setup (props) {
 		const focus = ref(0)
@@ -77,33 +75,11 @@ export default {
 	border-radius: inherit;
 }
 
-.icon-container {
-	flex: 0 0 auto;
-	height: 3em;
-	width: 3em;
-	border-radius: inherit;
-	padding: 3px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
 .icon {
-	height: 1.4em;
-	width: 1.4em;
-	object-fit: contain;
 	opacity: var(--element-secondary-opacity);
-	transition: 0.3s ease;
 }
 
-.symbol {
-	font-size: 1.4em;
-	opacity: var(--element-secondary-opacity);
-	transition: 0.3s ease;
-}
-
-.focus .icon,
-.focus .symbol {
+.focus .icon {
 	opacity: 1;
 }
 

@@ -38,8 +38,11 @@
 	</div>
 </template>
 
+
+
 <script>
 import { computed } from 'vue'
+
 export default {
 	props: ['direction', 'isValue', 'isData', 'isPending'],
 	setup (props) {
@@ -53,6 +56,8 @@ export default {
 	}
 }
 </script>
+
+
 
 <style scoped>
 .tx-icon {
