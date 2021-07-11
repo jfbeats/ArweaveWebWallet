@@ -13,7 +13,7 @@
 		</div>
 		<h3 class="heading">Data</h3>
 		<!-- set Content-Type tag -->
-		<InputData />
+		<InputData v-model="InterfaceStore.wallet.send.data" />
 		<div class="row" style="justify-content: flex-end;"></div>
 		<h3 class="heading">Tags</h3>
 		<InputGrid :schema="InterfaceStore.wallet.send.tags" :deletable="true" />

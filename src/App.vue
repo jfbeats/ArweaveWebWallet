@@ -1,11 +1,14 @@
 <template>
 	<div class="app" :class="{ verticalLayout, verticalContent }">
-		<Toolbar class="toolbar" :class="{ dragOverlay }" @drop.prevent="droppedFiles" />
+		<Toolbar class="toolbar" @drop.prevent="droppedFiles" />
 		<router-view class="router" v-slot="{ Component, route }" @drop.prevent="droppedFiles">
 			<transition :name="route.meta.mainTransitionName || 'slide-up'" mode="out-in" @before-enter="emitter.emit('beforeEnter')" @after-enter="emitter.emit('afterEnter')" @before-leave="emitter.emit('beforeLeave')" @after-leave="emitter.emit('afterLeave')">
 				<component :is="Component" :key="$route.path.split('/').slice(0,3).join('')" />
 			</transition>
 		</router-view>
+		<transition name="fade">
+			<div v-show="dragOverlay" class="overlay" />
+		</transition>
 	</div>
 </template>
 
@@ -113,45 +116,15 @@ export default {
 	min-height: calc(100vh - 80px);
 }
 
-.dragOverlay::before {
-	content: "";
-	background-image: radial-gradient(circle at center, #333, #111);
-	background-position: center;
-	background-repeat: no-repeat;
-	background-origin: center;
-	background-size: cover;
-	position: absolute;
+.overlay {
+	position: fixed;
 	width: 100%;
 	height: 100%;
 	top: 0;
 	bottom: 0;
 	left: 0;
 	right: 0;
-	z-index: 99999;
-	opacity: 0.5;
-}
-
-.dragOverlay::after {
-	text-align: center;
-	content: "";
-	background-image: url("~@/assets/icons/drop.svg");
-	background-position: center;
-	background-repeat: no-repeat;
-	background-origin: center;
-	background-size: 48px 48px;
-	position: absolute;
-	width: 100%;
-	height: 100%;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	padding: 0 16px;
-	padding-top: 200px;
-	z-index: 99999;
-	opacity: 0.5;
+	z-index: 1;
+	background: #00000066;
 }
 </style>

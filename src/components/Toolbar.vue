@@ -11,11 +11,13 @@
 			<router-link class="icon control" :class="{ verticalLayout }" to="/add"><img class="small" src="@/assets/icons/add_box.svg"></router-link>
 			<router-link class="icon control" :class="{ verticalLayout }" to="/settings"><img class="small" src="@/assets/icons/settings.svg"></router-link>
 		</div>
+		<DragOverlay />
 	</nav>
 </template>
 
 <script>
-import AddressIcon from '@/components/atomic/AddressIcon'
+import AddressIcon from '@/components/atomic/AddressIcon.vue'
+import DragOverlay from '@/components/atomic/DragOverlay.vue'
 import { SlickList, SlickItem } from 'vue-slicksort'
 import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
@@ -23,7 +25,7 @@ import { computed } from 'vue'
 
 export default {
 	name: 'Toolbar',
-	components: { AddressIcon, SlickList, SlickItem },
+	components: { AddressIcon, DragOverlay, SlickList, SlickItem },
 	setup () {
 		const verticalLayout = computed(() => InterfaceStore.breakpoints.verticalLayout)
 		const axis = computed(() => InterfaceStore.breakpoints.verticalLayout ? 'x' : 'y')
