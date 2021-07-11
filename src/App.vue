@@ -7,7 +7,7 @@
 			</transition>
 		</router-view>
 		<transition name="fade">
-			<div v-show="dragOverlay" class="overlay" />
+			<div v-if="dragOverlay" class="overlay" />
 		</transition>
 	</div>
 </template>
@@ -117,6 +117,7 @@ export default {
 }
 
 .overlay {
+	pointer-events: none;
 	position: fixed;
 	width: 100%;
 	height: 100%;
