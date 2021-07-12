@@ -101,7 +101,10 @@ export default {
 		})
 		const txSizeDisplay = computed(() => humanFileSize(txSize.value))
 		const txFee = ref(null)
-		const feeUrl = computed(() => ArweaveStore.gatewayURL + 'price/' + txSize.value + '/' + InterfaceStore.wallet.send.address)
+		const feeUrl = computed(() => {
+			const address = InterfaceStore.wallet.send.address
+			return ArweaveStore.gatewayURL + 'price/' + txSize.value + '/' + (address.match(/^[a-z0-9_-]{43}$/i) ? address : '')
+		})
 		const updateFee = async () => { txFee.value = arweave.ar.winstonToAr((await axios.get(feeUrl.value)).data) }
 		const updateFeeDebounced = debounce(updateFee)
 		updateFee()
