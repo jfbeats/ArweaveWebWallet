@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build"
+    "build": "vue-cli-service build",
+    "report": "vue-cli-service build --report",
+	"deploy": "vue-cli-service build && arkb deploy dist --wallet ../arweaveWallet.json --auto-confirm"
   },
   "dependencies": {
     "@ledgerhq/hw-transport-webusb": "^5.53.1",

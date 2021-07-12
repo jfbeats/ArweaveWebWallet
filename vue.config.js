@@ -1,5 +1,5 @@
 module.exports = {
-	publicPath: process.env.GITHUB_ACTIONS ? '/' : '/',
+	publicPath: process.env.GITHUB_ACTIONS ? '/' : '',
 
 	pwa: {
 		name: 'Arweave Wallet',
@@ -8,7 +8,7 @@ module.exports = {
 		manifestOptions: {
 			icons: [
 				{
-					src: "./arweaveLogo.svg",
+					src: require('@/assets/logos/arweave.svg'),
 					purpose: "maskable any",
 					type: "image/svg+xml",
 					sizes: "any",
