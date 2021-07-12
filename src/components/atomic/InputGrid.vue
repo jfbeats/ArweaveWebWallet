@@ -1,5 +1,5 @@
 <template>
-	<div v-if="schema.length > 0" class="input-list" :class="{ focus }">
+	<div v-if="schema.length > 0" class="input-grid" :class="{ focus }">
 		<div v-for="(row, index) in schema" :key="row.key" class="row">
 			<div class="inputs">
 				<div v-for="(input, inputIndex) in row.items" :key="row.key + input.name" class="input" :class="{ flip: row.items.length==2 && inputIndex==1 }">
@@ -34,7 +34,7 @@ export default {
 
 
 <style scoped>
-.input-list {
+.input-grid {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -44,10 +44,14 @@ export default {
 	transition: 0.3s ease;
 }
 
-.input-list.focus {
+.input-grid.focus {
 	border: 1px solid #ffffff88;
 	background: #ffffff08;
 	box-shadow: 0 0 10px 0 #ffffff11;
+}
+
+.input-grid[disabled] {
+	border: 1px solid var(--border);
 }
 
 .row {
@@ -104,7 +108,7 @@ export default {
 	text-align: end;
 }
 
-.input-list:not(.vertical) .input:not(.flip):not(:first-child)::before {
+.input-grid:not(.vertical) .input:not(.flip):not(:first-child)::before {
 	content: "";
 	width: 1px;
 	height: 1.2em;
@@ -112,11 +116,11 @@ export default {
 	transition: 0.3s ease;
 }
 
-.input-list:not(.vertical).focus .input:not(.flip):not(:first-child)::before {
+.input-grid:not(.vertical).focus .input:not(.flip):not(:first-child)::before {
 	background: #ffffff60;
 }
 
-.input-list:not(.vertical) .input.flip::after {
+.input-grid:not(.vertical) .input.flip::after {
 	content: "";
 	width: 1px;
 	height: 1.2em;
@@ -124,7 +128,7 @@ export default {
 	transition: 0.3s ease;
 }
 
-.input-list:not(.vertical).focus .input.flip::after {
+.input-grid:not(.vertical).focus .input.flip::after {
 	background: #ffffff60;
 }
 

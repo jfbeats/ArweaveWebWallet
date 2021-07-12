@@ -2,6 +2,25 @@
 	<FoldingLayout v-if="tx">
 		<template #left>
 			<div class="meta">
+				<div class="card">
+					<div class="row">
+						<div class="item">
+							<AddressIcon :address="tx.owner.address" />
+							<Address class="small" :address="tx.owner.address" />
+						</div>
+
+						<div class="item">
+							<AddressIcon :address="tx.recipient" />
+							<Address class="small" :address="tx.recipient" />
+						</div>
+					</div>
+					<div class="item">
+						<div>
+							<Ar class="ar" :ar="tx.quantity.ar" />&nbsp;<LocaleCurrency class="small" :ar="tx.quantity.ar">|</LocaleCurrency>
+						</div>
+					</div>
+				</div>
+				<br>
 
 				<h3>ID</h3>
 				<div>{{ tx.id }}</div>
@@ -20,27 +39,9 @@
 				</div>
 				<br>
 
-				<h3>Transaction</h3>
-				<div class="row">
-					<div class="item">
-						From
-						<AddressIcon :address="tx.owner.address" />
-						<Address class="small" :address="tx.owner.address" />
-					</div>
-					<div class="item">
-						<div><Ar class="ar" :ar="tx.quantity.ar" />&nbsp;<LocaleCurrency class="small" :ar="tx.quantity.ar">|</LocaleCurrency></div>
-					</div>
-					<div class="item">
-						To
-						<AddressIcon :address="tx.recipient" />
-						<Address class="small" :address="tx.recipient" />
-					</div>
-				</div>
-				<br>
-
 				<h3>Tags</h3>
-				<div style="background: var(--background2);">
-					<InputGrid :schema="buildTagsSchema(tx.tags)" />
+				<div style="background: var(--background2); border-radius: var(--border-radius);">
+					<InputGrid :schema="buildTagsSchema(tx.tags)" disabled />
 				</div>
 				<br>
 
@@ -55,10 +56,14 @@
 					<img class="img" :src="ArweaveStore.gatewayURL + tx.id" @load="data.loaded=true">
 				</div>
 				<div v-else-if="data.handler === 'json'" key="json" class="card-container">
-					<pre class="raw card">{{ data.payload }}</pre>
+					<div class="card">
+						<pre class="raw">{{ data.payload }}</pre>
+					</div>
 				</div>
 				<div v-else-if="data.handler === 'raw'" key="raw" class="card-container">
-					<div class="raw card">{{ data.payload }}</div>
+					<div class="card">
+						<div class="raw">{{ data.payload }}</div>
+					</div>
 				</div>
 			</transition>
 		</template>
@@ -153,6 +158,10 @@ export default {
 	padding: var(--spacing);
 }
 
+.verticalContent .meta {
+	max-width: 100%;
+}
+
 .frame-container {
 	width: 100%;
 	height: 100vh;
@@ -171,6 +180,11 @@ export default {
 	padding: var(--spacing);
 }
 
+.card-container > .card {
+	padding: 0;
+	overflow: hidden;
+}
+
 .iframe {
 	width: 100%;
 	height: 100%;
@@ -186,12 +200,14 @@ export default {
 
 .raw {
 	overflow: auto;
+	padding: var(--spacing);
+	margin: 0;
 }
 
 .row {
 	min-height: 2em;
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	justify-content: space-between;
 	gap: var(--spacing);
 }
@@ -212,7 +228,7 @@ export default {
 }
 
 .address {
-	width: 100%;
+	max-width: 100%;
 }
 
 .small {
