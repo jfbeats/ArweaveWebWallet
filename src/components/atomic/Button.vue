@@ -1,5 +1,5 @@
 <template>
-	<button class="button">
+	<button class="button no-select">
 		<slot></slot>
 	</button>
 </template>
@@ -21,16 +21,21 @@ export default {
 	border-radius: var(--border-radius);
 	background: #ffffff06;
 	/* border: 1px solid var(--border); */
-	transition: 0.3s ease;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	box-shadow: 0 0 10px 0 var(--glow-color);
+	transition: 0.3s ease;
 }
 
 .button:hover {
-	color: white;
 	background: #ffffff08;
 	box-shadow: 0 0 20px 0 var(--glow-color);
+	filter: brightness(1.3);
+}
+
+.button:active {
+	filter: brightness(0.8);
+	transition: 0.1s ease;
 }
 </style>

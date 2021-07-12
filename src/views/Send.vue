@@ -11,27 +11,34 @@
 		<h3 class="heading">Amount</h3>
 		<InputAr v-model="InterfaceStore.wallet.send.amount" />
 		<div class="row" style="justify-content:flex-end;">
-			<button class="secondary" @click="setMax">Max</button>
+			<button class="secondary" style="padding-top:1em;" @click="setMax">Max</button>
 		</div>
 
 		<h3 class="heading">Data</h3>
 		<InputData v-model="InterfaceStore.wallet.send.data" />
 		<div class="row" style="justify-content:flex-end;"></div>
 
-		<h3 class="heading">Tags</h3>
+		<div class="row">
+			<h3 class="heading" style="display:block;">Tags</h3>
+			<div v-if="!InterfaceStore.wallet.send.tags.length"><button class="secondary" style="padding-top:1em;" @click="addTag()">Add</button></div>
+		</div>
 		<InputGrid :schema="InterfaceStore.wallet.send.tags" :deletable="true" />
-		<div class="row" style="justify-content:flex-end;">
-			<button class="secondary" @click="addTag()">Add</button>
+		<div v-if="InterfaceStore.wallet.send.tags.length" class="row" style="justify-content:flex-end;">
+			<button class="secondary" style="padding-top:1em;" @click="addTag()">Add</button>
 		</div>
 
 		<div class="row" style="align-items:flex-end; margin-top:3em;">
 			<div>
 				<div>Size {{ txSizeDisplay }}</div>
 				<div>Fee
-					<Ar class="ar" :ar="txFee" />&nbsp;<LocaleCurrency class="small" :ar="txFee">|</LocaleCurrency>
+					<Ar class="ar" :ar="txFee" />&nbsp;<LocaleCurrency class="small secondary" :ar="txFee">|</LocaleCurrency>
 				</div>
 			</div>
-			<Button :style="submitStyle">Submit</Button>
+			<Button :style="submitStyle">
+				<Icon :icon="require('@/assets/icons/north_east.svg')" style="height:1em;" />
+				Submit
+				<span style="width:1.5em;" />
+			</Button>
 		</div>
 		<!-- QR -->
 	</div>
@@ -48,6 +55,7 @@ import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import Ar from '@/components/atomic/Ar.vue'
 import LocaleCurrency from '@/components/atomic/LocaleCurrency.vue'
 import Button from '@/components/atomic/Button.vue'
+import Icon from '@/components/atomic/Icon.vue'
 import ArweaveStore, { arweave } from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import axios from 'axios'
@@ -55,7 +63,7 @@ import { debounce, humanFileSize, addressToColor } from '@/functions/Utils'
 import { computed, ref, watch } from 'vue'
 
 export default {
-	components: { Input, InputAr, InputData, InputGrid, AddressIcon, Ar, LocaleCurrency, Button },
+	components: { Input, InputAr, InputData, InputGrid, AddressIcon, Ar, LocaleCurrency, Button, Icon },
 	setup () {
 
 		const maskAddress = (address) => { return address.match(/^[a-z0-9_-]{0,43}$/i) }
@@ -102,7 +110,7 @@ export default {
 		const submitStyle = {
 			'--border': `rgba(${addressToColor(ArweaveStore.currentWallet.key).join(',')},0.8)`,
 			'--glow-color': `rgba(${addressToColor(ArweaveStore.currentWallet.key).join(',')},0.2)`,
-			'background-image': `linear-gradient(270deg, rgba(${addressToColor(ArweaveStore.currentWallet.key).join(',')},0.6), 
+			'background-image': `radial-gradient(circle at center, rgba(${addressToColor(ArweaveStore.currentWallet.key).join(',')},0.4), 
 			rgba(${addressToColor(ArweaveStore.currentWallet.key).join(',')},0.3))`
 		}
 
@@ -114,6 +122,11 @@ export default {
 
 
 <style scoped>
+.send {
+	display: flex;
+	flex-direction: column;
+}
+
 .input {
 	flex: 1 1 0;
 }
@@ -136,7 +149,6 @@ export default {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	margin: calc(var(--spacing) / 2) 0;
 	gap: var(--spacing);
 }
 
@@ -150,6 +162,5 @@ export default {
 
 .small {
 	font-size: 0.75em;
-	color: var(--element-secondary);
 }
 </style>

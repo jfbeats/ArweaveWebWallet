@@ -7,7 +7,7 @@
 					<input v-model="input.value" v-bind="input.attrs" class="text" :placeholder="input.name" @focus="focus=(index+1)*(inputIndex+1)" @blur="focus=0">
 				</div>
 			</div>
-			<button v-if="row.deletable" @click="removeRow(index)">
+			<button v-if="row.deletable" class="remove" @click="removeRow(index)">
 				<Icon :icon="require('@/assets/icons/x.svg')" />
 			</button>
 		</div>
@@ -130,5 +130,14 @@ export default {
 
 .vertical .text:first-child {
 	margin-inline-start: 3em;
+}
+
+.remove {
+	opacity: 0.5;
+	transition: 0.1s ease;
+}
+
+.remove:hover {
+	opacity: 1;
 }
 </style>
