@@ -4,6 +4,14 @@
 			<div class="meta">
 				<div class="card">
 					<div class="row">
+						<!-- <div class="item"> -->
+						<div class="circle">
+							<Ar class="ar" :ar="tx.quantity.ar" />
+							<LocaleCurrency class="small" :ar="tx.quantity.ar"></LocaleCurrency>
+						</div>
+						<!-- </div> -->
+					</div>
+					<div class="row">
 						<div class="item">
 							<AddressIcon :address="tx.owner.address" />
 							<Address class="small" :address="tx.owner.address" />
@@ -14,11 +22,7 @@
 							<Address class="small" :address="tx.recipient" />
 						</div>
 					</div>
-					<div class="item">
-						<div>
-							<Ar class="ar" :ar="tx.quantity.ar" />&nbsp;<LocaleCurrency class="small" :ar="tx.quantity.ar">|</LocaleCurrency>
-						</div>
-					</div>
+
 				</div>
 				<br>
 
@@ -27,10 +31,16 @@
 				<div v-if="tx.data.size > 0">Link</div>
 				<br>
 
-				<h3>Block</h3>
-				<div>{{ !isPending ? tx.block.id : 'Pending' }}</div>
-				<div>{{ date }}</div>
-				<br>
+				<div v-if="isPending">
+					<h3>Pending</h3>
+				</div>
+				<div v-else>
+					<h3>Block</h3>
+					<div>{{ tx.block.id }}</div>
+					<div>{{ tx.block.height }}<template v-if="currentBlock"> / {{ currentBlock }}</template></div>
+					<div>{{ date }}</div>
+					<br>
+				</div>
 
 				<h3>Data</h3>
 				<div>Data size {{ humanFileSize(tx.data.size) }}</div>
@@ -80,7 +90,7 @@ import LocaleCurrency from '@/components/atomic/LocaleCurrency.vue'
 import ArweaveStore, { arweave, getTxById } from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { humanFileSize } from '@/functions/Utils'
-import { reactive, watch, computed, ref } from 'vue'
+import { reactive, watch, computed, ref, onMounted } from 'vue'
 
 export default {
 	components: { FoldingLayout, Address, AddressIcon, InputGrid, Ar, LocaleCurrency },
@@ -147,14 +157,17 @@ export default {
 			return result
 		}
 
-		return { ArweaveStore, tx, data, loaded, isData, isPending, date, verticalContent, buildTagsSchema, humanFileSize }
+		const currentBlock = ref(null)
+		onMounted(async () => currentBlock.value = (await arweave.network.getInfo())?.height)
+
+		return { ArweaveStore, tx, data, loaded, currentBlock, isData, isPending, date, verticalContent, buildTagsSchema, humanFileSize }
 	},
 }
 </script>
 
 <style scoped>
 .meta {
-	max-width: 700px;
+	max-width: 900px;
 	padding: var(--spacing);
 }
 
@@ -215,6 +228,7 @@ export default {
 .row > .item {
 	flex: 1 1 0;
 	min-width: 0;
+	min-height: 200px;
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
@@ -222,9 +236,23 @@ export default {
 	justify-content: center;
 }
 
+.circle {
+	flex: 0 0 auto;
+	width: 200px;
+	height: 200px;
+	font-size: 1.5em;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	border: 4px solid var(--border);
+	border-radius: 50%;
+}
+
 .address-icon {
 	width: 64px;
 	height: 64px;
+	margin-bottom: 32px;
 }
 
 .address {

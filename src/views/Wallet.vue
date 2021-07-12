@@ -75,6 +75,7 @@ export default {
 }
 
 .verticalContent .wallet-info {
+	max-width: 100%;
 	padding: var(--spacing);
 }
 

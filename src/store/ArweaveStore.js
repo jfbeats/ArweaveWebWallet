@@ -207,7 +207,7 @@ function sortByBlocks (wallet, query) {
 }
 
 export async function getArverify (address) {
-	// TODO if is valid address
+	if (!address.match(/^[a-z0-9_-]{43}$/i)) { return }
 	return ArweaveStore.arverify[address] ??= getVerification(address)
 }
 
@@ -240,6 +240,7 @@ if (ArweaveStore.wallets.length > 0) { ArweaveStore.currentWallet = ArweaveStore
 
 // if (process.env.NODE_ENV === 'development') {
 	window.ArweaveStore = ArweaveStore
+	window.arweave = arweave
 	pushWallet({ key: 'TId0Wix2KFl1gArtAT6Do1CbWU_0wneGvS5X9BfW5PE' })
 	pushWallet({ key: 'Bf3pWqxD1qwwF2fcE9bPNyQp_5TSlAYPJ3JNMgJSj4c' })
 	pushWallet({ key: 'vLRHFqCw1uHu75xqB4fCDW-QxpkpJxBtFD9g4QYUbfw' })

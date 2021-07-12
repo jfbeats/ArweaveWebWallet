@@ -70,6 +70,7 @@ export default {
 			const fromIndex = tabs.findIndex(el => el.name.toLowerCase() === prevState)
 			transitionName.value = toIndex < fromIndex ? 'slide-right' : 'slide-left'
 		})
+		// TODO collapse only if in viewport
 		return { loading, txs, completedQuery, bottom, selectedQuery, transitionName, tabs }
 	},
 }
