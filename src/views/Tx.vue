@@ -15,13 +15,27 @@
 
 				<h3>Data</h3>
 				<div>Data size {{ humanFileSize(tx.data.size) }}</div>
-				<div>Fee {{ tx.fee.ar }} AR</div>
+				<div>Fee
+					<Ar class="ar" :ar="tx.fee.ar" />&nbsp;<LocaleCurrency class="small" :ar="tx.fee.ar">|</LocaleCurrency>
+				</div>
 				<br>
 
 				<h3>Transaction</h3>
-				<div>owner.address {{ tx.owner.address }}</div>
-				<div>quantity.ar {{ tx.quantity.ar }}</div>
-				<div>recipient {{ tx.recipient }}</div>
+				<div class="row">
+					<div class="item">
+						From
+						<AddressIcon :address="tx.owner.address" />
+						<Address class="small" :address="tx.owner.address" />
+					</div>
+					<div class="item">
+						<div><Ar class="ar" :ar="tx.quantity.ar" />&nbsp;<LocaleCurrency class="small" :ar="tx.quantity.ar">|</LocaleCurrency></div>
+					</div>
+					<div class="item">
+						To
+						<AddressIcon :address="tx.recipient" />
+						<Address class="small" :address="tx.recipient" />
+					</div>
+				</div>
 				<br>
 
 				<h3>Tags</h3>
@@ -53,14 +67,18 @@
 
 <script>
 import FoldingLayout from '@/components/FoldingLayout.vue'
+import Address from '@/components/atomic/Address'
+import AddressIcon from '@/components/atomic/AddressIcon'
 import InputGrid from '@/components/atomic/InputGrid.vue'
+import Ar from '@/components/atomic/Ar.vue'
+import LocaleCurrency from '@/components/atomic/LocaleCurrency.vue'
 import ArweaveStore, { arweave, getTxById } from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { humanFileSize } from '@/functions/Utils'
 import { reactive, watch, computed, ref } from 'vue'
 
 export default {
-	components: { FoldingLayout, InputGrid },
+	components: { FoldingLayout, Address, AddressIcon, InputGrid, Ar, LocaleCurrency },
 	props: {
 		txId: String,
 	},
@@ -168,5 +186,37 @@ export default {
 
 .raw {
 	overflow: auto;
+}
+
+.row {
+	min-height: 2em;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--spacing);
+}
+
+.row > .item {
+	flex: 1 1 0;
+	min-width: 0;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+.address-icon {
+	width: 64px;
+	height: 64px;
+}
+
+.address {
+	width: 100%;
+}
+
+.small {
+	font-size: 0.75em;
+	color: var(--element-secondary);
 }
 </style>

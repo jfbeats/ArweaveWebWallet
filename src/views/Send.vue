@@ -166,4 +166,8 @@ export default {
 .small {
 	font-size: 0.75em;
 }
+
+.button {
+	width: 50%;
+}
 </style>
