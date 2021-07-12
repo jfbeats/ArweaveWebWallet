@@ -24,16 +24,15 @@
 			<button class="secondary" @click="addTag()">Add</button>
 		</div>
 
-		<div class="row" style="align-items:flex-end; margin-top:2em;">
+		<div class="row" style="align-items:flex-end; margin-top:3em;">
 			<div>
 				<div>Size {{ txSizeDisplay }}</div>
 				<div>Fee
 					<Ar class="ar" :ar="txFee" />&nbsp;<LocaleCurrency class="small" :ar="txFee">|</LocaleCurrency>
 				</div>
 			</div>
-			<div>Submit</div>
+			<Button :style="submitStyle">Submit</Button>
 		</div>
-		<!-- submit -->
 		<!-- QR -->
 	</div>
 </template>
@@ -46,16 +45,17 @@ import InputAr from '@/components/atomic/InputAr.vue'
 import InputData from '@/components/atomic/InputData.vue'
 import InputGrid from '@/components/atomic/InputGrid.vue'
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
-import Ar from '@/components/atomic/Ar'
-import LocaleCurrency from '@/components/atomic/LocaleCurrency'
+import Ar from '@/components/atomic/Ar.vue'
+import LocaleCurrency from '@/components/atomic/LocaleCurrency.vue'
+import Button from '@/components/atomic/Button.vue'
 import ArweaveStore, { arweave } from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import axios from 'axios'
-import { debounce, humanFileSize } from '@/functions/Utils'
+import { debounce, humanFileSize, addressToColor } from '@/functions/Utils'
 import { computed, ref, watch } from 'vue'
 
 export default {
-	components: { Input, InputAr, InputData, InputGrid, AddressIcon, Ar, LocaleCurrency },
+	components: { Input, InputAr, InputData, InputGrid, AddressIcon, Ar, LocaleCurrency, Button },
 	setup () {
 
 		const maskAddress = (address) => { return address.match(/^[a-z0-9_-]{0,43}$/i) }
@@ -99,7 +99,14 @@ export default {
 		updateFee()
 		watch(() => feeUrl.value, () => updateFeeDebounced())
 
-		return { InterfaceStore, maskAddress, setMax, addTag, txSizeDisplay, txFee }
+		const submitStyle = {
+			'--border': `rgba(${addressToColor(ArweaveStore.currentWallet.key).join(',')},0.8)`,
+			'--glow-color': `rgba(${addressToColor(ArweaveStore.currentWallet.key).join(',')},0.2)`,
+			'background-image': `linear-gradient(270deg, rgba(${addressToColor(ArweaveStore.currentWallet.key).join(',')},0.6), 
+			rgba(${addressToColor(ArweaveStore.currentWallet.key).join(',')},0.3))`
+		}
+
+		return { InterfaceStore, maskAddress, setMax, addTag, txSizeDisplay, txFee, submitStyle }
 	}
 }
 </script>
