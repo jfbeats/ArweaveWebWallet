@@ -8,7 +8,7 @@ module.exports = {
 		manifestOptions: {
 			icons: [
 				{
-					src: require('@/assets/logos/arweave.svg'),
+					src: 'arweaveLogo.svg',
 					purpose: "maskable any",
 					type: "image/svg+xml",
 					sizes: "any",
