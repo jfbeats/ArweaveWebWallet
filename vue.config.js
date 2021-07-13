@@ -1,5 +1,13 @@
+const webpack = require('webpack')
+
 module.exports = {
 	publicPath: process.env.GITHUB_ACTIONS ? '/' : '',
+
+	configureWebpack: {
+		plugins: [
+			new webpack.IgnorePlugin(/^\.\/wordlists\/(?!english)/, /bip39\/src$/)
+		]
+	},
 
 	pwa: {
 		name: 'Arweave Wallet',

@@ -18,9 +18,9 @@
 import Toolbar from '@/components/Toolbar'
 import ArweaveStore from './store/ArweaveStore'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
-import { newWallet } from '@/functions/Wallets.js'
+import { addWallet } from '@/functions/Wallets.js'
 import { useRouter } from 'vue-router'
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 
 export default {
 	components: {
@@ -52,7 +52,7 @@ export default {
 		async droppedFiles (e) {
 			const walletPromises = []
 			for (const file of e.dataTransfer.files) {
-				const walletPromise = newWallet(JSON.parse(await file.text()))
+				const walletPromise = addWallet(JSON.parse(await file.text()))
 				walletPromises.push(walletPromise)
 			}
 			const ids = (await Promise.all(walletPromises)).filter(e => e !== null).map(e => e.id)

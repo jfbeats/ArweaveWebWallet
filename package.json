@@ -1,35 +1,37 @@
 {
-  "name": "arweave-web-wallet",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "report": "vue-cli-service build --report",
-	"deploy": "vue-cli-service build && arkb deploy dist --wallet ../arweaveWallet.json --auto-confirm"
-  },
-  "dependencies": {
-    "@ledgerhq/hw-transport-webusb": "^5.53.1",
-    "@zondax/ledger-arweave": "^0.2.0",
-    "ardb": "^1.0.8",
-    "arverify": "^0.0.11",
-    "arweave": "^1.10.13",
-    "arweave-id": "^2.0.11",
-    "arweave-mnemonic-keys": "^0.0.9",
-    "core-js": "^3.6.5",
-    "identicon.js": "^2.3.3",
-    "jshashes": "^1.0.8",
-    "mitt": "^3.0.0",
-    "register-service-worker": "^1.7.1",
-    "vue": "^3.0.0",
-    "vue-router": "^4.0.0-0",
-    "vue-slicksort": "^2.0.0-alpha.5"
-  },
-  "devDependencies": {
-    "@vue/cli-plugin-babel": "~4.5.0",
-    "@vue/cli-plugin-pwa": "^4.5.13",
-    "@vue/cli-plugin-router": "~4.5.0",
-    "@vue/cli-service": "~4.5.0",
-    "@vue/compiler-sfc": "^3.0.0"
-  }
+	"name": "arweave-web-wallet",
+	"version": "0.1.0",
+	"private": true,
+	"scripts": {
+		"serve": "vue-cli-service serve",
+		"build": "vue-cli-service build",
+		"report": "vue-cli-service build --report",
+		"deploy": "vue-cli-service build && arkb deploy dist --wallet ../arweaveWallet.json --auto-confirm"
+	},
+	"dependencies": {
+		"@ledgerhq/hw-transport-webusb": "^5.53.1",
+		"@zondax/ledger-arweave": "^0.2.0",
+		"ardb": "^1.0.8",
+		"arverify": "^0.0.11",
+		"arweave": "^1.10.13",
+		"arweave-id": "^2.0.11",
+		"bip39": "^3.0.4",
+		"core-js": "^3.6.5",
+		"human-crypto-keys": "^0.1.4",
+		"identicon.js": "^2.3.3",
+		"jshashes": "^1.0.8",
+		"libp2p-crypto": "^0.19.5",
+		"mitt": "^3.0.0",
+		"register-service-worker": "^1.7.1",
+		"vue": "^3.0.0",
+		"vue-router": "^4.0.0-0",
+		"vue-slicksort": "^2.0.0-alpha.5"
+	},
+	"devDependencies": {
+		"@vue/cli-plugin-babel": "~4.5.0",
+		"@vue/cli-plugin-pwa": "^4.5.13",
+		"@vue/cli-plugin-router": "~4.5.0",
+		"@vue/cli-service": "~4.5.0",
+		"@vue/compiler-sfc": "^3.0.0"
+	}
 }

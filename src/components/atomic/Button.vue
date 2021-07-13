@@ -29,7 +29,6 @@ export default {
 }
 
 .button:hover {
-	background: #ffffff08;
 	box-shadow: 0 0 var(--spacing) 0 var(--glow-color);
 	filter: brightness(1.3);
 }

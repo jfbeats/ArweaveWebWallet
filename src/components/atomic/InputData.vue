@@ -79,6 +79,7 @@ textarea {
 	border: none;
 	background-color: transparent;
 	color: var(--element-secondary);
+	text-align: inherit;
 }
 
 .overlay {
@@ -110,6 +111,7 @@ textarea {
 	width: 48px;
 	height: 48px;
 	position: relative;
+	display: flex;
 }
 
 .file-picker-label {

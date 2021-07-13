@@ -1,7 +1,9 @@
 import { arweave, pushWallet } from '@/store/ArweaveStore'
-import { generateMnemonic, getKeyFromMnemonic } from "arweave-mnemonic-keys"
+import { getKeyPairFromMnemonic } from 'human-crypto-keys'
+import { generateMnemonic, validateMnemonic } from 'bip39'
+import crypto from 'libp2p-crypto'
 
-export async function newWallet (jwkObj) {
+export async function addWallet (jwkObj) {
 	const jwk = jwkObj || await arweave.wallets.generate()
 	const key = await arweave.wallets.jwkToAddress(jwk)
 	if (!jwkObj) { download(key, JSON.stringify(jwk)) }
@@ -9,14 +11,23 @@ export async function newWallet (jwkObj) {
 	return pushWallet(wallet)
 }
 
-export async function newPassphrase (passphrase) {
-	const currentPassphrase = passphrase || await generateMnemonic()
-	const jwk = await getKeyFromMnemonic(currentPassphrase)
-	newWallet(jwk)
-	return currentPassphrase
+export async function addMnemonic (mnemonic) {
+	let keyPair = await getKeyPairFromMnemonic(mnemonic,
+		{ id: "rsa", modulusLength: 4096 }, { privateKeyFormat: "pkcs1-pem" })
+	let jwk = (await crypto.keys.import(keyPair.privateKey, ""))._key
+	delete jwk.alg
+	delete jwk.key_ops
+	console.info('generated wallet')
+	return addWallet(jwk)
 }
 
-export async function importWallet (arweaveWallet) {
+export { generateMnemonic, validateMnemonic }
+
+// export function validateMnemonic (mnemonic) {
+// 	return mnemonic.trim().split(/\s+/g).length >= 12
+// }
+
+export async function watchWallet (arweaveWallet) {
 	const key = await arweaveWallet.getActiveAddress()
 	if (!key) { return }
 	const wallet = { key, metaData: arweaveWallet.metaData }
