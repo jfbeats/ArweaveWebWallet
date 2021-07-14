@@ -1,19 +1,30 @@
 <template>
 	<div class="add-wallet">
+
 		<div class="card">
-			<h2>Passphrase | Key file</h2>
-			<InputData v-model="passphraseInput" />
-			<br>
-			<Button v-if="!isCreatingWallet" @click="create()" :disabled="passphraseInput !== '' && !passphraseIsValid">
+			<h2 style="display:flex; justify-content:space-between;">
+				<span>Passphrase</span>
+				<span>Key file</span>
+			</h2>
+			<InputData v-model="passphraseInput" /><br>
+			<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create()" :disabled="passphraseInput.length && !passphraseIsValid">
 				<Icon :icon="require('@/assets/logos/arweave.svg')" />
 				<div>Create new wallet</div>
 			</Button>
-			<Button v-else :disabled="!createdWallet" @click="goToCreatedWallet">
+
+			<Button v-else-if="isCreatingWallet" :disabled="!createdWallet" @click="goToCreatedWallet">
 				<!-- TODO loading icon, disabled textarea -->
-				<div v-if="!createdWallet">Write down the passphrase, it will not be saved</div>
+				<div v-if="!createdWallet">Write down the passphrase</div>
 				<div v-else>Passphrase saved? Click here to proceed</div>
 			</Button>
+
+			<Button v-else :disabled="!passphraseIsValid || isGeneratingWallet" @click="importWallet()">
+				<!-- TODO loading icon, disabled textarea -->
+				<div>Import wallet</div>
+			</Button>
+
 		</div>
+
 		<div class="card">
 			<h2>Hardware</h2>
 			<Button v-if="supportsWebUSB()" @click="importLedger()">
@@ -25,6 +36,7 @@
 				<div>Ledger not supported for this browser</div>
 			</Button>
 		</div>
+
 	</div>
 </template>
 
@@ -44,15 +56,21 @@ export default {
 		const passphraseInput = ref('')
 		const passphraseIsValid = computed(() => validateMnemonic(passphraseInput.value))
 		const isCreatingWallet = ref(false)
+		const isGeneratingWallet = ref(false)
 		const createdWallet = ref(null)
 		const create = async () => {
 			isCreatingWallet.value = true
 			passphraseInput.value = generateMnemonic()
 			const wallet = addMnemonic(passphraseInput.value)
-			setTimeout(async () => createdWallet.value = await wallet, 20000)
+			setTimeout(async () => createdWallet.value = await wallet, 10000)
 		}
 		const goToCreatedWallet = () => {
 			router.push({ name: 'EditWallet', query: { wallet: createdWallet.value.id } })
+		}
+		const importWallet = async () => {
+			isGeneratingWallet.value = true
+			const wallet = await addMnemonic(passphraseInput.value)
+			router.push({ name: 'TxList', params: { walletId: wallet.id } })
 		}
 		const importLedger = async () => {
 			const wallet = await watchWallet(Ledger)
@@ -61,7 +79,7 @@ export default {
 		const supportsWebUSB = () => {
 			return !!window.navigator.usb
 		}
-		return { passphraseInput, passphraseIsValid, create, importLedger, supportsWebUSB, isCreatingWallet, createdWallet, goToCreatedWallet }
+		return { passphraseInput, passphraseIsValid, create, importLedger, supportsWebUSB, isCreatingWallet, isGeneratingWallet, createdWallet, goToCreatedWallet, importWallet }
 	},
 }
 </script>
