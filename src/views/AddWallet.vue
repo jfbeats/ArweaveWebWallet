@@ -5,6 +5,7 @@
 			<h2 style="display:flex; justify-content:space-between;">
 				<span>Passphrase</span>
 				<span>Key file</span>
+				<!-- TODO drag and drop -->
 			</h2>
 			<InputData v-model="passphraseInput" /><br>
 			<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create()" :disabled="passphraseInput.length && !passphraseIsValid">

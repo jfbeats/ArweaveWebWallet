@@ -14,6 +14,7 @@ import InterfaceStore from '@/store/InterfaceStore'
 import { ref, computed, onUnmounted, onMounted } from 'vue'
 export default {
 	setup () {
+		// TODO request anim frame
 		const verticalContent = computed(() => InterfaceStore.breakpoints.verticalContent)
 		const scrollPosition = ref('0')
 		const scrollHandler = () => {
