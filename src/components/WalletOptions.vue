@@ -9,7 +9,8 @@
 		</div>
 		<div class="content">
 			<div class="bottom">
-				<div @click="deleteWallet(wallet)"> delete</div>
+				<div>Download</div>
+				<div @click="deleteWallet(wallet)">Delete</div>
 			</div>
 		</div>
 

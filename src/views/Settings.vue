@@ -4,6 +4,9 @@
 			<h2>Wallet Settings</h2>
 			<div class="wallets">
 				<WalletOptions class="wallet-options" v-for="wallet in ArweaveStore.wallets" :key="wallet.id" :wallet="wallet" />
+				<Button v-if="!ArweaveStore.wallets.length" style="font-size:1.5em; background:var(--background3);" @click="$router.push({ name: 'AddWallet'})">
+					<Icon icon="+" />
+				</Button>
 			</div>
 			<h2>App Settings</h2>
 			<div class="group">
@@ -22,14 +25,16 @@
 
 <script>
 import WalletOptions from '@/components/WalletOptions.vue'
-import ArweaveStore from '@/store/ArweaveStore'
 import InputAr from '@/components/atomic/InputAr.vue'
 import Select from '@/components/atomic/Select.vue'
+import Button from '@/components/atomic/Button.vue'
+import Icon from '@/components/atomic/Icon.vue'
+import ArweaveStore from '@/store/ArweaveStore'
 import axios from 'axios'
 import { reactive, ref, computed } from 'vue'
 
 export default {
-	components: { WalletOptions, InputAr, Select },
+	components: { WalletOptions, InputAr, Select, Button, Icon },
 	setup () {
 		const amount = ref('')
 		let options = reactive([])
