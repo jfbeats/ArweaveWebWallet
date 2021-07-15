@@ -1,5 +1,5 @@
 <template>
-	<div class="input-data" :class="{ focus }" @drop.stop.prevent="droppedFiles">
+	<div class="input-data input-box" :class="{ focus }" @drop.stop.prevent="droppedFiles">
 		<textarea v-show="!isFile" v-model="model" @focus="focus=1" @blur="focus=0" :disabled="$attrs.disabled"></textarea>
 		<transition name="fade">
 			<div v-if="!model && !dragOverlay" class="overlay passthrough">
@@ -56,17 +56,8 @@ export default {
 	height: 12em;
 	position: relative;
 	overflow: hidden;
-	border-radius: var(--border-radius);
-	background: #ffffff06;
-	border: 1px solid #ffffff24;
 	transition: 0.3s ease;
 	display: flex;
-}
-
-.input-data.focus {
-	border: 1px solid #ffffff88;
-	background: #ffffff08;
-	box-shadow: 0 0 10px 0 #ffffff11;
 }
 
 textarea {

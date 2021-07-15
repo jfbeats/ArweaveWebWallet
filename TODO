@@ -1,9 +1,10 @@
 ---Add Wallet---
-Passphrase / KeyFile / Cloud
+Cloud
 
 ---TX---
 Send | AR / NFT / PST
-View TX data | NFT / PST
+View TX data | NFT / PST 
+	/ application/x.arweave-manifest+json
 
 ---Upload---
 NFT
@@ -15,11 +16,10 @@ Donate
 
 ---Global store---
 ArweaveID
-Arverify
 
 ---Profile---
-Profile picture / Identicon
-Username / Address
+Profile picture
+Username
 Send
 Interaction history
 Save to addrs book
@@ -34,7 +34,6 @@ Wallet
 	Profile
 	Export
 	Move to cloud
-	Delete
 	Permissions
 	hidden txs
 
@@ -51,4 +50,5 @@ Multisig
 QR | Address / Payment
 Sign and check message
 Money request
-User defined data handlers
+User defined data handlers (plugins?)
+Scheduled transactions

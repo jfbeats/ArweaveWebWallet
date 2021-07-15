@@ -1,5 +1,5 @@
 <template>
-	<div class="input-ar" :class="{ focus }">
+	<div class="input-ar input-box" :class="{ focus }">
 		<div class="input">
 			<Icon :icon="require('@/assets/logos/arweave.svg')" />
 			<input v-model="model" inputmode="numeric" class="text" placeholder="AR" @focus="focus = 1" @blur="focus = 0">
@@ -71,21 +71,12 @@ export default {
 	height: var(--height);
 	display: flex;
 	align-items: center;
-	border-radius: var(--border-radius);
-	border: 1px solid #ffffff24;
-	background: #ffffff06;
 	transition: 0.3s ease;
 }
 
 .vertical.input-ar {
 	--height: 7em;
 	flex-direction: column;
-}
-
-.input-ar.focus {
-	border: 1px solid #ffffff88;
-	background: #ffffff08;
-	box-shadow: 0 0 10px 0 #ffffff11;
 }
 
 .input {

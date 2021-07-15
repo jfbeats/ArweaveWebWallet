@@ -26,7 +26,7 @@
 			<transition name="fade-fast" mode="in-out">
 				<div v-if="popup.enabled" :key="popup.message" class="overlay">
 					<div style="flex:1 1 auto; display:flex; flex-direction:column; align-items:center; justify-content:space-evenly; margin-bottom:var(--spacing);">
-						<Icon :icon="popup.icon" style="font-size: 2em;" />
+						<Icon v-if="popup.icon" :icon="popup.icon" style="font-size: 2em;" />
 						{{ popup.message }}
 					</div>
 					<div style="width:100%; display:flex; gap:var(--spacing);">
@@ -142,7 +142,6 @@ export default {
 	height: 5em;
 	font-size: 1.1em;
 	width: 100%;
-	border: 1px solid var(--border);
 }
 
 .button:disabled {

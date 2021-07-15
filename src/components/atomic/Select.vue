@@ -1,5 +1,5 @@
 <template>
-	<div class="input" :class="{ focus }">
+	<div class="select input-box" :class="{ focus }">
 		<Icon :icon="icon" style="left:0;" />
 		<select class="text" v-model="model" :placeholder="placeholder" @focus="focus = true" @blur="focus = false">
 			<option v-for="option in options" :key="option" :value="option.value">{{ option.text }}</option>
@@ -31,22 +31,13 @@ export default {
 
 
 <style scoped>
-.input {
+.select {
 	height: 3.5em;
 	display: flex;
-	border: 1px solid #ffffff24;
-	border-radius: var(--border-radius);
 	align-items: center;
 	justify-content: center;
-	background: #ffffff06;
 	transition: 0.3s ease;
 	position: relative;
-}
-
-.input.focus {
-	border: 1px solid #ffffff88;
-	background: #ffffff08;
-	box-shadow: 0 0 10px 0 #ffffff11;
 }
 
 .icon {

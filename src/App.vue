@@ -81,7 +81,7 @@ export default {
 	flex: 0 0 auto;
 	display: flex;
 	flex-direction: column;
-	outline: 1px solid var(--border);
+	box-shadow: 0 0 0 0.5px var(--border);
 	overflow: auto;
 	overflow: overlay;
 	z-index: 10;

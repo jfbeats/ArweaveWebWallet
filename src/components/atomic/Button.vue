@@ -20,7 +20,6 @@ export default {
 	padding: var(--spacing);
 	border-radius: var(--border-radius);
 	background: #ffffff06;
-	/* border: 1px solid var(--border); */
 	display: flex;
 	align-items: center;
 	justify-content: center;

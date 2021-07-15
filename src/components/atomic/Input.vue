@@ -1,5 +1,5 @@
 <template>
-	<div class="input" :class="{ focus }">
+	<div class="input input-box" :class="{ focus }">
 		<Icon :icon="icon" />
 		<input class="text" v-model="model" :placeholder="placeholder" :autocomplete="autocomplete || 'off'" @focus="focus = true" @blur="focus = false">
 		<Icon v-for="action in actions" :key="action.icon" :icon="action.icon" @click="action.function" />
@@ -35,18 +35,9 @@ export default {
 .input {
 	height: 3.5em;
 	display: flex;
-	border: 1px solid #ffffff24;
-	border-radius: var(--border-radius);
 	align-items: center;
 	justify-content: center;
-	background: #ffffff06;
 	transition: 0.3s ease;
-}
-
-.input.focus {
-	border: 1px solid #ffffff88;
-	background: #ffffff08;
-	box-shadow: 0 0 10px 0 #ffffff11;
 }
 
 .icon {

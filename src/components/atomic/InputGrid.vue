@@ -1,5 +1,5 @@
 <template>
-	<div v-if="schema.length > 0" class="input-grid" :class="{ focus }">
+	<div v-if="schema.length > 0" class="input-grid input-box">
 		<div v-for="(row, index) in schema" :key="row.key" class="row">
 			<div class="inputs">
 				<div v-for="(input, inputIndex) in row.items" :key="row.key + input.name" class="input" :class="{ flip: row.items.length==2 && inputIndex==1 }">
@@ -38,20 +38,7 @@ export default {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	border-radius: var(--border-radius);
-	border: 1px solid #ffffff24;
-	background: #ffffff06;
 	transition: 0.3s ease;
-}
-
-.input-grid.focus {
-	border: 1px solid #ffffff88;
-	background: #ffffff08;
-	box-shadow: 0 0 10px 0 #ffffff11;
-}
-
-.input-grid[disabled] {
-	border: 1px solid var(--border);
 }
 
 .row {
