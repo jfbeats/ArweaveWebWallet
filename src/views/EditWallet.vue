@@ -2,6 +2,7 @@
 	<div class="edit-wallet">
 		<h2>Edit New Wallets</h2>
 		<WalletOptions class="wallet-options card" v-for="wallet in wallets" :key="wallet.id" :wallet="wallet" />
+
 	</div>
 </template>
 
@@ -11,6 +12,7 @@ import { getWalletById } from '@/store/ArweaveStore'
 
 export default {
 	components: { WalletOptions },
+	// TODO go to first wallet
 	computed: {
 		wallets () {
 			const editWallet = this.$route.query.wallet
@@ -29,5 +31,6 @@ export default {
 <style scoped>
 .edit-wallet {
 	padding: 32px;
+	width: 100%;
 }
 </style>

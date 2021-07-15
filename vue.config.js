@@ -5,7 +5,11 @@ module.exports = {
 
 	configureWebpack: {
 		plugins: [
-			new webpack.IgnorePlugin(/^\.\/wordlists\/(?!english)/, /bip39\/src$/)
+			new webpack.IgnorePlugin({
+				resourceRegExp: /^\.\/wordlists\/(?!english)/, 
+				// contextRegExp: /bip39\\src$/ // Linux
+				contextRegExp: /bip39\/src$/ // Windows
+			})
 		]
 	},
 

@@ -1,10 +1,13 @@
 <template>
-	<div v-if="icon" class="icon">
-		<div class="icon-background">
-			<span v-if="isSymbol" class="symbol no-select">{{ icon }}</span>
-			<img v-else class="img no-select" :src="icon" draggable="false">
+	<transition name="fade">
+		<div v-if="icon" class="icon" :key="icon">
+			<div class="icon-background">
+				<div v-if="icon == 'loader'" class="loader" />
+				<span v-else-if="isSymbol" class="symbol no-select">{{ icon }}</span>
+				<img v-else class="img no-select" :src="icon" draggable="false">
+			</div>
 		</div>
-	</div>
+	</transition>
 </template>
 
 
@@ -14,7 +17,7 @@ import { computed } from 'vue'
 export default {
 	props: ['icon'],
 	setup (props) {
-		const isSymbol = computed(() => typeof props.icon === "string" && props.icon.length <= 2)
+		const isSymbol = computed(() => typeof props.icon === 'string' && props.icon.length <= 2)
 		return { isSymbol }
 	}
 }
@@ -53,5 +56,27 @@ export default {
 
 .symbol {
 	font-size: 1.4em;
+}
+
+.loader,
+.loader:after {
+	border-radius: 50%;
+	width: 70%;
+	height: 70%;
+}
+
+.loader {
+	border: 4px solid #ffffff11;
+	border-top: 4px solid #ffffff33;
+	animation: loader-animation 2s infinite linear;
+}
+
+@keyframes loader-animation {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
 }
 </style>

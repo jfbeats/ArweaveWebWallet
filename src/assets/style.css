@@ -60,6 +60,7 @@ input:not([disabled]) {
 	background: var(--background2);
 	border-radius: var(--border-radius);
 	border: 1px solid var(--border);
+	position: relative;
 }
 
 .ellipsis {

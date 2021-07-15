@@ -15,7 +15,7 @@
 		</div>
 
 		<h3 class="heading">Data</h3>
-		<InputData v-model="InterfaceStore.wallet.send.data" />
+		<InputData v-model="InterfaceStore.wallet.send.data" @files="(files) => InterfaceStore.wallet.send.data = files[0]" />
 		<div class="row" style="justify-content:flex-end;"></div>
 
 		<div class="row">

@@ -1,18 +1,18 @@
 <template>
 	<div class="input-data" :class="{ focus }" @drop.stop.prevent="droppedFiles">
-		<textarea v-show="!isFile" v-model="model" @focus="focus=1" @blur="focus=0"></textarea>
+		<textarea v-show="!isFile" v-model="model" @focus="focus=1" @blur="focus=0" :disabled="$attrs.disabled"></textarea>
 		<transition name="fade">
 			<div v-if="!model && !dragOverlay" class="overlay passthrough">
 				<div class="big-icon-container"><img class="img" src="@/assets/icons/text.svg"></div>
 				<div class="spacer" />
 				<div class="big-icon-container not-passthrough">
 					<label for="file-picker" class="file-picker-label"><img class="img" src="@/assets/icons/drop.svg"></label>
-					<input type="file" id="file-picker" class="file-input" @change="selectedFile">
+					<input type="file" id="file-picker" class="file-input" @change="selectedFiles">
 				</div>
 			</div>
 			<div v-else-if="isFile" class="overlay">
 				<div class="big-icon-container focus"><img class="img" src="@/assets/icons/cloud.svg"></div>
-				<button class="clear" @click="model = ''">
+				<button class="clear" @click="clearFiles">
 					<div class="icon-container">
 						<img class="icon no-select" src="@/assets/icons/x.svg" draggable="false">
 					</div>
@@ -40,10 +40,11 @@ export default {
 		})
 		const focus = ref(0)
 		const dragOverlay = computed(() => InterfaceStore.dragOverlay)
-		const droppedFiles = (e) => model.value = e.dataTransfer.files[0]
-		const selectedFile = (e) => model.value = e.target.files[0]
+		const droppedFiles = (e) => { emit('files', e.dataTransfer.files) }
+		const selectedFiles = (e) => { emit('files', e.target.files) }
+		const clearFiles = () => { emit('files', null) }
 		const isFile = computed(() => typeof model.value === "object")
-		return { model, focus, dragOverlay, droppedFiles, selectedFile, isFile }
+		return { model, focus, dragOverlay, droppedFiles, selectedFiles, clearFiles, isFile }
 	}
 }
 </script>

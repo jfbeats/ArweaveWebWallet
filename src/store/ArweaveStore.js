@@ -61,6 +61,10 @@ export function getWalletByKey (walletKey) {
 	return ArweaveStore.wallets.find(wallet => wallet.key == walletKey)
 }
 
+export function deleteWallet (wallet) {
+	ArweaveStore.wallets.splice(ArweaveStore.wallets.indexOf(wallet), 1)
+}
+
 export async function getTxById (txId) {
 	for (const wallet of ArweaveStore.wallets) {
 		for (const queryKey in wallet.queries) {

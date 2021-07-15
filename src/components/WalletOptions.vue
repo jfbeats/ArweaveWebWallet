@@ -9,7 +9,7 @@
 		</div>
 		<div class="content">
 			<div class="bottom">
-
+				<div @click="deleteWallet(wallet)"> delete</div>
 			</div>
 		</div>
 
@@ -19,10 +19,14 @@
 <script>
 import AddressIcon from '@/components/atomic/AddressIcon'
 import Address from '@/components/atomic/Address'
+import { deleteWallet } from '@/store/ArweaveStore'
 
 export default {
 	components: { AddressIcon, Address },
-	props: ['wallet']
+	props: ['wallet'],
+	setup () {
+		return { deleteWallet }
+	}
 }
 </script>
 

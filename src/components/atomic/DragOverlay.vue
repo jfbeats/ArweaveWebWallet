@@ -20,7 +20,7 @@ export default {
 .dragOverlay {
 	pointer-events: none;
 	position: absolute;
-	background-image: radial-gradient(circle at center, #333, #111);
+	background-image: radial-gradient(circle at center, #333, #222);
 	background-position: center;
 	background-repeat: no-repeat;
 	background-origin: center;
