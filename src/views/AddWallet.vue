@@ -21,12 +21,11 @@
 			</Button>
 
 			<Button v-else :disabled="!isPassphrase || isGeneratingWallet" @click="isValidPassphrase ? importPassphrase() : confirmPassphrase()">
-				<!-- TODO loading icon, disabled textarea -->
 				<div>Import wallet</div>
 			</Button>
 			<transition name="fade-fast" mode="in-out">
 				<div v-if="popup.enabled" :key="popup.message" class="overlay">
-					<div style="flex:1 1 auto; display:flex; flex-direction:column; align-items:center; justify-content:space-evenly;">
+					<div style="flex:1 1 auto; display:flex; flex-direction:column; align-items:center; justify-content:space-evenly; margin-bottom:var(--spacing);">
 						<Icon :icon="popup.icon" style="font-size: 2em;" />
 						{{ popup.message }}
 					</div>
@@ -84,8 +83,12 @@ export default {
 		}
 		const importPassphrase = async () => {
 			isGeneratingWallet.value = true
-			const wallet = await addMnemonic(passphraseInput.value)
-			router.push({ name: 'EditWallet', query: { wallet: wallet.id } })
+			const wallet = addMnemonic(passphraseInput.value)
+			popup.enabled = true
+			popup.icon = 'loader'
+			popup.message = 'Importing'
+			popup.actions = []
+			router.push({ name: 'EditWallet', query: { wallet: (await wallet).id } })
 		}
 		const confirmPassphrase = () => {
 			popup.enabled = true
@@ -93,14 +96,7 @@ export default {
 			popup.message = 'This passphrase is not valid, do you want to import it anyway?'
 			popup.actions = [
 				{ name: 'Back', action: () => popup.enabled = false },
-				{
-					name: 'Import Passphrase', action: () => {
-						importPassphrase()
-						popup.icon = 'loader'
-						popup.message = 'Importing'
-						popup.actions = []
-					}
-				}
+				{ name: 'Import Passphrase', action: () => importPassphrase() }
 			]
 		}
 		const importFile = async (file) => {
