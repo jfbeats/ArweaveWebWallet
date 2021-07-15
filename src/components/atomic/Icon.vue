@@ -1,13 +1,13 @@
 <template>
-	<transition name="fade">
-		<div v-if="icon" class="icon" :key="icon">
-			<div class="icon-background">
+	<div class="icon">
+		<transition name="fade-fast" mode="out-in">
+			<div v-if="icon" :key="icon" class="icon-background">
 				<div v-if="icon == 'loader'" class="loader" />
 				<span v-else-if="isSymbol" class="symbol no-select">{{ icon }}</span>
 				<img v-else class="img no-select" :src="icon" draggable="false">
 			</div>
-		</div>
-	</transition>
+		</transition>
+	</div>
 </template>
 
 
