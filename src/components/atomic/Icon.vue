@@ -66,8 +66,8 @@ export default {
 }
 
 .loader {
-	border: 4px solid #ffffff11;
-	border-top: 4px solid #ffffff33;
+	border: 4px solid #ffffff33;
+	border-top: 4px solid currentColor;
 	animation: loader-animation 2s infinite linear;
 }
 
