@@ -50,8 +50,8 @@ export default {
 		document.addEventListener('swUpdated', updateAvailable, { once: true })
 		if (navigator.serviceWorker) {
 			navigator.serviceWorker.addEventListener('controllerchange', () => {
-				if (window.refreshing) { return }
-				window.refreshing = true
+				if (window.swRefreshing) { return }
+				window.swRefreshing = true
 				window.location.reload()
 			})
 		}
