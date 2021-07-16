@@ -58,8 +58,8 @@ export default {
 			if (!this.registration || !this.registration.waiting) return
 			this.registration.waiting.postMessage({ type: 'SKIP_WAITING' })
 		}
-		const updateAvailable = () => { if (window.confirm('update dowloaded, click ok to refresh')) { refreshApp() } }
-		
+		const updateAvailable = () => { if (window.confirm('Update downloaded, accept to refresh')) { refreshApp() } }
+
 		return { verticalLayout, verticalContent, dragOverlay, emitter }
 	},
 	methods: {
