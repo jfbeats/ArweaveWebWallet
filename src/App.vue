@@ -57,7 +57,7 @@ export default {
 			window.location.reload()
 		})
 		const refreshApp = () => {
-			console.log('refreshApp')
+			console.log('refreshApp', registration)
 			if (!registration || !registration.waiting) return
 			registration.waiting.postMessage({ type: 'SKIP_WAITING' })
 		}
