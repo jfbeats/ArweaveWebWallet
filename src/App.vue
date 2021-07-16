@@ -47,7 +47,7 @@ export default {
 					: toIndex < fromIndex ? 'slide-down' : 'slide-up'
 		})
 
-		document.addEventListener('swUpdated', updateAvailable, { once: true })
+		document.addEventListener('swUpdated', () => updateAvailable(), { once: true })
 		if (navigator.serviceWorker) {
 			navigator.serviceWorker.addEventListener('controllerchange', () => {
 				if (window.swRefreshing) { return }
@@ -55,18 +55,12 @@ export default {
 				window.location.reload()
 			})
 		}
+		const updateAvailable = () => {
+			if (window.confirm('Click ok to update the app')) { refreshApp() }
+		}
 		const refreshApp = () => {
-			console.log('refreshApp', window.swRegistration)
-			if (!window.swRegistration || !window.swRegistration.waiting) return
-			window.swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' })
+			window.swRegistration?.waiting?.postMessage({ type: 'SKIP_WAITING' })
 		}
-		const updateAvailable = (e) => {
-			console.log('updateAvailable', e)
-			refreshApp()
-			// if (window.confirm('Update downloaded, accept to refresh')) { refreshApp() } 
-		}
-		window.updateAvailable = updateAvailable
-		window.refreshApp = refreshApp
 
 		return { verticalLayout, verticalContent, dragOverlay, emitter }
 	},
