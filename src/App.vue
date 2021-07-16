@@ -47,8 +47,6 @@ export default {
 					: toIndex < fromIndex ? 'slide-down' : 'slide-up'
 		})
 
-		window.refreshing = ref(false)
-		window.registration = ref(null)
 		document.addEventListener('swUpdated', updateAvailable, { once: true })
 		if (navigator.serviceWorker) {
 			navigator.serviceWorker.addEventListener('controllerchange', () => {
@@ -58,13 +56,13 @@ export default {
 			})
 		}
 		const refreshApp = () => {
-			console.log('refreshApp', window.registration)
-			if (!window.registration || !window.registration.waiting) return
-			window.registration.waiting.postMessage({ type: 'SKIP_WAITING' })
+			console.log('refreshApp', window.swRegistration)
+			if (!window.swRegistration || !window.swRegistration.waiting) return
+			window.swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' })
 		}
 		const updateAvailable = (e) => {
 			console.log('updateAvailable', e)
-			window.registration = e.detail
+			window.swRegistration = e.detail
 			refreshApp()
 			// if (window.confirm('Update downloaded, accept to refresh')) { refreshApp() } 
 		}
