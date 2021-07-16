@@ -62,7 +62,6 @@ export default {
 		}
 		const updateAvailable = (e) => {
 			console.log('updateAvailable', e)
-			window.swRegistration = e.detail
 			refreshApp()
 			// if (window.confirm('Update downloaded, accept to refresh')) { refreshApp() } 
 		}
