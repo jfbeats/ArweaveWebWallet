@@ -47,18 +47,22 @@ export default {
 					: toIndex < fromIndex ? 'slide-down' : 'slide-up'
 		})
 
+		let refreshing = false
+		let registration = null
 		document.addEventListener('swUpdated', updateAvailable, { once: true })
 		navigator.serviceWorker.addEventListener('controllerchange', () => {
-			if (this.refreshing) { return }
-			this.refreshing = true
+			if (refreshing) { return }
+			refreshing = true
 			window.location.reload()
 		})
 		const refreshApp = () => {
-			this.updateExists = false
-			if (!this.registration || !this.registration.waiting) return
-			this.registration.waiting.postMessage({ type: 'SKIP_WAITING' })
+			if (!registration || !registration.waiting) return
+			registration.waiting.postMessage({ type: 'SKIP_WAITING' })
 		}
-		const updateAvailable = () => { if (window.confirm('Update downloaded, accept to refresh')) { refreshApp() } }
+		const updateAvailable = (e) => { 
+			registration = e.detail
+			if (window.confirm('Update downloaded, accept to refresh')) { refreshApp() } 
+		}
 
 		return { verticalLayout, verticalContent, dragOverlay, emitter }
 	},
