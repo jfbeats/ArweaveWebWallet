@@ -20,7 +20,7 @@ import ArweaveStore from './store/ArweaveStore'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import { addWallet } from '@/functions/Wallets.js'
 import { useRouter } from 'vue-router'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 export default {
 	components: {
@@ -47,25 +47,25 @@ export default {
 					: toIndex < fromIndex ? 'slide-down' : 'slide-up'
 		})
 
-		let refreshing = false
-		let registration = null
+		let refreshing = ref(false)
+		let registration = ref(null)
 		document.addEventListener('swUpdated', updateAvailable, { once: true })
 		if (navigator.serviceWorker) {
 			navigator.serviceWorker.addEventListener('controllerchange', () => {
 				console.log('controllerChange listener')
-				if (refreshing) { return }
-				refreshing = true
+				if (refreshing.value) { return }
+				refreshing.value = true
 				window.location.reload()
 			})
 		}
 		const refreshApp = () => {
-			console.log('refreshApp', registration)
-			if (!registration || !registration.waiting) return
-			registration.waiting.postMessage({ type: 'SKIP_WAITING' })
+			console.log('refreshApp', registration.value)
+			if (!registration.value || !registration.value.waiting) return
+			registration.value.waiting.postMessage({ type: 'SKIP_WAITING' })
 		}
 		const updateAvailable = (e) => {
 			console.log('updateAvailable', e)
-			registration = e.detail
+			registration.value = e.detail
 			refreshApp()
 			// if (window.confirm('Update downloaded, accept to refresh')) { refreshApp() } 
 		}
