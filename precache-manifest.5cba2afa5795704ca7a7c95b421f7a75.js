@@ -16,8 +16,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/arweaveViewLandscape.svg"
   },
   {
-    "revision": "545f499992485e11e5af",
-    "url": "/css/app.a00c4717.css"
+    "revision": "df03b1f38383b96e7ded",
+    "url": "/css/app.3bbafa47.css"
   },
   {
     "revision": "5a0c89a198cca276f86d",
@@ -104,12 +104,12 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/img/x.2ca824d3.svg"
   },
   {
-    "revision": "a1cc6d18f0a04c1f8d514326f6bb6d4d",
+    "revision": "d48156f22aa3954a65ecb32c24ee4319",
     "url": "/index.html"
   },
   {
-    "revision": "545f499992485e11e5af",
-    "url": "/js/app.e21c1c38.js"
+    "revision": "df03b1f38383b96e7ded",
+    "url": "/js/app.ec45ecf2.js"
   },
   {
     "revision": "5a0c89a198cca276f86d",
