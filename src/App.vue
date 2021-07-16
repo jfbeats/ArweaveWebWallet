@@ -64,7 +64,8 @@ export default {
 		const updateAvailable = (e) => { 
 			console.log('updateAvailable', e)
 			registration = e.detail
-			if (window.confirm('Update downloaded, accept to refresh')) { refreshApp() } 
+			refreshApp()
+			// if (window.confirm('Update downloaded, accept to refresh')) { refreshApp() } 
 		}
 		window.updateAvailable = updateAvailable
 
