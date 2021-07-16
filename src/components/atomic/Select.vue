@@ -1,6 +1,6 @@
 <template>
 	<div class="select input-box" :class="{ focus }">
-		<Icon :icon="icon" style="left:0;" />
+		<Icon v-if="icon" :icon="icon" style="left:0;" />
 		<select class="text" v-model="model" :placeholder="placeholder" @focus="focus = true" @blur="focus = false">
 			<option v-for="option in options" :key="option" :value="option.value">{{ option.text }}</option>
 		</select>

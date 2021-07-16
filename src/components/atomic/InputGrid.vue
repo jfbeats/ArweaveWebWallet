@@ -3,7 +3,7 @@
 		<div v-for="(row, index) in schema" :key="row.key" class="row">
 			<div class="inputs">
 				<div v-for="(input, inputIndex) in row.items" :key="row.key + input.name" class="input" :class="{ flip: row.items.length==2 && inputIndex==1 }">
-					<Icon :icon="input.icon" />
+					<Icon v-if="input.icon" :icon="input.icon" />
 					<input v-model="input.value" v-bind="input.attrs" class="text" :placeholder="input.name" @focus="focus=(index+1)*(inputIndex+1)" @blur="focus=0">
 				</div>
 			</div>

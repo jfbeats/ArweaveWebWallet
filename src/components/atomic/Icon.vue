@@ -1,6 +1,6 @@
 <template>
 	<div class="icon">
-		<transition name="fade-fast" mode="out-in">
+		<transition name="slide-up" mode="out-in">
 			<div v-if="icon" :key="icon" class="icon-background">
 				<div v-if="icon == 'loader'" class="loader" />
 				<span v-else-if="isSymbol" class="symbol no-select">{{ icon }}</span>

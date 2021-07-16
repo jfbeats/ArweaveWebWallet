@@ -1,7 +1,7 @@
 <template>
 	<div class="input input-box" :class="{ focus }">
-		<Icon :icon="icon" />
-		<input class="text" v-model="model" :placeholder="placeholder" :autocomplete="autocomplete || 'off'" @focus="focus = true" @blur="focus = false">
+		<Icon v-if="icon" :icon="icon" />
+		<input class="text" v-model="model" :placeholder="placeholder" :autocomplete="autocomplete || 'off'" @focus="focus = true" @blur="focus = false" :disabled="$attrs.disabled">
 		<Icon v-for="action in actions" :key="action.icon" :icon="action.icon" @click="action.function" />
 	</div>
 </template>

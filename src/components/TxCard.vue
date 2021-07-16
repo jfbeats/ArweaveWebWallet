@@ -90,10 +90,9 @@ export default {
 			return this.tx.quantity.ar
 		},
 		dataType () {
-			const type = this.tx.data.type
-			if (type) {
-				return type.split('/').join(' ')
-			}
+			if (!this.tx.data.type) { return }
+			if (this.tx.data.type === 'application/x.arweave-manifest+json') { return 'Website'}
+			return this.tx.data.type.split('/').join(' ')
 		},
 		dataInfo () {
 			for (const tag of this.tx.tags) {

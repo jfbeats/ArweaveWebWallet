@@ -133,10 +133,6 @@ export default {
 	overflow: hidden;
 }
 
-.input-data {
-	text-align: center;
-}
-
 .button {
 	background-image: radial-gradient(circle at center, #81a1c166, #81a1c133);
 	height: 5em;
