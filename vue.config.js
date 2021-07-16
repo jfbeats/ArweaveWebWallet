@@ -37,7 +37,6 @@ module.exports = {
 		display: 'standalone',
 		workboxPluginMode: 'InjectManifest',
 		workboxOptions: {
-			debug: false,
 			swSrc: 'src/service-worker.js',
 		}
 	}
