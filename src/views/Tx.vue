@@ -122,7 +122,7 @@ export default {
 			data.loaded = false
 			if (!isData.value) {
 				return
-			} else if (tx.value.data?.type === 'text/html' || tx.value.data?.type === 'application/pdf') {
+			} else if (tx.value.data?.type === 'application/x.arweave-manifest+json' || tx.value.data?.type === 'text/html' || tx.value.data?.type === 'application/pdf') {
 				data.handler = 'iframe'
 			} else if (tx.value.data?.type?.split('/')[0] === 'image') {
 				data.handler = 'img'
