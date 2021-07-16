@@ -66,6 +66,7 @@ export default {
 			// if (window.confirm('Update downloaded, accept to refresh')) { refreshApp() } 
 		}
 		window.updateAvailable = updateAvailable
+		window.refreshApp = refreshApp
 
 		return { verticalLayout, verticalContent, dragOverlay, emitter }
 	},
