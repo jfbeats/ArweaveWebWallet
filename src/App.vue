@@ -48,19 +48,22 @@ export default {
 		})
 
 		let refreshing = false
-		let registration = null
+		window.swRegistration = null
 		document.addEventListener('swUpdated', updateAvailable, { once: true })
 		navigator.serviceWorker.addEventListener('controllerchange', () => {
+			console.log('controllerChange listener')
 			if (refreshing) { return }
 			refreshing = true
 			window.location.reload()
 		})
 		const refreshApp = () => {
-			if (!registration || !registration.waiting) return
-			registration.waiting.postMessage({ type: 'SKIP_WAITING' })
+			console.log('refreshApp')
+			if (!window.swRegistration || !window.swRegistration.waiting) return
+			window.swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' })
 		}
 		const updateAvailable = (e) => { 
-			registration = e.detail
+			console.log('updateAvailable', e)
+			window.swRegistration = e.detail
 			if (window.confirm('Update downloaded, accept to refresh')) { refreshApp() } 
 		}
 
