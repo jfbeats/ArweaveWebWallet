@@ -18,6 +18,7 @@ if (process.env.NODE_ENV === 'production') {
 		},
 		updated (registration) {
 			console.log('New content is available.')
+			window.swRegistration = registration
 			document.dispatchEvent( new CustomEvent('swUpdated', { detail: registration }) )
 		},
 		offline () {
