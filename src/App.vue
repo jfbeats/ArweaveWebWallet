@@ -46,6 +46,20 @@ export default {
 					? toIndex < fromIndex ? 'slide-right' : 'slide-left'
 					: toIndex < fromIndex ? 'slide-down' : 'slide-up'
 		})
+
+		document.addEventListener('swUpdated', updateAvailable, { once: true })
+		navigator.serviceWorker.addEventListener('controllerchange', () => {
+			if (this.refreshing) { return }
+			this.refreshing = true
+			window.location.reload()
+		})
+		const refreshApp = () => {
+			this.updateExists = false
+			if (!this.registration || !this.registration.waiting) return
+			this.registration.waiting.postMessage({ type: 'SKIP_WAITING' })
+		}
+		const updateAvailable = () => { if (window.confirm('update dowloaded, click ok to refresh')) { refreshApp() } }
+		
 		return { verticalLayout, verticalContent, dragOverlay, emitter }
 	},
 	methods: {

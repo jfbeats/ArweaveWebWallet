@@ -46,6 +46,14 @@ export default {
 	position: relative;
 }
 
+.left {
+	scrollbar-width: none;
+}
+
+.left::-webkit-scrollbar {
+	display: none;
+}
+
 .left.hasRight {
 	position: fixed;
 	width: 40vw;
