@@ -6,7 +6,7 @@ module.exports = {
 	configureWebpack: {
 		plugins: [
 			new webpack.IgnorePlugin({
-				resourceRegExp: /^\.\/wordlists\/(?!english)/, 
+				resourceRegExp: /^\.\/wordlists\/(?!english)/,
 				// contextRegExp: /bip39\\src$/ // Linux
 				contextRegExp: /bip39\/src$/ // Windows
 			})
@@ -18,12 +18,18 @@ module.exports = {
 		themeColor: '#151515',
 		manifestPath: 'manifest.json',
 		manifestOptions: {
+			name: 'Arweave Web Wallet',
+			short_name: 'Arweave Wallet',
+			description: 'Manage tokens from the browser, upload permanent data, interact with the weave',
+			background_color: '#151515',
+			display: 'standalone',
+			start_url: '/',
 			icons: [
 				{
 					src: 'arweaveLogo.svg',
-					purpose: "maskable any",
-					type: "image/svg+xml",
-					sizes: "any",
+					purpose: 'maskable any',
+					type: 'image/svg+xml',
+					sizes: 'any',
 				}
 			]
 		},
@@ -34,7 +40,6 @@ module.exports = {
 			maskIcon: null,
 			msTileImage: null,
 		},
-		display: 'standalone',
 		workboxPluginMode: 'InjectManifest',
 		workboxOptions: {
 			swSrc: 'src/service-worker.js',
