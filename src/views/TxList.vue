@@ -11,7 +11,7 @@
 				</div>
 			</div>
 		</transition>
-		<div ref="bottom" class="bottom" v-show="!loading && !completedQuery" />
+		<div ref="bottom" class="bottom" v-show="!fetchLoading && !completedQuery" />
 	</div>
 </template>
 
@@ -26,35 +26,24 @@ export default {
 	components: { TxCard, Tabs },
 	props: ['wallet'],
 	setup (props) {
-		let loading = ref(false)
+		const fetchLoading = computed(() => props.wallet?.queriesStatus?.[selectedQuery.value]?.fetchTransactions)
 		let liveUpdate
 		const bottom = ref(null)
 		const route = useRoute()
 		const selectedQuery = computed(() => route.query.view || 'received')
 		const txs = computed(() => props.wallet?.queries[selectedQuery.value] || [])
 		const completedQuery = computed(() => props.wallet?.queriesStatus?.[selectedQuery.value]?.completed)
-		const updateQuery = async () => {
-			if (loading.value) { return }
+		const fetchQuery = async () => {
+			if (fetchLoading.value) { return }
 			console.log('Queried', selectedQuery.value)
-			loading.value = true
 			await fetchTransactions(props.wallet, selectedQuery.value)
-			setTimeout(() => loading.value = false, 500)
 		}
-		watch(() => route.query, () => {
-			loading.value = true
-			setTimeout(() => loading.value = false)
-		})
 		const observer = new IntersectionObserver((entries) => {
-			if (entries[0].isIntersecting === true) { updateQuery() }
+			if (entries[0].isIntersecting === true) { fetchQuery() }
 		}, { threshold: [0] })
 		onMounted(() => {
 			observer.observe(bottom.value)
-			liveUpdate = setInterval(async () => {
-				if (loading.value) { return }
-				loading.value = true
-				await updateTransactions(props.wallet, selectedQuery.value)
-				loading.value = false
-			}, 10000)
+			liveUpdate = setInterval(async () => updateTransactions(props.wallet, selectedQuery.value), 10000)
 		})
 		onBeforeUnmount(() => {
 			observer.unobserve(bottom.value)
@@ -71,7 +60,7 @@ export default {
 			transitionName.value = toIndex < fromIndex ? 'slide-right' : 'slide-left'
 		})
 		// TODO collapse only if in viewport
-		return { loading, txs, completedQuery, bottom, selectedQuery, transitionName, tabs }
+		return { fetchLoading, txs, completedQuery, bottom, selectedQuery, transitionName, tabs }
 	},
 }
 </script>

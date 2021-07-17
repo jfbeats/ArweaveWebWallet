@@ -119,7 +119,9 @@ export async function fetchTransactions (wallet, query) {
 			if (results[results.length - 1]?.node.block) { fulfilled = true }
 			(wallet.queries[query] ??= []).push(...results)
 		}
-	} finally { wallet.queriesStatus[query].fetchTransactions = false }
+	} 
+	catch (e) { console.error(e) }
+	finally { wallet.queriesStatus[query].fetchTransactions = false }
 	return wallet.queries[query]
 }
 
@@ -165,7 +167,9 @@ export async function updateTransactions (wallet, query) {
 		}
 		if (resultsFiltered.length > 0) { wallet.queries[query].splice(0, 0, ...resultsFiltered) }
 		if (requireSort) { sortByBlocks() }
-	} finally { wallet.queriesStatus[query].updateTransactions = false }
+	} 
+	catch (e) { console.error(e) }
+	finally { wallet.queriesStatus[query].updateTransactions = false }
 	return wallet.queries[query]
 }
 
