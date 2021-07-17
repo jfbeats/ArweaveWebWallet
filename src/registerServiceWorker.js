@@ -7,7 +7,8 @@ if (process.env.NODE_ENV === 'production') {
 		ready () {
 			console.log('App is being served from cache by a service worker.')
 		},
-		registered () {
+		registered (registration) {
+			setInterval(() => { registration.update() }, 1000 * 60 * 60)
 			console.log('Service worker has been registered.')
 		},
 		cached () {
@@ -19,7 +20,7 @@ if (process.env.NODE_ENV === 'production') {
 		updated (registration) {
 			console.log('New content is available.')
 			window.swRegistration = registration
-			document.dispatchEvent( new CustomEvent('swUpdated', { detail: registration }) )
+			document.dispatchEvent(new CustomEvent('swUpdated', { detail: registration }))
 		},
 		offline () {
 			console.log('No internet connection found. App is running in offline mode.')

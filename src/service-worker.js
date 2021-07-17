@@ -1,5 +1,5 @@
 self.__precacheManifest = [].concat(self.__precacheManifest || [])
-workbox.setConfig({ debug: true })
+workbox.setConfig({ debug: false })
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {})
 
 self.addEventListener('message', (event) => {
