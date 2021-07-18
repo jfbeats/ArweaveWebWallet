@@ -1,15 +1,11 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "b81205aef039709e8db80aad7abd7b78",
+    "revision": "728bff6123ed447a1259944bb31bb24d",
     "url": "/arweave-192.png"
   },
   {
     "revision": "c8d0678a51c5f220e6664ebf2c2e1222",
     "url": "/arweave-512.png"
-  },
-  {
-    "revision": "1278d0e4204fcb70ca6eebd3d7ec8de2",
-    "url": "/arweave-solid.svg"
   },
   {
     "revision": "cbca2b1a1c623b628f07465d17215be3",
@@ -152,7 +148,7 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/js/chunk-vendors.940afaa3.js"
   },
   {
-    "revision": "46509902d0705717bc3758b6175d4a04",
+    "revision": "192777a894015425309f9fb983f435da",
     "url": "/manifest.json"
   },
   {
