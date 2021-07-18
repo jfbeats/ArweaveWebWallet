@@ -16,6 +16,7 @@ module.exports = {
 	pwa: {
 		name: 'Arweave Wallet',
 		themeColor: '#151515',
+		msTileColor: '#151515',
 		manifestPath: 'manifest.json',
 		manifestOptions: {
 			name: 'Arweave Web Wallet',
@@ -23,7 +24,7 @@ module.exports = {
 			description: 'Manage tokens from the browser, upload permanent data, interact with the weave',
 			background_color: '#151515',
 			display: 'standalone',
-			start_url: '/',
+			start_url: '.',
 			icons: [
 				{
 					src: 'arweaveLogo.svg',
@@ -37,8 +38,8 @@ module.exports = {
 			favicon32: null,
 			favicon16: null,
 			appleTouchIcon: null,
-			maskIcon: null,
-			msTileImage: null,
+			maskIcon: 'arweaveLogo.svg',
+			msTileImage: 'arweaveLogo.svg',
 		},
 		workboxPluginMode: 'InjectManifest',
 		workboxOptions: {

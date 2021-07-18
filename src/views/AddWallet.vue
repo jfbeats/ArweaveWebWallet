@@ -100,6 +100,7 @@ export default {
 			]
 		}
 		const importFile = async (file) => {
+			if (!file) { return }
 			const wallet = await addWallet(JSON.parse(await file[0].text()))
 			router.push({ name: 'EditWallet', query: { wallet: wallet.id } })
 		}
