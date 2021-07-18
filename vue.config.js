@@ -40,13 +40,13 @@ module.exports = {
 					src: 'arweave-192.png',
 					type: 'image/png',
 					sizes: '192x192',
-					purpose: 'maskable any',
+					purpose: 'monochrome any',
 				},
 				{
 					src: 'arweave-512.png',
 					type: 'image/png',
 					sizes: '512x512',
-					purpose: 'any',
+					purpose: 'monochrome any',
 				}
 			]
 		},
