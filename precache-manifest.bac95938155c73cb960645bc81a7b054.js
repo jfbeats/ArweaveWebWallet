@@ -16,16 +16,12 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/arweaveViewLandscape.svg"
   },
   {
-    "revision": "eb071f8002e50373ae04",
+    "revision": "3e508294cad4efb4eee8",
     "url": "/css/app.432e59fb.css"
   },
   {
     "revision": "5a0c89a198cca276f86d",
     "url": "/css/chunk-04a0d84e.8c343776.css"
-  },
-  {
-    "revision": "1f3dce296d9486032ffd",
-    "url": "/css/chunk-0976054e.20114407.css"
   },
   {
     "revision": "10b6bf28cad7bfbd1b68",
@@ -38,6 +34,10 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
     "revision": "b89ddb43660feb6f9c4d",
     "url": "/css/chunk-4970192f.f38890a4.css"
+  },
+  {
+    "revision": "1056a837e59cb96f85b5",
+    "url": "/css/chunk-6911a20a.2f21c0b8.css"
   },
   {
     "revision": "5c44d4376e399c918aae",
@@ -104,20 +104,16 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/img/x.2ca824d3.svg"
   },
   {
-    "revision": "f668e66acdb90d9e5c8430e58943b1f1",
+    "revision": "22455334b66b30ac29fb6b5bde5d3c40",
     "url": "/index.html"
   },
   {
-    "revision": "eb071f8002e50373ae04",
-    "url": "/js/app.e82b2c32.js"
+    "revision": "3e508294cad4efb4eee8",
+    "url": "/js/app.131c087f.js"
   },
   {
     "revision": "5a0c89a198cca276f86d",
     "url": "/js/chunk-04a0d84e.ef9119a9.js"
-  },
-  {
-    "revision": "1f3dce296d9486032ffd",
-    "url": "/js/chunk-0976054e.3ce6a25c.js"
   },
   {
     "revision": "10b6bf28cad7bfbd1b68",
@@ -132,6 +128,10 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/js/chunk-4970192f.df336cf3.js"
   },
   {
+    "revision": "1056a837e59cb96f85b5",
+    "url": "/js/chunk-6911a20a.0f64c70c.js"
+  },
+  {
     "revision": "5c44d4376e399c918aae",
     "url": "/js/chunk-7d34d574.d7ef9f05.js"
   },
@@ -140,7 +140,7 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/js/chunk-vendors.b09e1208.js"
   },
   {
-    "revision": "615e4b80a02f9545edf2a16cdf42c985",
+    "revision": "e914f7ffc100d53779bd17e36ef3bcb8",
     "url": "/manifest.json"
   },
   {
