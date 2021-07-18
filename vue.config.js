@@ -37,13 +37,13 @@ module.exports = {
 					purpose: 'monochrome any',
 				},
 				{
-					src: 'arweave-192.svg',
+					src: 'arweave-192.png',
 					type: 'image/png',
 					sizes: '192x192',
 					purpose: 'maskable any',
 				},
 				{
-					src: 'arweave-512.svg',
+					src: 'arweave-512.png',
 					type: 'image/png',
 					sizes: '512x512',
 					purpose: 'any',
