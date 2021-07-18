@@ -1,11 +1,4 @@
-html {
-	box-sizing: border-box;
-	background-color: #0f0f0f;
-	background-image: url("~@/assets/background.svg");
-	background-position: center;
-	background-size: cover;
-	background-repeat: no-repeat;
-	background-attachment: fixed;
+:root {
 	--spacing: 24px;
 	--background: #151515;
 	--background2: #181818;
@@ -17,6 +10,16 @@ html {
 	--element-secondary: #bbb;
 	--element-secondary-opacity: 0.75;
 	--element-disabled-opacity: 0.5;
+}
+
+html {
+	box-sizing: border-box;
+	background-color: #0f0f0f;
+	background-image: url("~@/assets/background.svg");
+	background-position: center;
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-attachment: fixed;
 }
 
 body {

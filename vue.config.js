@@ -1,5 +1,9 @@
 const webpack = require('webpack')
 
+process.env.VUE_APP_TITLE = 'Arweave Wallet'
+process.env.VUE_APP_DESCRIPTION = 'Manage tokens from the browser, upload permanent data, interact with the weave'
+process.env.VUE_APP_BACKGROUND = '#151515'
+
 module.exports = {
 	publicPath: process.env.GITHUB_ACTIONS ? '/' : '',
 
@@ -14,32 +18,44 @@ module.exports = {
 	},
 
 	pwa: {
-		name: 'Arweave Wallet',
-		themeColor: '#151515',
-		msTileColor: '#151515',
+		name: process.env.VUE_APP_TITLE,
+		themeColor: process.env.VUE_APP_BACKGROUND,
+		msTileColor: process.env.VUE_APP_BACKGROUND,
 		manifestPath: 'manifest.json',
 		manifestOptions: {
-			name: 'Arweave Web Wallet',
-			short_name: 'Arweave Wallet',
-			description: 'Manage tokens from the browser, upload permanent data, interact with the weave',
-			background_color: '#151515',
+			name: process.env.VUE_APP_TITLE,
+			short_name: process.env.VUE_APP_TITLE,
+			description: process.env.VUE_APP_DESCRIPTION,
+			background_color: process.env.VUE_APP_BACKGROUND,
 			display: 'standalone',
 			start_url: '.',
 			icons: [
 				{
-					src: 'arweaveLogo.svg',
-					purpose: 'maskable any',
+					src: 'arweave.svg',
 					type: 'image/svg+xml',
 					sizes: 'any',
+					purpose: 'monochrome any',
+				},
+				{
+					src: 'arweave-192.svg',
+					type: 'image/png',
+					sizes: '192x192',
+					purpose: 'maskable any',
+				},
+				{
+					src: 'arweave-512.svg',
+					type: 'image/png',
+					sizes: '512x512',
+					purpose: 'any',
 				}
 			]
 		},
 		iconPaths: {
+			appleTouchIcon: 'arweave-192.png',
 			favicon32: null,
 			favicon16: null,
-			appleTouchIcon: null,
-			maskIcon: 'arweaveLogo.svg',
-			msTileImage: 'arweaveLogo.svg',
+			maskIcon: null,
+			msTileImage: null,
 		},
 		workboxPluginMode: 'InjectManifest',
 		workboxOptions: {
