@@ -1,15 +1,11 @@
-import { arweave, pushWallet } from '@/store/ArweaveStore'
+import ArweaveStore, { arweave, pushWallet } from '@/store/ArweaveStore'
+import { loadWallets, saveWallets } from '@/functions/Storage'
+import { download } from '@/functions/Utils'
 import { getKeyPairFromMnemonic } from 'human-crypto-keys'
 import { generateMnemonic, validateMnemonic } from 'bip39'
 import crypto from 'libp2p-crypto'
 
-export async function addWallet (jwkObj) {
-	const jwk = jwkObj || await arweave.wallets.generate()
-	const key = await arweave.wallets.jwkToAddress(jwk)
-	if (!jwkObj) { download(key, JSON.stringify(jwk)) }
-	const wallet = { key, jwk, type: 'jwk' }
-	return pushWallet(wallet)
-}
+export { generateMnemonic, validateMnemonic }
 
 export async function addMnemonic (mnemonic) {
 	let keyPair = await getKeyPairFromMnemonic(mnemonic,
@@ -21,25 +17,43 @@ export async function addMnemonic (mnemonic) {
 	return addWallet(jwk)
 }
 
-export { generateMnemonic, validateMnemonic }
-
-// export function validateMnemonic (mnemonic) {
-// 	return mnemonic.trim().split(/\s+/g).length >= 12
-// }
-
-export async function watchWallet (arweaveWallet) {
-	const key = await arweaveWallet.getActiveAddress()
-	if (!key) { return }
-	const wallet = { key, metaData: arweaveWallet.metaData }
-	return pushWallet(wallet)
+export async function addWallet (jwkObj) {
+	const jwk = jwkObj || await arweave.wallets.generate()
+	const key = await arweave.wallets.jwkToAddress(jwk)
+	if (!jwkObj) { download(key, JSON.stringify(jwk)) }
+	const wallet = { key, jwk, metaData: { provider: 'jwk' } }
+	const walletId = await pushWallet(wallet)
+	saveWallets(ArweaveStore.wallets)
+	return walletId
 }
 
-function download (filename, text) {
-	var element = document.createElement('a')
-	element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text))
-	element.setAttribute('download', filename)
-	element.style.display = 'none'
-	document.body.appendChild(element)
-	element.click()
-	document.body.removeChild(element)
+export async function watchWallet (arweaveWallet) {
+	let key
+	key ??= arweaveWallet.key
+	key ??= arweaveWallet.getActiveAddress ? await arweaveWallet.getActiveAddress() : undefined
+	if (!key) { return }
+	const wallet = { key, metaData: arweaveWallet.metaData }
+	const walletId = await pushWallet(wallet)
+	saveWallets(ArweaveStore.wallets)
+	return walletId
+}
+
+export function deleteWallet (wallet) {
+	ArweaveStore.wallets.splice(ArweaveStore.wallets.indexOf(wallet), 1)
+	saveWallets(ArweaveStore.wallets)
+}
+
+ArweaveStore.wallets = loadWallets()
+if (ArweaveStore.wallets.length) { ArweaveStore.currentWallet = ArweaveStore.wallets[0] }
+
+
+
+// Testing
+
+if (process.env.NODE_ENV === 'development' && !ArweaveStore.wallets.length) {
+	console.log('loading test wallets')
+	watchWallet({ key: 'TId0Wix2KFl1gArtAT6Do1CbWU_0wneGvS5X9BfW5PE' })
+	watchWallet({ key: 'Bf3pWqxD1qwwF2fcE9bPNyQp_5TSlAYPJ3JNMgJSj4c' })
+	watchWallet({ key: 'vLRHFqCw1uHu75xqB4fCDW-QxpkpJxBtFD9g4QYUbfw' })
+	watchWallet({ key: 'zYqPZuALSPa_f5Agvf8g2JHv94cqMn9aBtnH7GFHbuA' })
 }

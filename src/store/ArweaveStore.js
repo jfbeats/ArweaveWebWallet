@@ -1,7 +1,7 @@
 import Arweave from 'arweave'
 import ArDB from 'ardb'
 import axios from 'axios'
-import { getVerification } from "arverify"
+import { getVerification } from 'arverify'
 import { reactive, watch } from 'vue'
 import InterfaceStore from '@/store/InterfaceStore'
 
@@ -26,11 +26,8 @@ const ArweaveStore = reactive({
 	},
 })
 
-
-
-export default ArweaveStore
-export let arweave
-export let arDB
+let arweave
+let arDB
 
 export function updateArweave (gatewaySettings = gatewayDefault) {
 	ArweaveStore.gatewayURL = `${gatewaySettings.protocol}://${gatewaySettings.host}:${gatewaySettings.port}/`
@@ -59,10 +56,6 @@ export function getWalletById (walletId) {
 
 export function getWalletByKey (walletKey) {
 	return ArweaveStore.wallets.find(wallet => wallet.key == walletKey)
-}
-
-export function deleteWallet (wallet) {
-	ArweaveStore.wallets.splice(ArweaveStore.wallets.indexOf(wallet), 1)
 }
 
 export async function getTxById (txId) {
@@ -119,7 +112,7 @@ export async function fetchTransactions (wallet, query) {
 			if (results[results.length - 1]?.node.block) { fulfilled = true }
 			(wallet.queries[query] ??= []).push(...results)
 		}
-	} 
+	}
 	catch (e) { console.error(e) }
 	finally { wallet.queriesStatus[query].fetchTransactions = false }
 	return wallet.queries[query]
@@ -167,7 +160,7 @@ export async function updateTransactions (wallet, query) {
 		}
 		if (resultsFiltered.length > 0) { wallet.queries[query].splice(0, 0, ...resultsFiltered) }
 		if (requireSort) { sortByBlocks() }
-	} 
+	}
 	catch (e) { console.error(e) }
 	finally { wallet.queriesStatus[query].updateTransactions = false }
 	return wallet.queries[query]
@@ -240,17 +233,16 @@ updateArweave()
 updateConversionRate()
 setInterval(updateConversionRate, 600000)
 
-if (ArweaveStore.wallets.length > 0) { ArweaveStore.currentWallet = ArweaveStore.wallets[0] }
-
 
 
 // Testing
 
-// if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === 'development') {
 	window.ArweaveStore = ArweaveStore
 	window.arweave = arweave
-	pushWallet({ key: 'TId0Wix2KFl1gArtAT6Do1CbWU_0wneGvS5X9BfW5PE' })
-	pushWallet({ key: 'Bf3pWqxD1qwwF2fcE9bPNyQp_5TSlAYPJ3JNMgJSj4c' })
-	pushWallet({ key: 'vLRHFqCw1uHu75xqB4fCDW-QxpkpJxBtFD9g4QYUbfw' })
-	pushWallet({ key: 'zYqPZuALSPa_f5Agvf8g2JHv94cqMn9aBtnH7GFHbuA' })
-// }
+}
+
+
+
+export default ArweaveStore
+export { arweave, arDB }

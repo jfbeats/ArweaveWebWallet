@@ -1,14 +1,26 @@
-function loadWallets () {
+export function loadWallets () {
 	let wallets = []
-	if (localStorage.getItem('wallets')) {
-		try { wallets = JSON.parse(localStorage.getItem('wallets')) }
-		catch (e) { localStorage.removeItem('wallets') }
-	}
+	try { wallets = JSON.parse(localStorage.getItem('wallets')) }
+	catch (e) { localStorage.removeItem('wallets') }
+	try { 
+		const order = JSON.parse(localStorage.getItem('walletsOrder')) 
+		wallets.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id))
+	} catch (e) { localStorage.removeItem('walletsOrder') }
 	return wallets
 }
 
-function saveWallets (wallets) {
-	localStorage.setItem('wallets', wallets)
+export function saveWallets (wallets) {
+	const walletsData = []
+	for (const wallet of wallets) {
+		walletsData.push((({ id, key, jwk, metaData }) => ({ id, key, jwk, metaData }))(wallet))
+	}
+	localStorage.setItem('wallets', JSON.stringify(walletsData))
 }
 
-export { loadWallets, saveWallets }
+export function saveWalletsOrder (wallets) {
+	const walletsIds = []
+	for (const wallet of wallets) {
+		walletsIds.push(wallet.id)
+	}
+	localStorage.setItem('walletsOrder', JSON.stringify(walletsIds))
+}

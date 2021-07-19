@@ -26,3 +26,13 @@ function hsl2rgb (h, s, b) {
 	s = [b += s *= b < .5 ? b : 1 - b, b - h % 1 * s * 2, b -= s *= 2, b, b + h % 1 * s, b + s]
 	return [s[~~h % 6] * 255, s[(h | 16) % 6] * 255, s[(h | 8) % 6] * 255]
 }
+
+export function download (filename, text) {
+	var element = document.createElement('a')
+	element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text))
+	element.setAttribute('download', filename)
+	element.style.display = 'none'
+	document.body.appendChild(element)
+	element.click()
+	document.body.removeChild(element)
+}

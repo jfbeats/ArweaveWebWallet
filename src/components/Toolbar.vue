@@ -1,7 +1,7 @@
 <template>
 	<nav id="nav">
-		<SlickList class="wallets" :axis="axis" :lockAxis="axis" v-model:list="ArweaveStore.wallets" :pressDelay="150" helperClass="dragging" dir="ltr">
-			<SlickItem v-for="(wallet, i) in ArweaveStore.wallets" :index="i" :key="wallet.key" draggable="false" class="drag-container">
+		<SlickList class="wallets" :axis="axis" :lockAxis="axis" v-model:list="wallets" :pressDelay="150" helperClass="dragging" dir="ltr">
+			<SlickItem v-for="(wallet, i) in wallets" :index="i" :key="wallet.key" draggable="false" class="drag-container">
 				<router-link class="icon wallet" :to="{ name: navTo, params: { walletId: wallet.id }, query: { ...$route.query } }" :class="{ active: wallet.id == $route.params.walletId, verticalLayout }" draggable="false" @dragstart.prevent>
 					<AddressIcon class="profile" :address="wallet.key" />
 				</router-link>
@@ -21,6 +21,7 @@ import DragOverlay from '@/components/atomic/DragOverlay.vue'
 import { SlickList, SlickItem } from 'vue-slicksort'
 import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
+import { saveWalletsOrder } from '@/functions/Storage'
 import { computed } from 'vue'
 
 export default {
@@ -29,7 +30,14 @@ export default {
 	setup () {
 		const verticalLayout = computed(() => InterfaceStore.breakpoints.verticalLayout)
 		const axis = computed(() => InterfaceStore.breakpoints.verticalLayout ? 'x' : 'y')
-		return { ArweaveStore, verticalLayout, axis }
+		const wallets = computed({
+			get () { return ArweaveStore.wallets },
+			set (value) {
+				saveWalletsOrder(value)
+				ArweaveStore.wallets = value
+			}
+		})
+		return { wallets, verticalLayout, axis }
 	},
 	computed: {
 		navTo () { return this.$route.matched[0]?.name === 'Wallet' ? null : 'TxList' }

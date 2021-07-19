@@ -20,7 +20,7 @@
 <script>
 import AddressIcon from '@/components/atomic/AddressIcon'
 import Address from '@/components/atomic/Address'
-import { deleteWallet } from '@/store/ArweaveStore'
+import { deleteWallet } from '@/functions/Wallets'
 
 export default {
 	components: { AddressIcon, Address },
