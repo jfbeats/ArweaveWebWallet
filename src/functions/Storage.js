@@ -10,6 +10,7 @@ export function loadWallets () {
 }
 
 export function saveWallets (wallets) {
+	if (!wallets) { return }
 	const walletsData = []
 	for (const wallet of wallets) {
 		walletsData.push((({ id, key, jwk, metaData }) => ({ id, key, jwk, metaData }))(wallet))
@@ -18,6 +19,7 @@ export function saveWallets (wallets) {
 }
 
 export function saveWalletsOrder (wallets) {
+	if (!wallets) { return }
 	const walletsIds = []
 	for (const wallet of wallets) {
 		walletsIds.push(wallet.id)

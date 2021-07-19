@@ -43,13 +43,18 @@ export function deleteWallet (wallet) {
 	saveWallets(ArweaveStore.wallets)
 }
 
-for (const wallet of loadWallets()) { pushWallet(wallet) }
+function init () {
+	const wallets = loadWallets()
+	if (!wallets) { return }
+	for (const wallet of wallets) { pushWallet(wallet) }
+}
+init()
 
 
 
 // Testing
 
-if (process.env.NODE_ENV === 'development' && !ArweaveStore.wallets.length) {
+if (!ArweaveStore.wallets.length) {
 	console.log('loading test wallets')
 	watchWallet({ key: 'TId0Wix2KFl1gArtAT6Do1CbWU_0wneGvS5X9BfW5PE' })
 	watchWallet({ key: 'Bf3pWqxD1qwwF2fcE9bPNyQp_5TSlAYPJ3JNMgJSj4c' })

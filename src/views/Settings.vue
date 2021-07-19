@@ -10,8 +10,12 @@
 			</div>
 			<h2>App Settings</h2>
 			<div class="group">
+				<p>Gateway</p>
+				<Input v-model="gateway" :placeholder="ArweaveStore.gatewayURL" :icon="require('@/assets/logos/arweave.svg')" />
+			</div>
+			<div class="group">
 				<p>Currency</p>
-				<Select class="" v-model="ArweaveStore.redstone.currency" :options="options" :icon="currencySymbol" />
+				<Select v-model="ArweaveStore.redstone.currency" :options="options" :icon="currencySymbol" />
 			</div>
 			<div class="group">
 				<p>Fund the project</p>
@@ -25,6 +29,7 @@
 
 <script>
 import WalletOptions from '@/components/WalletOptions.vue'
+import Input from '@/components/atomic/Input.vue'
 import InputAr from '@/components/atomic/InputAr.vue'
 import Select from '@/components/atomic/Select.vue'
 import Button from '@/components/atomic/Button.vue'
@@ -34,9 +39,14 @@ import axios from 'axios'
 import { reactive, ref, computed } from 'vue'
 
 export default {
-	components: { WalletOptions, InputAr, Select, Button, Icon },
+	components: { WalletOptions, Input, InputAr, Select, Button, Icon },
 	setup () {
-		const amount = ref('')
+		const gateway = ref('')
+		const urlToSettings = (url) => {
+			const obj = new URL(url)
+			
+		}
+
 		let options = reactive([])
 		axios.get('https://raw.githubusercontent.com/redstone-finance/redstone-app/main/src/assets/data/tokens.json').then(response => {
 			const results = response.data
@@ -47,7 +57,10 @@ export default {
 			}
 		})
 		const currencySymbol = computed(() => new Intl.NumberFormat(navigator.languages, { style: 'currency', currency: ArweaveStore.redstone.currency }).format(0).replace(/[\w\d\.\,\s]/g, '') || '$')
-		return { ArweaveStore, options, amount, currencySymbol }
+		
+		const amount = ref('')
+		
+		return { ArweaveStore, gateway, options, amount, currencySymbol }
 	},
 }
 </script>

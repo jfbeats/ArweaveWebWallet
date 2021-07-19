@@ -6,8 +6,8 @@
 				<transition-group name="fade-list">
 					<TxCard class="card fade-list-item" v-for="tx in txs" :key="tx.node.id" :tx="tx.node" />
 				</transition-group>
-				<div class="loader-container" :class="{ collapse: completedQuery }">
-					<div v-if="!completedQuery" class="loader" />
+				<div v-if="!completedQuery" class="loader-container">
+					<div class="loader" />
 				</div>
 			</div>
 		</transition>
@@ -39,7 +39,7 @@ export default {
 			await fetchTransactions(props.wallet, selectedQuery.value)
 		}
 		const observer = new IntersectionObserver((entries) => {
-			if (entries[0].isIntersecting === true) { fetchQuery() }
+			if (entries[0].isIntersecting) { fetchQuery() }
 		}, { threshold: [0] })
 		onMounted(() => {
 			observer.observe(bottom.value)
@@ -59,7 +59,6 @@ export default {
 			const fromIndex = tabs.findIndex(el => el.name.toLowerCase() === prevState)
 			transitionName.value = toIndex < fromIndex ? 'slide-right' : 'slide-left'
 		})
-		// TODO collapse only if in viewport
 		return { fetchLoading, txs, completedQuery, bottom, selectedQuery, transitionName, tabs }
 	},
 }
@@ -96,11 +95,6 @@ export default {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-}
-
-.loader-container.collapse {
-	transition: min-height 2s cubic-bezier(0.22, 1, 0.36, 1);
-	min-height: 0;
 }
 
 .loader,

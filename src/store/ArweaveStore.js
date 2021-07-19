@@ -7,14 +7,7 @@ import InterfaceStore from '@/store/InterfaceStore'
 
 
 
-const gatewayDefault = {
-	host: 'arweave.net',
-	port: 443,
-	protocol: 'https'
-}
-
 const ArweaveStore = reactive({
-	gatewayDefault,
 	gatewayURL: null,
 	currentWallet: null,
 	wallets: [],
@@ -29,10 +22,11 @@ const ArweaveStore = reactive({
 let arweave
 let arDB
 
-export function updateArweave (gatewaySettings = gatewayDefault) {
-	ArweaveStore.gatewayURL = `${gatewaySettings.protocol}://${gatewaySettings.host}:${gatewaySettings.port}/`
-	arweave = new Arweave(gatewaySettings)
+export function updateArweave (gateway) {
+	arweave = gateway ? Arweave.init(gateway) : Arweave.init()
 	arDB = new ArDB(arweave)
+	const api = arweave.getConfig().api
+	ArweaveStore.gatewayURL = `${api.protocol}://${api.host}:${api.port}/`
 }
 
 export async function pushWallet (wallet) {
@@ -226,10 +220,27 @@ export async function updateConversionRate () {
 	return ArweaveStore.redstone.currentPrice
 }
 
-watch(() => ArweaveStore.redstone.currency, updateConversionRate)
 
 
-updateArweave()
+const gatewayDefault = {
+	host: 'arweave.net',
+	port: 443,
+	protocol: 'https'
+}
+
+let savedGatewaySettings
+try { savedGatewaySettings = JSON.parse(localStorage.getItem('gateway')) }
+catch (e) { localStorage.removeItem('gateway') }
+updateArweave(savedGatewaySettings || gatewayDefault)
+
+ArweaveStore.redstone.currency = localStorage.getItem('currency') || 'USD'
+watch(() => ArweaveStore.redstone.currency, (value) => {
+	localStorage.setItem('currency', value)
+	updateConversionRate()
+})
+watch(() => InterfaceStore.windowVisible, (visible) => {
+	if (visible && !ArweaveStore.redstone.currentPrice) { updateConversionRate() }
+})
 updateConversionRate()
 setInterval(updateConversionRate, 600000)
 

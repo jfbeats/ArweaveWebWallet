@@ -5,19 +5,20 @@
 			<LocaleCurrency class="currency" :ar="wallet.balance" />
 		</div>
 		<div>
-			<div class="wallet-info"><img class="logo" :src="walletInfo.img">{{ walletInfo.name }}</div>
+			<div class="wallet-info"><Icon class="logo" :icon="walletInfo.img" />{{ walletInfo.name }}</div>
 			<Address :address="wallet.key" />
 		</div>
 	</div>
 </template>
 
 <script>
-import Address from '@/components/atomic/Address'
-import Ar from '@/components/atomic/Ar'
-import LocaleCurrency from '@/components/atomic/LocaleCurrency'
+import Address from '@/components/atomic/Address.vue'
+import Ar from '@/components/atomic/Ar.vue'
+import LocaleCurrency from '@/components/atomic/LocaleCurrency.vue'
+import Icon from '@/components/atomic/Icon.vue'
 
 export default {
-	components: { Address, Ar, LocaleCurrency },
+	components: { Address, Ar, LocaleCurrency, Icon },
 	props: ['wallet'],
 	computed: {
 		walletInfo () {
@@ -54,12 +55,15 @@ export default {
 .wallet-info {
 	margin: 0 0 var(--spacing) 0;
 	display: flex;
+	align-items: center;
 	height: 1em;
 }
 
 .logo {
 	opacity: var(--element-secondary-opacity);
 	margin-inline-end: 8px;
+	width: 1.5em;
+	height: 1em;
 }
 
 .address {
