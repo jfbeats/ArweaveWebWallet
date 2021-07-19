@@ -31,7 +31,10 @@ export default {
 		const verticalLayout = computed(() => InterfaceStore.breakpoints.verticalLayout)
 		const axis = computed(() => InterfaceStore.breakpoints.verticalLayout ? 'x' : 'y')
 		const wallets = computed({
-			get () { return ArweaveStore.wallets },
+			get () { 
+				saveWalletsOrder(ArweaveStore.wallets)
+				return ArweaveStore.wallets 
+			},
 			set (value) {
 				saveWalletsOrder(value)
 				ArweaveStore.wallets = value
