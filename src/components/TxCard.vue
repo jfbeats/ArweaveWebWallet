@@ -96,7 +96,6 @@ export default {
 		},
 		dataInfo () {
 			for (const tag of this.tx.tags) {
-				console.log(tag.name); 
 				if (tag.name == 'Service') { return tag.value }
 			}
 			for (const tag of this.tx.tags) {
