@@ -22,6 +22,7 @@ export default {
 		})
 		const focus = ref(false)
 		watch(() => model.value, (newVal, oldVal) => {
+			if (!props.mask) { return }
 			if (!props.mask(newVal)) { model.value = oldVal }
 		})
 		return { model, focus }

@@ -16,8 +16,8 @@ export default {
 
 <style scoped>
 .button {
+	height: 3.5em;
 	min-width: 14em;
-	padding: var(--spacing);
 	border-radius: var(--border-radius);
 	background: #ffffff06;
 	display: flex;

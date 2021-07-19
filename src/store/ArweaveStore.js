@@ -23,10 +23,19 @@ let arweave
 let arDB
 
 export function updateArweave (gateway) {
-	arweave = gateway ? Arweave.init(gateway) : Arweave.init()
+	const urlToSettings = (url) => {
+		const obj = new URL(url)
+		const protocol = obj.protocol.replace(':', '')
+		const host = obj.hostname
+		const port = obj.port ? parseInt(obj.port) : protocol === 'https' ? 443 : 80
+		return { protocol, host, port }
+	}
+	const settingsToUrl = (settings) => `${settings.protocol}://${settings.host}:${settings.port}/`
+	const settings = typeof gateway === 'string' ? urlToSettings(gateway) : gateway
+	arweave = settings ? Arweave.init(settings) : Arweave.init()
 	arDB = new ArDB(arweave)
 	const api = arweave.getConfig().api
-	ArweaveStore.gatewayURL = `${api.protocol}://${api.host}:${api.port}/`
+	ArweaveStore.gatewayURL = settingsToUrl(api)
 }
 
 export async function pushWallet (wallet) {
@@ -228,10 +237,7 @@ const gatewayDefault = {
 	protocol: 'https'
 }
 
-let savedGatewaySettings
-try { savedGatewaySettings = JSON.parse(localStorage.getItem('gateway')) }
-catch (e) { localStorage.removeItem('gateway') }
-updateArweave(savedGatewaySettings || gatewayDefault)
+updateArweave(localStorage.getItem('gateway') || gatewayDefault)
 
 ArweaveStore.redstone.currency = localStorage.getItem('currency') || 'USD'
 watch(() => ArweaveStore.redstone.currency, (value) => {

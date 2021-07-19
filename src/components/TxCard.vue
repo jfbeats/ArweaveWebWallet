@@ -78,8 +78,8 @@ export default {
 			else if (currentAddress === this.tx.owner.address) { return 'out' }
 			return null
 		},
-		isData () { return this.tx.data.size !== "0" },
-		isValue () { return this.tx.quantity.winston !== "0" },
+		isData () { return this.tx.data.size != 0 },
+		isValue () { return this.tx.quantity.winston != 0 },
 		isPending () { return !this.tx.block },
 		relativeAddress () {
 			if (this.direction === 'in') { return this.tx.owner.address }
@@ -96,6 +96,7 @@ export default {
 		},
 		dataInfo () {
 			for (const tag of this.tx.tags) {
+				console.log(tag.name); 
 				if (tag.name == 'Service') { return tag.value }
 			}
 			for (const tag of this.tx.tags) {

@@ -11,7 +11,10 @@
 			<h2>App Settings</h2>
 			<div class="group">
 				<p>Gateway</p>
-				<Input v-model="gateway" :placeholder="ArweaveStore.gatewayURL" :icon="require('@/assets/logos/arweave.svg')" />
+				<div style="display:flex; gap:var(--spacing)">
+					<Input v-model="gateway" :placeholder="ArweaveStore.gatewayURL" :icon="require('@/assets/logos/arweave.svg')" style="flex:1 1 0;" />
+					<Button @click="setGateway()">Submit</Button>
+				</div>
 			</div>
 			<div class="group">
 				<p>Currency</p>
@@ -34,7 +37,7 @@ import InputAr from '@/components/atomic/InputAr.vue'
 import Select from '@/components/atomic/Select.vue'
 import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
-import ArweaveStore from '@/store/ArweaveStore'
+import ArweaveStore, { updateArweave } from '@/store/ArweaveStore'
 import axios from 'axios'
 import { reactive, ref, computed } from 'vue'
 
@@ -42,9 +45,9 @@ export default {
 	components: { WalletOptions, Input, InputAr, Select, Button, Icon },
 	setup () {
 		const gateway = ref('')
-		const urlToSettings = (url) => {
-			const obj = new URL(url)
-			
+		const setGateway = () => {
+			gateway.value ? updateArweave(gateway.value) : updateArweave()
+			localStorage.setItem('gateway', gateway.value)
 		}
 
 		let options = reactive([])
@@ -57,10 +60,10 @@ export default {
 			}
 		})
 		const currencySymbol = computed(() => new Intl.NumberFormat(navigator.languages, { style: 'currency', currency: ArweaveStore.redstone.currency }).format(0).replace(/[\w\d\.\,\s]/g, '') || '$')
-		
+
 		const amount = ref('')
-		
-		return { ArweaveStore, gateway, options, amount, currencySymbol }
+
+		return { ArweaveStore, gateway, setGateway, options, amount, currencySymbol }
 	},
 }
 </script>
