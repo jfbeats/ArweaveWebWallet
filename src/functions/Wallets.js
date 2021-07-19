@@ -43,8 +43,7 @@ export function deleteWallet (wallet) {
 	saveWallets(ArweaveStore.wallets)
 }
 
-ArweaveStore.wallets = loadWallets()
-if (ArweaveStore.wallets.length) { ArweaveStore.currentWallet = ArweaveStore.wallets[0] }
+for (const wallet of loadWallets()) { pushWallet(wallet) }
 
 
 
