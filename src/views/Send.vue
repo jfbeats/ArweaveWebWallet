@@ -3,13 +3,13 @@
 		<!-- Autocomplete local addrs -->
 		<h2 class="heading"><img class="img" src="@/assets/icons/north_east.svg">Send</h2>
 		<div class="row">
-			<Input v-model.trim="InterfaceStore.wallet.send.address" :icon="require('@/assets/icons/person.svg')" placeholder="Address" autocomplete="ar" :mask="maskAddress" />
-			<AddressIcon class="address-icon" :address="InterfaceStore.wallet.send.address" />
+			<Input v-model.trim="InterfaceStore.wallet.send.target" :icon="require('@/assets/icons/person.svg')" placeholder="Address" autocomplete="ar" :mask="maskAddress" />
+			<AddressIcon class="address-icon" :address="InterfaceStore.wallet.send.target" />
 		</div>
 		<div class="row" style="justify-content:flex-end;"></div>
 
 		<h3 class="heading">Amount</h3>
-		<InputAr v-model="InterfaceStore.wallet.send.amount" />
+		<InputAr v-model="InterfaceStore.wallet.send.quantity" />
 		<div class="row" style="justify-content:flex-end;">
 			<button class="secondary" style="padding-top:1em;" @click="setMax">Max</button>
 		</div>
@@ -68,7 +68,7 @@ export default {
 
 		const maskAddress = (address) => { return address.match(/^[a-z0-9_-]{0,43}$/i) }
 
-		const setMax = () => InterfaceStore.wallet.send.amount = ArweaveStore.currentWallet.balance
+		const setMax = () => InterfaceStore.wallet.send.quantity = ArweaveStore.currentWallet.balance
 
 		watch(() => InterfaceStore.wallet.send.data, (value) => {
 			let contentTypeTag = InterfaceStore.wallet.send.tags.find(row =>
@@ -102,7 +102,7 @@ export default {
 		const txSizeDisplay = computed(() => humanFileSize(txSize.value))
 		const txFee = ref(null)
 		const feeUrl = computed(() => {
-			const address = InterfaceStore.wallet.send.address
+			const address = InterfaceStore.wallet.send.target
 			return ArweaveStore.gatewayURL + 'price/' + txSize.value + '/' + (address.match(/^[a-z0-9_-]{43}$/i) ? address : '')
 		})
 		const updateFee = async () => { txFee.value = arweave.ar.winstonToAr((await axios.get(feeUrl.value)).data) }

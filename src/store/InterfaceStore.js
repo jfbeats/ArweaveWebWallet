@@ -11,8 +11,8 @@ const InterfaceStore = reactive({
 	dragOverlay: false,
 	wallet: {
 		send: {
-			address: '',
-			amount: '',
+			target: '',
+			quantity: '',
 			data: '',
 			tags: [],
 		},
