@@ -13,7 +13,7 @@
 				<p>Gateway</p>
 				<div style="display:flex; gap:var(--spacing)">
 					<Input v-model="gateway" :placeholder="ArweaveStore.gatewayURL" :icon="require('@/assets/logos/arweave.svg')" style="flex:1 1 0;" />
-					<Button @click="setGateway()">Submit</Button>
+					<Button @click="setGateway()">{{ gateway ? 'Submit' : 'Reset' }}</Button>
 				</div>
 			</div>
 			<div class="group">

@@ -1,6 +1,6 @@
 <template>
 	<router-link class="action">
-		<img class="img" :src="img">
+		<Icon class="img" :icon="img" />
 		<span class="text">
 			<slot></slot>
 		</span>
@@ -8,7 +8,10 @@
 </template>
 
 <script>
+import Icon from '@/components/atomic/Icon.vue'
+
 export default {
+	components: { Icon },
 	props: ['img'],
 }
 </script>
@@ -38,7 +41,8 @@ export default {
 }
 
 .img {
-	height: 1em;
+	/* height: 1em; */
+	font-size: 0.9em;
 }
 
 .text {

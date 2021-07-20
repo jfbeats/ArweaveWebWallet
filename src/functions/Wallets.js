@@ -43,6 +43,13 @@ export function deleteWallet (wallet) {
 	saveWallets(ArweaveStore.wallets)
 }
 
+export async function downloadWallet (wallet) {
+	if (!wallet.jwk) { return }
+	const jwk = wallet.jwk
+	const key = wallet.key ? wallet.key : await arweave.wallets.jwkToAddress(wallet.jwk)
+	download(key, JSON.stringify(jwk))
+}
+
 function init () {
 	const wallets = loadWallets()
 	if (!wallets) { return }

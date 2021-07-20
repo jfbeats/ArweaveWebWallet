@@ -9,7 +9,7 @@
 		</div>
 		<div class="content">
 			<div class="bottom">
-				<div>Download</div>
+				<div v-if="wallet.jwk" @click="downloadWallet(wallet)">Download</div>
 				<div @click="deleteWallet(wallet)">Delete</div>
 			</div>
 		</div>
@@ -20,13 +20,13 @@
 <script>
 import AddressIcon from '@/components/atomic/AddressIcon'
 import Address from '@/components/atomic/Address'
-import { deleteWallet } from '@/functions/Wallets'
+import { deleteWallet, downloadWallet } from '@/functions/Wallets'
 
 export default {
 	components: { AddressIcon, Address },
 	props: ['wallet'],
 	setup () {
-		return { deleteWallet }
+		return { deleteWallet, downloadWallet }
 	}
 }
 </script>

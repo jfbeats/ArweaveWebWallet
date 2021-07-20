@@ -41,7 +41,11 @@ export function updateArweave (gateway) {
 export async function pushWallet (wallet) {
 	Object.assign(wallet, { balance: null, queries: {}, queriesStatus: {} })
 	if (!wallet.key && wallet.jwk) { wallet.key = await arweave.wallets.jwkToAddress(wallet.jwk) }
-	if (getWalletByKey(wallet.key)) { return getWalletByKey(wallet.key) }
+	const existingWallet = getWalletByKey(wallet.key)
+	if (existingWallet) { 
+		Object.assign(existingWallet, wallet)
+		return existingWallet
+	}
 	if (!wallet.id) { wallet.id = getNewId() }
 	ArweaveStore.wallets.push(wallet)
 	return wallet
