@@ -1,9 +1,13 @@
-import ArweaveStore, { arweave } from "@/store/ArweaveStore"
+import ArweaveStore, { arweave } from '@/store/ArweaveStore'
 
-export async function buildTransaction (tx) {
-	const data = tx.data instanceof File ? await readFile(tx.data) : tx.data
-	const txObj = await arweave.createTransaction({ target: tx.address, quantity: arweave.ar.arToWinston(tx.amount), data })
-	for (const tag of tx.tags) { txObj.addTag(...tag) }
+export async function buildTransaction (target, ar, tags, data) {
+	const txSettings = {
+		target: target || '',
+		quantity: ar ? arweave.ar.arToWinston(ar) : '0',
+	}
+	if (data) { txSettings.data = data instanceof File ? await readFile(data) : data }
+	const txObj = await arweave.createTransaction(txSettings)
+	for (const tag of tags) { txObj.addTag(tag.name, tag.value) }
 	return txObj
 }
 
@@ -17,17 +21,17 @@ function readFile (file) {
 }
 
 export async function manageUpload (tx) {
-	if (tx.data_size < 1000) { return arweave.transactions.post(tx) }
+	if (!tx.chunks.chunks.length) { return arweave.transactions.post(tx) }
 	const uploader = await arweave.transactions.getUploader(tx)
 	const storageKey = 'uploader:' + tx.id
 	localStorage.setItem(storageKey, JSON.stringify(uploader))
-	storedTx = Object.assign(ArweaveStore.txs[tx.id] ??= {}, { upload: 0 })
+	const storeTx = Object.assign(ArweaveStore.txs[tx.id] ??= {}, { upload: 0 })
 	while (!uploader.isComplete) {
 		await uploader.uploadChunk()
 		localStorage.setItem(storageKey, JSON.stringify(uploader))
-		storedTx.upload = uploader.pctComplete
+		storeTx.upload = uploader.pctComplete
 	}
 	localStorage.removeItem(storageKey)
-	delete storedTx.upload
+	delete storeTx.upload
 	return uploader.lastResponseStatus
 }

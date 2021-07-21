@@ -53,11 +53,6 @@ button {
 	box-sizing: inherit;
 }
 
-input:not([disabled]) {
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
 .card {
 	padding: var(--spacing);
 	background: var(--background2);

@@ -20,7 +20,7 @@ async function getVersion () {
 		} else {
 			console.info(`App Version ${response.major}.${response.minor}.${response.patch}`, response)
 		}
-	} finally { transport.close() }
+	} finally { await transport.close() }
 	return response
 }
 
@@ -36,7 +36,7 @@ async function getAppInfo () {
 		} else {
 			console.info("Response received!", response)
 		}
-	} finally { transport.close() }
+	} finally { await transport.close() }
 	return response
 }
 
@@ -52,7 +52,7 @@ async function getAddress (request = false) {
 		} else {
 			console.info("Response received!", response)
 		}
-	} finally { transport.close() }
+	} finally { await transport.close() }
 	return response
 }
 
@@ -71,7 +71,7 @@ async function sign (transaction) {
 		}
 		await transaction.setSignature(sigjs)
 		console.info("Transaction signed", transaction)
-	} finally { transport.close() }
+	} finally { await transport.close() }
 	return transaction
 }
 

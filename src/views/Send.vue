@@ -34,7 +34,7 @@
 					<Ar class="ar" :ar="txFee" />&nbsp;<LocaleCurrency class="small secondary" :ar="txFee">|</LocaleCurrency>
 				</div>
 			</div>
-			<Button :style="submitStyle">
+			<Button @click="postTx" :style="submitStyle">
 				<Icon :icon="require('@/assets/icons/north_east.svg')" style="height:1em;" />
 				Submit
 				<span style="width:1.5em;" />
@@ -58,18 +58,18 @@ import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import ArweaveStore, { arweave } from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
+import { buildTransaction, manageUpload } from '@/functions/Transactions'
+import Ledger from '@/functions/Ledger'
 import axios from 'axios'
 import { debounce, humanFileSize, addressToColor } from '@/functions/Utils'
 import { computed, ref, watch } from 'vue'
 
 export default {
 	components: { Input, InputAr, InputData, InputGrid, AddressIcon, Ar, LocaleCurrency, Button, Icon },
-	setup () {
-
+	props: ['wallet'],
+	setup (props) {
 		const maskAddress = (address) => { return address.match(/^[a-z0-9_-]{0,43}$/i) }
-
-		const setMax = () => InterfaceStore.wallet.send.quantity = ArweaveStore.currentWallet.balance
-
+		const setMax = () => InterfaceStore.wallet.send.quantity = props.wallet.balance
 		watch(() => InterfaceStore.wallet.send.data, (value) => {
 			let contentTypeTag = InterfaceStore.wallet.send.tags.find(row =>
 				row.items[0].value === 'Content-Type')
@@ -84,17 +84,13 @@ export default {
 				InterfaceStore.wallet.send.tags.splice(index, 1)
 			}
 		})
-
-		// TODO validate tags length
 		const tagSchema = (name, value) => ({
 			items: [
 				{ name: 'Tag', value: name || '', icon: require('@/assets/icons/label.svg') },
 				{ name: 'Value', value: value || '' }
 			], deletable: true, key: Math.random()
 		})
-
 		const addTag = (tag) => InterfaceStore.wallet.send.tags.push(tag || tagSchema())
-
 		const txSize = computed(() => {
 			const data = InterfaceStore.wallet.send.data
 			return data.size || data.length || '0'
@@ -109,15 +105,29 @@ export default {
 		const updateFeeDebounced = debounce(updateFee)
 		updateFee()
 		watch(() => feeUrl.value, () => updateFeeDebounced())
-
-		const submitStyle = {
-			'--border': `rgba(${addressToColor(ArweaveStore.currentWallet.key).join(',')},0.8)`,
-			'--glow-color': `rgba(${addressToColor(ArweaveStore.currentWallet.key).join(',')},0.2)`,
-			'background-image': `radial-gradient(circle at center, rgba(${addressToColor(ArweaveStore.currentWallet.key).join(',')},0.4), 
-			rgba(${addressToColor(ArweaveStore.currentWallet.key).join(',')},0.3))`
+		const getTagsFromSchema = (tagsSchema) => {  // TODO validate tags length
+			const result = []
+			for (const row of tagsSchema) { result.push({ name: row.items[0].value, value: row.items[1].value }) }
+			return result
 		}
-
-		return { InterfaceStore, maskAddress, setMax, addTag, txSizeDisplay, txFee, submitStyle }
+		const postTx = async () => {
+			const settings = InterfaceStore.wallet.send
+			const tx = await buildTransaction(settings.target, settings.quantity, getTagsFromSchema(settings.tags), settings.data)
+			if (props.wallet.jwk) { await arweave.transactions.sign(tx, props.wallet.jwk) }
+			else if (props.wallet.metaData.provider === 'Ledger') {
+				if (props.wallet.key !== await Ledger.getActiveAddress()) { alert('Wrong account'); return }
+				await Ledger.sign(tx)
+			}
+			manageUpload(tx)
+			// TODO visual feedback and clear interface values
+		}
+		const submitStyle = {
+			'--border': `rgba(${addressToColor(props.wallet.key).join(',')},0.8)`,
+			'--glow-color': `rgba(${addressToColor(props.wallet.key).join(',')},0.2)`,
+			'background-image': `radial-gradient(circle at center, rgba(${addressToColor(props.wallet.key).join(',')},0.4), 
+			rgba(${addressToColor(props.wallet.key).join(',')},0.3))`
+		}
+		return { InterfaceStore, maskAddress, setMax, addTag, txSizeDisplay, txFee, postTx, submitStyle }
 	}
 }
 </script>
