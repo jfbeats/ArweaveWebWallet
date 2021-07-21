@@ -61,9 +61,7 @@ export default {
 
 .logo {
 	opacity: var(--element-secondary-opacity);
-	margin-inline-end: 8px;
-	width: 1.5em;
-	height: 1em;
+	margin-inline-end: 1em;
 }
 
 .address {

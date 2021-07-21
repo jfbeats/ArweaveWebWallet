@@ -34,10 +34,8 @@
 					<Ar class="ar" :ar="txFee" />&nbsp;<LocaleCurrency class="small secondary" :ar="txFee">|</LocaleCurrency>
 				</div>
 			</div>
-			<Button @click="postTx" :style="submitStyle">
-				<Icon :icon="require('@/assets/icons/north_east.svg')" style="height:1em;" />
+			<Button @click="postTx" :style="submitStyle" :disabled="loading" :icon="require('@/assets/icons/north_east.svg')">
 				Submit
-				<span style="width:1.5em;" />
 			</Button>
 		</div>
 		<!-- QR -->
@@ -110,7 +108,10 @@ export default {
 			for (const row of tagsSchema) { result.push({ name: row.items[0].value, value: row.items[1].value }) }
 			return result
 		}
+		const loading = ref(false)
 		const postTx = async () => {
+			if (loading.value) { return }
+			loading.value = true
 			const settings = InterfaceStore.wallet.send
 			const tx = await buildTransaction(settings.target, settings.quantity, getTagsFromSchema(settings.tags), settings.data)
 			if (props.wallet.jwk) { await arweave.transactions.sign(tx, props.wallet.jwk) }
@@ -119,6 +120,8 @@ export default {
 				await Ledger.sign(tx)
 			}
 			manageUpload(tx)
+			InterfaceStore.wallet.send = { target: '', quantity: '', data: '', tags: [], }
+			loading.value = false
 			// TODO visual feedback and clear interface values
 		}
 		const submitStyle = {
@@ -127,7 +130,7 @@ export default {
 			'background-image': `radial-gradient(circle at center, rgba(${addressToColor(props.wallet.key).join(',')},0.4), 
 			rgba(${addressToColor(props.wallet.key).join(',')},0.3))`
 		}
-		return { InterfaceStore, maskAddress, setMax, addTag, txSizeDisplay, txFee, postTx, submitStyle }
+		return { InterfaceStore, maskAddress, setMax, addTag, txSizeDisplay, txFee, postTx, submitStyle, loading }
 	}
 }
 </script>

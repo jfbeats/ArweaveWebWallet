@@ -42,7 +42,7 @@ export default {
 
 .img {
 	/* height: 1em; */
-	font-size: 0.9em;
+	font-size: 1.2em;
 }
 
 .text {

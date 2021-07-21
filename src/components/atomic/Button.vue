@@ -1,5 +1,6 @@
 <template>
 	<button class="button no-select">
+		<Icon v-if="icon" :icon="icon" />
 		<slot></slot>
 	</button>
 </template>
@@ -7,8 +8,11 @@
 
 
 <script>
-export default {
+import Icon from '@/components/atomic/Icon.vue'
 
+export default {
+	components: { Icon },
+	props: ['icon']
 }
 </script>
 
@@ -36,5 +40,13 @@ export default {
 	filter: brightness(0.7);
 	box-shadow: 0 0 var(--spacing) 0 transparent;
 	transition: 0s;
+}
+
+.button:disabled {
+	filter: grayscale(0.5) brightness(0.5);
+}
+
+.icon {
+	margin-inline-end: 0.5em;
 }
 </style>

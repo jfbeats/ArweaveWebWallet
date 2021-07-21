@@ -4,9 +4,7 @@
 			<h2>Wallet Settings</h2>
 			<div class="wallets">
 				<WalletOptions class="wallet-options" v-for="wallet in ArweaveStore.wallets" :key="wallet.id" :wallet="wallet" />
-				<Button v-if="!ArweaveStore.wallets.length" style="font-size:1.5em; background:var(--background3);" @click="$router.push({ name: 'AddWallet'})">
-					<Icon icon="+" />
-				</Button>
+				<Button v-if="!ArweaveStore.wallets.length" style="font-size:1.5em; background:var(--background3);" @click="$router.push({ name: 'AddWallet'})" icon="+" />
 			</div>
 			<h2>App Settings</h2>
 			<div class="group">

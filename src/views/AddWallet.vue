@@ -7,21 +7,16 @@
 				<span>Key file</span>
 			</h2>
 			<InputData v-model="passphraseInput" @files="importFile" :disabled="isCreatingWallet" /><br>
-			<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create()" :disabled="passphraseInput.length && !isPassphrase">
-				<Icon :icon="require('@/assets/logos/arweave.svg')" />
-				<div>Create new wallet</div>
+			<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create()" :disabled="passphraseInput.length && !isPassphrase" :icon="require('@/assets/logos/arweave.svg')">
+				Create new wallet
 			</Button>
 
-			<Button v-else-if="isCreatingWallet" :disabled="!createdWallet" @click="goToCreatedWallet">
-				<template v-if="!createdWallet">
-					<Icon :icon="'loader'" />
-					<div>Write down the passphrase</div>
-				</template>
-				<div v-else>Passphrase saved? Click here to proceed</div>
+			<Button v-else-if="isCreatingWallet" :disabled="!createdWallet" @click="goToCreatedWallet" :icon="!createdWallet ? 'loader' : ''">
+				{{ !createdWallet ? 'Write down the passphrase' : 'Passphrase saved? Click here to proceed' }}
 			</Button>
 
 			<Button v-else :disabled="!isPassphrase || isGeneratingWallet" @click="isValidPassphrase ? importPassphrase() : confirmPassphrase()">
-				<div>Import wallet</div>
+				Import wallet
 			</Button>
 			<transition name="fade-fast" mode="in-out">
 				<div v-if="popup.enabled" :key="popup.message" class="overlay">
@@ -39,13 +34,11 @@
 
 		<div class="card">
 			<h2>Hardware</h2>
-			<Button v-if="supportsWebUSB()" @click="importLedger()">
-				<Icon :icon="require('@/assets/logos/ledger.svg')" />
-				<div>Ledger</div>
+			<Button v-if="supportsWebUSB()" @click="importLedger()" :icon="require('@/assets/logos/ledger.svg')">
+				Ledger
 			</Button>
-			<Button v-else disabled>
-				<Icon :icon="require('@/assets/logos/ledger.svg')" />
-				<div>Ledger not supported for this browser</div>
+			<Button v-else disabled :icon="require('@/assets/logos/ledger.svg')">
+				Ledger not supported for this browser
 			</Button>
 		</div>
 
@@ -139,10 +132,6 @@ export default {
 	height: 5em;
 	font-size: 1.1em;
 	width: 100%;
-}
-
-.button:disabled {
-	filter: grayscale(0.5) brightness(0.5);
 }
 
 .overlay {

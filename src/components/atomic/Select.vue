@@ -41,6 +41,8 @@ export default {
 }
 
 .icon {
+	font-size: 1.4em;
+	width: 2em;
 	position: absolute;
 	opacity: var(--element-secondary-opacity);
 	pointer-events: none;

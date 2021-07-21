@@ -25,13 +25,14 @@ export async function manageUpload (tx) {
 	const uploader = await arweave.transactions.getUploader(tx)
 	const storageKey = 'uploader:' + tx.id
 	localStorage.setItem(storageKey, JSON.stringify(uploader))
-	const storeTx = Object.assign(ArweaveStore.txs[tx.id] ??= {}, { upload: 0 })
+	ArweaveStore.uploads[tx.id] ??= {}
+	ArweaveStore.uploads[tx.id].upload = 0
 	while (!uploader.isComplete) {
 		await uploader.uploadChunk()
 		localStorage.setItem(storageKey, JSON.stringify(uploader))
-		storeTx.upload = uploader.pctComplete
+		ArweaveStore.uploads[tx.id].upload = uploader.pctComplete
 	}
 	localStorage.removeItem(storageKey)
-	delete storeTx.upload
+	setTimeout(() => delete ArweaveStore.uploads[tx.id], 5000)
 	return uploader.lastResponseStatus
 }

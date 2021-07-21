@@ -67,6 +67,8 @@ export default {
 }
 
 .icon {
+	font-size: 1.4em;
+	width: 2em;
 	opacity: var(--element-secondary-opacity);
 }
 

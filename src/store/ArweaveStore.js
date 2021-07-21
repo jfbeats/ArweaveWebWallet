@@ -17,6 +17,7 @@ const ArweaveStore = reactive({
 		currentPrice: null,
 		currency: 'USD',
 	},
+	uploads: {},
 })
 
 let arweave

@@ -28,10 +28,9 @@ export default {
 <style scoped>
 .icon {
 	flex: 0 0 auto;
-	height: 3em;
-	width: 3em;
+	height: 1em;
+	width: 1em;
 	border-radius: inherit;
-	padding: 3px;
 	/* display: flex;
 	align-items: center;
 	justify-content: center; */
@@ -49,25 +48,25 @@ export default {
 }
 
 .img {
-	width: 1.4em;
-	height: 1.4em;
+	width: 1em;
+	height: 1em;
 	object-fit: contain;
 }
 
 .symbol {
-	font-size: 1.4em;
+	font-size: 1em;
 }
 
 .loader,
 .loader:after {
 	border-radius: 50%;
-	width: 70%;
-	height: 70%;
+	width: 100%;
+	height: 100%;
 }
 
 .loader {
-	border: 4px solid #ffffff33;
-	border-top: 4px solid currentColor;
+	border: 0.1em solid #ffffff33;
+	border-top: 0.1em solid currentColor;
 	animation: loader-animation 2s infinite linear;
 }
 
