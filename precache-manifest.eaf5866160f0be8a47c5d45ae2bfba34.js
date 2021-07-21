@@ -24,8 +24,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/arweaveViewLandscape.svg"
   },
   {
-    "revision": "93e296aad49f79a0e9f3",
-    "url": "/css/app.48fbaca9.css"
+    "revision": "e072d321410fa54e562c",
+    "url": "/css/app.9f5a38bb.css"
   },
   {
     "revision": "5a0c89a198cca276f86d",
@@ -36,10 +36,6 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/css/chunk-13de63a9.6d4efc2a.css"
   },
   {
-    "revision": "2636366bb31848dc0375",
-    "url": "/css/chunk-29aeaff8.b0d22bd9.css"
-  },
-  {
     "revision": "ee353392347a0f53e419",
     "url": "/css/chunk-3779ed28.73d2a56e.css"
   },
@@ -48,8 +44,12 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/css/chunk-4970192f.f38890a4.css"
   },
   {
-    "revision": "43b3e0a4fa60c5948674",
-    "url": "/css/chunk-7e225aa1.2f21c0b8.css"
+    "revision": "0389523234f99ac3bd5a",
+    "url": "/css/chunk-58fcd21c.7e889657.css"
+  },
+  {
+    "revision": "0490d06703f065d1e54a",
+    "url": "/css/chunk-71bf47f6.6b8725a7.css"
   },
   {
     "revision": "d7eb1418eafa36000ebfb5bbffe1d790",
@@ -112,12 +112,12 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/img/x.2ca824d3.svg"
   },
   {
-    "revision": "fa59e2e70582a79efa61f311526d28c1",
+    "revision": "ce5e493c84172896b6b02527043a046c",
     "url": "/index.html"
   },
   {
-    "revision": "93e296aad49f79a0e9f3",
-    "url": "/js/app.507c9eae.js"
+    "revision": "e072d321410fa54e562c",
+    "url": "/js/app.cb675783.js"
   },
   {
     "revision": "5a0c89a198cca276f86d",
@@ -128,10 +128,6 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/js/chunk-13de63a9.d4785273.js"
   },
   {
-    "revision": "2636366bb31848dc0375",
-    "url": "/js/chunk-29aeaff8.05735330.js"
-  },
-  {
     "revision": "ee353392347a0f53e419",
     "url": "/js/chunk-3779ed28.116cfeb1.js"
   },
@@ -140,8 +136,12 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/js/chunk-4970192f.df336cf3.js"
   },
   {
-    "revision": "43b3e0a4fa60c5948674",
-    "url": "/js/chunk-7e225aa1.7dac07ed.js"
+    "revision": "0389523234f99ac3bd5a",
+    "url": "/js/chunk-58fcd21c.392c6f48.js"
+  },
+  {
+    "revision": "0490d06703f065d1e54a",
+    "url": "/js/chunk-71bf47f6.8e15f77c.js"
   },
   {
     "revision": "4c62499a6ddf0bd7fc95",
