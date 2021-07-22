@@ -43,7 +43,7 @@ export async function pushWallet (wallet) {
 	Object.assign(wallet, { balance: null, queries: {}, queriesStatus: {} })
 	if (!wallet.key && wallet.jwk) { wallet.key = await arweave.wallets.jwkToAddress(wallet.jwk) }
 	const existingWallet = getWalletByKey(wallet.key)
-	if (existingWallet) { 
+	if (existingWallet) {
 		Object.assign(existingWallet, wallet)
 		return existingWallet
 	}
@@ -90,10 +90,19 @@ export async function updateWalletBalance (wallet) {
 }
 
 export async function fetchTransactions (wallet, query) {
-	if (!wallet || wallet.queriesStatus[query]?.completed
-		|| wallet.queriesStatus[query]?.fetchTransactions) { return }
+	if (!wallet || wallet.queriesStatus[query]?.completed) { return }
+	if (wallet.queriesStatus[query]?.fetchTransactions) {
+		return new Promise(resolve => {
+			watch(() => wallet.queriesStatus[query].fetchTransactions, (value) => { if (!value) { resolve() } })
+		})
+	}
 	wallet.queriesStatus[query] ??= {}
 	wallet.queriesStatus[query].fetchTransactions = true
+	if (query === 'all') {
+		await fetchTransactionsAll(wallet)
+		wallet.queriesStatus[query].fetchTransactions = false
+		return
+	}
 	let fulfilled = false
 	let results
 	const queries = {
@@ -123,15 +132,60 @@ export async function fetchTransactions (wallet, query) {
 	}
 	catch (e) { console.error(e) }
 	finally { wallet.queriesStatus[query].fetchTransactions = false }
-	return wallet.queries[query]
+}
+
+async function fetchTransactionsAll (wallet) {
+	wallet.queries.all ??= []
+	const stopCondition = () => {
+		return (wallet.queriesStatus.received?.completed || wallet.queriesStatus.all.received?.node.block) 
+			&& (wallet.queriesStatus.sent?.completed || wallet.queriesStatus.all.sent?.node.block)
+	}
+	for (let i = 0; i < 10 || !stopCondition(); i++) {
+		const nextTx = {}
+		const fetchPromises = []
+		for (const query of ['received', 'sent']) {
+			const fetch = async () => {
+				if (!wallet.queries[query]) { await fetchTransactions(wallet, query) }
+				const index = wallet.queries[query].indexOf(wallet.queriesStatus.all[query])
+				if (wallet.queries[query].length - index < 3) { await fetchTransactions(wallet, query) }
+				nextTx[query] = wallet.queries[query][index + 1]
+			}
+			fetchPromises.push(fetch())
+		}
+		await Promise.all(fetchPromises)
+		if (nextTx.received && (
+			!nextTx.received.node.block ||
+			nextTx.received.node.block.height > nextTx.sent?.node.block?.height
+		)) {
+			wallet.queriesStatus.all.received = nextTx.received
+			wallet.queries.all.push(nextTx.received)
+		}
+		if (nextTx.sent && (
+			!nextTx.sent.node.block ||
+			nextTx.sent.node.block.height > nextTx.received?.node.block?.height
+		)) {
+			wallet.queriesStatus.all.sent = nextTx.sent
+			wallet.queries.all.push(nextTx.sent)
+		}
+	}
+	wallet.queriesStatus.all.completed = wallet.queriesStatus.received.completed && wallet.queriesStatus.sent.completed
+	await new Promise(resolve => setTimeout(() => resolve(), 10))
 }
 
 export async function updateTransactions (wallet, query) {
 	if (!wallet.queries[query] || wallet.queries[query].length === 0) { return fetchTransactions(wallet, query) }
-	if (!wallet || !InterfaceStore.windowVisible
-		|| wallet.queriesStatus[query]?.fetchTransactions
-		|| wallet.queriesStatus[query]?.updateTransactions) { return }
+	if (!wallet || !InterfaceStore.windowVisible || wallet.queriesStatus[query]?.fetchTransactions) { return }
+	if (wallet.queriesStatus[query]?.updateTransactions) {
+		return new Promise(resolve => {
+			watch(() => wallet.queriesStatus[query].updateTransactions, (value) => { if (!value) { resolve() } })
+		})
+	}
 	wallet.queriesStatus[query].updateTransactions = true
+	if (query === 'all') {
+		await updateTransactionsAll(wallet)
+		wallet.queriesStatus[query].updateTransactions = false
+		return
+	}
 	let requireSort = false
 	let fulfilled = false
 	let results
@@ -171,7 +225,28 @@ export async function updateTransactions (wallet, query) {
 	}
 	catch (e) { console.error(e) }
 	finally { wallet.queriesStatus[query].updateTransactions = false }
-	return wallet.queries[query]
+}
+
+async function updateTransactionsAll (wallet) {
+	const fetchPromises = []
+	const newTxs = []
+	const set = new Set(wallet.queries.all)
+	for (const query of ['received', 'sent']) {
+		const fetch = async () => {
+			await updateTransactions(wallet, query)
+			for (const [index, tx] of wallet.queries[query].entries()) {
+				if (!set.has(tx) && index < wallet.queries[query].indexOf(wallet.queriesStatus.all[query])) {
+					newTxs.push(tx)
+				}
+			}
+		}
+		fetchPromises.push(fetch())
+	}
+	await Promise.all(fetchPromises)
+	if (newTxs.length) {
+		wallet.queries.all.splice(0, 0, ...newTxs)
+		sortByBlocks(wallet, 'all')
+	}
 }
 
 async function refreshTx () {

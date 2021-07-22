@@ -30,7 +30,7 @@ export default {
 		let liveUpdate
 		const bottom = ref(null)
 		const route = useRoute()
-		const selectedQuery = computed(() => route.query.view || 'received')
+		const selectedQuery = computed(() => route.query.view || 'all')
 		const txs = computed(() => props.wallet?.queries[selectedQuery.value] || [])
 		const completedQuery = computed(() => props.wallet?.queriesStatus?.[selectedQuery.value]?.completed)
 		const fetchQuery = async () => {
@@ -50,6 +50,7 @@ export default {
 			clearInterval(liveUpdate)
 		})
 		const tabs = [
+			{ name: 'All', color: '#d08770' },
 			{ name: 'Received', color: '#a3be8c' },
 			{ name: 'Sent', color: '#bf616a' },
 		]
