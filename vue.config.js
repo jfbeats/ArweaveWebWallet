@@ -1,9 +1,5 @@
 const webpack = require('webpack')
 
-process.env.VUE_APP_TITLE = 'Arweave Wallet'
-process.env.VUE_APP_DESCRIPTION = 'Manage tokens from the browser, upload permanent data, interact with the weave'
-process.env.VUE_APP_BACKGROUND = '#151515'
-
 module.exports = {
 	publicPath: process.env.GITHUB_ACTIONS ? '/' : '',
 
