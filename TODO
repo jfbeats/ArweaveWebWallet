@@ -4,18 +4,14 @@ Cloud
 ---TX---
 Send | AR / NFT / PST
 View TX data | NFT / PST 
-	/ application/x.arweave-manifest+json
 
 ---Upload---
 NFT
 
 ---App---
 Internationalization
-PWA
+PWA - Share target API
 Donate
-
----Global store---
-ArweaveID
 
 ---Profile---
 Profile picture
@@ -27,12 +23,10 @@ Save to addrs book
 ---Settings---
 App
 	Wallet used as global settings
-	Gateway
 	Password
 	Lang
 Wallet
 	Profile
-	Export
 	Move to cloud
 	Permissions
 	hidden txs
@@ -43,6 +37,7 @@ detect IFramed
 Faucet
 Smartweave
 WeaveMail
+ArweaveID
 
 ---Ideas---
 History | Take current balance and backtrack
