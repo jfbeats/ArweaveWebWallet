@@ -3,6 +3,8 @@ const webpack = require('webpack')
 module.exports = {
 	publicPath: process.env.GITHUB_ACTIONS ? '/' : '',
 
+	productionSourceMap: false, // not source map to production
+
 	configureWebpack: {
 		plugins: [
 			new webpack.IgnorePlugin({
@@ -57,5 +59,42 @@ module.exports = {
 		workboxOptions: {
 			swSrc: 'src/service-worker.js',
 		}
+	},
+
+	pluginOptions: {
+		electronBuilder: {
+			nodeIntegration: false,
+			preload: 'src/preload.js', // preload file 
+			builderOptions: {
+				appId: 'wallet.arweave', // app ID
+				productName: process.env.VUE_APP_TITLE, // app nmae
+				copyright: ``,
+				win: { // Windows
+					icon: 'public/arweave-512.png', // app icon
+					target: ['nsis', 'portable', 'zip'] // install methods
+				},
+				linux: { // Linux
+					icon: 'build/icons'
+				},
+				mac: { // Mac
+					icon: 'build/icons/icon.icns'
+				},
+				nsis: {
+					oneClick: false,
+					perMachine: true, 
+					installerIcon: 'build/icons/icon.ico',
+					uninstallerIcon: 'build/icons/icon.ico',
+					installerHeaderIcon: 'build/icons/icon.ico',
+					allowToChangeInstallationDirectory: true,
+					createDesktopShortcut: true,
+					createStartMenuShortcut: true
+				},
+				publish: [{
+					provider: 'github',
+					owner: '',
+					repo: 'https://github.com/jfbeats/ArweaveWebWallet'
+				}]
+			}
+		},
 	}
 }

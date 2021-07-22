@@ -1,4 +1,4 @@
-# Arweave Web Wallet
+# Arweave Wallet Electron Desktop APP
 
 Preview of the progress so far https://jfbeats.github.io/ArweaveWebWallet
 
@@ -15,4 +15,17 @@ yarn serve
 ### Compiles and minifies for production
 ```
 yarn build
+```
+
+## Electron
+
+### Dev
+```
+yarn electron:serve
+```
+
+### Compiles and minifies for production windows app
+
+```
+yarn electron:build:win
 ```

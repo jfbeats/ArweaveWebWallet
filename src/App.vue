@@ -32,7 +32,8 @@ export default {
 		const dragOverlay = computed(() => InterfaceStore.dragOverlay)
 		const router = useRouter()
 		router.afterEach((to, from) => {
-			document.title = to.meta.title || 'Arweave Wallet'
+			//document.title = to.meta.title || 'Arweave Wallet'
+			document.title = `${to.meta.title} - Arweave Wallet`
 			const routes = router.options.routes
 			let toIndex = routes.findIndex(el => el.path === to.path)
 			let fromIndex = routes.findIndex(el => el.path === from.path)

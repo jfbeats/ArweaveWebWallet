@@ -1,12 +1,19 @@
 {
 	"name": "arweave-web-wallet",
-	"version": "0.1.0",
+	"version": "0.0.1",
 	"private": true,
+	"main": "background.js",
 	"scripts": {
 		"serve": "vue-cli-service serve",
 		"build": "vue-cli-service build",
 		"report": "vue-cli-service build --report",
-		"deploy": "vue-cli-service build && arkb deploy dist --wallet ../arweaveWallet.json --auto-confirm"
+		"deploy": "vue-cli-service build && arkb deploy dist --wallet ../arweaveWallet.json --auto-confirm",
+		"electron:build:win": "vue-cli-service electron:build --win --ia32 --x64",
+		"electron:build:win32": "vue-cli-service electron:build --win --ia32",
+		"electron:build:win64": "vue-cli-service electron:build --win --x64",
+		"electron:generate-icons": "electron-icon-builder --input=./public/arweave-512.png --output=build --flatten",
+		"electron:publish": "vue-cli-service electron:build --win --ia32 --x64 -p always",
+		"electron:serve": "vue-cli-service electron:serve"
 	},
 	"dependencies": {
 		"@ledgerhq/hw-transport-webusb": "^5.53.1",
@@ -17,12 +24,19 @@
 		"arweave-id": "^2.0.11",
 		"bip39": "^3.0.4",
 		"core-js": "^3.6.5",
+		"custom-electron-titlebar": "^3.2.7",
+		"electron-log": "^4.3.5",
+		"electron-updater": "^4.3.9",
+		"electron-window-state": "^5.0.3",
+		"github-api": "^3.4.0",
 		"human-crypto-keys": "^0.1.4",
 		"identicon.js": "^2.3.3",
 		"jshashes": "^1.0.8",
 		"libp2p-crypto": "^0.19.5",
 		"mitt": "^3.0.0",
+		"moment": "^2.29.1",
 		"register-service-worker": "^1.7.1",
+		"showdown": "^1.9.1",
 		"vue": "^3.0.0",
 		"vue-router": "^4.0.0-0",
 		"vue-slicksort": "^2.0.0-alpha.5"
@@ -32,6 +46,10 @@
 		"@vue/cli-plugin-pwa": "^4.5.13",
 		"@vue/cli-plugin-router": "~4.5.0",
 		"@vue/cli-service": "~4.5.0",
-		"@vue/compiler-sfc": "^3.0.0"
+		"@vue/compiler-sfc": "^3.0.0",
+		"electron": "^13.1.7",
+		"electron-devtools-installer": "^3.2.0",
+		"electron-icon-builder": "^2.0.1",
+		"vue-cli-plugin-electron-builder": "^2.1.1"
 	}
 }
