@@ -4,15 +4,15 @@ Preview of the progress so far https://jfbeats.github.io/ArweaveWebWallet
 
 ## Dev
 ```
-npm install
+yarn install
 ```
 
 ### Compiles and hot-reloads for development
 ```
-npm run serve
+yarn serve
 ```
 
 ### Compiles and minifies for production
 ```
-npm run build
+yarn build
 ```
