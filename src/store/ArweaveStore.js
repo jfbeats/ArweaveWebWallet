@@ -155,14 +155,14 @@ async function fetchTransactionsAll (wallet) {
 		await Promise.all(fetchPromises)
 		if (nextTx.received && (
 			!nextTx.received.node.block ||
-			nextTx.received.node.block.height > nextTx.sent?.node.block?.height
+			nextTx.received.node.block.height >= nextTx.sent?.node.block?.height
 		)) {
 			wallet.queriesStatus.all.received = nextTx.received
 			wallet.queries.all.push(nextTx.received)
 		}
 		if (nextTx.sent && (
 			!nextTx.sent.node.block ||
-			nextTx.sent.node.block.height > nextTx.received?.node.block?.height
+			nextTx.sent.node.block.height >= nextTx.received?.node.block?.height
 		)) {
 			wallet.queriesStatus.all.sent = nextTx.sent
 			wallet.queries.all.push(nextTx.sent)
