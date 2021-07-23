@@ -1,4 +1,4 @@
-# Arweave Wallet Electron Desktop APP
+# Arweave Wallet Web & Electron Desktop APP
 
 Preview of the progress so far https://jfbeats.github.io/ArweaveWebWallet
 
