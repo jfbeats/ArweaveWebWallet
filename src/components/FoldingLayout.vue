@@ -11,7 +11,7 @@
 
 <script>
 import InterfaceStore from '@/store/InterfaceStore'
-import { ref, computed, onUnmounted, onMounted } from 'vue'
+import { ref, computed, onUnmounted, onMounted, watch } from 'vue'
 export default {
 	setup () {
 		// TODO request anim frame
@@ -20,8 +20,8 @@ export default {
 		const scrollHandler = () => {
 			scrollPosition.value = window.scrollY + 'px'
 		}
-		const positionHandler = (val) => {
-			if (val && !verticalContent.value) {
+		const positionHandler = (activate) => {
+			if (activate && !verticalContent.value) {
 				scrollHandler()
 				window.addEventListener('scroll', scrollHandler)
 			} else {
@@ -31,6 +31,7 @@ export default {
 		}
 		onMounted(() => positionHandler(true))
 		onUnmounted(() => positionHandler(false))
+		watch(() => verticalContent.value, (value) => { positionHandler(value) })
 		return { scrollPosition, verticalContent }
 	},
 	methods: {

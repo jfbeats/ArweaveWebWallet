@@ -1,44 +1,83 @@
 <template>
 	<div class="send card">
-		<!-- Autocomplete local addrs -->
-		<h2 class="heading"><img class="img" src="@/assets/icons/north_east.svg">Send</h2>
-		<div class="row">
-			<Input v-model.trim="InterfaceStore.wallet.send.target" :icon="require('@/assets/icons/person.svg')" placeholder="Address" autocomplete="ar" :mask="maskAddress" />
-			<AddressIcon class="address-icon" :address="InterfaceStore.wallet.send.target" />
-		</div>
-		<div class="row" style="justify-content:flex-end;"></div>
-
-		<h3 class="heading">Amount</h3>
-		<InputAr v-model="InterfaceStore.wallet.send.quantity" />
-		<div class="row" style="justify-content:flex-end;">
-			<button class="secondary" style="padding-top:1em;" @click="setMax">Max</button>
-		</div>
-
-		<h3 class="heading">Data</h3>
-		<InputData v-model="InterfaceStore.wallet.send.data" @files="(files) => InterfaceStore.wallet.send.data = files ? files[0] : ''" />
-		<div class="row" style="justify-content:flex-end;"></div>
-
-		<div class="row">
-			<h3 class="heading" style="display:block;">Tags</h3>
-			<div v-if="!InterfaceStore.wallet.send.tags.length"><button class="secondary" style="padding-top:1em;" @click="addTag()">Add</button></div>
-		</div>
-		<InputGrid :schema="InterfaceStore.wallet.send.tags" :deletable="true" />
-		<div v-if="InterfaceStore.wallet.send.tags.length" class="row" style="justify-content:flex-end;">
-			<button class="secondary" style="padding-top:1em;" @click="addTag()">Add</button>
-		</div>
-
-		<div class="row" style="align-items:flex-end; margin-top:3em;">
-			<div>
-				<div>Size {{ txSizeDisplay }}</div>
-				<div>Fee
-					<Ar class="ar" :ar="txFee" />&nbsp;<LocaleCurrency class="small secondary" :ar="txFee">|</LocaleCurrency>
+		<form>
+			<!-- TODO Autocomplete local addrs -->
+			<label for="target">
+				<h2 class="heading"><img class="img" src="@/assets/icons/north_east.svg">Send</h2>
+			</label>
+			<div class="row">
+				<Input v-model.trim="model.target" :icon="require('@/assets/icons/person.svg')" placeholder="Address" autocomplete="ar" :mask="maskAddress" id="target" />
+				<AddressIcon class="address-icon" :address="model.target" />
+			</div>
+			<div class="row bottom">
+				<div>
+					<transition name="slide-up">
+						<div v-show="validation.target" class="validation">{{ validation.target }}</div>
+					</transition>
 				</div>
 			</div>
-			<Button @click="postTx" :style="submitStyle" :disabled="loading" :icon="require('@/assets/icons/north_east.svg')">
-				Submit
-			</Button>
-		</div>
-		<!-- QR -->
+
+			<label for="quantity">
+				<h3 class="heading">Amount</h3>
+			</label>
+			<InputAr v-model="model.quantity" id="quantity" />
+			<div class="row bottom">
+				<div>
+					<transition name="slide-up">
+						<div v-show="validation.quantity" class="validation">{{ validation.quantity }}</div>
+					</transition>
+				</div>
+				<button class="secondary" @click="setMax">Max</button>
+			</div>
+
+			<label for="data">
+				<h3 class="heading">Data</h3>
+			</label>
+			<InputData v-model="model.data" @files="(files) => model.data = files ? files[0] : ''" id="data" />
+			<div class="row bottom">
+				<div>
+					<transition name="slide-up">
+						<div v-if="validation.data" class="validation">{{ validation.data }}</div>
+					</transition>
+				</div>
+			</div>
+
+			<div class="row">
+				<label for="add-tag">
+					<h3 class="heading" style="display:block;">Tags</h3>
+				</label>
+				<div v-if="!model.tags.length"><button class="secondary" @click="addTag()" id="add-tag">Add</button></div>
+			</div>
+			<InputGrid :schema="model.tags" />
+			<div v-if="model.tags.length" class="row bottom">
+				<div>
+					<transition name="slide-up">
+						<div v-if="validation.tags" class="validation">{{ validation.tags }}</div>
+					</transition>
+				</div>
+				<button class="secondary" @click="addTag()" id="add-tag">Add</button>
+			</div>
+
+			<div class="row" style="align-items:flex-end; margin-top:3em;">
+				<div>
+					<div>Size {{ txSizeDisplay }}</div>
+					<div>Fee
+						<Ar class="ar" :ar="txFee" />&nbsp;<LocaleCurrency class="small secondary" :ar="txFee">|</LocaleCurrency>
+					</div>
+				</div>
+				<Button @click="postTx" :style="submitStyle" :disabled="loading" :icon="require('@/assets/icons/north_east.svg')">
+					Submit
+				</Button>
+			</div>
+			<div>
+				<transition name="slide-up">
+					<div v-if="validation.global" class="row bottom" style="justify-content:center;">
+						<div style="text-align:center;" class="validation">{{ validation.global }}</div>
+					</div>
+				</transition>
+			</div>
+		</form>
+		<!-- TODO QR -->
 	</div>
 </template>
 
@@ -55,21 +94,20 @@ import LocaleCurrency from '@/components/atomic/LocaleCurrency.vue'
 import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import ArweaveStore, { arweave } from '@/store/ArweaveStore'
-import InterfaceStore from '@/store/InterfaceStore'
 import { buildTransaction, manageUpload } from '@/functions/Transactions'
 import Ledger from '@/functions/Ledger'
 import axios from 'axios'
 import { debounce, humanFileSize, addressToColor } from '@/functions/Utils'
-import { computed, ref, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 
 export default {
 	components: { Input, InputAr, InputData, InputGrid, AddressIcon, Ar, LocaleCurrency, Button, Icon },
-	props: ['wallet'],
+	props: ['wallet', 'model'],
 	setup (props) {
 		const maskAddress = (address) => { return address.match(/^[a-z0-9_-]{0,43}$/i) }
-		const setMax = () => InterfaceStore.wallet.send.quantity = props.wallet.balance
-		watch(() => InterfaceStore.wallet.send.data, (value) => {
-			let contentTypeTag = InterfaceStore.wallet.send.tags.find(row =>
+		const setMax = () => props.model.quantity = props.wallet.balance
+		watch(() => props.model.data, (value) => {
+			let contentTypeTag = props.model.tags.find(row =>
 				row.items[0].value === 'Content-Type')
 			if (typeof value === 'object') {
 				if (!contentTypeTag) {
@@ -78,8 +116,8 @@ export default {
 				}
 				contentTypeTag.items[1].value = value.type
 			} else if (contentTypeTag) {
-				const index = InterfaceStore.wallet.send.tags.indexOf(contentTypeTag)
-				InterfaceStore.wallet.send.tags.splice(index, 1)
+				const index = props.model.tags.indexOf(contentTypeTag)
+				props.model.tags.splice(index, 1)
 			}
 		})
 		const tagSchema = (name, value) => ({
@@ -88,41 +126,75 @@ export default {
 				{ name: 'Value', value: value || '' }
 			], deletable: true, key: Math.random()
 		})
-		const addTag = (tag) => InterfaceStore.wallet.send.tags.push(tag || tagSchema())
+		const addTag = (tag) => props.model.tags.push(tag || tagSchema())
 		const txSize = computed(() => {
-			const data = InterfaceStore.wallet.send.data
+			const data = props.model.data
 			return data.size || data.length || '0'
 		})
 		const txSizeDisplay = computed(() => humanFileSize(txSize.value))
 		const txFee = ref(null)
 		const feeUrl = computed(() => {
-			const address = InterfaceStore.wallet.send.target
+			const address = props.model.target
 			return ArweaveStore.gatewayURL + 'price/' + txSize.value + '/' + (address.match(/^[a-z0-9_-]{43}$/i) ? address : '')
 		})
 		const updateFee = async () => { txFee.value = arweave.ar.winstonToAr((await axios.get(feeUrl.value)).data) }
 		const updateFeeDebounced = debounce(updateFee)
 		updateFee()
 		watch(() => feeUrl.value, () => updateFeeDebounced())
-		const getTagsFromSchema = (tagsSchema) => {  // TODO validate tags length
+		const getTagsFromSchema = (tagsSchema) => {
 			const result = []
 			for (const row of tagsSchema) { result.push({ name: row.items[0].value, value: row.items[1].value }) }
 			return result
 		}
 		const loading = ref(false)
-		const postTx = async () => {
-			if (loading.value) { return }
-			loading.value = true
-			const settings = InterfaceStore.wallet.send
-			const tx = await buildTransaction(settings.target, settings.quantity, getTagsFromSchema(settings.tags), settings.data)
-			if (props.wallet.jwk) { await arweave.transactions.sign(tx, props.wallet.jwk) }
-			else if (props.wallet.metaData.provider === 'Ledger') {
-				if (props.wallet.key !== await Ledger.getActiveAddress()) { alert('Wrong account'); return }
-				await Ledger.sign(tx)
+		const validation = reactive({ target: '', quantity: '', data: '', tags: '' })
+		const isValid = () => {
+			let result = true
+			if (!props.model.data.length && !(props.model.target.length && props.model.quantity)) {
+				validation.global = "A new Arweave transaction must have a 'data' value, or 'target' and 'quantity' values."
+				return
 			}
-			manageUpload(tx)
-			InterfaceStore.wallet.send = { target: '', quantity: '', data: '', tags: [], }
+			const tags = getTagsFromSchema(props.model.tags)
+			let tagLength = 0
+			for (const tag of tags) {
+				tagLength += tag.name.length + tag.value.length
+				if (tagLength > 2048) {
+					validation.tags = "Length of tags can't be greater than 2048"; result = false
+				}
+				if (!tag.name.length || !tag.value.length) {
+					validation.tags = "Tags can't be empty"; result = false
+				}
+			}
+			if (props.model.target.length && props.model.target.length < 43) {
+				validation.target = "Invalid address"; result = false
+			}
+			if (!props.model.target.length && props.model.quantity) {
+				validation.target = "An address must be specified to send AR"; result = false
+			}
+			return result
+		}
+		const postTx = async () => {
+			if (loading.value || !isValid()) { return }
+			loading.value = true
+			try {
+				const tx = await buildTransaction(
+					props.model.target,
+					props.model.quantity,
+					getTagsFromSchema(props.model.tags),
+					props.model.data
+				)
+				if (props.wallet.jwk) { await arweave.transactions.sign(tx, props.wallet.jwk) }
+				else if (props.wallet.metaData.provider === 'Ledger') {
+					if (props.wallet.key !== await Ledger.getActiveAddress()) { alert('Wrong account'); return }
+					await Ledger.sign(tx)
+				}
+				manageUpload(tx)
+				props.model = { target: '', quantity: '', data: '', tags: [] }
+			} catch (e) {
+				console.error(e)
+			}
 			loading.value = false
-			// TODO visual feedback and clear interface values
+			// TODO visual feedback
 		}
 		const submitStyle = {
 			'--border': `rgba(${addressToColor(props.wallet.key).join(',')},0.8)`,
@@ -130,7 +202,7 @@ export default {
 			'background-image': `radial-gradient(circle at center, rgba(${addressToColor(props.wallet.key).join(',')},0.4), 
 			rgba(${addressToColor(props.wallet.key).join(',')},0.3))`
 		}
-		return { InterfaceStore, maskAddress, setMax, addTag, txSizeDisplay, txFee, postTx, submitStyle, loading }
+		return { maskAddress, setMax, addTag, txSizeDisplay, txFee, postTx, submitStyle, loading, validation }
 	}
 }
 </script>
@@ -161,11 +233,19 @@ export default {
 }
 
 .row {
-	min-height: 2em;
+	min-height: 3em;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: var(--spacing);
+}
+
+.row.bottom {
+	padding-top: 1em;
+}
+
+.validation {
+	color: var(--orange);
 }
 
 .img {

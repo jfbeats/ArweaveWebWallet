@@ -50,9 +50,9 @@ export default {
 			clearInterval(liveUpdate)
 		})
 		const tabs = [
-			{ name: 'All', color: '#d08770' },
-			{ name: 'Received', color: '#a3be8c' },
-			{ name: 'Sent', color: '#bf616a' },
+			{ name: 'All', color: 'var(--orange)' },
+			{ name: 'Received', color: 'var(--green)' },
+			{ name: 'Sent', color: 'var(--red)' },
 		]
 		const transitionName = ref(null)
 		watch(() => selectedQuery.value, (state, prevState) => {

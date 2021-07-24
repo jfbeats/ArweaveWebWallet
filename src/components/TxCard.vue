@@ -1,11 +1,9 @@
 <template>
 	<div class="tx-card" :class="{ verticalElement }">
 		<div class="tx-content">
-			<div class="left">
+			<router-link class="left reset" :to="{ name: 'Tx', params: { txId: tx.id } }">
 
-				<router-link :to="{ name: 'Tx', params: { txId: tx.id } }">
-					<TxIcon class="tx-icon" :direction="direction" :isValue="isValue" :isData="isData" :isPending="isPending" />
-				</router-link>
+				<TxIcon class="tx-icon" :direction="direction" :isValue="isValue" :isData="isData" :isPending="isPending" />
 				<div class="margin" />
 
 				<div>
@@ -20,7 +18,7 @@
 					</div>
 				</div>
 
-			</div>
+			</router-link>
 			<div class="right">
 
 				<div class="right-content">
@@ -91,7 +89,7 @@ export default {
 		},
 		dataType () {
 			if (!this.tx.data.type) { return }
-			if (this.tx.data.type === 'application/x.arweave-manifest+json') { return 'Website'}
+			if (this.tx.data.type === 'application/x.arweave-manifest+json') { return 'Website' }
 			return this.tx.data.type.split('/').join(' ')
 		},
 		dataInfo () {

@@ -4,7 +4,7 @@
 			<div class="inputs">
 				<div v-for="(input, inputIndex) in row.items" :key="row.key + input.name" class="input" :class="{ flip: row.items.length==2 && inputIndex==1 }">
 					<Icon v-if="input.icon" :icon="input.icon" />
-					<input v-model="input.value" v-bind="input.attrs" class="text" :placeholder="input.name" @focus="focus=(index+1)*(inputIndex+1)" @blur="focus=0">
+					<input v-model="input.value" v-bind="input.attrs" class="text" :placeholder="input.name" @focus="focus=(index+1)*(inputIndex+1)" @blur="focus=0" :disabled="disabled">
 				</div>
 			</div>
 			<button v-if="row.deletable" class="remove" @click="removeRow(index)">
@@ -22,7 +22,7 @@ import { ref } from 'vue'
 
 export default {
 	components: { Icon },
-	props: ['schema'],
+	props: ['schema', 'disabled'],
 	setup (props) {
 		const focus = ref(0)
 		const removeRow = (index) => props.schema.splice(index, 1)

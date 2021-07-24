@@ -1,13 +1,13 @@
 <template>
 	<div class="input-data input-box" :class="{ focus }" @drop.stop.prevent="handleFiles">
-		<textarea v-show="!isFile" v-model="model" @focus="focus=1" @blur="focus=0" :disabled="$attrs.disabled"></textarea>
+		<textarea v-show="!isFile" v-model="model" @focus="focus=1" @blur="focus=0" :disabled="disabled" :id="id"></textarea>
 		<transition name="fade">
 			<div v-if="!model && !dragOverlay" class="overlay passthrough">
 				<div class="big-icon-container"><img class="img" src="@/assets/icons/text.svg"></div>
 				<div class="spacer" />
 				<div class="big-icon-container not-passthrough">
 					<label for="file-picker" class="file-picker-label"><img class="img" src="@/assets/icons/drop.svg"></label>
-					<input type="file" id="file-picker" class="file-input" @change="handleFiles" :disabled="$attrs.disabled">
+					<input type="file" id="file-picker" class="file-input" @change="handleFiles" :disabled="disabled">
 				</div>
 			</div>
 			<div v-else-if="isFile" class="overlay">
@@ -32,7 +32,7 @@ import { computed, ref } from 'vue'
 
 export default {
 	components: { DragOverlay },
-	props: ['modelValue'],
+	props: ['modelValue', 'disabled', 'id'],
 	setup (props, { emit, attrs }) {
 		const model = computed({
 			get () { return props.modelValue },

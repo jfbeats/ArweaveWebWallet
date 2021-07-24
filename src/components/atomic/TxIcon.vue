@@ -47,10 +47,10 @@ export default {
 	props: ['direction', 'isValue', 'isData', 'isPending'],
 	setup (props) {
 		const color = computed(() => props.isData && !props.isValue
-			? '#d08770'
+			? 'var(--orange)'
 			: props.direction === 'in'
-				? '#a3be8c'
-				: '#bf616a')
+				? 'var(--green)'
+				: 'var(--red)')
 		const styleObject = computed(() => ({ '--color': color.value }))
 		return { color, styleObject }
 	}

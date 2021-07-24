@@ -1,6 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import ArweaveStore, { getWalletById } from '@/store/ArweaveStore'
-import { emitter } from '@/store/InterfaceStore'
+import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import Wallet from '@/views/Wallet.vue'
 import TxList from '@/views/TxList.vue'
 import Send from '@/views/Send.vue'
@@ -11,50 +11,51 @@ const routes = [
 		name: 'Wallet',
 		path: '/wallet/:walletId(\\d+)',
 		component: Wallet,
-		props: (route) => { return { wallet: getWalletById(route.params.walletId) } },
-		children: [
-			{
-				name: 'TxList',
-				path: 'tx-list',
-				component: TxList,
-				props: (route) => { return { wallet: getWalletById(route.params.walletId) } },
-				meta: { title: 'Transactions' },
-			},
-			{
-				name: 'Send',
-				path: 'send',
-				component: Send,
-				props: (route) => { return { wallet: getWalletById(route.params.walletId) } },
-				meta: { title: 'Send' },
-			},
-			{
-				name: 'Tokens',
-				path: 'tokens',
-				component: Tokens,
-				props: (route) => { return { wallet: getWalletById(route.params.walletId) } },
-				meta: { title: 'Tokens' },
-			},
-		],
-		beforeEnter: (to, from) => {
+		props: (route) => ({ wallet: getWalletById(route.params.walletId) }),
+		beforeEnter: (to) => {
 			if (!ArweaveStore.wallets[0]) { return { name: 'Welcome' } }
 			if (!to.params.walletId || !getWalletById(to.params.walletId)) {
 				return { name: 'TxList', params: { walletId: ArweaveStore.wallets[0].id } }
 			}
 		},
+		children: [
+			{
+				name: 'TxList',
+				path: 'tx-list',
+				component: TxList,
+				meta: { title: 'Transactions' },
+				props: (route) => ({ wallet: getWalletById(route.params.walletId) }),
+			},
+			{
+				name: 'Send',
+				path: 'send',
+				component: Send,
+				meta: { title: 'Send' },
+				props: (route) => ({ wallet: getWalletById(route.params.walletId),
+					model: InterfaceStore.wallet.send }),
+			},
+			{
+				name: 'Tokens',
+				path: 'tokens',
+				component: Tokens,
+				meta: { title: 'Tokens' },
+				props: (route) => ({ wallet: getWalletById(route.params.walletId) }),
+			},
+		],
 	},
 	{
 		name: 'Tx',
 		path: '/tx/:txId',
 		component: () => import('@/views/Tx.vue'),
-		props: true,
 		meta: { title: 'Arweave Transaction' },
+		props: true,
 	},
 	{
 		name: 'Profile',
 		path: '/profile/:key',
 		component: () => import('@/views/Profile.vue'),
-		props: true,
 		meta: { title: 'Arweave Profile' },
+		props: true,
 	},
 	{
 		path: '/add',

@@ -1,7 +1,7 @@
 <template>
 	<div class="input input-box" :class="{ focus }">
 		<Icon v-if="icon" :icon="icon" />
-		<input class="text" v-model="model" :placeholder="placeholder" :autocomplete="autocomplete || 'off'" @focus="focus = true" @blur="focus = false" :disabled="$attrs.disabled">
+		<input class="text" v-model="model" :placeholder="placeholder" :autocomplete="autocomplete || 'off'" @focus="focus = true" @blur="focus = false" :disabled="disabled" :id="id">
 		<Icon v-for="action in actions" :key="action.icon" :icon="action.icon" @click="action.function" />
 	</div>
 </template>
@@ -14,7 +14,7 @@ import { computed, ref, watch } from 'vue'
 
 export default {
 	components: { Icon },
-	props: ['modelValue', 'icon', 'placeholder', 'actions', 'autocomplete', 'mask'],
+	props: ['modelValue', 'icon', 'placeholder', 'actions', 'autocomplete', 'mask', 'disabled', 'id'],
 	setup (props, { emit }) {
 		const model = computed({
 			get () { return props.modelValue },
