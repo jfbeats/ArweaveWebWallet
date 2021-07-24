@@ -151,7 +151,7 @@ export default {
 		const isValid = () => {
 			let result = true
 			if (!props.model.data.length && !(props.model.target.length && props.model.quantity)) {
-				validation.global = "A new Arweave transaction must have a 'data' value, or 'target' and 'quantity' values."
+				validation.global = "A transaction must at least have data, or an address and amount"
 				return
 			}
 			const tags = getTagsFromSchema(props.model.tags)

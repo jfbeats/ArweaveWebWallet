@@ -155,20 +155,20 @@ async function fetchTransactionsAll (wallet) {
 		await Promise.all(fetchPromises)
 		if (nextTx.received && (
 			!nextTx.received.node.block ||
-			nextTx.received.node.block.height >= nextTx.sent?.node.block?.height
+			nextTx.received.node.block.height >= (nextTx.sent?.node.block?.height || 0)
 		)) {
 			wallet.queriesStatus.all.received = nextTx.received
 			wallet.queries.all.push(nextTx.received)
 		}
 		if (nextTx.sent && (
 			!nextTx.sent.node.block ||
-			nextTx.sent.node.block.height >= nextTx.received?.node.block?.height
+			nextTx.sent.node.block.height >= (nextTx.received?.node.block?.height || 0)
 		)) {
 			wallet.queriesStatus.all.sent = nextTx.sent
 			wallet.queries.all.push(nextTx.sent)
 		}
+		wallet.queriesStatus.all.completed = wallet.queriesStatus.received.completed && wallet.queriesStatus.sent.completed && wallet.queries.all.length === wallet.queries.received.length + wallet.queries.sent.length
 	}
-	wallet.queriesStatus.all.completed = wallet.queriesStatus.received.completed && wallet.queriesStatus.sent.completed
 	await new Promise(resolve => setTimeout(() => resolve(), 10))
 }
 
