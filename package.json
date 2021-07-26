@@ -18,11 +18,11 @@
 		"bip39": "^3.0.4",
 		"core-js": "^3.6.5",
 		"human-crypto-keys": "^0.1.4",
-		"identicon.js": "^2.3.3",
 		"jshashes": "^1.0.8",
 		"libp2p-crypto": "^0.19.5",
 		"mitt": "^3.0.0",
 		"register-service-worker": "^1.7.1",
+		"smartweave": "^0.4.39",
 		"vue": "^3.0.0",
 		"vue-router": "^4.0.0-0",
 		"vue-slicksort": "^2.0.0-alpha.5"

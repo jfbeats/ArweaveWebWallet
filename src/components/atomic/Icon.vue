@@ -4,7 +4,7 @@
 			<div v-if="icon" :key="icon" class="icon-background">
 				<svg v-if="icon == 'loader'" class="loader" height="100" width="100" viewBox="0 0 100 100" :class="{ spin: progress == null }">
 					<circle stroke="#ffffff33" :stroke-width="thickness" fill="transparent" :r="normalizedRadius" :cx="50" :cy="50" />
-					<circle stroke="white" :stroke-dasharray="circumference + ' ' + circumference" :style="{ strokeDashoffset }" :stroke-width="thickness" fill="transparent" :r="normalizedRadius" :cx="50" :cy="50" @animationiteration="finishAnimation = false"  :class="{ spin: progress == null || finishAnimation }" />
+					<circle stroke="white" :stroke-dasharray="circumference + ' ' + circumference" :style="{ strokeDashoffset }" :stroke-width="thickness" stroke-linecap="round" fill="transparent" :r="normalizedRadius" :cx="50" :cy="50" @animationiteration="finishAnimation = false"  :class="{ spin: progress == null || finishAnimation }" />
 				</svg>
 				<span v-else-if="isSymbol" class="symbol no-select">{{ icon }}</span>
 				<img v-else class="img no-select" :src="icon" draggable="false">

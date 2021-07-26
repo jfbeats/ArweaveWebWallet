@@ -2,7 +2,7 @@
 	<div class="address-icon no-select">
 		<transition name="fade-fast" mode="out-in">
 			<img class="image" v-if="isValid && url" :src="url" alt="wallet profile picture" draggable="false" @dragstart.prevent>
-			<img class="identicon" v-else-if="isValid && address" :src="identicon" alt="wallet logo" draggable="false" @dragstart.prevent>
+			<Identicon class="identicon" v-else-if="isValid && address" :address="address" alt="wallet logo" draggable="false" @dragstart.prevent />
 			<img class="identicon cloud" v-else src="@/assets/icons/cloud.svg" draggable="false" @dragstart.prevent>
 		</transition>
 	</div>
@@ -13,11 +13,11 @@
 <script>
 import { get, getIdenticon } from 'arweave-id'
 import { arweave } from '@/store/ArweaveStore'
-import Identicon from 'identicon.js'
-import { SHA256 } from 'jshashes'
+import Identicon from '@/components/atomic/Identicon.vue'
 
 export default {
 	props: ['address'],
+	components: { Identicon },
 	data () {
 		return { url: null, identicon: null, isValid: false }
 	},
@@ -26,18 +26,10 @@ export default {
 			handler: async function (address) {
 				this.isValid = address.match(/^[a-z0-9_-]{43}$/i)
 				if (!this.isValid) { return }
-				var options = {
-					background: [0, 0, 0, 0],
-					brightness: 0.6,
-					saturation: 0.25,
-					margin: 0,
-					format: 'svg',
-				}
-				const hash = new SHA256
-				const identiconData = new Identicon(hash.hex(address), options).toString()
-				this.identicon = 'data:image/svg+xml;base64,' + identiconData
+
 				// const profile = await get(address, arweave)
 				// if (profile.avatarDataUri) { this.url = profile.avatarDataUri }
+
 			},
 			immediate: true
 		}
