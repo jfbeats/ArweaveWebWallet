@@ -12,8 +12,9 @@ export default {
 	computed: {
 		amountRounded () {
 			if (!this.ar) { return null }
-			const precision = 3
-			return +(Math.round(this.ar + "e+" + precision) + "e-" + precision)
+			const FractionDigits = new Intl.NumberFormat(navigator.languages, { maximumFractionDigits: 3 }).format(this.ar)
+			const SignificantDigits = new Intl.NumberFormat(navigator.languages, { maximumSignificantDigits: 1 }).format(this.ar)
+			return FractionDigits.length >= SignificantDigits.length ? FractionDigits : SignificantDigits
 		}
 	}
 }

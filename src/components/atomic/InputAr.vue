@@ -53,7 +53,8 @@ export default {
 		const currencySymbol = computed(() => new Intl.NumberFormat(navigator.languages, { style: 'currency', currency: currency.value }).format(0).replace(/[\w\d\.\,\s]/g, '') || '$')
 		const focus = ref(0)
 		watch(() => model.value, (newVal, oldVal) => {
-			if (focus.value === 1 && !newVal.match(/^(?:\d*\.?\d*)?$/)) { model.value = oldVal }
+			if (newVal < 0) { return model.value = '' }
+			if (focus.value <= 1 && !newVal.match(/^(?:\d*\.?\d*)?$/)) { model.value = oldVal }
 		})
 		watch(() => model2.value, (newVal, oldVal) => {
 			if (focus.value === 2 && !newVal.match(/^(?:\d*\.?\d*)?$/)) { model2.value = oldVal }

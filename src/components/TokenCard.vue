@@ -1,11 +1,13 @@
 <template>
 	<div class="token-card">
 		<div class="token-content">
-			<img class="img" :src="img">
-			<div>
-				<div>{{ token.name }}</div>
-				<div>{{ balance }} <span>{{ token.ticker }}</span></div>
-			</div>
+			<router-link class="left reset" :to="{ name: 'Tx', params: { txId: txId } }">
+				<img class="img" :src="img">
+				<div>
+					<div>{{ token.name }}</div>
+					<div>{{ balance }} <span class="small">{{ token.ticker }}</span></div>
+				</div>
+			</router-link>
 		</div>
 	</div>
 </template>
@@ -14,7 +16,7 @@
 import ArweaveStore from '@/store/ArweaveStore'
 
 export default {
-	props: ['token', 'wallet'],
+	props: ['token', 'txId', 'wallet'],
 	computed: {
 		img () {
 			if (!this.token.settings) { return }
@@ -25,14 +27,14 @@ export default {
 			}
 		},
 		balance () {
-			return this.token.balances[this.wallet.key]
+			return new Intl.NumberFormat(navigator.languages).format(this.token.balances[this.wallet.key])
 		}
 	}
 }
 </script>
 
 <style scoped>
-.token-content {
+.left {
 	display: flex;
 	align-items: center;
 	gap: var(--spacing);
@@ -41,5 +43,9 @@ export default {
 .img {
 	width: 48px;
 	height: 48px;
+}
+
+.small {
+	font-size: 0.75em;
 }
 </style>

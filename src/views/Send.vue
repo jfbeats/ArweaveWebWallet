@@ -97,6 +97,7 @@ import ArweaveStore, { arweave } from '@/store/ArweaveStore'
 import { buildTransaction, manageUpload } from '@/functions/Transactions'
 import Ledger from '@/functions/Ledger'
 import axios from 'axios'
+import BigNumber from 'bignumber.js'
 import { debounce, humanFileSize, addressToColor } from '@/functions/Utils'
 import { computed, reactive, ref, watch } from 'vue'
 
@@ -105,7 +106,10 @@ export default {
 	props: ['wallet', 'model'],
 	setup (props) {
 		const maskAddress = (address) => { return address.match(/^[a-z0-9_-]{0,43}$/i) }
-		const setMax = () => props.model.quantity = props.wallet.balance
+		const setMax = () => {
+			const balance = new BigNumber(props.wallet.balance)
+			props.model.quantity = balance.minus(txFee.value).toString()
+		}
 		watch(() => props.model.data, (value) => {
 			let contentTypeTag = props.model.tags.find(row =>
 				row.items[0].value === 'Content-Type')
@@ -189,7 +193,10 @@ export default {
 					await Ledger.sign(tx)
 				}
 				manageUpload(tx)
-				props.model = { target: '', quantity: '', data: '', tags: [] }
+				props.model.target = '' 
+				props.model.quantity = ''
+				props.model.data = '' 
+				props.model.tags = []
 			} catch (e) {
 				console.error(e)
 			}
