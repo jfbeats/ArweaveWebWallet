@@ -17,9 +17,9 @@ export default {
 	setup (props) {
 		const hash = new SHA256
 		const addressHash = hash.hex(props.address)
-		const size = 64
+		const size = 5
 		const cell = size / 5
-		const stroke = size * 0.03
+		const stroke = size * 0.04
 		const style = { color: `rgb(${addressToColor(props.address).join(',')})`, }
 		const rects = computed(() => {
 			const result = []

@@ -1,13 +1,17 @@
 <template>
 	<div>
-		<div v-for="(value, key) in SmartweaveStore.contracts" :key="key">{{ value }}</div>
+		<div v-for="(value, key) in SmartweaveStore.contracts" :key="key">
+			<TokenCard :token="value" :wallet="wallet" class="card" />
+		</div>
 	</div>
 </template>
 
 <script>
+import TokenCard from '@/components/TokenCard.vue'
 import SmartweaveStore from '@/store/SmartweaveStore'
 
 export default {
+	components: { TokenCard },
 	props: ['wallet'],
 	setup () {
 		return { SmartweaveStore }
