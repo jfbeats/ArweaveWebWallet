@@ -1,5 +1,6 @@
 <template>
-	<div class="wrapper" @click="expand=!expand" :class="{expand: expand}">
+	<!-- @click="expand=!expand" -->
+	<div class="wrapper" :class="{expand: expand}"> 
 		<div class="header">
 			<slot name="icon"></slot>
 		</div>
@@ -42,7 +43,7 @@ export default {
 
 .header {
 	flex: 0 0 auto;
-	cursor: pointer;
+	/* cursor: pointer; */
 	transition: all 0.4s ease;
 	overflow: hidden;
 	width: 100%;

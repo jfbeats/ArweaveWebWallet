@@ -27,7 +27,7 @@
 						<div v-show="validation.quantity" class="validation">{{ validation.quantity }}</div>
 					</transition>
 				</div>
-				<button class="secondary" @click="setMax">Max</button>
+				<button type="button" class="secondary" @click="setMax">Max</button>
 			</div>
 
 			<label for="data">
@@ -46,7 +46,7 @@
 				<label for="add-tag">
 					<h3 class="heading" style="display:block;">Tags</h3>
 				</label>
-				<div v-if="!model.tags.length"><button class="secondary" @click="addTag()" id="add-tag">Add</button></div>
+				<div v-if="!model.tags.length"><button type="button" class="secondary" @click="addTag()" id="add-tag">Add</button></div>
 			</div>
 			<InputGrid :schema="model.tags" />
 			<div v-if="model.tags.length" class="row bottom">
@@ -55,7 +55,7 @@
 						<div v-if="validation.tags" class="validation">{{ validation.tags }}</div>
 					</transition>
 				</div>
-				<button class="secondary" @click="addTag()" id="add-tag">Add</button>
+				<button type="button" class="secondary" @click="addTag()" id="add-tag">Add</button>
 			</div>
 
 			<div class="row" style="align-items:flex-end; margin-top:3em;">
@@ -108,7 +108,7 @@ export default {
 		const maskAddress = (address) => { return address.match(/^[a-z0-9_-]{0,43}$/i) }
 		const setMax = () => {
 			const balance = new BigNumber(props.wallet.balance)
-			props.model.quantity = balance.minus(txFee.value).toString()
+			props.model.quantity = balance.minus(txFee.value || 0).toString()
 		}
 		watch(() => props.model.data, (value) => {
 			let contentTypeTag = props.model.tags.find(row =>
@@ -153,10 +153,15 @@ export default {
 		const loading = ref(false)
 		const validation = reactive({ target: '', quantity: '', data: '', tags: '' })
 		const isValid = () => {
+			for (const key in validation) { validation[key] = '' }
 			let result = true
 			if (!props.model.data.length && !(props.model.target.length && props.model.quantity)) {
 				validation.global = "A transaction must at least have data, or an address and amount"
 				return
+			}
+			const balance = new BigNumber(props.wallet.balance)
+			if (balance.minus(txFee.value).minus(props.model.quantity) < 0) {
+				validation.quantity = "Current balance too low"; result = false
 			}
 			const tags = getTagsFromSchema(props.model.tags)
 			let tagLength = 0

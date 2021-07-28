@@ -56,15 +56,3 @@ function init () {
 	for (const wallet of wallets) { pushWallet(wallet) }
 }
 init()
-
-
-
-// Testing
-
-if (!ArweaveStore.wallets.length) {
-	console.log('loading test wallets')
-	watchWallet({ key: 'TId0Wix2KFl1gArtAT6Do1CbWU_0wneGvS5X9BfW5PE' })
-	watchWallet({ key: 'Bf3pWqxD1qwwF2fcE9bPNyQp_5TSlAYPJ3JNMgJSj4c' })
-	watchWallet({ key: 'vLRHFqCw1uHu75xqB4fCDW-QxpkpJxBtFD9g4QYUbfw' })
-	watchWallet({ key: 'zYqPZuALSPa_f5Agvf8g2JHv94cqMn9aBtnH7GFHbuA' })
-}

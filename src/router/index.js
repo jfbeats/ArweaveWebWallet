@@ -1,5 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import ArweaveStore, { getWalletById } from '@/store/ArweaveStore'
+import ArweaveStore, { getWalletById, loadDemo } from '@/store/ArweaveStore'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import Wallet from '@/views/Wallet.vue'
 import TxList from '@/views/TxList.vue'
@@ -80,6 +80,13 @@ const routes = [
 		name: 'Welcome',
 		component: () => import('@/views/Welcome.vue'),
 		meta: { title: 'Welcome to the weave' },
+	},
+	{
+		path: '/demo',
+		redirect: () => {
+			loadDemo()
+			return { name: 'TxList', params: { walletId: ArweaveStore.wallets[0].id } }
+		}
 	},
 	{
 		path: '/:pathMatch(.*)*',

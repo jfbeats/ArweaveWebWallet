@@ -4,7 +4,7 @@
 
 Unreleased but functional app. Always kept in sync with the source code. A few wallets without their private keys are preloaded at first launch in order to demo the interface and can be deleted. 
 
-https://jfbeats.github.io/ArweaveWebWallet
+https://arweave.app/#/demo
 
 ## Dev
 ```

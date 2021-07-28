@@ -1,5 +1,5 @@
 <template>
-	<button class="button no-select">
+	<button class="button no-select" type="button">
 		<Icon v-if="icon" :icon="icon" />
 		<slot></slot>
 	</button>

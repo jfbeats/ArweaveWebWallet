@@ -18,10 +18,10 @@
 				<p>Currency</p>
 				<Select v-model="ArweaveStore.redstone.currency" :options="options" :icon="currencySymbol" />
 			</div>
-			<div class="group">
+			<!-- <div class="group">
 				<p>Fund the project</p>
 				<InputAr v-model="amount" />
-			</div>
+			</div> -->
 		</div>
 	</div>
 </template>

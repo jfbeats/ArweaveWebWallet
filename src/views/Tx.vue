@@ -53,7 +53,6 @@
 				<div style="background: var(--background2); border-radius: var(--border-radius);">
 					<InputGrid :schema="buildTagsSchema(tx.tags)" disabled />
 				</div>
-				<br>
 
 			</div>
 		</template>
@@ -217,6 +216,7 @@ export default {
 	overflow: auto;
 	padding: var(--spacing);
 	margin: 0;
+	white-space: pre-wrap;
 }
 
 .row {
