@@ -65,14 +65,12 @@
 				<div v-else-if="data.handler === 'img'" v-show="data.loaded" key="img" class="frame-container">
 					<img class="img" :src="ArweaveStore.gatewayURL + tx.id" @load="data.loaded=true">
 				</div>
-				<div v-else-if="data.handler === 'json'" key="json" class="card-container">
+				<div v-else-if="data.handler === 'smartweave'" key="smartweave">
+					<SmartWeave :txId="tx.id" />
+				</div>
+				<div v-else-if="data.handler === 'json' || data.handler === 'raw'" key="json" class="card-container">
 					<div class="card">
 						<pre class="raw">{{ data.payload }}</pre>
-					</div>
-				</div>
-				<div v-else-if="data.handler === 'raw'" key="raw" class="card-container">
-					<div class="card">
-						<div class="raw">{{ data.payload }}</div>
 					</div>
 				</div>
 			</transition>
@@ -87,13 +85,14 @@ import AddressIcon from '@/components/atomic/AddressIcon'
 import InputGrid from '@/components/atomic/InputGrid.vue'
 import Ar from '@/components/atomic/Ar.vue'
 import LocaleCurrency from '@/components/atomic/LocaleCurrency.vue'
+import SmartWeave from '@/components/SmartWeave.vue'
 import ArweaveStore, { arweave, getTxById } from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { humanFileSize } from '@/functions/Utils'
 import { reactive, watch, computed, ref, onMounted } from 'vue'
 
 export default {
-	components: { FoldingLayout, Address, AddressIcon, InputGrid, Ar, LocaleCurrency },
+	components: { FoldingLayout, Address, AddressIcon, InputGrid, Ar, LocaleCurrency, SmartWeave },
 	props: {
 		txId: String,
 	},
@@ -126,16 +125,19 @@ export default {
 				data.handler = 'iframe'
 			} else if (tx.value.data?.type?.split('/')[0] === 'image') {
 				data.handler = 'img'
+			} else if (tx.value.tags?.find(el => el.name === 'App-Name')?.value === 'SmartWeaveContract') {
+				data.handler = 'smartweave'
 			} else {
-				console.log('getting data')
 				try {
 					data.payload = await arweave.transactions.getData(props.txId, { decode: true, string: true })
-					try {
-						data.payload = JSON.stringify(JSON.parse(data.payload), null, 2)
-						if (data.payload[0] !== "{") { throw '' }
-						data.handler = 'json'
+					data.handler = 'raw'
+					if (data.payload[0] === "{") {
+						try {
+							data.payload = JSON.stringify(JSON.parse(data.payload), null, 2)
+							data.handler = 'json'
+						}
+						catch { }
 					}
-					catch (e) { data.handler = 'raw' }
 				} catch { }
 			}
 		}, { immediate: true })

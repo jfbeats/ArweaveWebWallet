@@ -14,22 +14,26 @@
 
 <script>
 import ArweaveStore from '@/store/ArweaveStore'
+import SmartweaveStore from '@/store/SmartweaveStore'
+import { computed } from 'vue'
 
 export default {
-	props: ['token', 'txId', 'wallet'],
-	computed: {
-		img () {
-			if (!this.token.settings) { return }
-			for (const setting of this.token.settings) {
+	props: ['txId', 'wallet'],
+	setup (props) {
+		const token = computed(() => SmartweaveStore.contracts[props.txId])
+		const img = computed (() => {
+			if (!token.value.settings) { return }
+			for (const setting of token.value.settings) {
 				if (setting[0] === 'communityLogo') {
 					return ArweaveStore.gatewayURL + setting[1]
 				}
 			}
-		},
-		balance () {
-			return new Intl.NumberFormat(navigator.languages).format(this.token.balances[this.wallet.key])
-		}
-	}
+		})
+		const balance = computed (() => {
+			return new Intl.NumberFormat(navigator.languages).format(token.value.balances[props.wallet.key])
+		})
+		return { token, img, balance }
+	},
 }
 </script>
 

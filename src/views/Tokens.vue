@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<div v-for="(value, key) in SmartweaveStore.contracts" :key="key">
-			<TokenCard :token="value" :txId="key" :wallet="wallet" class="card" />
+			<TokenCard :txId="key" :wallet="wallet" class="card" />
 		</div>
 	</div>
 </template>
