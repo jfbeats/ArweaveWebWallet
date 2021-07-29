@@ -48,10 +48,11 @@ export default {
 	border-radius: 50%;
 	display: flex;
 	flex-direction: column;
+	background: radial-gradient(#00000000, #00000099);
 }
 
 .logo {
-	opacity: 0.6;
+	opacity: 0.7;
 }
 
 .content {
