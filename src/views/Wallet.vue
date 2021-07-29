@@ -39,7 +39,7 @@ export default {
 		const actions = [
 			{ name: 'Send', img: require('@/assets/icons/north_east.svg'), text: 'Send' },
 			{ name: 'TxList', img: require('@/assets/icons/swap.svg'), text: 'Transactions' },
-			{ name: 'Tokens', img: require('@/assets/icons/cloud_circle.svg'), text: 'Tokens' },
+			// { name: 'Tokens', img: require('@/assets/icons/cloud_circle.svg'), text: 'Tokens' },
 		]
 		const router = useRouter()
 		router.afterEach((to, from) => {
