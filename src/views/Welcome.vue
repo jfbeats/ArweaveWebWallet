@@ -49,10 +49,12 @@ export default {
 	display: flex;
 	flex-direction: column;
 	background: radial-gradient(#00000000, #00000099);
+	box-shadow: 0 0 0 0.5px #ffffff22, 0 0 10px 0 #ffffff11;
 }
 
 .logo {
 	opacity: 0.7;
+	filter: drop-shadow(0 0 10px #ffffff33);
 }
 
 .content {
