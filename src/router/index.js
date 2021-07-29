@@ -58,6 +58,12 @@ const routes = [
 		props: true,
 	},
 	{
+		path: '/welcome',
+		name: 'Welcome',
+		component: () => import('@/views/Welcome.vue'),
+		meta: { title: 'Welcome to the weave' },
+	},
+	{
 		path: '/add',
 		name: 'AddWallet',
 		component: () => import('@/views/AddWallet.vue'),
@@ -74,12 +80,6 @@ const routes = [
 		name: 'Settings',
 		component: () => import('@/views/Settings.vue'),
 		meta: { title: 'Settings' },
-	},
-	{
-		path: '/welcome',
-		name: 'Welcome',
-		component: () => import('@/views/Welcome.vue'),
-		meta: { title: 'Welcome to the weave' },
 	},
 	{
 		path: '/demo',
