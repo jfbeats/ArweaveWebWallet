@@ -2,57 +2,59 @@
 	<FoldingLayout v-if="tx">
 		<template #left>
 			<div class="meta">
+
 				<div class="card">
 					<div class="row">
-						<!-- <div class="item"> -->
-						<div class="circle">
+						<div class="item" style="font-size:1.5em;">
 							<Ar class="ar" :ar="tx.quantity.ar" />
 							<LocaleCurrency class="small" :ar="tx.quantity.ar"></LocaleCurrency>
 						</div>
-						<!-- </div> -->
 					</div>
 					<div class="row">
 						<div class="item">
 							<AddressIcon :address="tx.owner.address" />
 							<Address class="small" :address="tx.owner.address" />
 						</div>
-
+					</div>
+					<div class="row">
 						<div class="item">
 							<AddressIcon :address="tx.recipient" />
 							<Address class="small" :address="tx.recipient" />
 						</div>
 					</div>
-
 				</div>
-				<br>
 
-				<h3>ID</h3>
-				<div>{{ tx.id }}</div>
-				<div v-if="tx.data.size > 0">Link</div>
-				<br>
-
-				<div v-if="isPending">
-					<h3>Pending</h3>
-				</div>
-				<div v-else>
-					<h3>Block</h3>
-					<div>{{ tx.block.id }}</div>
-					<div>{{ tx.block.height }}<template v-if="currentBlock"> / {{ currentBlock }}</template></div>
-					<div>{{ date }}</div>
+				<h3>Properties</h3>
+				<div class="card">
+					<h3>ID</h3>
+					<div class="ellipsis">{{ tx.id }}</div>
+					<div v-if="tx.data.size > 0">Link</div>
 					<br>
+
+					<div v-if="isPending">
+						<h3>Pending</h3>
+					</div>
+					<div v-else>
+						<h3>Block </h3>
+						<div class="ellipsis">{{ tx.block.id }}</div>
+						<span>{{ tx.block.height }}<template v-if="currentBlock"> / {{ currentBlock }}</template></span>
+						<div>{{ date }}</div>
+						<br>
+					</div>
+
+					<h3>Data</h3>
+					<div>Data size {{ humanFileSize(tx.data.size) }}</div>
+					<div>Fee
+						<Ar class="ar" :ar="tx.fee.ar" />&nbsp;<LocaleCurrency class="small" :ar="tx.fee.ar">|</LocaleCurrency>
+					</div>
 				</div>
 
-				<h3>Data</h3>
-				<div>Data size {{ humanFileSize(tx.data.size) }}</div>
-				<div>Fee
-					<Ar class="ar" :ar="tx.fee.ar" />&nbsp;<LocaleCurrency class="small" :ar="tx.fee.ar">|</LocaleCurrency>
-				</div>
-				<br>
-
-				<h3>Tags</h3>
-				<div style="background: var(--background2); border-radius: var(--border-radius);">
-					<InputGrid :schema="buildTagsSchema(tx.tags)" disabled />
-				</div>
+				<template v-if="tagsSchema.length">
+					<h3>Tags</h3>
+					<div style="background: var(--background2); border-radius: var(--border-radius);">
+						<InputGrid :schema="tagsSchema" disabled />
+					</div>
+				</template>
 
 			</div>
 		</template>
@@ -145,9 +147,10 @@ export default {
 			data.loaded = true
 		}
 
-		const buildTagsSchema = (tags) => {
+
+		const tagsSchema = computed(() => {
 			const result = []
-			for (const tag of tags) {
+			for (const tag of tx.value.tags) {
 				result.push({
 					items: [
 						{ name: 'Tag', value: tag.name, attrs: { disabled: true }, icon: require('@/assets/icons/label.svg') },
@@ -156,12 +159,12 @@ export default {
 				})
 			}
 			return result
-		}
+		})
 
 		const currentBlock = ref(null)
 		onMounted(async () => currentBlock.value = (await arweave.network.getInfo())?.height)
 
-		return { ArweaveStore, tx, data, loaded, currentBlock, isData, isPending, date, verticalContent, buildTagsSchema, humanFileSize }
+		return { ArweaveStore, tx, data, loaded, currentBlock, isData, isPending, date, verticalContent, tagsSchema, humanFileSize }
 	},
 }
 </script>
@@ -170,6 +173,9 @@ export default {
 .meta {
 	max-width: 900px;
 	padding: var(--spacing);
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing);
 }
 
 .verticalContent .meta {
