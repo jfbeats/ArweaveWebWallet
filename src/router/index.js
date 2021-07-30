@@ -85,7 +85,7 @@ const routes = [
 		path: '/demo',
 		redirect: () => {
 			loadDemo()
-			return { name: 'TxList', params: { walletId: ArweaveStore.wallets[0].id } }
+			return { name: 'Welcome' }
 		}
 	},
 	{

@@ -20,7 +20,7 @@ import ArweaveStore from './store/ArweaveStore'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import { addWallet } from '@/functions/Wallets.js'
 import { useRouter } from 'vue-router'
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 
 export default {
 	components: {
