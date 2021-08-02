@@ -6,7 +6,7 @@
 				<h2 class="heading"><img class="img" src="@/assets/icons/north_east.svg">Send</h2>
 			</label>
 			<div class="row">
-				<Input v-model.trim="model.target" :icon="require('@/assets/icons/person.svg')" placeholder="Address" autocomplete="ar" :mask="maskAddress" id="target" />
+				<Input v-model.trim="model.target" :icon="require('@/assets/icons/person.svg')" placeholder="Address" :mask="maskAddress" id="target" />
 				<AddressIcon class="address-icon" :address="model.target" />
 			</div>
 			<div class="row bottom">

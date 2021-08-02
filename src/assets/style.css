@@ -39,6 +39,10 @@ h1, h2, h3, h4, h5 {
 	font-weight: normal;
 }
 
+input {
+	border-radius: inherit;
+}
+
 button {
 	color: inherit;
 	background: none;
@@ -69,19 +73,19 @@ a.reset {
 	padding: var(--spacing);
 	background: var(--background2);
 	border-radius: var(--border-radius);
-	box-shadow: 0 0 0 0.5px var(--border);
+	box-shadow: inset 0 0 0 0.5px var(--border);
 	position: relative;
 }
 
 .input-box {
 	background: #ffffff06;
-	box-shadow: 0 0 0 0.5px #ffffff33;
+	box-shadow: inset 0 0 0 0.5px #ffffff33;
 	border-radius: var(--border-radius);
 }
 
 .input-box.focus {
 	background: #ffffff08;
-	box-shadow: 0 0 0 0.5px #ffffff88, 0 0 10px 0 #ffffff11;
+	box-shadow: inset 0 0 0 0.5px #ffffff88, 0 0 10px 0 #ffffff11;
 }
 
 .ellipsis {
