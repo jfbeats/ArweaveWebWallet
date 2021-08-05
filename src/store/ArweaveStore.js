@@ -231,7 +231,6 @@ export async function updateTransactions (wallet, query) {
 async function updateTransactionsAll (wallet) {
 	const fetchPromises = []
 	const newTxs = []
-	const set = new Set(wallet.queries.all)
 	for (const query of ['received', 'sent']) {
 		const fetch = async () => {
 			await updateTransactions(wallet, query)
@@ -279,6 +278,7 @@ async function refreshTx () {
 }
 
 function sortByBlocks (wallet, query) {
+	updateWalletBalance(wallet)
 	const sort = (a, b) => (b.node.block?.height ?? Number.MAX_SAFE_INTEGER)
 		- (a.node.block?.height ?? Number.MAX_SAFE_INTEGER)
 	if (wallet && wallet.queries[query]) {

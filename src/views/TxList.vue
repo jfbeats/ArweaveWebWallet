@@ -33,6 +33,7 @@ export default {
 		const selectedQuery = computed(() => route.query.view || 'all')
 		const txs = computed(() => props.wallet?.queries[selectedQuery.value] || [])
 		const completedQuery = computed(() => props.wallet?.queriesStatus?.[selectedQuery.value]?.completed)
+		const updateContent = () => updateTransactions(props.wallet, selectedQuery.value)
 		const fetchQuery = async () => {
 			if (fetchLoading.value) { return }
 			console.log('Queried', selectedQuery.value)
@@ -43,7 +44,8 @@ export default {
 		}, { threshold: [0] })
 		onMounted(() => {
 			observer.observe(bottom.value)
-			liveUpdate = setInterval(async () => updateTransactions(props.wallet, selectedQuery.value), 10000)
+			liveUpdate = setInterval(updateContent, 10000)
+			updateContent()
 		})
 		onBeforeUnmount(() => {
 			observer.unobserve(bottom.value)
@@ -59,6 +61,11 @@ export default {
 			const toIndex = tabs.findIndex(el => el.name.toLowerCase() === state)
 			const fromIndex = tabs.findIndex(el => el.name.toLowerCase() === prevState)
 			transitionName.value = toIndex < fromIndex ? 'slide-right' : 'slide-left'
+			setTimeout(() => {
+				clearInterval(liveUpdate)
+				liveUpdate = setInterval(updateContent, 10000)
+				updateContent()
+			})
 		})
 		return { fetchLoading, txs, completedQuery, bottom, selectedQuery, transitionName, tabs }
 	},
