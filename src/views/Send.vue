@@ -98,7 +98,7 @@ import { buildTransaction, manageUpload } from '@/functions/Transactions'
 import Ledger from '@/functions/Ledger'
 import axios from 'axios'
 import BigNumber from 'bignumber.js'
-import { debounce, humanFileSize, addressToColor } from '@/functions/Utils'
+import { debounce, humanFileSize, base64UrlToHex, addressHashToColor } from '@/functions/Utils'
 import { computed, reactive, ref, watch } from 'vue'
 
 export default {
@@ -206,13 +206,13 @@ export default {
 				console.error(e)
 			}
 			loading.value = false
-			// TODO visual feedback
 		}
+		const addressHash = base64UrlToHex(props.wallet.key)
 		const submitStyle = {
-			'--border': `rgba(${addressToColor(props.wallet.key).join(',')},0.8)`,
-			'--glow-color': `rgba(${addressToColor(props.wallet.key).join(',')},0.2)`,
-			'background-image': `radial-gradient(circle at center, rgba(${addressToColor(props.wallet.key).join(',')},0.4), 
-			rgba(${addressToColor(props.wallet.key).join(',')},0.3))`
+			'--border': `rgba(${addressHashToColor(addressHash).join(',')},0.8)`,
+			'--glow-color': `rgba(${addressHashToColor(addressHash).join(',')},0.2)`,
+			'background-image': `radial-gradient(circle at center, rgba(${addressHashToColor(addressHash).join(',')},0.4), 
+			rgba(${addressHashToColor(addressHash).join(',')},0.3))`
 		}
 		return { maskAddress, setMax, addTag, txSizeDisplay, txFee, postTx, submitStyle, loading, validation }
 	}
