@@ -37,17 +37,13 @@ export default {
 .logo-container {
 	width: min(100%, 50vh);
 	padding: min(16%, 8vh);
-	display: flex;
-	flex-direction: column;
 }
 
 .logo-background {
-	height: 100%;
 	padding: 16%;
 	background: #00000044;
 	border-radius: 50%;
 	display: flex;
-	flex-direction: column;
 	background: radial-gradient(#00000000, #00000099);
 	box-shadow: 0 0 0 0.5px #ffffff22, 0 0 10px 0 #ffffff11;
 }
