@@ -1,22 +1,22 @@
 <template>
 	<FoldingLayout v-if="tx">
 		<template #left>
-			<div class="meta">
+			<div class="meta flex-column">
 
 				<div class="card">
-					<div class="row">
+					<div class="row flex-row">
 						<div class="item" style="font-size:1.5em;">
 							<Ar class="ar" :ar="tx.quantity.ar" />
 							<LocaleCurrency class="small" :ar="tx.quantity.ar"></LocaleCurrency>
 						</div>
 					</div>
-					<div class="row">
+					<div class="row flex-row">
 						<div class="item">
 							<AddressIcon :address="tx.owner.address" />
 							<Address class="small" :address="tx.owner.address" />
 						</div>
 					</div>
-					<div class="row">
+					<div class="row flex-row">
 						<div class="item">
 							<AddressIcon :address="tx.recipient" />
 							<Address class="small" :address="tx.recipient" />
@@ -173,13 +173,6 @@ export default {
 .meta {
 	max-width: 900px;
 	padding: var(--spacing);
-	display: flex;
-	flex-direction: column;
-	/* gap: var(--spacing); */
-}
-
-.meta > * + * {
-	margin-block-start: var(--spacing);
 }
 
 .verticalContent .meta {
@@ -231,14 +224,8 @@ export default {
 
 .row {
 	min-height: 2em;
-	display: flex;
 	align-items: flex-start;
 	justify-content: space-between;
-	/* gap: var(--spacing); */
-}
-
-.row > * + * {
-	margin-inline-start: var(--spacing);
 }
 
 .row > .item {

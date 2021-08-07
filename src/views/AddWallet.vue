@@ -1,5 +1,5 @@
 <template>
-	<div class="add-wallet">
+	<div class="add-wallet flex-column">
 
 		<div class="card">
 			<h2 style="display:flex; justify-content:space-between;">
@@ -19,12 +19,12 @@
 				Import wallet
 			</Button>
 			<transition name="fade-fast" mode="in-out">
-				<div v-if="popup.enabled" :key="popup.message" class="overlay">
+				<div v-if="popup.enabled" :key="popup.message" class="overlay flex-column">
 					<div style="flex:1 1 auto; display:flex; flex-direction:column; align-items:center; justify-content:space-evenly; margin-bottom:var(--spacing);">
 						<Icon v-if="popup.icon" :icon="popup.icon" style="font-size: 2em;" />
 						{{ popup.message }}
 					</div>
-					<div class="actions-container">
+					<div class="actions-container flex-row">
 						<Button v-for="action in popup.actions" :key="action.name" @click="action.action">{{ action.name }}</Button>
 					</div>
 				</div>
@@ -113,16 +113,9 @@ export default {
 .add-wallet {
 	width: 100%;
 	padding: var(--spacing);
-	display: flex;
-	flex-direction: column;
 	align-items: center;
 	justify-content: space-evenly;
 	backdrop-filter: brightness(1.7);
-	/* gap: var(--spacing); */
-}
-
-.add-wallet > * + * {
-	margin-block-start: var(--spacing);
 }
 
 .card {
@@ -133,12 +126,6 @@ export default {
 
 .actions-container {
 	width: 100%;
-	display: flex;
-	/* gap: var(--spacing); */
-}
-
-.actions-container > * + * {
-	margin-inline-start: var(--spacing);
 }
 
 .button {
@@ -160,14 +147,7 @@ export default {
 	left: 0;
 	right: 0;
 	z-index: 10;
-	display: flex;
-	flex-direction: column;
 	align-items: center;
 	justify-content: space-evenly;
-	/* gap: var(--spacing); */
-}
-
-.overlay > * + * {
-	margin-block-start: var(--spacing);
 }
 </style>

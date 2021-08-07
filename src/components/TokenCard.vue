@@ -1,7 +1,7 @@
 <template>
 	<div class="token-card">
 		<div class="token-content">
-			<router-link class="left reset" :to="{ name: 'Tx', params: { txId: txId } }">
+			<router-link class="left reset flex-row" :to="{ name: 'Tx', params: { txId: txId } }">
 				<img class="img" :src="img">
 				<div>
 					<div>{{ token.name }}</div>
@@ -39,13 +39,7 @@ export default {
 
 <style scoped>
 .left {
-	display: flex;
 	align-items: center;
-	/* gap: var(--spacing); */
-}
-
-.left > * + * {
-	margin-inline-start: var(--spacing);
 }
 
 .img {

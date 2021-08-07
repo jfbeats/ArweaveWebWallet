@@ -1,8 +1,8 @@
 <template>
-	<div class="tx-list">
+	<div class="tx-list flex-column">
 		<Tabs query="view" :tabs="tabs" />
 		<transition :name="transitionName" mode="out-in">
-			<div class="list" :key="selectedQuery">
+			<div class="list flex-column" :key="selectedQuery">
 				<transition-group name="fade-list">
 					<TxCard class="card fade-list-item" v-for="tx in txs" :key="tx.node.id" :tx="tx.node" />
 				</transition-group>
@@ -74,14 +74,7 @@ export default {
 
 <style scoped>
 .tx-list {
-	display: flex;
-	flex-direction: column;
 	position: relative;
-	/* gap: var(--spacing); */
-}
-
-.tx-list > * + * {
-	margin-block-start: var(--spacing);
 }
 
 .tabs {
@@ -89,14 +82,7 @@ export default {
 }
 
 .list {
-	display: flex;
-	flex-direction: column;
 	position: relative;
-	/* gap: var(--spacing); */
-}
-
-.list > * + * {
-	margin-block-start: var(--spacing);
 }
 
 .bottom {

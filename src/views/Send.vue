@@ -3,13 +3,13 @@
 		<form>
 			<!-- TODO Autocomplete local addrs -->
 			<label for="target">
-				<h2 class="heading"><img class="img" src="@/assets/icons/north_east.svg"><span>Send</span></h2>
+				<h2 class="heading flex-row"><img class="img" src="@/assets/icons/north_east.svg"><span>Send</span></h2>
 			</label>
-			<div class="row">
+			<div class="row flex-row">
 				<Input v-model.trim="model.target" :icon="require('@/assets/icons/person.svg')" placeholder="Address" :mask="maskAddress" id="target" />
 				<AddressIcon class="address-icon" :address="model.target" />
 			</div>
-			<div class="row bottom">
+			<div class="row bottom flex-row">
 				<div>
 					<transition name="slide-up">
 						<div v-show="validation.target" class="validation">{{ validation.target }}</div>
@@ -18,10 +18,10 @@
 			</div>
 
 			<label for="quantity">
-				<h3 class="heading"><span>Amount</span></h3>
+				<h3 class="heading flex-row"><span>Amount</span></h3>
 			</label>
 			<InputAr v-model="model.quantity" id="quantity" />
-			<div class="row bottom">
+			<div class="row bottom flex-row">
 				<div>
 					<transition name="slide-up">
 						<div v-show="validation.quantity" class="validation">{{ validation.quantity }}</div>
@@ -31,10 +31,10 @@
 			</div>
 
 			<label for="data">
-				<h3 class="heading"><span>Data</span></h3>
+				<h3 class="heading flex-row"><span>Data</span></h3>
 			</label>
 			<InputData v-model="model.data" @files="(files) => model.data = files ? files[0] : ''" id="data" />
-			<div class="row bottom">
+			<div class="row bottom flex-row">
 				<div>
 					<transition name="slide-up">
 						<div v-if="validation.data" class="validation">{{ validation.data }}</div>
@@ -42,14 +42,14 @@
 				</div>
 			</div>
 
-			<div class="row">
+			<div class="row flex-row">
 				<label for="add-tag">
-					<h3 class="heading" style="display:block;"><span>Tags</span></h3>
+					<h3 class="heading flex-row" style="display:block;"><span>Tags</span></h3>
 				</label>
 				<div v-if="!model.tags.length"><button type="button" class="secondary" @click="addTag()" id="add-tag">Add</button></div>
 			</div>
 			<InputGrid :schema="model.tags" />
-			<div v-if="model.tags.length" class="row bottom">
+			<div v-if="model.tags.length" class="row bottom flex-row">
 				<div>
 					<transition name="slide-up">
 						<div v-if="validation.tags" class="validation">{{ validation.tags }}</div>
@@ -58,7 +58,7 @@
 				<button type="button" class="secondary" @click="addTag()" id="add-tag">Add</button>
 			</div>
 
-			<div class="row" style="align-items:flex-end; margin-top:3em;">
+			<div class="row flex-row" style="align-items:flex-end; margin-top:3em;">
 				<div>
 					<div>Size {{ txSizeDisplay }}</div>
 					<div>Fee
@@ -71,7 +71,7 @@
 			</div>
 			<div>
 				<transition name="slide-up">
-					<div v-if="validation.global" class="row bottom" style="justify-content:center;">
+					<div v-if="validation.global" class="row bottom flex-row" style="justify-content:center;">
 						<div style="text-align:center;" class="validation">{{ validation.global }}</div>
 					</div>
 				</transition>
@@ -239,25 +239,13 @@ export default {
 }
 
 .heading {
-	display: flex;
 	align-items: center;
-	/* gap: var(--spacing); */
-}
-
-.heading > * + * {
-	margin-inline-start: var(--spacing);
 }
 
 .row {
 	min-height: 3em;
-	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	/* gap: var(--spacing); */
-}
-
-.row > * + * {
-	margin-inline-start: var(--spacing);
 }
 
 .row.bottom {

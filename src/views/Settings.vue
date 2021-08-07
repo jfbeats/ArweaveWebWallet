@@ -2,14 +2,14 @@
 	<div class="settings">
 		<div class="column">
 			<h2>Wallet Settings</h2>
-			<div class="wallets">
+			<div class="flex-column">
 				<WalletOptions class="wallet-options" v-for="wallet in ArweaveStore.wallets" :key="wallet.id" :wallet="wallet" />
 				<Button v-if="!ArweaveStore.wallets.length" style="font-size:1.5em; background:var(--background3);" @click="$router.push({ name: 'AddWallet'})" icon="+" />
 			</div>
 			<h2>App Settings</h2>
 			<div class="group">
 				<p>Gateway</p>
-				<div class="row">
+				<div class="flex-row">
 					<Input v-model="gateway" :placeholder="ArweaveStore.gatewayURL" :icon="require('@/assets/logos/arweave.svg')" style="flex:1 1 0;" />
 					<Button @click="setGateway()">{{ gateway ? 'Submit' : 'Reset' }}</Button>
 				</div>
@@ -85,26 +85,7 @@ export default {
 	margin-bottom: 3em;
 }
 
-.wallets {
-	display: flex;
-	flex-direction: column;
-	/* gap: var(--spacing); */
-}
-
-.wallets > * + * {
-	margin-block-start: var(--spacing);
-}
-
 .wallet-options {
 	border-radius: var(--border-radius);
-}
-
-.row {
-	display: flex;
-	/* gap: var(--spacing); */
-}
-
-.row > * + * {
-	margin-inline-start: var(--spacing);
 }
 </style>
