@@ -130,13 +130,22 @@ export default {
 .tx-content {
 	position: relative;
 	display: flex;
-	gap: var(--spacing);
 	justify-content: space-between;
+	/* gap: var(--spacing); */
+}
+
+.tx-content > * + * {
+	margin-inline-start: var(--spacing);
 }
 
 .verticalElement .tx-content {
 	flex-direction: column;
 	min-width: 256px;
+}
+
+.verticalElement .tx-content > * + * {
+	margin-inline-start: 0;
+	margin-block-start: var(--spacing);
 }
 
 .left {

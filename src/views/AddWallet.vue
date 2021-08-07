@@ -24,7 +24,7 @@
 						<Icon v-if="popup.icon" :icon="popup.icon" style="font-size: 2em;" />
 						{{ popup.message }}
 					</div>
-					<div style="width:100%; display:flex; gap:var(--spacing);">
+					<div class="actions-container">
 						<Button v-for="action in popup.actions" :key="action.name" @click="action.action">{{ action.name }}</Button>
 					</div>
 				</div>
@@ -117,14 +117,28 @@ export default {
 	flex-direction: column;
 	align-items: center;
 	justify-content: space-evenly;
-	gap: var(--spacing);
 	backdrop-filter: brightness(1.7);
+	/* gap: var(--spacing); */
+}
+
+.add-wallet > * + * {
+	margin-block-start: var(--spacing);
 }
 
 .card {
 	width: 100%;
 	max-width: 700px;
 	overflow: hidden;
+}
+
+.actions-container {
+	width: 100%;
+	display: flex;
+	/* gap: var(--spacing); */
+}
+
+.actions-container > * + * {
+	margin-inline-start: var(--spacing);
 }
 
 .button {
@@ -150,6 +164,10 @@ export default {
 	flex-direction: column;
 	align-items: center;
 	justify-content: space-evenly;
-	gap: var(--spacing);
+	/* gap: var(--spacing); */
+}
+
+.overlay > * + * {
+	margin-block-start: var(--spacing);
 }
 </style>

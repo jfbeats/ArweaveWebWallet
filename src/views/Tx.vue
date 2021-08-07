@@ -175,7 +175,11 @@ export default {
 	padding: var(--spacing);
 	display: flex;
 	flex-direction: column;
-	gap: var(--spacing);
+	/* gap: var(--spacing); */
+}
+
+.meta > * + * {
+	margin-block-start: var(--spacing);
 }
 
 .verticalContent .meta {
@@ -230,7 +234,11 @@ export default {
 	display: flex;
 	align-items: flex-start;
 	justify-content: space-between;
-	gap: var(--spacing);
+	/* gap: var(--spacing); */
+}
+
+.row > * + * {
+	margin-inline-start: var(--spacing);
 }
 
 .row > .item {

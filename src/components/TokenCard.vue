@@ -41,7 +41,11 @@ export default {
 .left {
 	display: flex;
 	align-items: center;
-	gap: var(--spacing);
+	/* gap: var(--spacing); */
+}
+
+.left > * + * {
+	margin-inline-start: var(--spacing);
 }
 
 .img {

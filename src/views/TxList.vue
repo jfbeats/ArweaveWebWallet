@@ -76,8 +76,12 @@ export default {
 .tx-list {
 	display: flex;
 	flex-direction: column;
-	gap: var(--spacing);
 	position: relative;
+	/* gap: var(--spacing); */
+}
+
+.tx-list > * + * {
+	margin-block-start: var(--spacing);
 }
 
 .tabs {
@@ -87,8 +91,12 @@ export default {
 .list {
 	display: flex;
 	flex-direction: column;
-	gap: var(--spacing);
 	position: relative;
+	/* gap: var(--spacing); */
+}
+
+.list > * + * {
+	margin-block-start: var(--spacing);
 }
 
 .bottom {

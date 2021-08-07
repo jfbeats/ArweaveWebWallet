@@ -9,7 +9,7 @@
 			<h2>App Settings</h2>
 			<div class="group">
 				<p>Gateway</p>
-				<div style="display:flex; gap:var(--spacing)">
+				<div class="row">
 					<Input v-model="gateway" :placeholder="ArweaveStore.gatewayURL" :icon="require('@/assets/logos/arweave.svg')" style="flex:1 1 0;" />
 					<Button @click="setGateway()">{{ gateway ? 'Submit' : 'Reset' }}</Button>
 				</div>
@@ -74,7 +74,6 @@ export default {
 	width: 100%;
 	display: flex;
 	justify-content: center;
-	/* box-shadow: 0 0 32px 0 #00000033; */
 }
 
 .column {
@@ -89,11 +88,23 @@ export default {
 .wallets {
 	display: flex;
 	flex-direction: column;
-	gap: var(--spacing);
+	/* gap: var(--spacing); */
+}
+
+.wallets > * + * {
+	margin-block-start: var(--spacing);
 }
 
 .wallet-options {
-	/* background: var(--background); */
 	border-radius: var(--border-radius);
+}
+
+.row {
+	display: flex;
+	/* gap: var(--spacing); */
+}
+
+.row > * + * {
+	margin-inline-start: var(--spacing);
 }
 </style>

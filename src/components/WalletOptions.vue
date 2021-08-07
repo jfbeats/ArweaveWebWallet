@@ -47,7 +47,6 @@ export default {
 	/* flex-direction: column; */
 	/* background: var(--background3); */
 	align-items: center;
-	/* gap: var(--spacing); */
 }
 
 .content {
