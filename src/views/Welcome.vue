@@ -49,6 +49,8 @@ export default {
 }
 
 .logo {
+	width: 100%;
+	height: 100%;
 	opacity: 0.7;
 	filter: drop-shadow(0 0 10px #ffffff33);
 }
