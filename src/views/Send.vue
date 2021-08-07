@@ -3,7 +3,7 @@
 		<form>
 			<!-- TODO Autocomplete local addrs -->
 			<label for="target">
-				<h2 class="heading"><img class="img" src="@/assets/icons/north_east.svg">Send</h2>
+				<h2 class="heading"><img class="img" src="@/assets/icons/north_east.svg"><span>Send</span></h2>
 			</label>
 			<div class="row">
 				<Input v-model.trim="model.target" :icon="require('@/assets/icons/person.svg')" placeholder="Address" :mask="maskAddress" id="target" />
@@ -18,7 +18,7 @@
 			</div>
 
 			<label for="quantity">
-				<h3 class="heading">Amount</h3>
+				<h3 class="heading"><span>Amount</span></h3>
 			</label>
 			<InputAr v-model="model.quantity" id="quantity" />
 			<div class="row bottom">
@@ -31,7 +31,7 @@
 			</div>
 
 			<label for="data">
-				<h3 class="heading">Data</h3>
+				<h3 class="heading"><span>Data</span></h3>
 			</label>
 			<InputData v-model="model.data" @files="(files) => model.data = files ? files[0] : ''" id="data" />
 			<div class="row bottom">
@@ -44,7 +44,7 @@
 
 			<div class="row">
 				<label for="add-tag">
-					<h3 class="heading" style="display:block;">Tags</h3>
+					<h3 class="heading" style="display:block;"><span>Tags</span></h3>
 				</label>
 				<div v-if="!model.tags.length"><button type="button" class="secondary" @click="addTag()" id="add-tag">Add</button></div>
 			</div>
