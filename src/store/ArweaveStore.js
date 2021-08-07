@@ -278,13 +278,14 @@ async function refreshTx () {
 }
 
 function sortByBlocks (wallet, query) {
-	updateWalletBalance(wallet)
 	const sort = (a, b) => (b.node.block?.height ?? Number.MAX_SAFE_INTEGER)
 		- (a.node.block?.height ?? Number.MAX_SAFE_INTEGER)
 	if (wallet && wallet.queries[query]) {
+		updateWalletBalance(wallet)
 		wallet.queries[query].sort(sort)
 	} else {
 		for (const wallet of ArweaveStore.wallets) {
+			updateWalletBalance(wallet)
 			for (const query in wallet.queries) {
 				wallet.queries[query].sort(sort)
 			}
