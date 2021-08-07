@@ -12,7 +12,7 @@
 			</div>
 			<div v-else-if="isFile" class="overlay">
 				<div class="big-icon-container focus"><img class="img" src="@/assets/icons/cloud.svg"></div>
-				<button class="clear" @click="clearFiles">
+				<button class="clear" @click="clearFiles" type="button">
 					<div class="icon-container">
 						<img class="icon no-select" src="@/assets/icons/x.svg" draggable="false">
 					</div>

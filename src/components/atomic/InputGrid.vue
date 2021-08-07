@@ -7,7 +7,7 @@
 					<input v-model="input.value" v-bind="input.attrs" class="text" :placeholder="input.name" @focus="focus=(index+1)*(inputIndex+1)" @blur="focus=0" :disabled="disabled">
 				</div>
 			</div>
-			<button v-if="row.deletable" class="remove" @click="removeRow(index)">
+			<button v-if="row.deletable" class="remove" @click="removeRow(index)" type="button">
 				<Icon :icon="require('@/assets/icons/x.svg')" />
 			</button>
 		</div>
