@@ -33,7 +33,7 @@
 			<label for="data">
 				<h3 class="heading flex-row"><span>Data</span></h3>
 			</label>
-			<InputData v-model="model.data" @files="(files) => model.data = files ? files[0] : ''" id="data" />
+			<InputData v-model="model.data" @files="filesAdded" id="data" />
 			<div class="row bottom flex-row">
 				<div>
 					<transition name="slide-up">
@@ -65,7 +65,7 @@
 						<Ar class="ar" :ar="txFee" />&nbsp;<LocaleCurrency class="small secondary" :ar="txFee">|</LocaleCurrency>
 					</div>
 				</div>
-				<Button @click="postTx" :style="submitStyle" :disabled="loading" :icon="require('@/assets/icons/north_east.svg')">
+				<Button @click="postTx" :style="submitStyle" :disabled="loading || !txFee" :icon="require('@/assets/icons/north_east.svg')">
 					Submit
 				</Button>
 			</div>
@@ -105,25 +105,34 @@ export default {
 	components: { Input, InputAr, InputData, InputGrid, AddressIcon, Ar, LocaleCurrency, Button, Icon },
 	props: ['wallet', 'model'],
 	setup (props) {
+
 		const maskAddress = (address) => { return address.match(/^[a-z0-9_-]{0,43}$/i) }
-		const setMax = () => {
+
+		const setMax = async () => {
 			const balance = new BigNumber(props.wallet.balance)
-			props.model.quantity = balance.minus(txFee.value || 0).toString()
+			if (!txFee.value) {
+				await new Promise(resolve => {
+					watch(() => txFee.value, (value) => { if (value) { resolve() } })
+				})
+			}
+			props.model.quantity = balance.minus(txFee.value).toString()
 		}
-		watch(() => props.model.data, (value) => {
-			let contentTypeTag = props.model.tags.find(row =>
-				row.items[0].value === 'Content-Type')
-			if (typeof value === 'object') {
+
+		const filesAdded = (files) => {
+			let contentTypeTag = props.model.tags.find(row => row.items[0].value === 'Content-Type')
+			props.model.data = files ? files[0] : ''
+			if (files) {
 				if (!contentTypeTag) {
 					contentTypeTag = tagSchema('Content-Type')
 					addTag(contentTypeTag)
 				}
-				contentTypeTag.items[1].value = value.type
-			} else if (contentTypeTag) {
+				contentTypeTag.items[1].value = props.model.data.type
+			} else {
 				const index = props.model.tags.indexOf(contentTypeTag)
 				props.model.tags.splice(index, 1)
 			}
-		})
+		}
+
 		const tagSchema = (name, value) => ({
 			items: [
 				{ name: 'Tag', value: name || '', icon: require('@/assets/icons/label.svg') },
@@ -131,12 +140,14 @@ export default {
 			], deletable: true, key: Math.random()
 		})
 		const addTag = (tag) => props.model.tags.push(tag || tagSchema())
+
 		const txSize = computed(() => {
 			const data = props.model.data
 			return data.size || data.length || '0'
 		})
 		const txSizeDisplay = computed(() => humanFileSize(txSize.value))
 		const txFee = ref(null)
+
 		const feeUrl = computed(() => {
 			const address = props.model.target
 			return ArweaveStore.gatewayURL + 'price/' + txSize.value + '/' + (address.match(/^[a-z0-9_-]{43}$/i) ? address : '')
@@ -144,14 +155,19 @@ export default {
 		const updateFee = async () => { txFee.value = arweave.ar.winstonToAr((await axios.get(feeUrl.value)).data) }
 		const updateFeeDebounced = debounce(updateFee)
 		updateFee()
-		watch(() => feeUrl.value, () => updateFeeDebounced())
+		watch(() => feeUrl.value, () => {
+			txFee.value = null
+			updateFeeDebounced()
+		})
 		const getTagsFromSchema = (tagsSchema) => {
 			const result = []
 			for (const row of tagsSchema) { result.push({ name: row.items[0].value, value: row.items[1].value }) }
 			return result
 		}
+
 		const loading = ref(false)
 		const validation = reactive({ target: '', quantity: '', data: '', tags: '' })
+
 		const isValid = () => {
 			for (const key in validation) { validation[key] = '' }
 			let result = true
@@ -182,6 +198,14 @@ export default {
 			}
 			return result
 		}
+
+		const resetForm = () => {
+				props.model.target = ''
+				props.model.quantity = ''
+				props.model.data = ''
+				props.model.tags = []
+		}
+
 		const postTx = async () => {
 			if (loading.value || !isValid()) { return }
 			loading.value = true
@@ -198,15 +222,13 @@ export default {
 					await Ledger.sign(tx)
 				}
 				manageUpload(tx)
-				props.model.target = '' 
-				props.model.quantity = ''
-				props.model.data = '' 
-				props.model.tags = []
+				resetForm()
 			} catch (e) {
 				console.error(e)
 			}
 			loading.value = false
 		}
+
 		const addressHash = base64UrlToHex(props.wallet.key)
 		const submitStyle = {
 			'--border': `rgba(${addressHashToColor(addressHash).join(',')},0.8)`,
@@ -214,7 +236,8 @@ export default {
 			'background-image': `radial-gradient(circle at center, rgba(${addressHashToColor(addressHash).join(',')},0.4), 
 			rgba(${addressHashToColor(addressHash).join(',')},0.3))`
 		}
-		return { maskAddress, setMax, addTag, txSizeDisplay, txFee, postTx, submitStyle, loading, validation }
+
+		return { maskAddress, setMax, filesAdded, addTag, txSizeDisplay, txFee, postTx, submitStyle, loading, validation }
 	}
 }
 </script>
