@@ -48,14 +48,13 @@ export default {
 }
 
 .left.hasRight {
-	max-width: 40vw;
+	width: 40vw;
 	z-index: 1;
 }
 
 .verticalContent .left {
 	position: relative;
 	width: 100%;
-	max-width: 100%;
 	height: auto;
 }
 
