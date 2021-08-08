@@ -153,14 +153,14 @@ export default {
 .router {
 	min-width: 0;
 	position: relative;
-	margin-inline-start: 80px;
+	padding-inline-start: 80px;
 	min-height: 100vh;
 	/* transform: translateZ(0); */
 }
 
 .verticalLayout .router {
 	margin-top: 80px;
-	margin-inline-start: 0;
+	padding-inline-start: 0;
 	min-height: calc(100vh - 80px);
 }
 
@@ -175,12 +175,5 @@ export default {
 	right: 0;
 	z-index: 1;
 	background: #00000066;
-}
-
-#viewport {
-	position: fixed;
-	top: 0;
-	z-index: 1;
-	margin-inline-start: 80px;
 }
 </style>
