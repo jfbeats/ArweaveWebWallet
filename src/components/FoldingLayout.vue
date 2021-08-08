@@ -39,7 +39,8 @@ export default {
 
 .left {
 	scrollbar-width: none;
-	width: 100vw;
+	overflow: auto;
+	height: 100vh;
 }
 
 .left::-webkit-scrollbar {
@@ -47,9 +48,7 @@ export default {
 }
 
 .left.hasRight {
-	width: 40vw;
-	height: 100vh;
-	overflow: auto;
+	max-width: 40vw;
 	z-index: 1;
 }
 
