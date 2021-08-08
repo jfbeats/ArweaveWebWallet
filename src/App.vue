@@ -2,7 +2,7 @@
 	<div class="app" :class="{ verticalLayout, verticalContent }">
 		<Toolbar class="toolbar" @drop.prevent="droppedFiles" />
 		<router-view class="router" v-slot="{ Component }" @drop.prevent="droppedFiles">
-			<transition :name="$route.meta.mainTransitionName || 'slide-up'" mode="out-in" @before-enter="emitter.emit('beforeEnter')" @after-enter="emitter.emit('afterEnter')" @before-leave="emitter.emit('beforeLeave')" @after-leave="emitter.emit('afterLeave')">
+			<transition :name="$route.meta.transition?.nameLayout" mode="out-in" @before-enter="emitter.emit('beforeEnter')" @after-enter="emitter.emit('afterEnter')" @before-leave="emitter.emit('beforeLeave')" @after-leave="emitter.emit('afterLeave')">
 				<component :is="Component" />
 			</transition>
 		</router-view>
@@ -20,7 +20,7 @@ import Toolbar from '@/components/Toolbar'
 import ArweaveStore from './store/ArweaveStore'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import { addWallet } from '@/functions/Wallets.js'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { computed } from 'vue'
 
 export default {
@@ -32,23 +32,52 @@ export default {
 		const verticalContent = computed(() => InterfaceStore.breakpoints.verticalContent)
 		const dragOverlay = computed(() => InterfaceStore.dragOverlay)
 		const router = useRouter()
+		const route = useRoute()
 		router.afterEach((to, from) => {
 			document.title = to.meta.title || 'Arweave Wallet'
 			const routes = router.options.routes
-			// TODO traverse subroutes to find direction (find first occurence of either toIndex or fromIndex)
-			// then select the right name depending on if in the route or subroute component
-			let toIndex = routes.findIndex(el => el.path === to.path)
-			let fromIndex = routes.findIndex(el => el.path === from.path)
-			if (toIndex === fromIndex && to.params.walletId && from.params.walletId) {
-				toIndex = ArweaveStore.wallets.findIndex(el => el.id == to.params.walletId)
-				fromIndex = ArweaveStore.wallets.findIndex(el => el.id == from.params.walletId)
+			const findRecursiveHelper = (name, arr) => {
+				const result = findRecursive(name, arr)
+				return result.found ? result : null
 			}
-			console.log(`from ${fromIndex} to ${toIndex}`) // TODO to be fixed
-			to.meta.mainTransitionName =
-				verticalLayout.value
-					? toIndex < fromIndex ? 'slide-right' : 'slide-left'
-					: toIndex < fromIndex ? 'slide-down' : 'slide-up'
+			const findRecursive = (name, arr, position = 0, depth = 0) => {
+				for (const route of arr) {
+					if (route.name === name) { return { found: true, position, depth } }
+					position++
+					if (route.children) {
+						const recResult = findRecursive(name, route.children, position, depth + 1)
+						position += recResult.position
+						if (recResult.found) { return { found: true, position, depth: recResult.depth } }
+					}
+				}
+				return { found: false, position, depth }
+			}
+			const param = {
+				to: findRecursiveHelper(to.name, routes),
+				from: findRecursiveHelper(from.name, routes)
+			}
+			console.log(param)
+			to.meta.transition = {}
+			to.meta.transition.param = param
+			to.meta.transition.name = param.to.position < param.from.position ? 'slide-down' : 'slide-up'
+			to.meta.transition.nameLayout = convertTransitionName(to.meta.transition.name)
+			if (param.to.position === param.from.position && to.params.walletId !== from.params.walletId) {
+				const toWallet = ArweaveStore.wallets.findIndex(el => el.id == to.params.walletId)
+				const fromWallet = ArweaveStore.wallets.findIndex(el => el.id == from.params.walletId)
+				const transition = toWallet < fromWallet ? 'slide-down' : 'slide-up'
+				to.meta.transition.nameWallet = convertTransitionName(transition)
+			}
 		})
+
+		const convertTransitionName = (name) => {
+			if (verticalLayout.value) {
+				if (name === 'slide-down') { return 'slide-right' }
+				if (name === 'slide-up') { return 'slide-left' }
+			}
+			return name
+		}
+
+		emitter.on('afterEnter', () => route.meta.transition = {})
 
 		document.addEventListener('swUpdated', () => updateAvailable(), { once: true })
 		if (navigator.serviceWorker) {

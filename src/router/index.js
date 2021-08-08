@@ -20,19 +20,19 @@ const routes = [
 		},
 		children: [
 			{
-				name: 'TxList',
-				path: 'tx-list',
-				component: TxList,
-				meta: { title: 'Transactions' },
-				props: (route) => ({ wallet: getWalletById(route.params.walletId) }),
-			},
-			{
 				name: 'Send',
 				path: 'send',
 				component: Send,
 				meta: { title: 'Send' },
 				props: (route) => ({ wallet: getWalletById(route.params.walletId),
 					model: InterfaceStore.wallet.send }),
+			},
+			{
+				name: 'TxList',
+				path: 'tx-list',
+				component: TxList,
+				meta: { title: 'Transactions' },
+				props: (route) => ({ wallet: getWalletById(route.params.walletId) }),
 			},
 			{
 				name: 'Tokens',

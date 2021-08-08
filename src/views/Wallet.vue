@@ -12,7 +12,7 @@
 			<template #right>
 				<div class="wallet-view">
 					<router-view v-slot="{ Component }" class="router-view" @before-enter="emitter.emit('beforeEnter')">
-						<transition :name="$route.meta.mainTransitionName" mode="out-in">
+						<transition :name="$route.meta.transition?.nameWallet || $route.meta.transition?.name" mode="out-in">
 							<component :is="Component"  :key="$route.path.split('/').slice(0,3).join('')" />
 						</transition>
 					</router-view>

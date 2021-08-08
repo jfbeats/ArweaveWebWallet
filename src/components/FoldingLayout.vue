@@ -5,7 +5,7 @@
 		</div>
 		<teleport to="#viewport" v-else>
 			<div class="left" :class="{ hasRight: hasRight() }">
-				<transition name="fade" appear>
+				<transition :name="$route.meta.transition?.nameLayout" appear>
 					<slot name="left" />
 				</transition>
 			</div>
@@ -18,7 +18,7 @@
 
 <script>
 import InterfaceStore from '@/store/InterfaceStore'
-import { ref, computed, onUnmounted, onMounted, watch } from 'vue'
+import { computed } from 'vue'
 export default {
 	setup () {
 		const verticalContent = computed(() => InterfaceStore.breakpoints.verticalContent)
