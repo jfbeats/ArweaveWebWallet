@@ -3,17 +3,21 @@
 		<FoldingLayout v-if="wallet">
 			<template #left>
 				<div class="wallet-info">
-					<Balance :wallet="wallet" />
-					<div class="actions">
-						<Action v-for="action in actions" :key="action.name" :to="{name: action.name, query: {...$route.query}}" :img="action.img" replace>{{ action.text }}</Action>
-					</div>
+					<transition :name="$route.meta.transition?.nameWallet" mode="out-in">
+						<div :key="wallet.key">
+							<Balance :wallet="wallet" />
+							<div class="actions">
+								<Action v-for="action in actions" :key="action.name" :to="{name: action.name, query: {...$route.query}}" :img="action.img" replace>{{ action.text }}</Action>
+							</div>
+						</div>
+					</transition>
 				</div>
 			</template>
 			<template #right>
 				<div class="wallet-view">
 					<router-view v-slot="{ Component }" class="router-view" @before-enter="emitter.emit('beforeEnter')">
 						<transition :name="$route.meta.transition?.nameWallet || $route.meta.transition?.name" mode="out-in">
-							<component :is="Component"  :key="$route.path.split('/').slice(0,3).join('')" />
+							<component :is="Component" :key="$route.path.split('/').slice(0,3).join('')" />
 						</transition>
 					</router-view>
 				</div>
