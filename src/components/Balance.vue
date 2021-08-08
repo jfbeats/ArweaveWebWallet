@@ -4,10 +4,14 @@
 			<Ar class="ar" :ar="wallet.balance" /><br>
 			<LocaleCurrency class="currency" :ar="wallet.balance" />
 		</div>
-		<div>
-			<div class="wallet-info"><Icon class="logo" :icon="walletInfo.img" />{{ walletInfo.name }}</div>
-			<Address :address="wallet.key" />
-		</div>
+		<transition name="fade-fast" mode="out-in">
+			<div :key="wallet.key">
+				<div class="wallet-info">
+					<Icon class="logo" :icon="walletInfo.img" />{{ walletInfo.name }}
+				</div>
+				<Address :address="wallet.key" />
+			</div>
+		</transition>
 	</div>
 </template>
 
