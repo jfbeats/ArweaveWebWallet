@@ -11,9 +11,9 @@
 			</template>
 			<template #right>
 				<div class="wallet-view">
-					<router-view v-slot="{ Component, route }" class="router-view" @before-enter="emitter.emit('beforeEnter')">
-						<transition :name="route.meta.subTransitionName" mode="out-in">
-							<component :is="Component" />
+					<router-view v-slot="{ Component }" class="router-view" @before-enter="emitter.emit('beforeEnter')">
+						<transition :name="$route.meta.mainTransitionName" mode="out-in">
+							<component :is="Component"  :key="$route.path.split('/').slice(0,3).join('')" />
 						</transition>
 					</router-view>
 				</div>
@@ -29,7 +29,6 @@ import FoldingLayout from '@/components/FoldingLayout.vue'
 import Balance from '@/components/Balance'
 import Action from '@/components/atomic/Action'
 import ArweaveStore, { setCurrentWallet } from '@/store/ArweaveStore'
-import { useRouter } from 'vue-router'
 
 export default {
 	name: 'Wallet',
@@ -41,12 +40,6 @@ export default {
 			{ name: 'TxList', img: require('@/assets/icons/swap.svg'), text: 'Transactions' },
 			// { name: 'Tokens', img: require('@/assets/icons/cloud_circle.svg'), text: 'Tokens' },
 		]
-		const router = useRouter()
-		router.afterEach((to, from) => {
-			const toIndex = actions.findIndex(el => el.name === to.name)
-			const fromIndex = actions.findIndex(el => el.name === from.name)
-			to.meta.subTransitionName = toIndex < fromIndex ? 'slide-down' : 'slide-up'
-		})
 		return { actions }
 	},
 	watch: {

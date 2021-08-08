@@ -1,14 +1,15 @@
 <template>
 	<div class="app" :class="{ verticalLayout, verticalContent }">
 		<Toolbar class="toolbar" @drop.prevent="droppedFiles" />
-		<router-view class="router" v-slot="{ Component, route }" @drop.prevent="droppedFiles">
-			<transition :name="route.meta.mainTransitionName || 'slide-up'" mode="out-in" @before-enter="emitter.emit('beforeEnter')" @after-enter="emitter.emit('afterEnter')" @before-leave="emitter.emit('beforeLeave')" @after-leave="emitter.emit('afterLeave')">
-				<component :is="Component" :key="$route.path.split('/').slice(0,3).join('')" />
+		<router-view class="router" v-slot="{ Component }" @drop.prevent="droppedFiles">
+			<transition :name="$route.meta.mainTransitionName || 'slide-up'" mode="out-in" @before-enter="emitter.emit('beforeEnter')" @after-enter="emitter.emit('afterEnter')" @before-leave="emitter.emit('beforeLeave')" @after-leave="emitter.emit('afterLeave')">
+				<component :is="Component" />
 			</transition>
 		</router-view>
 		<transition name="fade">
 			<div v-if="dragOverlay" class="overlay" />
 		</transition>
+		<div id="viewport" />
 	</div>
 </template>
 
@@ -34,13 +35,14 @@ export default {
 		router.afterEach((to, from) => {
 			document.title = to.meta.title || 'Arweave Wallet'
 			const routes = router.options.routes
+			// TODO traverse subroutes to find direction (find first occurence of either toIndex or fromIndex)
 			let toIndex = routes.findIndex(el => el.path === to.path)
 			let fromIndex = routes.findIndex(el => el.path === from.path)
 			if (toIndex === fromIndex && to.params.walletId && from.params.walletId) {
 				toIndex = ArweaveStore.wallets.findIndex(el => el.id == to.params.walletId)
 				fromIndex = ArweaveStore.wallets.findIndex(el => el.id == from.params.walletId)
 			}
-			console.log(`from ${fromIndex} to ${toIndex}`) // to be fixed
+			console.log(`from ${fromIndex} to ${toIndex}`) // TODO to be fixed
 			to.meta.mainTransitionName =
 				verticalLayout.value
 					? toIndex < fromIndex ? 'slide-right' : 'slide-left'
@@ -143,5 +145,12 @@ export default {
 	right: 0;
 	z-index: 1;
 	background: #00000066;
+}
+
+#viewport {
+	position: fixed;
+	top: 0;
+	z-index: 1;
+	margin-inline-start: 80px;
 }
 </style>

@@ -69,10 +69,8 @@
 				<div v-else-if="data.handler === 'smartweave'" key="smartweave">
 					<SmartWeave :txId="tx.id" />
 				</div>
-				<div v-else-if="data.handler === 'json' || data.handler === 'raw'" key="json" class="card-container">
-					<div class="card">
-						<pre class="raw">{{ data.payload }}</pre>
-					</div>
+				<div v-else-if="data.handler === 'json' || data.handler === 'raw'" key="json" class="data-container">
+					<pre class="raw">{{ data.payload }}</pre>
 				</div>
 			</transition>
 		</template>
@@ -129,9 +127,9 @@ export default {
 			} else if (tx.value.tags?.find(el => el.name === 'App-Name')?.value === 'SmartWeaveContract') {
 				data.handler = 'smartweave'
 			} else {
+				data.handler = 'raw'
 				try {
 					data.payload = await arweave.transactions.getData(props.txId, { decode: true, string: true })
-					data.handler = 'raw'
 					if (data.payload[0] === "{") {
 						try {
 							data.payload = JSON.stringify(JSON.parse(data.payload), null, 2)
@@ -142,11 +140,7 @@ export default {
 				} catch { }
 			}
 		}, { immediate: true })
-		const loaded = () => {
-			console.log('loaded')
-			data.loaded = true
-		}
-
+		const loaded = () => { data.loaded = true }
 
 		const tagsSchema = computed(() => {
 			const result = []
@@ -193,13 +187,11 @@ export default {
 	border-radius: 32px 32px 0 0;
 }
 
-.card-container {
+.data-container {
 	padding: var(--spacing);
-}
-
-.card-container > .card {
-	padding: 0;
-	overflow: hidden;
+	background: var(--background2);
+	box-shadow: 0 0 0 0.5px var(--border);
+	min-height: 100vh;
 }
 
 .iframe {

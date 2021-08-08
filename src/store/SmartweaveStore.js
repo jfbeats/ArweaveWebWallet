@@ -16,7 +16,8 @@ export async function getContract (id) {
 // Testing
 if (process.env.NODE_ENV === 'development') {
 	window.smartweave = smartweave
-	getContract('5hpzk2vzh-QiyvYqnVuaUFWr8--HfhcfK6HIix-ldJQ')
+	window.SmartweaveStore = SmartweaveStore
+	// getContract('5hpzk2vzh-QiyvYqnVuaUFWr8--HfhcfK6HIix-ldJQ')
 }
 
 export default SmartweaveStore

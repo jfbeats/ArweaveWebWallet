@@ -1,8 +1,15 @@
 <template>
-	<div class="folding-layout" :style="{ '--top': scrollPosition }">
-		<div class="left" :class="{ hasRight: hasRight() }">
+	<div class="folding-layout">
+		<div v-if="verticalContent" class="left" :class="{ hasRight: hasRight() }">
 			<slot name="left" />
 		</div>
+		<teleport to="#viewport" v-else>
+			<div class="left" :class="{ hasRight: hasRight() }">
+				<transition name="fade" appear>
+					<slot name="left" />
+				</transition>
+			</div>
+		</teleport>
 		<div class="right">
 			<slot name="right" />
 		</div>
@@ -14,25 +21,8 @@ import InterfaceStore from '@/store/InterfaceStore'
 import { ref, computed, onUnmounted, onMounted, watch } from 'vue'
 export default {
 	setup () {
-		// TODO request anim frame
 		const verticalContent = computed(() => InterfaceStore.breakpoints.verticalContent)
-		const scrollPosition = ref('0')
-		const scrollHandler = () => {
-			scrollPosition.value = window.scrollY + 'px'
-		}
-		const positionHandler = (activate) => {
-			if (activate && !verticalContent.value) {
-				scrollHandler()
-				window.addEventListener('scroll', scrollHandler)
-			} else {
-				window.removeEventListener('scroll', scrollHandler)
-				scrollPosition.value = 0;
-			}
-		}
-		onMounted(() => positionHandler(true))
-		onUnmounted(() => positionHandler(false))
-		watch(() => verticalContent.value, (value) => { positionHandler(value) })
-		return { scrollPosition, verticalContent }
+		return { verticalContent }
 	},
 	methods: {
 		hasLeft () { return !!this.$slots.left },
@@ -49,6 +39,7 @@ export default {
 
 .left {
 	scrollbar-width: none;
+	width: 100vw;
 }
 
 .left::-webkit-scrollbar {
@@ -56,7 +47,6 @@ export default {
 }
 
 .left.hasRight {
-	position: fixed;
 	width: 40vw;
 	height: 100vh;
 	overflow: auto;
@@ -76,23 +66,5 @@ export default {
 
 .verticalContent .right {
 	padding-inline-start: 0;
-}
-
-.slide-up-enter-active .left,
-.slide-down-enter-active .left,
-.slide-left-enter-active .left,
-.slide-right-enter-active .left,
-.slide-up-leave-active .left,
-.slide-down-leave-active .left,
-.slide-left-leave-active .left,
-.slide-right-leave-active .left {
-	top: var(--top);
-}
-
-.slide-up-leave-from .left,
-.slide-left-leave-from .left,
-.slide-down-leave-from .left,
-.slide-right-leave-from .left {
-	top: 0;
 }
 </style>
