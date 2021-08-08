@@ -45,7 +45,7 @@ export default {
 	border-radius: 50%;
 	display: flex;
 	background: radial-gradient(#00000000, #00000099);
-	box-shadow: 0 0 0 0.5px #ffffff22, 0 0 10px 0 #ffffff11;
+	box-shadow: 0 0 0 1px #ffffff22, 0 0 10px 0 #ffffff11;
 }
 
 .logo {

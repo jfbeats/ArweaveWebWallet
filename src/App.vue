@@ -36,6 +36,7 @@ export default {
 			document.title = to.meta.title || 'Arweave Wallet'
 			const routes = router.options.routes
 			// TODO traverse subroutes to find direction (find first occurence of either toIndex or fromIndex)
+			// then select the right name depending on if in the route or subroute component
 			let toIndex = routes.findIndex(el => el.path === to.path)
 			let fromIndex = routes.findIndex(el => el.path === from.path)
 			if (toIndex === fromIndex && to.params.walletId && from.params.walletId) {
@@ -99,7 +100,6 @@ export default {
 	flex: 0 0 auto;
 	display: flex;
 	flex-direction: column;
-	box-shadow: 0 0 0 0.5px var(--border);
 	overflow: auto;
 	overflow: overlay;
 	z-index: 10;
@@ -108,6 +108,7 @@ export default {
 	width: auto;
 	scrollbar-width: none;
 	position: fixed;
+	outline: 0.5px solid var(--border);
 }
 
 .toolbar::-webkit-scrollbar {

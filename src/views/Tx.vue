@@ -190,7 +190,7 @@ export default {
 .data-container {
 	padding: var(--spacing);
 	background: var(--background2);
-	box-shadow: 0 0 0 0.5px var(--border);
+	outline: 0.5px solid var(--border);
 	min-height: 100vh;
 }
 

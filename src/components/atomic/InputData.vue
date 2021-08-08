@@ -133,25 +133,7 @@ textarea {
 	width: 100%;
 	height: 100%;
 	border-radius: var(--border-radius);
-}
-
-.file-input::-webkit-file-upload-button {
-	visibility: hidden;
-}
-
-.file-input::before {
-	content: "";
-	position: absolute;
-	display: inline-block;
-	outline: none;
-	white-space: nowrap;
-	user-select: none;
-	cursor: pointer;
-	font-size: 1em;
-}
-
-.file-input:active::before {
-	background: var(--background3);
+	display: none;
 }
 
 .clear {

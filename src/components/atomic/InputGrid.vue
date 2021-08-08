@@ -1,5 +1,5 @@
 <template>
-	<div v-if="schema.length > 0" class="input-grid input-box">
+	<div v-if="schema.length > 0" class="input-grid input-box" :class="{ focus }">
 		<div v-for="(row, index) in schema" :key="row.key" class="row">
 			<div class="inputs">
 				<div v-for="(input, inputIndex) in row.items" :key="row.key + input.name" class="input" :class="{ flip: row.items.length==2 && inputIndex==1 }">
