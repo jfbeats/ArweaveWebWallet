@@ -194,6 +194,10 @@ export default {
 	min-height: 100vh;
 }
 
+.verticalContent .data-container {
+	min-height: 80vh;
+}
+
 .iframe {
 	width: 100%;
 	height: 100%;
