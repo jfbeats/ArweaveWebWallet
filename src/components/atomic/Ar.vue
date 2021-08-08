@@ -1,7 +1,7 @@
 <template>
 	<span class="ar">
-		<transition name="fade-fast">
-			<span v-if="ar"> {{ amountRounded }} <span class="symbol">AR</span></span>
+		<transition name="fade-fast" mode="out-in">
+			<span v-if="ar" :key="ar"> {{ amountRounded }} <span class="symbol">AR</span></span>
 		</transition>
 	</span>
 </template>

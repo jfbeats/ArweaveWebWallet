@@ -1,6 +1,6 @@
 <template>
 	<div class="icon">
-		<transition name="slide-up" mode="out-in">
+		<transition name="fade-fast" mode="out-in">
 			<div v-if="icon" :key="icon" class="icon-background">
 				<svg v-if="icon == 'loader'" class="loader" height="100" width="100" viewBox="0 0 100 100" :class="{ spin: progress == null }">
 					<circle stroke="#ffffff33" :stroke-width="thickness" fill="transparent" :r="normalizedRadius" :cx="50" :cy="50" />
