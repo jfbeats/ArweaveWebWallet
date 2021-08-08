@@ -55,6 +55,7 @@ export default {
 .verticalContent .left {
 	position: relative;
 	width: 100%;
+	max-width: 100%;
 	height: auto;
 }
 
