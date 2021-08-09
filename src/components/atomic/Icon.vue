@@ -3,8 +3,8 @@
 		<transition name="fade-fast" mode="out-in">
 			<div v-if="icon" :key="icon" class="icon-background">
 				<svg v-if="icon == 'loader'" class="loader" height="100" width="100" viewBox="0 0 100 100" :class="{ spin: progress == null }">
-					<circle stroke="#ffffff33" :stroke-width="thickness" fill="transparent" :r="normalizedRadius" :cx="50" :cy="50" />
-					<circle stroke="white" :stroke-dasharray="circumference + ' ' + circumference" :style="{ strokeDashoffset }" :stroke-width="thickness" stroke-linecap="round" fill="transparent" :r="normalizedRadius" :cx="50" :cy="50" @animationiteration="finishAnimation = false"  :class="{ spin: progress == null || finishAnimation }" />
+					<circle stroke="#ffffff22" :stroke-width="thickness" fill="transparent" :r="normalizedRadius" :cx="50" :cy="50" />
+					<circle stroke="currentColor" :stroke-dasharray="circumference + ' ' + circumference" :style="{ strokeDashoffset }" :stroke-width="thickness" stroke-linecap="round" fill="transparent" :r="normalizedRadius" :cx="50" :cy="50" @animationiteration="finishAnimation = false"  :class="{ spin: progress == null || finishAnimation }" />
 				</svg>
 				<span v-else-if="isSymbol" class="symbol no-select">{{ icon }}</span>
 				<img v-else class="img no-select" :src="icon" draggable="false">
@@ -21,10 +21,10 @@ export default {
 	props: ['icon', 'progress'],
 	setup (props) {
 		const isSymbol = computed(() => typeof props.icon === 'string' && props.icon.length <= 2)
-		const thickness = 10
+		const thickness = 5
 		const normalizedRadius = 50 - thickness / 2
 		const circumference = normalizedRadius * 2 * Math.PI
-		const strokeDashoffset = computed(() => circumference - (props.progress || 25) / 100 * circumference)
+		const strokeDashoffset = computed(() => circumference - (props.progress ?? 25) / 100 * circumference)
 		const finishAnimation = ref(false)
 		watch(() => props.progress, (value, oldValue) => {
 			if (value != null && oldValue == null) { finishAnimation.value = true }
@@ -69,7 +69,7 @@ export default {
 }
 
 .loader {
-	transform: rotate(-90deg);
+	transform: rotate(-45deg);
 	transition: transform 0.5s ease;
 }
 
@@ -79,7 +79,7 @@ export default {
 
 circle.spin {
 	animation: loader-animation 2s infinite linear;
-	animation-timing-function: cubic-bezier(0.6, 0.4, 0.4, 0.6);
+	/* animation-timing-function: cubic-bezier(0.6, 0.4, 0.4, 0.6); */
 }
 
 @keyframes loader-animation {
