@@ -16,7 +16,7 @@
 			<template #right>
 				<div class="wallet-view">
 					<router-view v-slot="{ Component }" class="router-view" @before-enter="emitter.emit('beforeEnter')">
-						<transition :name="$route.meta.transition?.nameWallet || $route.meta.transition?.name" mode="out-in">
+						<transition :name="$route.meta.transition?.nameWallet || $route.meta.transition?.name" mode="out-in" @before-enter="emitter.emit('beforeEnter')" @after-enter="emitter.emit('afterEnter')" @before-leave="emitter.emit('beforeLeave')" @after-leave="emitter.emit('afterLeave')">
 							<component :is="Component" :key="$route.path.split('/').slice(0,3).join('')" />
 						</transition>
 					</router-view>
@@ -33,6 +33,7 @@ import FoldingLayout from '@/components/FoldingLayout.vue'
 import Balance from '@/components/Balance'
 import Action from '@/components/atomic/Action'
 import ArweaveStore, { setCurrentWallet } from '@/store/ArweaveStore'
+import { emitter } from '@/store/InterfaceStore'
 
 export default {
 	name: 'Wallet',
@@ -44,7 +45,7 @@ export default {
 			{ name: 'TxList', img: require('@/assets/icons/swap.svg'), text: 'Transactions' },
 			// { name: 'Tokens', img: require('@/assets/icons/cloud_circle.svg'), text: 'Tokens' },
 		]
-		return { actions }
+		return { actions, emitter }
 	},
 	watch: {
 		wallet: {
