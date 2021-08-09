@@ -25,11 +25,13 @@
 				</div>
 
 				<h3>Properties</h3>
-				<div class="card">
-					<h3>ID</h3>
-					<div class="ellipsis">{{ tx.id }}</div>
-					<div v-if="tx.data.size > 0">Link</div>
-					<br>
+				<div class="card flex-column">
+
+					<div>
+						<h3>ID</h3>
+						<div class="ellipsis">{{ tx.id }}</div>
+						<a v-if="tx.data.size > 0" :href="ArweaveStore.gatewayURL + tx.id" target="_blank">Link</a>
+					</div>
 
 					<div v-if="isPending">
 						<h3>Pending</h3>
@@ -39,13 +41,14 @@
 						<div class="ellipsis">{{ tx.block.id }}</div>
 						<span>{{ tx.block.height }}<template v-if="currentBlock"> / {{ currentBlock }}</template></span>
 						<div>{{ date }}</div>
-						<br>
 					</div>
 
-					<h3>Data</h3>
-					<div>Data size {{ humanFileSize(tx.data.size) }}</div>
-					<div>Fee
-						<Ar class="ar" :ar="tx.fee.ar" />&nbsp;<LocaleCurrency class="small" :ar="tx.fee.ar">|</LocaleCurrency>
+					<div>
+						<h3>Data</h3>
+						<div>Data size {{ humanFileSize(tx.data.size) }}</div>
+						<div>Fee
+							<Ar class="ar" :ar="tx.fee.ar" />&nbsp;<LocaleCurrency class="small" :ar="tx.fee.ar">|</LocaleCurrency>
+						</div>
 					</div>
 				</div>
 
@@ -55,6 +58,8 @@
 						<InputGrid :schema="tagsSchema" disabled />
 					</div>
 				</template>
+
+				<br v-if="verticalContent">
 
 			</div>
 		</template>
@@ -147,7 +152,7 @@ export default {
 			for (const tag of tx.value.tags) {
 				result.push({
 					items: [
-						{ name: 'Tag', value: tag.name, attrs: { disabled: true }, icon: require('@/assets/icons/label.svg') },
+						{ name: 'Tag', value: tag.name, attrs: { disabled: true } },
 						{ name: 'Value', value: tag.value, attrs: { disabled: true } }
 					]
 				})
@@ -218,6 +223,10 @@ export default {
 	white-space: pre-wrap;
 }
 
+h3 {
+	margin-bottom: 0;
+}
+
 .row {
 	min-height: 2em;
 	align-items: flex-start;
@@ -256,6 +265,12 @@ export default {
 
 .address {
 	max-width: 100%;
+}
+
+.input-grid {
+	padding: var(--spacing) 0;
+	background: var(--background2);
+	border: 0.5px solid var(--border);
 }
 
 .small {
