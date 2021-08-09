@@ -1,10 +1,12 @@
 <template>
 	<div class="app" :class="{ verticalLayout, verticalContent }">
 		<Toolbar class="toolbar" @drop.prevent="droppedFiles" />
-		<router-view class="router" v-slot="{ Component }" @drop.prevent="droppedFiles">
-			<transition :name="$route.meta.transition?.nameLayout" mode="out-in" @before-enter="emitter.emit('beforeEnter')" @after-enter="emitter.emit('afterEnter')" @before-leave="emitter.emit('beforeLeave')" @after-leave="emitter.emit('afterLeave')">
-				<component :is="Component" />
-			</transition>
+		<router-view v-slot="{ Component }" @drop.prevent="droppedFiles">
+			<div class="router">
+				<transition :name="$route.meta.transition?.nameLayout" mode="out-in" @before-enter="emitter.emit('beforeEnter')" @after-enter="emitter.emit('afterEnter')" @before-leave="emitter.emit('beforeLeave')" @after-leave="emitter.emit('afterLeave')">
+					<component :is="Component" />
+				</transition>
+			</div>
 		</router-view>
 		<transition name="fade">
 			<div v-if="dragOverlay" class="overlay" />
@@ -121,10 +123,6 @@ export default {
 	display: flex;
 }
 
-.app.verticalLayout {
-	flex-direction: column;
-}
-
 .toolbar {
 	flex: 0 0 auto;
 	display: flex;
@@ -151,17 +149,26 @@ export default {
 }
 
 .router {
-	min-width: 0;
 	position: relative;
-	padding-inline-start: 80px;
-	min-height: 100vh;
-	/* transform: translateZ(0); */
 }
 
-.verticalLayout .router {
-	margin-top: 80px;
+#viewport {
+	position: fixed;
+	top: 0;
+}
+
+.router,
+#viewport {
+	padding-inline-start: 80px;
+	width: 100%;
+	min-width: 0;
+	min-height: 100vh;
+}
+
+.verticalLayout .router,
+.verticalLayout #viewport {
 	padding-inline-start: 0;
-	min-height: calc(100vh - 80px);
+	padding-top: 80px;
 }
 
 .overlay {

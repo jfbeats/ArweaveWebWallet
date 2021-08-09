@@ -112,6 +112,7 @@ export default {
 <style scoped>
 .add-wallet {
 	width: 100%;
+	min-height: 100%;
 	padding: var(--spacing);
 	align-items: center;
 	justify-content: space-evenly;
