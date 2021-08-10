@@ -3,7 +3,7 @@
 		<div class="tx-content" :class="{ 'flex-row': !verticalElement, 'flex-column': verticalElement }">
 			<router-link class="left reset" :to="{ name: 'Tx', params: { txId: tx.id } }">
 
-				<TxIcon class="tx-icon" :direction="direction" :isValue="isValue" :isData="isData" :isPending="isPending" />
+				<TxIcon class="tx-icon" :tx="tx" :direction="direction" />
 				<div class="margin" />
 
 				<div>
@@ -62,7 +62,8 @@ export default {
 	props: ['tx'],
 	computed: {
 		date () {
-			if (this.isPending) { return 'pending' }
+			if (ArweaveStore.uploads[this.tx.id]) { return `Uploading ${ArweaveStore.uploads[this.tx.id].upload}%` }
+			if (this.isPending) { return 'Pending' }
 			return new Date(this.tx.block.timestamp * 1000).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
 		},
 		time () {

@@ -33,7 +33,7 @@
 			</g>
 		</svg>
 		<transition name="fade">
-			<Icon v-if="isPending" icon="loader" class="loader"></Icon>
+			<Icon v-if="isPending || uploadProgress" icon="loader" :progress="uploadProgress" class="loader"></Icon>
 		</transition>
 	</div>
 </template>
@@ -42,17 +42,20 @@
 
 <script>
 import Icon from '@/components/atomic/Icon.vue'
-import { computed } from 'vue'
+import ArweaveStore from '@/store/ArweaveStore'
 
 export default {
 	components: { Icon },
-	props: ['direction', 'isValue', 'isData', 'isPending'],
-	setup (props) {
-		const styleObject = computed(() => ({ 
-			'color': props.isData && !props.isValue ? 'var(--orange)' : props.direction === 'in' ? 'var(--green)' : 'var(--red)'
-		}))
-		return { styleObject }
-	}
+	props: ['tx', 'direction'],
+	computed: {
+		isData () { return this.tx.data.size != 0 },
+		isValue () { return this.tx.quantity.winston != 0 },
+		isPending () { return !this.tx.block },
+		uploadProgress () { return ArweaveStore.uploads[this.tx.id]?.upload },
+		styleObject () {
+			return { 'color': this.isData && !this.isValue ? 'var(--orange)' : this.direction === 'in' ? 'var(--green)' : 'var(--red)' }
+		},
+	},
 }
 </script>
 

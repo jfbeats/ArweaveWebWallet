@@ -33,6 +33,6 @@ export async function manageUpload (tx) {
 		ArweaveStore.uploads[tx.id].upload = uploader.pctComplete
 	}
 	localStorage.removeItem(storageKey)
-	setTimeout(() => delete ArweaveStore.uploads[tx.id], 5000)
+	setTimeout(() => delete ArweaveStore.uploads[tx.id], 1000)
 	return uploader.lastResponseStatus
 }
