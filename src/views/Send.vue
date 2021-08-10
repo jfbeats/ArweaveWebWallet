@@ -171,7 +171,7 @@ export default {
 		const isValid = () => {
 			for (const key in validation) { validation[key] = '' }
 			let result = true
-			if (!props.model.data.length && !(props.model.target.length && props.model.quantity)) {
+			if (!props.model.data && !(props.model.target.length && props.model.quantity)) {
 				validation.global = "A transaction must at least have data, or an address and amount"
 				return
 			}
