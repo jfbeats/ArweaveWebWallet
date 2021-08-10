@@ -30,7 +30,7 @@
 					<div>
 						<h3>ID</h3>
 						<div class="ellipsis">{{ tx.id }}</div>
-						<a v-if="tx.data.size > 0" :href="ArweaveStore.gatewayURL + tx.id" target="_blank">Link</a>
+						<a v-if="isData" :href="ArweaveStore.gatewayURL + tx.id" target="_blank">Link</a>
 					</div>
 
 					<div v-if="isPending">
@@ -63,51 +63,33 @@
 
 			</div>
 		</template>
-		<template #right v-if="data.handler">
-			<transition :name="verticalContent ? 'slide-up' : 'slide-left'" appear>
-				<div v-if="data.handler === 'iframe'" v-show="data.loaded" key="iframe" class="frame-container">
-					<iframe class="iframe" :src="ArweaveStore.gatewayURL + tx.id" @load="data.loaded=true" />
-				</div>
-				<div v-else-if="data.handler === 'img'" v-show="data.loaded" key="img" class="frame-container">
-					<img class="img" :src="ArweaveStore.gatewayURL + tx.id" @load="data.loaded=true">
-				</div>
-				<div v-else-if="data.handler === 'smartweave'" key="smartweave">
-					<SmartWeave :txId="tx.id" />
-				</div>
-				<div v-else-if="data.handler === 'json' || data.handler === 'raw'" key="json" class="data-container">
-					<pre class="raw">{{ data.payload }}</pre>
-				</div>
-			</transition>
+
+		<template #right v-if="isData">
+			<Selector :tx="tx" class="selector" :class="{ inline: !verticalContent }" />
 		</template>
 	</FoldingLayout>
 </template>
 
 <script>
+import Selector from '@/components/handlers/Selector.vue'
 import FoldingLayout from '@/components/FoldingLayout.vue'
 import Address from '@/components/atomic/Address'
 import AddressIcon from '@/components/atomic/AddressIcon'
 import InputGrid from '@/components/atomic/InputGrid.vue'
 import Ar from '@/components/atomic/Ar.vue'
 import LocaleCurrency from '@/components/atomic/LocaleCurrency.vue'
-import SmartWeave from '@/components/SmartWeave.vue'
 import ArweaveStore, { arweave, getTxById } from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { humanFileSize } from '@/functions/Utils'
-import { reactive, watch, computed, ref, onMounted } from 'vue'
+import { watch, computed, ref, onMounted } from 'vue'
 
 export default {
-	components: { FoldingLayout, Address, AddressIcon, InputGrid, Ar, LocaleCurrency, SmartWeave },
+	components: { Selector, FoldingLayout, Address, AddressIcon, InputGrid, Ar, LocaleCurrency },
 	props: {
 		txId: String,
 	},
 	setup (props) {
 		const tx = ref(null)
-		const data = reactive({
-			payload: null,
-			handler: null,
-			loaded: false,
-		})
-
 		const isData = computed(() => tx.value.data?.size !== '0')
 		const isPending = computed(() => !tx.value.block)
 		const date = computed(() => {
@@ -120,32 +102,7 @@ export default {
 
 		watch(() => props.txId, async () => {
 			tx.value = await getTxById(props.txId)
-			if (!tx.value) { return }
-			data.handler = null
-			data.loaded = false
-			if (!isData.value) {
-				return
-			} else if (tx.value.data?.type === 'application/x.arweave-manifest+json' || tx.value.data?.type === 'text/html' || tx.value.data?.type === 'application/pdf') {
-				data.handler = 'iframe'
-			} else if (tx.value.data?.type?.split('/')[0] === 'image') {
-				data.handler = 'img'
-			} else if (tx.value.tags?.find(el => el.name === 'App-Name')?.value === 'SmartWeaveContract') {
-				data.handler = 'smartweave'
-			} else {
-				data.handler = 'raw'
-				try {
-					data.payload = await arweave.transactions.getData(props.txId, { decode: true, string: true })
-					if (data.payload[0] === "{") {
-						try {
-							data.payload = JSON.stringify(JSON.parse(data.payload), null, 2)
-							data.handler = 'json'
-						}
-						catch { }
-					}
-				} catch { }
-			}
 		}, { immediate: true })
-		const loaded = () => { data.loaded = true }
 
 		const tagsSchema = computed(() => {
 			const result = []
@@ -163,7 +120,7 @@ export default {
 		const currentBlock = ref(null)
 		onMounted(async () => currentBlock.value = (await arweave.network.getInfo())?.height)
 
-		return { ArweaveStore, tx, data, loaded, currentBlock, isData, isPending, date, verticalContent, tagsSchema, humanFileSize }
+		return { ArweaveStore, tx, currentBlock, isData, isPending, date, verticalContent, tagsSchema, humanFileSize }
 	},
 }
 </script>
@@ -176,51 +133,6 @@ export default {
 
 .verticalContent .meta {
 	max-width: 100%;
-}
-
-.frame-container {
-	width: 100%;
-	height: 100vh;
-	background: var(--background2);
-	box-shadow: 0 0 0 2px #aaa;
-	border-radius: 32px 0 0 32px;
-	overflow: hidden;
-}
-
-.verticalContent .frame-container {
-	height: 80vh;
-	border-radius: 32px 32px 0 0;
-}
-
-.data-container {
-	padding: var(--spacing);
-	background: var(--background2);
-	outline: 0.5px solid var(--border);
-	min-height: 100vh;
-}
-
-.verticalContent .data-container {
-	min-height: 80vh;
-}
-
-.iframe {
-	width: 100%;
-	height: 100%;
-	border: 0;
-	opacity: 0.6;
-}
-
-.img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-}
-
-.raw {
-	overflow: auto;
-	padding: var(--spacing);
-	margin: 0;
-	white-space: pre-wrap;
 }
 
 h3 {
@@ -276,5 +188,17 @@ h3 {
 .small {
 	font-size: 0.75em;
 	color: var(--element-secondary);
+}
+
+.selector.inline {
+	min-height: 100vh;
+	border-start-end-radius: 0;
+	border-end-end-radius: 0;
+}
+
+.verticalContent .selector {
+	min-height: 80vh;
+	border-end-start-radius: 0;
+	border-end-end-radius: 0;
 }
 </style>
