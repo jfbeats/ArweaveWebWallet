@@ -6,7 +6,7 @@
 		<img class="img" :src="ArweaveStore.gatewayURL + tx.id" @load="data.loaded=true">
 	</div>
 	<div v-else-if="data.handler === 'smartweave'" key="smartweave">
-		<SmartWeave :txId="tx.id" />
+		<SmartWeave :tx="tx" />
 	</div>
 	<div v-else-if="data.handler === 'json' || data.handler === 'raw'" key="json" class="data-container">
 		<pre class="raw">{{ data.payload }}</pre>
@@ -15,7 +15,7 @@
 
 <script>
 import ArweaveStore, { arweave } from '@/store/ArweaveStore'
-import SmartWeave from '@/components/SmartWeave.vue'
+import SmartWeave from '@/components/handlers/SmartWeave.vue'
 import { reactive, watch } from 'vue'
 
 export default {
@@ -38,8 +38,8 @@ export default {
 				data.handler = 'iframe'
 			} else if (props.tx.data?.type?.split('/')[0] === 'image') {
 				data.handler = 'img'
-			} else if (props.tx.tags?.find(el => el.name === 'App-Name')?.value === 'SmartWeaveContract') {
-				data.handler = 'smartweave'
+			// } else if (props.tx.tags?.find(el => el.name === 'App-Name')?.value === 'SmartWeaveContract') {
+			// 	data.handler = 'smartweave'
 			} else {
 				data.handler = 'raw'
 				try {

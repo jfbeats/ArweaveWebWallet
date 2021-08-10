@@ -1,5 +1,5 @@
 import { arweave } from '@/store/ArweaveStore'
-import { smartweave, readContract } from 'smartweave'
+import { smartweave } from 'smartweave'
 import { reactive } from 'vue'
 
 const SmartweaveStore = reactive({
@@ -9,7 +9,7 @@ const SmartweaveStore = reactive({
 
 
 export async function getContract (id) {
-	SmartweaveStore.contracts[id] = await readContract(arweave, id)
+	SmartweaveStore.contracts[id] = await smartweave.readContract(arweave, id)
 	console.log(SmartweaveStore.contracts)
 }
 
