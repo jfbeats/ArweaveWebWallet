@@ -1,9 +1,9 @@
 <template>
 	<div v-if="data.handler === 'iframe'" v-show="data.loaded" key="iframe" class="frame-container">
-		<iframe class="iframe" :src="ArweaveStore.gatewayURL + tx.id" @load="data.loaded=true" />
+		<iframe class="iframe" :src="gatewayLink" @load="data.loaded=true" />
 	</div>
 	<div v-else-if="data.handler === 'img'" v-show="data.loaded" key="img" class="frame-container">
-		<img class="img" :src="ArweaveStore.gatewayURL + tx.id" @load="data.loaded=true">
+		<img class="img" :src="gatewayLink" @load="data.loaded=true">
 	</div>
 	<div v-else-if="data.handler === 'smartweave'" key="smartweave">
 		<SmartWeave :tx="tx" />
@@ -16,7 +16,7 @@
 <script>
 import ArweaveStore, { arweave } from '@/store/ArweaveStore'
 import SmartWeave from '@/components/handlers/SmartWeave.vue'
-import { reactive, watch } from 'vue'
+import { computed, reactive, watch } from 'vue'
 
 export default {
 	components: { SmartWeave },
@@ -27,6 +27,8 @@ export default {
 			loaded: false,
 			payload: null,
 		})
+
+		const gatewayLink = computed(() => ArweaveStore.gatewayURL + props.tx.id)
 
 		watch(() => props.tx, async () => {
 			if (!props.tx) { return }
@@ -55,7 +57,7 @@ export default {
 			}
 		}, { immediate: true })
 
-		return { ArweaveStore, data }
+		return { gatewayLink, data }
 	}
 }
 </script>

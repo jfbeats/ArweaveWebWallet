@@ -22,14 +22,14 @@ import { SlickList, SlickItem } from 'vue-slicksort'
 import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { saveWalletsOrder } from '@/functions/Storage'
-import { computed } from 'vue'
+import { computed, toRef } from 'vue'
 
 export default {
 	name: 'Toolbar',
 	components: { AddressIcon, DragOverlay, SlickList, SlickItem },
 	setup () {
-		const verticalLayout = computed(() => InterfaceStore.breakpoints.verticalLayout)
-		const axis = computed(() => InterfaceStore.breakpoints.verticalLayout ? 'x' : 'y')
+		const verticalLayout = toRef(InterfaceStore.breakpoints, 'verticalLayout')
+		const axis = computed(() => verticalLayout.value ? 'x' : 'y')
 		const wallets = computed({
 			get () { 
 				saveWalletsOrder(ArweaveStore.wallets)

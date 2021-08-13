@@ -31,7 +31,7 @@ export default {
 		const bottom = ref(null)
 		const route = useRoute()
 		const selectedQuery = computed(() => route.query.view || 'all')
-		const txs = computed(() => props.wallet?.queries[selectedQuery.value] || [])
+		const txs = computed(() => props.wallet?.queries?.[selectedQuery.value] || [])
 		const completedQuery = computed(() => props.wallet?.queriesStatus?.[selectedQuery.value]?.completed)
 		const updateContent = () => updateTransactions(props.wallet, selectedQuery.value)
 		const fetchQuery = async () => {

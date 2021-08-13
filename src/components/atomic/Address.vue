@@ -14,13 +14,15 @@
 
 <script>
 import { getArverify } from '@/store/ArweaveStore'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 export default {
 	props: ['address'],
 	setup (props) {
 		const arverify = ref(null)
-		getArverify(props.address).then(res => arverify.value = res)
+		watch(() => props.address, async (address) => {
+			arverify.value = await getArverify(address)
+		})
 		return { arverify }
 	}
 }

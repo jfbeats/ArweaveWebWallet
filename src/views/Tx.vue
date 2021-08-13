@@ -81,7 +81,7 @@ import LocaleCurrency from '@/components/atomic/LocaleCurrency.vue'
 import ArweaveStore, { arweave, getTxById } from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { humanFileSize } from '@/functions/Utils'
-import { watch, computed, ref, onMounted } from 'vue'
+import { watch, computed, ref, toRef } from 'vue'
 
 export default {
 	components: { Selector, FoldingLayout, Address, AddressIcon, InputGrid, Ar, LocaleCurrency },
@@ -89,7 +89,7 @@ export default {
 		txId: String,
 	},
 	setup (props) {
-		const tx = ref(null)
+		const tx = computed(() => ArweaveStore.txs[props.txId])
 		const isData = computed(() => tx.value.data?.size !== '0')
 		const isPending = computed(() => !tx.value.block)
 		const date = computed(() => {
@@ -98,12 +98,7 @@ export default {
 			return dateObj.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
 				+ ' ' + dateObj.toLocaleTimeString()
 		})
-		const verticalContent = computed(() => InterfaceStore.breakpoints.verticalContent)
-
-		watch(() => props.txId, async () => {
-			tx.value = await getTxById(props.txId)
-		}, { immediate: true })
-
+		const currentBlock = ref(null)
 		const tagsSchema = computed(() => {
 			const result = []
 			for (const tag of tx.value.tags) {
@@ -117,10 +112,14 @@ export default {
 			return result
 		})
 
-		const currentBlock = ref(null)
-		onMounted(async () => currentBlock.value = (await arweave.network.getInfo())?.height)
+		watch(() => props.txId, async () => {
+			getTxById(props.txId)
+			currentBlock.value = (await arweave.network.getInfo())?.height
+		}, { immediate: true })
 
-		return { ArweaveStore, tx, currentBlock, isData, isPending, date, verticalContent, tagsSchema, humanFileSize }
+		const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
+
+		return { ArweaveStore, tx, currentBlock, isData, isPending, date, tagsSchema, verticalContent, humanFileSize }
 	},
 }
 </script>

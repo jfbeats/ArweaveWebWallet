@@ -17,7 +17,7 @@
 <script>
 import Icon from '@/components/atomic/Icon.vue'
 import ArweaveStore from '@/store/ArweaveStore'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, toRef, watch } from 'vue'
 
 export default {
 	components: { Icon },
@@ -48,8 +48,8 @@ export default {
 				}
 			}
 		})
-		const currentPrice = computed(() => ArweaveStore.redstone.currentPrice)
-		const currency = computed(() => ArweaveStore.redstone.currency)
+		const currentPrice = toRef(ArweaveStore.redstone, 'currentPrice')
+		const currency = toRef(ArweaveStore.redstone, 'currency')
 		const currencySymbol = computed(() => new Intl.NumberFormat(navigator.languages, { style: 'currency', currency: currency.value }).format(0).replace(/[\w\d\.\,\s]/g, '') || '$')
 		const focus = ref(0)
 		watch(() => model.value, (newVal, oldVal) => {

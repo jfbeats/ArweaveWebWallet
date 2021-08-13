@@ -200,10 +200,10 @@ export default {
 		}
 
 		const resetForm = () => {
-				props.model.target = ''
-				props.model.quantity = ''
-				props.model.data = ''
-				props.model.tags = []
+			props.model.target = ''
+			props.model.quantity = ''
+			props.model.data = ''
+			props.model.tags = []
 		}
 
 		const postTx = async () => {
@@ -229,13 +229,14 @@ export default {
 			loading.value = false
 		}
 
-		const addressHash = base64UrlToHex(props.wallet.key)
-		const submitStyle = {
-			'--border': `rgba(${addressHashToColor(addressHash).join(',')},0.8)`,
-			'--glow-color': `rgba(${addressHashToColor(addressHash).join(',')},0.2)`,
-			'background-image': `radial-gradient(circle at center, rgba(${addressHashToColor(addressHash).join(',')},0.4), 
-			rgba(${addressHashToColor(addressHash).join(',')},0.3))`
-		}
+		const addressHash = computed(() => base64UrlToHex(props.wallet.key))
+		const addressHashColor = computed(() => addressHashToColor(addressHash.value).join(','))
+		const submitStyle = computed(() => ({
+			'--border': `rgba(${addressHashColor.value},0.8)`,
+			'--glow-color': `rgba(${addressHashColor.value},0.2)`,
+			'background-image': `radial-gradient(circle at center, rgba(${addressHashColor.value},0.4), 
+			rgba(${addressHashColor.value},0.3))`
+		}))
 
 		return { maskAddress, setMax, filesAdded, addTag, txSizeDisplay, txFee, postTx, submitStyle, loading, validation }
 	}

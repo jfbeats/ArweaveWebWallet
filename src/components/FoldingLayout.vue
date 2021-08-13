@@ -18,10 +18,10 @@
 
 <script>
 import InterfaceStore from '@/store/InterfaceStore'
-import { computed } from 'vue'
+import { toRef } from 'vue'
 export default {
 	setup () {
-		const verticalContent = computed(() => InterfaceStore.breakpoints.verticalContent)
+		const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
 		return { verticalContent }
 	},
 	methods: {

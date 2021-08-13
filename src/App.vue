@@ -23,16 +23,16 @@ import ArweaveStore from './store/ArweaveStore'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import { addWallet } from '@/functions/Wallets.js'
 import { useRoute, useRouter } from 'vue-router'
-import { computed } from 'vue'
+import { toRef } from 'vue'
 
 export default {
 	components: {
 		Toolbar
 	},
 	setup () {
-		const verticalLayout = computed(() => InterfaceStore.breakpoints.verticalLayout)
-		const verticalContent = computed(() => InterfaceStore.breakpoints.verticalContent)
-		const dragOverlay = computed(() => InterfaceStore.dragOverlay)
+		const verticalLayout = toRef(InterfaceStore.breakpoints, 'verticalLayout')
+		const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
+		const dragOverlay = toRef(InterfaceStore, 'dragOverlay')
 		const router = useRouter()
 		const route = useRoute()
 		router.afterEach((to, from) => {
