@@ -121,7 +121,7 @@ export default {
 		const filesAdded = (files) => {
 			let contentTypeTag = props.model.tags.find(row => row.items[0].value === 'Content-Type')
 			props.model.data = files ? files[0] : ''
-			if (files) {
+			if (props.model.data && props.model.data.type) {
 				if (!contentTypeTag) {
 					contentTypeTag = tagSchema('Content-Type')
 					addTag(contentTypeTag)
@@ -171,13 +171,17 @@ export default {
 		const isValid = () => {
 			for (const key in validation) { validation[key] = '' }
 			let result = true
-			if (!props.model.data && !(props.model.target.length && props.model.quantity)) {
+			if (!props.model.data && !(props.model.quantity > 0)) {
 				validation.global = "A transaction must at least have data, or an address and amount"
 				return
 			}
 			const balance = new BigNumber(props.wallet.balance)
-			if (balance.minus(txFee.value).minus(props.model.quantity) < 0) {
-				validation.quantity = "Current balance too low"; result = false
+			if (balance.minus(txFee.value).minus(props.model.quantity || 0) < 0) {
+				if (props.model.quantity > 0) {
+					validation.quantity = "Current balance too low"; result = false
+				} else {
+					validation.data = "Current balance too low"; result = false
+				}
 			}
 			const tags = getTagsFromSchema(props.model.tags)
 			let tagLength = 0
@@ -193,7 +197,7 @@ export default {
 			if (props.model.target.length && props.model.target.length < 43) {
 				validation.target = "Invalid address"; result = false
 			}
-			if (!props.model.target.length && props.model.quantity) {
+			if (!props.model.target.length && props.model.quantity > 0) {
 				validation.target = "An address must be specified to send AR"; result = false
 			}
 			return result
