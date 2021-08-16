@@ -1,4 +1,4 @@
-import { reactive } from 'vue'
+import { reactive, watch } from 'vue'
 import mitt from 'mitt'
 
 const InterfaceStore = reactive({
@@ -21,10 +21,16 @@ const InterfaceStore = reactive({
 
 export const emitter = mitt()
 
+export async function sleepUntilVisible () {
+	return new Promise(resolve => {
+		watch(() => InterfaceStore.windowVisible, (value) => { if (value) { resolve(true) } }, { immediate: true })
+	})
+}
+
 emitter.once = (eventName, fn) => {
-	const handler = () => {
+	const handler = (...args) => {
 		emitter.off(eventName, handler)
-		fn()
+		fn(...args)
 	}
 	emitter.on(eventName, handler)
 }
