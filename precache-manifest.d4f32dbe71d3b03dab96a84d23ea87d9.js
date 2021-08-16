@@ -20,16 +20,16 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/arweaveViewLandscape.png"
   },
   {
-    "revision": "38d40890824866d024ab",
+    "revision": "bcc4dca5541d73bd36f4",
     "url": "/css/app.e0ea5296.css"
-  },
-  {
-    "revision": "bb58856e1f0d1c7b2cc3",
-    "url": "/css/chunk-28e18390.ed984986.css"
   },
   {
     "revision": "c2b1fe4a5d62ba066dc0",
     "url": "/css/chunk-3720c733.73f0c0a9.css"
+  },
+  {
+    "revision": "15a516cfd521e614796e",
+    "url": "/css/chunk-49296b24.10938feb.css"
   },
   {
     "revision": "b89ddb43660feb6f9c4d",
@@ -104,20 +104,20 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/img/x.2ca824d3.svg"
   },
   {
-    "revision": "a274600fe2abf4f5787068028928b9c8",
+    "revision": "500042f630191a564693b81a8042e81d",
     "url": "/index.html"
   },
   {
-    "revision": "38d40890824866d024ab",
-    "url": "/js/app.bacc8d83.js"
-  },
-  {
-    "revision": "bb58856e1f0d1c7b2cc3",
-    "url": "/js/chunk-28e18390.08c92796.js"
+    "revision": "bcc4dca5541d73bd36f4",
+    "url": "/js/app.fbd41b0d.js"
   },
   {
     "revision": "c2b1fe4a5d62ba066dc0",
     "url": "/js/chunk-3720c733.5978573e.js"
+  },
+  {
+    "revision": "15a516cfd521e614796e",
+    "url": "/js/chunk-49296b24.4cb5718b.js"
   },
   {
     "revision": "b89ddb43660feb6f9c4d",
