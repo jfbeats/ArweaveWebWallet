@@ -16,7 +16,7 @@
 			</div>
 			<div class="group">
 				<p>Currency</p>
-				<Select v-model="ArweaveStore.redstone.currency" :options="options" :icon="currencySymbol" />
+				<Select v-model="ArweaveStore.conversion.settings" :options="options" :icon="currencySymbol" />
 			</div>
 			<!-- <div class="group">
 				<p>Fund the project</p>
@@ -52,12 +52,12 @@ export default {
 		axios.get('https://raw.githubusercontent.com/redstone-finance/redstone-app/main/src/assets/data/tokens.json').then(response => {
 			const results = response.data
 			const message = ' Redstone Finance'
-			options.push({ value: 'USD', text: 'USD' + message })
+			options.push({ value: { currency: 'USD', provider: 'redstone' }, text: 'USD' + message })
 			for (const key in results) {
-				if (results[key].tags?.includes('currencies')) { options.push({ value: key, text: key + message }) }
+				if (results[key].tags?.includes('currencies')) { options.push({ value: { currency: key, provider: 'redstone' }, text: key + message }) }
 			}
 		})
-		const currencySymbol = computed(() => new Intl.NumberFormat(navigator.languages, { style: 'currency', currency: ArweaveStore.redstone.currency }).format(0).replace(/[\w\d\.\,\s]/g, '') || '$')
+		const currencySymbol = computed(() => new Intl.NumberFormat(navigator.languages, { style: 'currency', currency: ArweaveStore.conversion.settings.currency }).format(0).replace(/[\w\d\.\,\s]/g, '') || '$')
 
 		const amount = ref('')
 

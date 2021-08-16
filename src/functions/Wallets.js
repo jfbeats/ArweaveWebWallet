@@ -58,8 +58,8 @@ export function loadWallets () {
 }
 
 function orderWallets (wallets) {
-	try { 
-		const order = JSON.parse(localStorage.getItem('walletsOrder')) 
+	try {
+		const order = JSON.parse(localStorage.getItem('walletsOrder'))
 		return wallets.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id))
 	} catch (e) { localStorage.removeItem('walletsOrder') }
 }
@@ -91,10 +91,6 @@ init()
 
 window.addEventListener('storage', (e) => {
 	if (e.newValue === e.oldValue) { return }
-	if (e.key === 'wallets') {
-		ArweaveStore.wallets = []
-		init()
-	} else if (e.key == 'walletsOrder') {
-		orderWallets(ArweaveStore.wallets)
-	}
+	else if (e.key === 'wallets') { ArweaveStore.wallets = []; init() }
+	else if (e.key == 'walletsOrder') { orderWallets(ArweaveStore.wallets) }
 })

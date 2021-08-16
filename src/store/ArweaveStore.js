@@ -13,9 +13,10 @@ const ArweaveStore = reactive({
 	wallets: [],
 	txs: {},
 	arverify: {},
-	redstone: {
+	conversion: {
 		currentPrice: null,
-		currency: 'USD',
+		isUpdating: false,
+		settings: { currency: 'USD', provider: 'redstone' },
 	},
 	uploads: {},
 })
@@ -303,39 +304,54 @@ export async function getArverify (address) {
 }
 
 export async function updateConversionRate () {
-	if (!InterfaceStore.windowVisible) { return }
-	const currency = ArweaveStore.redstone.currency
+	if (ArweaveStore.conversion.isUpdating) { return }
+	ArweaveStore.conversion.isUpdating = true
+	await sleepUntilVisible()
+	const currency = ArweaveStore.conversion.settings.currency
+	const provider = ArweaveStore.conversion.settings.provider
 	let result
-	if (currency === 'USD') {
-		result = await axios.get('https://api.redstone.finance/prices/?symbols=AR&provider=redstone')
-		ArweaveStore.redstone.currentPrice = result.data['AR'].value
-	} else {
-		result = await axios.get('https://api.redstone.finance/prices/?symbols=AR,' + currency + '&provider=redstone')
-		ArweaveStore.redstone.currentPrice = result.data['AR'].value / result.data[currency].value
-	}
-	return ArweaveStore.redstone.currentPrice
+	try {
+		if (provider === 'redstone') {
+			if (currency === 'USD') {
+				result = await axios.get('https://api.redstone.finance/prices/?symbols=AR&provider=redstone')
+				ArweaveStore.conversion.currentPrice = result.data['AR'].value
+			} else {
+				result = await axios.get('https://api.redstone.finance/prices/?symbols=AR,' + currency + '&provider=redstone')
+				ArweaveStore.conversion.currentPrice = result.data['AR'].value / result.data[currency].value
+			}
+		}
+	} catch (e) { console.error(e) }
+	ArweaveStore.conversion.isUpdating = false
+	return ArweaveStore.conversion.currentPrice
+}
+
+function loadCurrencySettings () {
+	let currencySettings
+	try { currencySettings = JSON.parse(localStorage.getItem('currency')) } catch { }
+	ArweaveStore.conversion.settings = currencySettings || { currency: 'USD', provider: 'redstone' }
+}
+
+function loadGatewaySettings () {
+	updateArweave(localStorage.getItem('gateway') || { host: 'arweave.net', port: 443, protocol: 'https' })
 }
 
 
 
-const gatewayDefault = {
-	host: 'arweave.net',
-	port: 443,
-	protocol: 'https'
-}
-
-updateArweave(localStorage.getItem('gateway') || gatewayDefault)
-
-ArweaveStore.redstone.currency = localStorage.getItem('currency') || 'USD'
-watch(() => ArweaveStore.redstone.currency, (value) => {
-	localStorage.setItem('currency', value)
-	updateConversionRate()
-})
-watch(() => InterfaceStore.windowVisible, (visible) => {
-	if (visible && !ArweaveStore.redstone.currentPrice) { updateConversionRate() }
-})
+loadGatewaySettings()
+loadCurrencySettings()
 updateConversionRate()
 setInterval(updateConversionRate, 600000)
+
+window.addEventListener('storage', (e) => {
+	if (e.newValue === e.oldValue) { return }
+	else if (e.key === 'gateway') { loadGatewaySettings() }
+	else if (e.key === 'currency') { loadCurrencySettings() }
+})
+
+watch(() => ArweaveStore.conversion.settings, (settings) => {
+	localStorage.setItem('currency', JSON.stringify(settings))
+	updateConversionRate()
+}, { deep: true })
 
 
 
@@ -354,6 +370,7 @@ export function loadDemo () {
 if (process.env.NODE_ENV === 'development') {
 	window.ArweaveStore = ArweaveStore
 	window.arweave = arweave
+	window.arDB = arDB
 }
 
 

@@ -15,12 +15,12 @@ export default {
 	props: ['ar'],
 	computed: {
 		converted () {
-			if (!this.ar || !ArweaveStore.redstone.currentPrice) { return }
-			const num = ArweaveStore.redstone.currentPrice * this.ar
+			if (!this.ar || !ArweaveStore.conversion.currentPrice) { return }
+			const num = ArweaveStore.conversion.currentPrice * this.ar
 			return new Intl.NumberFormat(navigator.languages, { style: 'currency', currency: this.currency }).format(num)
 		},
 		currency () {
-			return ArweaveStore.redstone.currency
+			return ArweaveStore.conversion.settings.currency
 		},
 	},
 }
