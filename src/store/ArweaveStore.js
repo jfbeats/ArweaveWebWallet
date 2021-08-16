@@ -3,7 +3,7 @@ import ArDB from 'ardb'
 import axios from 'axios'
 import { getVerification } from 'arverify'
 import { reactive, watch } from 'vue'
-import InterfaceStore from '@/store/InterfaceStore'
+import InterfaceStore, { sleepUntilVisible } from '@/store/InterfaceStore'
 
 
 
@@ -67,13 +67,16 @@ export function getWalletByKey (walletKey) {
 }
 
 export async function getTxById (txId) {
-	for (const wallet of ArweaveStore.wallets) {
-		for (const queryKey in wallet.queries) {
-			const tx = wallet.queries[queryKey].find(el => el?.node?.id === txId)
-			if (tx) { return tx.node }
-		}
+	await sleepUntilVisible()
+	const fetch = async () => {
+		const result = (await arDB.search().id(txId).find())[0]
+		if (!result) { return }
+		return Object.assign(ArweaveStore.txs[result.node.id] ??= {}, result.node)
 	}
-	return (await arDB.search().id(txId).find())[0]?.node
+	const existingTx = ArweaveStore.txs[txId]
+	if (!existingTx) { return fetch() }
+	if (!existingTx.block) { fetch() }
+	return existingTx
 }
 
 export function setCurrentWallet (wallet) {
@@ -175,13 +178,14 @@ async function fetchTransactionsAll (wallet) {
 
 export async function updateTransactions (wallet, query) {
 	if (!wallet.queries[query] || wallet.queries[query].length === 0) { return fetchTransactions(wallet, query) }
-	if (!wallet || !InterfaceStore.windowVisible || wallet.queriesStatus[query]?.fetchTransactions) { return }
+	if (!wallet || wallet.queriesStatus[query]?.fetchTransactions) { return }
 	if (wallet.queriesStatus[query]?.updateTransactions) {
 		return new Promise(resolve => {
 			watch(() => wallet.queriesStatus[query].updateTransactions, (value) => { if (!value) { resolve() } })
 		})
 	}
 	wallet.queriesStatus[query].updateTransactions = true
+	await sleepUntilVisible()
 	if (query === 'all') {
 		await updateTransactionsAll(wallet)
 		wallet.queriesStatus[query].updateTransactions = false
