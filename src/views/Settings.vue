@@ -49,7 +49,7 @@ export default {
 		}
 
 		let options = reactive([])
-		axios.get('https://raw.githubusercontent.com/redstone-finance/redstone-node/main/src/config/tokens.json').then(response => {
+		axios.get('https://api.redstone.finance/configs/tokens').then(response => {
 			const results = response.data
 			const message = ' Redstone Finance'
 			options.push({ value: { currency: 'USD', provider: 'redstone' }, text: 'USD' + message })
