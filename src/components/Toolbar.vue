@@ -21,7 +21,7 @@ import DragOverlay from '@/components/atomic/DragOverlay.vue'
 import { SlickList, SlickItem } from 'vue-slicksort'
 import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
-import { saveWalletsOrder } from '@/functions/Storage'
+import { saveWalletsOrder } from '@/functions/Wallets'
 import { computed, toRef } from 'vue'
 
 export default {

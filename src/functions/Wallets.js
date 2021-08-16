@@ -1,5 +1,4 @@
 import ArweaveStore, { arweave, pushWallet } from '@/store/ArweaveStore'
-import { loadWallets, saveWallets } from '@/functions/Storage'
 import { download } from '@/functions/Utils'
 import { getKeyPairFromMnemonic } from 'human-crypto-keys'
 import { generateMnemonic, validateMnemonic } from 'bip39'
@@ -50,9 +49,52 @@ export async function downloadWallet (wallet) {
 	download(key, JSON.stringify(jwk))
 }
 
+export function loadWallets () {
+	let wallets = []
+	try { wallets = JSON.parse(localStorage.getItem('wallets')) }
+	catch (e) { localStorage.removeItem('wallets') }
+	orderWallets(wallets)
+	return wallets
+}
+
+function orderWallets (wallets) {
+	try { 
+		const order = JSON.parse(localStorage.getItem('walletsOrder')) 
+		return wallets.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id))
+	} catch (e) { localStorage.removeItem('walletsOrder') }
+}
+
+export function saveWallets (wallets) {
+	if (!wallets) { return }
+	const walletsData = []
+	for (const wallet of wallets) {
+		walletsData.push((({ id, key, jwk, metaData }) => ({ id, key, jwk, metaData }))(wallet))
+	}
+	localStorage.setItem('wallets', JSON.stringify(walletsData))
+}
+
+export function saveWalletsOrder (wallets) {
+	if (!wallets) { return }
+	const walletsIds = []
+	for (const wallet of wallets) {
+		walletsIds.push(wallet.id)
+	}
+	localStorage.setItem('walletsOrder', JSON.stringify(walletsIds))
+}
+
 function init () {
 	const wallets = loadWallets()
 	if (!wallets) { return }
 	for (const wallet of wallets) { pushWallet(wallet) }
 }
 init()
+
+window.addEventListener('storage', (e) => {
+	if (e.newValue === e.oldValue) { return }
+	if (e.key === 'wallets') {
+		ArweaveStore.wallets = []
+		init()
+	} else if (e.key == 'walletsOrder') {
+		orderWallets(ArweaveStore.wallets)
+	}
+})
