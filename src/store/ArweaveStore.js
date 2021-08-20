@@ -26,6 +26,7 @@ let arDB
 
 export function updateArweave (gateway) {
 	const urlToSettings = (url) => {
+		if (!url.includes('//')) { url = 'https://' + url }
 		const obj = new URL(url)
 		const protocol = obj.protocol.replace(':', '')
 		const host = obj.hostname
@@ -103,7 +104,9 @@ export async function fetchTransactions (wallet, query) {
 	wallet.queriesStatus[query] ??= {}
 	wallet.queriesStatus[query].fetchTransactions = true
 	if (query === 'all') {
-		await fetchTransactionsAll(wallet)
+		try {
+			await fetchTransactionsAll(wallet)
+		} catch (e) { console.error(e) }
 		wallet.queriesStatus[query].fetchTransactions = false
 		return
 	}
