@@ -15,11 +15,12 @@ export default {
 	setup (props, { emit }) {
 		const observed = ref(null)
 		const intersectionObserver = new IntersectionObserver((entries) => {
-			if (entries[0].isIntersecting) { emit('intersection', entries[0]) }
-			if (props.once) { intersectionObserver.unobserve(observed.value) }
+			if (entries[0].isIntersecting) { emit('intersection', entries[0], unobserve) }
+			if (props.once) { unobserve() }
 		}, { threshold: [props.threshold] })
+		const unobserve = () => intersectionObserver.unobserve(observed.value)
 		onMounted(() => intersectionObserver.observe(observed.value))
-		onBeforeUnmount(() => intersectionObserver.unobserve(observed.value))
+		onBeforeUnmount(unobserve)
 		return { observed }
 	}
 }
