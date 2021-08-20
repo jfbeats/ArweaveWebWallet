@@ -8,8 +8,12 @@
 			</SlickItem>
 		</SlickList>
 		<div class="controls">
-			<router-link class="icon control" :class="{ verticalLayout }" to="/add"><img class="small" src="@/assets/icons/add_box.svg"></router-link>
-			<router-link class="icon control" :class="{ verticalLayout }" to="/settings"><img class="small" src="@/assets/icons/settings.svg"></router-link>
+			<router-link class="icon control" :class="{ verticalLayout }" to="/add" aria-label="Add Wallet">
+				<img class="small" src="@/assets/icons/add_box.svg" alt="Add Wallet">
+			</router-link>
+			<router-link class="icon control" :class="{ verticalLayout }" to="/settings" aria-label="Settings">
+				<img class="small" src="@/assets/icons/settings.svg" alt="Settings">
+			</router-link>
 		</div>
 		<DragOverlay />
 	</nav>

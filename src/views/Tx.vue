@@ -104,8 +104,8 @@ export default {
 			for (const tag of tx.value.tags) {
 				result.push({
 					items: [
-						{ name: 'Tag', value: tag.name, attrs: { disabled: true } },
-						{ name: 'Value', value: tag.value, attrs: { disabled: true } }
+						{ name: '', value: tag.name, attrs: { disabled: true } },
+						{ name: '', value: tag.value, attrs: { disabled: true } }
 					]
 				})
 			}

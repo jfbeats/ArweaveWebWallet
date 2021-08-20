@@ -1,6 +1,6 @@
-![Header image](public/arweaveViewLandscape.svg)
-
 # Arweave Web Wallet
+
+![Header image](public/arweaveViewLandscape.svg)
 
 ## Link
 

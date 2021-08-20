@@ -1,24 +1,33 @@
 <template>
 	<div class="welcome">
-		<div class="logo-container">
-			<div class="logo-background">
-				<img class="logo" src="@/assets/logos/arweave.svg">
+		<transition name="slide-up" appear>
+			<div class="logo-container" v-show="logoLoaded">
+				<div class="logo-background">
+					<img class="logo" src="@/assets/logos/arweave.svg" alt="Arweave Logo" @load="logoLoaded=true">
+				</div>
 			</div>
-		</div>
-		<div class="content">
-			<div>
-				<h1>{{ title }}</h1>
-				<p>{{ description }}</p>
+		</transition>
+		<transition name="slide-up" appear>
+			<div class="content">
+				<div>
+					<h1>{{ title }}</h1>
+					<p>{{ description }}</p>
+				</div>
 			</div>
-		</div>
+		</transition>
 	</div>
 </template>
 
 <script>
+import { ref } from '@vue/reactivity'
 
 export default {
 	setup () {
-		return { description: process.env.VUE_APP_DESCRIPTION, title: process.env.VUE_APP_TITLE }
+		return {
+			logoLoaded: ref(false),
+			description: process.env.VUE_APP_DESCRIPTION,
+			title: process.env.VUE_APP_TITLE,
+		}
 	}
 }
 </script>
