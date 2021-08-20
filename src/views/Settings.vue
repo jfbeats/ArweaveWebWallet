@@ -10,7 +10,7 @@
 			<div class="group">
 				<p>Gateway</p>
 				<div class="flex-row">
-					<Input v-model="gateway" :placeholder="ArweaveStore.gatewayURL" :icon="require('@/assets/logos/arweave.svg')" style="flex:1 1 0;" />
+					<Input v-model="gateway" :placeholder="ArweaveStore.gatewayURL" :icon="require('@/assets/logos/arweave.svg')" style="flex:1 1 0;" @keyup.enter="gateway && setGateway()" />
 					<Button @click="setGateway()">{{ gateway ? 'Submit' : 'Reset' }}</Button>
 				</div>
 			</div>
@@ -44,8 +44,10 @@ export default {
 	setup () {
 		const gateway = ref('')
 		const setGateway = () => {
+			// test gateway url return if fail
 			gateway.value ? updateArweave(gateway.value) : updateArweave()
 			localStorage.setItem('gateway', gateway.value)
+			gateway.value = ''
 		}
 
 		let options = reactive([])
