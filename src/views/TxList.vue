@@ -9,26 +9,26 @@
 				<div v-if="!completedQuery" class="loader-container">
 					<div class="loader" />
 				</div>
+				<Observer @intersection="fetchQuery" class="bottom" v-show="!fetchLoading && !completedQuery" />
 			</div>
 		</transition>
-		<div ref="bottom" class="bottom" v-show="!fetchLoading && !completedQuery" />
 	</div>
 </template>
 
 <script>
 import TxCard from '@/components/TxCard'
 import Tabs from '@/components/atomic/Tabs'
+import Observer from '@/components/function/Observer.vue'
 import { fetchTransactions, updateTransactions } from '@/store/ArweaveStore'
 import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 export default {
-	components: { TxCard, Tabs },
+	components: { TxCard, Tabs, Observer },
 	props: ['wallet'],
 	setup (props) {
 		const fetchLoading = computed(() => props.wallet?.queriesStatus?.[selectedQuery.value]?.fetchTransactions)
 		let liveUpdate
-		const bottom = ref(null)
 		const route = useRoute()
 		const selectedQuery = computed(() => route.query.view || 'all')
 		const txs = computed(() => props.wallet?.queries?.[selectedQuery.value] || [])
@@ -39,16 +39,11 @@ export default {
 			console.log('Queried', selectedQuery.value)
 			await fetchTransactions(props.wallet, selectedQuery.value)
 		}
-		const observer = new IntersectionObserver((entries) => {
-			if (entries[0].isIntersecting) { fetchQuery() }
-		}, { threshold: [0] })
 		onMounted(() => {
-			observer.observe(bottom.value)
 			liveUpdate = setInterval(updateContent, 10000)
 			updateContent()
 		})
 		onBeforeUnmount(() => {
-			observer.unobserve(bottom.value)
 			clearInterval(liveUpdate)
 		})
 		const tabs = [
@@ -67,7 +62,7 @@ export default {
 				updateContent()
 			})
 		})
-		return { fetchLoading, txs, completedQuery, bottom, selectedQuery, transitionName, tabs }
+		return { fetchQuery, fetchLoading, txs, completedQuery, selectedQuery, transitionName, tabs }
 	},
 }
 </script>
