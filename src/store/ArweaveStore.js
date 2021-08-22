@@ -24,6 +24,12 @@ const ArweaveStore = reactive({
 let arweave
 let arDB
 
+const gatewayDefault = {
+	host: 'arweave.net', 
+	port: 443, 
+	protocol: 'https'
+}
+
 export function updateArweave (gateway) {
 	const urlToSettings = (url) => {
 		if (!url.includes('//')) { url = 'https://' + url }
@@ -35,7 +41,7 @@ export function updateArweave (gateway) {
 	}
 	const settingsToUrl = (settings) => `${settings.protocol}://${settings.host}:${settings.port}/`
 	const settings = typeof gateway === 'string' ? urlToSettings(gateway) : gateway
-	arweave = settings ? Arweave.init(settings) : Arweave.init()
+	arweave = settings ? Arweave.init(settings) : Arweave.init(gatewayDefault)
 	arDB = new ArDB(arweave)
 	const api = arweave.getConfig().api
 	ArweaveStore.gatewayURL = settingsToUrl(api)
@@ -335,7 +341,7 @@ function loadCurrencySettings () {
 }
 
 function loadGatewaySettings () {
-	updateArweave(localStorage.getItem('gateway') || { host: 'arweave.net', port: 443, protocol: 'https' })
+	updateArweave(localStorage.getItem('gateway') || gatewayDefault)
 }
 
 
