@@ -36,7 +36,7 @@ export default {
 		const router = useRouter()
 		const route = useRoute()
 		router.afterEach((to, from) => {
-			document.title = to.meta.title || 'Arweave Wallet'
+			document.title = to.meta.title ? to.meta.title + ' | Arweave Wallet' : 'Arweave Wallet'
 			const routes = router.options.routes
 			const findRecursiveHelper = (name, arr) => {
 				const result = findRecursive(name, arr)
