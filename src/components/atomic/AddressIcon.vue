@@ -1,8 +1,10 @@
 <template>
 	<div class="address-icon no-select">
 		<transition name="fade-fast" mode="out-in">
-			<img class="image" v-if="isValid && url" :src="url" alt="wallet profile picture" draggable="false" @dragstart.prevent>
-			<Identicon class="identicon" v-else-if="isValid && address" :address="address" alt="wallet logo" draggable="false" @dragstart.prevent />
+			<img class="image" v-if="isValid && arweaveId?.Image" :src="ArweaveStore.gatewayURL + arweaveId?.Image" alt="wallet profile picture" draggable="false" @dragstart.prevent>
+		</transition>
+		<transition name="fade-fast" mode="out-in">
+			<Identicon class="identicon" v-if="isValid && address" :address="address" alt="wallet logo" draggable="false" @dragstart.prevent />
 			<img class="identicon cloud" v-else src="@/assets/icons/cloud.svg" draggable="false" @dragstart.prevent>
 		</transition>
 	</div>
@@ -11,28 +13,22 @@
 
 
 <script>
-import { get, getIdenticon } from 'arweave-id'
-import { arweave } from '@/store/ArweaveStore'
+import ArweaveStore from '@/store/ArweaveStore'
 import Identicon from '@/components/atomic/Identicon.vue'
+import ProfileStore, { getArweaveId } from '@/store/ProfileStore'
+import { computed, watch } from 'vue'
 
 export default {
 	props: ['address'],
 	components: { Identicon },
-	data () {
-		return { url: null, identicon: null, isValid: false }
-	},
-	watch: {
-		address: {
-			handler: async function (address) {
-				this.isValid = address.match(/^[a-z0-9_-]{43}$/i)
-				if (!this.isValid) { return }
+	setup (props) {
+		const isValid = computed(() => props.address.match(/^[a-z0-9_-]{43}$/i))
+		const arweaveId = computed(() => ProfileStore.arweaveId[props.address])
+		watch(() => props.address, async () => {
+			getArweaveId(props.address)
+		}, { immediate: true })
 
-				// const profile = await get(address, arweave)
-				// if (profile.avatarDataUri) { this.url = profile.avatarDataUri }
-
-			},
-			immediate: true
-		}
+		return { ArweaveStore, isValid, arweaveId }
 	}
 }
 </script>

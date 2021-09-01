@@ -264,6 +264,7 @@ export default {
 	width: 3.5em;
 	height: 3.5em;
 	padding: 0;
+	border-radius: var(--border-radius);
 }
 
 .heading {

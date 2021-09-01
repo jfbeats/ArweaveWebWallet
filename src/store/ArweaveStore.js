@@ -1,7 +1,6 @@
 import Arweave from 'arweave'
 import ArDB from 'ardb'
 import axios from 'axios'
-import { getVerification } from 'arverify'
 import { reactive, watch } from 'vue'
 import InterfaceStore, { sleepUntilVisible } from '@/store/InterfaceStore'
 
@@ -12,7 +11,6 @@ const ArweaveStore = reactive({
 	currentWallet: null,
 	wallets: [],
 	txs: {},
-	arverify: {},
 	conversion: {
 		currentPrice: null,
 		isUpdating: false,
@@ -318,11 +316,6 @@ function sortByBlocks (wallet, query) {
 	}
 }
 
-export async function getArverify (address) {
-	if (!address.match(/^[a-z0-9_-]{43}$/i)) { return }
-	return ArweaveStore.arverify[address] ??= getVerification(address)
-}
-
 export async function updateConversionRate () {
 	if (ArweaveStore.conversion.isUpdating) { return }
 	ArweaveStore.conversion.isUpdating = true
@@ -376,7 +369,7 @@ watch(() => ArweaveStore.conversion.settings, (settings) => {
 
 
 export function loadDemo () {
-	if (!ArweaveStore.wallets.length) {
+	if (!ArweaveStore.wallets.length || process.env.NODE_ENV === 'development') {
 		console.log('loading test wallets')
 		pushWallet({ key: 'TId0Wix2KFl1gArtAT6Do1CbWU_0wneGvS5X9BfW5PE' })
 		pushWallet({ key: 'Bf3pWqxD1qwwF2fcE9bPNyQp_5TSlAYPJ3JNMgJSj4c' })
