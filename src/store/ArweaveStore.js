@@ -21,8 +21,11 @@ const ArweaveStore = reactive({
 	uploads: {},
 })
 
-let arweave
-let arDB
+export default ArweaveStore
+export let arweave
+export let arDB
+
+
 
 const gatewayDefault = {
 	host: 'arweave.net', 
@@ -30,21 +33,34 @@ const gatewayDefault = {
 	protocol: 'https'
 }
 
+export function urlToSettings (url) {
+	if (!url.includes('://')) { url = 'https://' + url }
+	const obj = new URL(url)
+	const protocol = obj.protocol.replace(':', '')
+	const host = obj.hostname
+	const port = obj.port ? parseInt(obj.port) : protocol === 'https' ? 443 : 80
+	return { protocol, host, port }
+}
+
+export function settingsToUrl (settings) {
+	return `${settings.protocol}://${settings.host}:${settings.port}/`
+}
+
+export async function testGateway (gateway) {
+	const settings = typeof gateway === 'string' ? urlToSettings(gateway) : gateway
+	const arweaveTest = Arweave.init(settings)
+	try {
+		const net = await arweaveTest.network.getInfo()
+		if (net) { return true }
+	} catch (e) { }
+	return false
+}
+
 export function updateArweave (gateway) {
-	const urlToSettings = (url) => {
-		if (!url.includes('//')) { url = 'https://' + url }
-		const obj = new URL(url)
-		const protocol = obj.protocol.replace(':', '')
-		const host = obj.hostname
-		const port = obj.port ? parseInt(obj.port) : protocol === 'https' ? 443 : 80
-		return { protocol, host, port }
-	}
-	const settingsToUrl = (settings) => `${settings.protocol}://${settings.host}:${settings.port}/`
 	const settings = typeof gateway === 'string' ? urlToSettings(gateway) : gateway
 	arweave = settings ? Arweave.init(settings) : Arweave.init(gatewayDefault)
 	arDB = new ArDB(arweave)
-	const api = arweave.getConfig().api
-	ArweaveStore.gatewayURL = settingsToUrl(api)
+	ArweaveStore.gatewayURL = settingsToUrl(arweave.getConfig().api)
 }
 
 export async function pushWallet (wallet) {
@@ -75,16 +91,11 @@ export function getWalletByKey (walletKey) {
 }
 
 export async function getTxById (txId) {
+	if (ArweaveStore.txs[txId]?.block) { return }
 	await sleepUntilVisible()
-	const fetch = async () => {
-		const result = (await arDB.search().id(txId).find())[0]
-		if (!result) { return }
-		return Object.assign(ArweaveStore.txs[result.node.id] ??= {}, result.node)
-	}
-	const existingTx = ArweaveStore.txs[txId]
-	if (!existingTx) { return fetch() }
-	if (!existingTx.block) { fetch() }
-	return existingTx
+	const result = (await arDB.search().id(txId).find())[0]
+	if (!result) { return }
+	Object.assign(ArweaveStore.txs[result.node.id] ??= {}, result.node)
 }
 
 export function setCurrentWallet (wallet) {
@@ -374,15 +385,10 @@ export function loadDemo () {
 	}
 }
 
-// Testing
+
 
 if (process.env.NODE_ENV === 'development') {
 	window.ArweaveStore = ArweaveStore
 	window.arweave = arweave
 	window.arDB = arDB
 }
-
-
-
-export default ArweaveStore
-export { arweave, arDB }
