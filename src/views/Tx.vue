@@ -172,6 +172,7 @@ h3 {
 	width: 64px;
 	height: 64px;
 	margin-bottom: 32px;
+	border-radius: var(--border-radius);
 }
 
 .address {
