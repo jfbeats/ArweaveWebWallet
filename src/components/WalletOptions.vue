@@ -3,8 +3,7 @@
 		<div class="left">
 			<AddressIcon class="profile" :address="wallet.key" />
 			<div class="profile-info">
-				Username
-				<Address class="address" :address="wallet.key" />
+				<WalletInfo :wallet="wallet" />
 			</div>
 		</div>
 		<div class="content">
@@ -18,16 +17,16 @@
 </template>
 
 <script>
-import AddressIcon from '@/components/atomic/AddressIcon'
-import Address from '@/components/atomic/Address'
+import AddressIcon from '@/components/atomic/AddressIcon.vue'
+import WalletInfo from '@/components/WalletInfo.vue'
 import { deleteWallet, downloadWallet } from '@/functions/Wallets'
 
 export default {
-	components: { AddressIcon, Address },
+	components: { AddressIcon, WalletInfo },
 	props: ['wallet'],
 	setup () {
 		return { deleteWallet, downloadWallet }
-	}
+	},
 }
 </script>
 
@@ -75,6 +74,12 @@ export default {
 .profile-info {
 	min-width: 0;
 	padding: 0 var(--spacing);
+}
+
+.wallet-info {
+	display: flex;
+	align-items: center;
+	/* height: 1em; */
 }
 
 .address {
