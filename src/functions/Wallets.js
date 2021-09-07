@@ -2,14 +2,24 @@ import ArweaveStore, { arweave, pushWallet } from '@/store/ArweaveStore'
 import { download } from '@/functions/Utils'
 import { getKeyPairFromMnemonic } from 'human-crypto-keys'
 import { generateMnemonic, validateMnemonic } from 'bip39'
-import crypto from 'libp2p-crypto'
 
 export { generateMnemonic, validateMnemonic }
 
 export async function addMnemonic (mnemonic) {
-	let keyPair = await getKeyPairFromMnemonic(mnemonic,
-		{ id: "rsa", modulusLength: 4096 }, { privateKeyFormat: "pkcs1-pem" })
-	let jwk = (await crypto.keys.import(keyPair.privateKey, ""))._key
+	let keyPair = await getKeyPairFromMnemonic(mnemonic, { id: "rsa", modulusLength: 4096 }, { privateKeyFormat: "pkcs8-der" })
+	const imported = await window.crypto.subtle.importKey(
+		"pkcs8",
+		keyPair.privateKey,
+		{
+			name: "RSA-PSS",
+			modulusLength: 4096,
+			publicExponent: new Uint8Array([1, 0, 1]),
+			hash: "SHA-256",
+		},
+		true,
+		["sign"]
+	)
+	let jwk = await window.crypto.subtle.exportKey('jwk', imported)
 	delete jwk.alg
 	delete jwk.key_ops
 	console.info('generated wallet')

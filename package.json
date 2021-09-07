@@ -6,7 +6,8 @@
 		"serve": "vue-cli-service serve",
 		"build": "vue-cli-service build",
 		"report": "vue-cli-service build --report",
-		"deploy": "vue-cli-service build && arkb deploy dist --wallet ../arweaveWallet.json --auto-confirm"
+		"deploy": "vue-cli-service build && arkb deploy dist --wallet ../arweaveWallet.json --use-bundler http://bundler.arweave.net:10000",
+		"deploy-confirm": "vue-cli-service build && arkb deploy dist --wallet ../arweaveWallet.json --auto-confirm --use-bundler http://bundler.arweave.net:10000"
 	},
 	"dependencies": {
 		"@ledgerhq/hw-transport-webusb": "^5.53.1",
@@ -18,7 +19,6 @@
 		"bip39": "^3.0.4",
 		"core-js": "^3.6.5",
 		"human-crypto-keys": "^0.1.4",
-		"libp2p-crypto": "^0.19.5",
 		"mitt": "^3.0.0",
 		"register-service-worker": "^1.7.1",
 		"smartweave": "^0.4.39",
