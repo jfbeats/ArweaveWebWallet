@@ -17,15 +17,17 @@ import { computed } from 'vue'
 export default {
 	props: ['address'],
 	setup (props) {
-		const addressHash = base64UrlToHex(props.address)
 		const size = 5
 		const cell = size / 5
 		const stroke = size * 0.04
-		const style = { color: `rgb(${addressHashToColor(addressHash).join(',')})`, }
+		const addressHash = computed(() => base64UrlToHex(props.address))
+		const style = computed(() => ({
+			color: `rgb(${addressHashToColor(addressHash.value).join(',')})`,
+		}))
 		const rects = computed(() => {
 			const result = []
 			for (let i = 0; i < 15; i++) {
-				if (parseInt(addressHash.charAt(i), 16) % 2) { continue }
+				if (parseInt(addressHash.value.charAt(i), 16) % 2) { continue }
 				if (i < 5) {
 					result.push({ x: 2 * cell + stroke, y: i * cell + stroke, w: cell, h: cell })
 				} else if (i < 10) {
