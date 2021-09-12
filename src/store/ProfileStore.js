@@ -38,7 +38,6 @@ export async function getArverify (address) {
 	if ((ProfileStore.arverifyStatus[address] ??= {}).loading) { return }
 	if (!address.match(/^[a-z0-9_-]{43}$/i)) { return }
 	ProfileStore.arverifyStatus[address].loading = true
-	console.log('ok')
 
 	try {
 		ProfileStore.arverify[address] = await getVerification(address)
