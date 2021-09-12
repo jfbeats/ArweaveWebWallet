@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
 import ArweaveStore, { getWalletById, loadDemo } from '@/store/ArweaveStore'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import Wallet from '@/views/Wallet.vue'
@@ -24,8 +24,10 @@ const routes = [
 				path: 'send',
 				component: Send,
 				meta: { title: 'Send' },
-				props: (route) => ({ wallet: getWalletById(route.params.walletId),
-					model: InterfaceStore.wallet.send }),
+				props: (route) => ({
+					wallet: getWalletById(route.params.walletId),
+					model: InterfaceStore.wallet.send
+				}),
 			},
 			{
 				name: 'TxList',
@@ -61,7 +63,7 @@ const routes = [
 		path: '/welcome',
 		name: 'Welcome',
 		component: () => import('@/views/Welcome.vue'),
-		meta: { },
+		meta: {},
 	},
 	{
 		path: '/add',
@@ -97,7 +99,7 @@ const routes = [
 ]
 
 const router = createRouter({
-	history: createWebHashHistory(),
+	history: process.env.BASE_URL === '/' ? createWebHistory() : createWebHashHistory(),
 	routes,
 	scrollBehavior: (to, from, savedPosition) => new Promise((resolve) => {
 		const position = savedPosition || { top: 0 }

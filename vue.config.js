@@ -1,7 +1,9 @@
 const webpack = require('webpack')
 
 module.exports = {
-	publicPath: process.env.GITHUB_ACTIONS ? '/' : '',
+	publicPath: process.env.NAV_TYPE === 'base'
+		|| process.env.NODE_ENV === 'development'
+		? '/' : '',
 
 	configureWebpack: {
 		plugins: [

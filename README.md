@@ -12,7 +12,7 @@ https://arweave.app
 
 Using the link below, a few wallets without their private keys will be preloaded in order to demo the interface and can be removed by refreshing the page. 
 
-https://arweave.app/#/demo
+https://arweave.app/demo
 
 ## Features
 
