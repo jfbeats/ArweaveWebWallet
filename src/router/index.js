@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
 import ArweaveStore, { getWalletById, loadDemo } from '@/store/ArweaveStore'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import Wallet from '@/views/Wallet.vue'
@@ -97,7 +97,7 @@ const routes = [
 ]
 
 const router = createRouter({
-	history: createWebHashHistory(),
+	history: process.env.GITHUB_ACTIONS ? createWebHistory() : createWebHashHistory(),
 	routes,
 	scrollBehavior: (to, from, savedPosition) => new Promise((resolve) => {
 		const position = savedPosition || { top: 0 }
