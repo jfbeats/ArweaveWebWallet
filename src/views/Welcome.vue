@@ -38,7 +38,7 @@ export default {
 <style scoped>
 .welcome {
 	width: 100%;
-	min-height: 100vh;
+	min-height: 100%;
 	padding: var(--spacing);
 	display: flex;
 	flex-direction: column;
@@ -74,10 +74,8 @@ export default {
 }
 
 .travelling-blocks {
-	height: 100px;
 	position: absolute;
 	width: 100%;
 	height: 100%;
-	margin-bottom: 64px;
 }
 </style>
