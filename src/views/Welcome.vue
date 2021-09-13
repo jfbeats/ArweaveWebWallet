@@ -15,13 +15,16 @@
 				</div>
 			</div>
 		</transition>
+		<TravellingBlocks />
 	</div>
 </template>
 
 <script>
+import TravellingBlocks from '@/components/visual/TravellingBlocks.vue'
 import { ref } from '@vue/reactivity'
 
 export default {
+	components: { TravellingBlocks },
 	setup () {
 		return {
 			logoLoaded: ref(false),
@@ -41,7 +44,8 @@ export default {
 	flex-direction: column;
 	align-items: center;
 	justify-content: space-around;
-	backdrop-filter: brightness(2.5);
+	background: #111;
+	position: relative;
 }
 
 .logo-container {
@@ -68,10 +72,18 @@ export default {
 .content {
 	flex: 1 1 auto;
 	width: min(100%, 50vh);
-	padding: min(16%, 8vh);
+	padding: 0 min(16%, 8vh);
 	display: flex;
-	align-items: center;
+	/* align-items: center; */
 	justify-content: center;
 	text-align: center;
+}
+
+.travelling-blocks {
+	height: 100px;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	margin-bottom: 64px;
 }
 </style>
