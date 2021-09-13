@@ -38,7 +38,7 @@ export default {
 <style scoped>
 .welcome {
 	width: 100%;
-	min-height: 100%;
+	min-height: 100vh;
 	padding: var(--spacing);
 	display: flex;
 	flex-direction: column;
@@ -62,7 +62,6 @@ export default {
 	width: 100%;
 	height: 100%;
 	opacity: 0.8;
-	filter: drop-shadow(0 0 6px #ffffff44);
 }
 
 .content {
@@ -70,7 +69,6 @@ export default {
 	width: min(100%, 50vh);
 	padding: 0 min(16%, 8vh);
 	display: flex;
-	/* align-items: center; */
 	justify-content: center;
 	text-align: center;
 }

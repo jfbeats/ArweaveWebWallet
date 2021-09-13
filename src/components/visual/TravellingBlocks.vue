@@ -35,18 +35,13 @@ export default {
 
 <style scoped>
 .travelling-blocks {
-	--background:#111;
-    --footer-background:#fff;
+	--footer-background: #fff;
 	width: 100%;
-	opacity: 0.9;
 	overflow: hidden;
-	position: relative;
+	pointer-events: none;
 }
 
 .footer {
-	z-index: 1;
-	position: relative;
-	grid-area: footer;
 	width: 100%;
 	height: 100%;
 	display: flex;
