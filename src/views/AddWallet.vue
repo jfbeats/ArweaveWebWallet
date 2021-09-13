@@ -6,17 +6,17 @@
 				<span>Passphrase</span>
 				<span>Key file</span>
 			</h2>
-			<InputData v-model="passphraseInput" @files="importFile" :disabled="isCreatingWallet" /><br>
+			<InputData v-model="passphraseInput" @files="importFile" :disabled="isCreatingWallet" placeholder="Import passphrase or key file" /><br>
 			<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create()" :disabled="passphraseInput.length && !isPassphrase" :icon="require('@/assets/logos/arweave.svg')">
 				Create new wallet
 			</Button>
 
 			<Button v-else-if="isCreatingWallet" :disabled="!createdWallet" @click="goToCreatedWallet" :icon="!createdWallet ? 'loader' : ''">
-				{{ !createdWallet ? 'Write down the passphrase' : 'Passphrase saved? Click here to proceed' }}
+				{{ !createdWallet ? 'Generating, write down the passphrase' : 'Passphrase saved? Click here to proceed' }}
 			</Button>
 
 			<Button v-else :disabled="!isPassphrase || isGeneratingWallet" @click="isValidPassphrase ? importPassphrase() : confirmPassphrase()">
-				Import wallet
+				Import passphrase
 			</Button>
 			<transition name="fade-fast" mode="in-out">
 				<div v-if="popup.enabled" :key="popup.message" class="overlay flex-column">
@@ -123,6 +123,10 @@ export default {
 	width: 100%;
 	max-width: 700px;
 	overflow: hidden;
+}
+
+.input-data {
+	text-align: center;
 }
 
 .actions-container {

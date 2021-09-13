@@ -1,6 +1,6 @@
 <template>
 	<div class="input-data input-box" :class="{ focus }" @drop.stop.prevent="handleFiles">
-		<textarea v-show="!isFile" v-model="model" @focus="focus=1" @blur="focus=0" :disabled="disabled" :id="id"></textarea>
+		<textarea v-show="!isFile" v-model="model" @focus="focus=1" @blur="focus=0" :disabled="disabled" :id="id" :placeholder="placeholder"></textarea>
 		<transition name="fade">
 			<div v-if="!model && !dragOverlay" class="overlay passthrough">
 				<div class="big-icon-container"><img class="img" src="@/assets/icons/text.svg"></div>
@@ -32,7 +32,7 @@ import { computed, ref, toRef } from 'vue'
 
 export default {
 	components: { DragOverlay },
-	props: ['modelValue', 'disabled', 'id'],
+	props: ['modelValue', 'disabled', 'id', 'placeholder'],
 	setup (props, { emit, attrs }) {
 		const model = computed({
 			get () { return props.modelValue },
