@@ -9,12 +9,10 @@
 		<svg style="position:absolute;">
 			<defs>
 				<filter id="blob">
-					<feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
-					<feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9" result="blob" />
-					<feMorphology in="blob" result="bigblob" operator="dilate" radius="10" />
-					<feMorphology in="blob" result="bigblob2" operator="dilate" radius="11" />
-					<feComposite in="SourceGraphic" in2="bigblob2" result="result" operator="atop" />
-					<feComposite in="result" in2="bigblob" operator="out" />
+					<feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
+					<feColorMatrix in="blur" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9" result="blob" />
+					<feMorphology in="blob" result="mask" operator="erode" radius="1" />
+					<feComposite in="blob" in2="mask" operator="out" />
 				</filter>
 			</defs>
 		</svg>
@@ -61,7 +59,6 @@ export default {
 	position: absolute;
 	left: var(--position, 50%);
 	background: var(--footer-background);
-	border-radius: 100%;
 	animation: bubble-size var(--time, 4s) ease-in infinite var(--delay, 0s),
 		bubble-move var(--time, 4s) ease-in infinite var(--delay, 0s);
 	transform: translate(-50%, 100%);
