@@ -3,7 +3,7 @@
 		<transition name="slide-up" appear>
 			<div class="logo-container" v-show="logoLoaded">
 				<div class="logo-background">
-					<img class="logo" src="@/assets/logos/arweave.svg" alt="Arweave Logo" @load="logoLoaded=true">
+					<img class="logo" src="@/assets/logos/arweaveOutline.svg" alt="Arweave Logo" @load="logoLoaded=true">
 				</div>
 			</div>
 		</transition>
@@ -54,19 +54,15 @@ export default {
 }
 
 .logo-background {
-	padding: 16%;
-	background: #00000044;
 	border-radius: 50%;
 	display: flex;
-	background: radial-gradient(#00000000, #00000099);
-	box-shadow: 0 0 0 1px #ffffff22, 0 0 10px 0 #ffffff11;
 }
 
 .logo {
 	width: 100%;
 	height: 100%;
 	opacity: 0.8;
-	filter: drop-shadow(0 0 10px #ffffff22);
+	filter: drop-shadow(0 0 6px #ffffff44);
 }
 
 .content {
