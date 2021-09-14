@@ -2,7 +2,7 @@
 	<div class="travelling-blocks">
 		<div class="footer">
 			<div class="bubbles">
-				<div class="bubble" v-for="n in nbBlocks" :key="n" :style="`--size:${6+Math.random()*4}rem; --distance:${120+Math.random()*100}px; --position:${-5+Math.random()*110}%; --time:${5+Math.random()*20}s; --delay:${-1*(4+Math.random()*2)}s;`" />
+				<div class="bubble" v-for="n in nbBlocks" :key="n" :style="`--size:${5+Math.random()*2}rem; --distance:${120+Math.random()*100}px; --position:${-5+Math.random()*110}%; --time:${4+Math.random()*10}s; --delay:${-1*(4+Math.random()*2)}s;`" />
 			</div>
 
 		</div>
@@ -25,7 +25,7 @@ import { computed } from 'vue'
 
 export default {
 	setup () {
-		const nbBlocks = computed(() => Math.floor(InterfaceStore.windowWidth / 50))
+		const nbBlocks = computed(() => Math.floor(InterfaceStore.windowWidth / 60))
 		return { nbBlocks }
 	}
 }
@@ -71,7 +71,7 @@ export default {
 	50% {
 		width: var(--size, 4rem);
 		height: var(--size, 4rem);
-		border-radius: 40%;
+		border-radius: 50%;
 	}
 	100% {
 		width: 3.5rem;
