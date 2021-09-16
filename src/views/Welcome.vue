@@ -1,13 +1,13 @@
 <template>
 	<div class="welcome">
-		<transition name="slide-up" appear>
-			<div class="logo-container" v-show="logoLoaded">
+		<transition name="slide-down" appear>
+			<div class="logo-container">
 				<div class="logo-background">
-					<img class="logo" src="@/assets/logos/arweaveOutline.svg" alt="Arweave Logo" @load="logoLoaded=true">
+					<ArweaveOutlineLogo class="logo" />
 				</div>
 			</div>
 		</transition>
-		<transition name="slide-up" appear>
+		<transition name="slide-down" appear>
 			<div class="content">
 				<div>
 					<h1>{{ title }}</h1>
@@ -20,14 +20,13 @@
 </template>
 
 <script>
+import ArweaveOutlineLogo from '@/components/visual/ArweaveOutlineLogo.vue'
 import TravellingBlocks from '@/components/visual/TravellingBlocks.vue'
-import { ref } from '@vue/reactivity'
 
 export default {
-	components: { TravellingBlocks },
+	components: { ArweaveOutlineLogo, TravellingBlocks },
 	setup () {
 		return {
-			logoLoaded: ref(false),
 			description: process.env.VUE_APP_DESCRIPTION,
 			title: process.env.VUE_APP_TITLE,
 		}
