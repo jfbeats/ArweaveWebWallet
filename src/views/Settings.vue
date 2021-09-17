@@ -44,7 +44,7 @@ export default {
 	setup () {
 		const gateway = ref('')
 		const setGateway = () => {
-			// test gateway url return if fail
+			// TODO test gateway url return if fail
 			gateway.value ? updateArweave(gateway.value) : updateArweave()
 			localStorage.setItem('gateway', gateway.value)
 			gateway.value = ''

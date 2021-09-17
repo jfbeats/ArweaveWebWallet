@@ -7,7 +7,7 @@
 					<TxCard class="card fade-list-item" v-for="tx in txs" :key="tx.node.id" :tx="tx.node" />
 				</transition-group>
 				<div v-if="!completedQuery" class="loader-container">
-					<div class="loader" />
+					<Icon icon="loader" />
 				</div>
 				<Observer @intersection="fetchQuery" class="bottom" v-show="!fetchLoading && !completedQuery" />
 			</div>
@@ -16,15 +16,16 @@
 </template>
 
 <script>
-import TxCard from '@/components/TxCard'
-import Tabs from '@/components/atomic/Tabs'
+import TxCard from '@/components/TxCard.vue'
+import Tabs from '@/components/atomic/Tabs.vue'
 import Observer from '@/components/function/Observer.vue'
+import Icon from '@/components/atomic/Icon.vue'
 import { fetchTransactions, updateTransactions } from '@/store/ArweaveStore'
 import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 export default {
-	components: { TxCard, Tabs, Observer },
+	components: { TxCard, Tabs, Observer, Icon },
 	props: ['wallet'],
 	setup (props) {
 		const fetchLoading = computed(() => props.wallet?.queriesStatus?.[selectedQuery.value]?.fetchTransactions)
@@ -92,28 +93,8 @@ export default {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-}
-
-.loader,
-.loader:after {
-	border-radius: 50%;
-	width: 64px;
-	height: 64px;
-}
-
-.loader {
-	border: 4px solid #ffffff11;
-	border-top: 4px solid #ffffff33;
-	animation: loader-animation 2s infinite linear;
-}
-
-@keyframes loader-animation {
-	0% {
-		transform: rotate(0deg);
-	}
-	100% {
-		transform: rotate(360deg);
-	}
+	font-size: 4em;
+	color: #ffffff66;
 }
 
 .fade-appear-enter-active {

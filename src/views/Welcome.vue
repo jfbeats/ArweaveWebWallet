@@ -1,14 +1,14 @@
 <template>
 	<div class="welcome">
 		<transition name="slide-down" appear>
-			<div class="logo-container">
+			<div class="column">
 				<div class="logo-background">
 					<ArweaveOutlineLogo class="logo" />
 				</div>
 			</div>
 		</transition>
 		<transition name="slide-down" appear>
-			<div class="content">
+			<div class="column content">
 				<div>
 					<h1>{{ title }}</h1>
 					<p>{{ description }}</p>
@@ -38,7 +38,7 @@ export default {
 .welcome {
 	width: 100%;
 	min-height: 100%;
-	padding: var(--spacing);
+	padding: 92px;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -47,9 +47,11 @@ export default {
 	position: relative;
 }
 
-.logo-container {
-	width: min(100%, 50vh);
-	padding: min(16%, 8vh);
+.column {
+	width: 100%;
+	max-width: 35vh;
+	min-width: 256px;
+	margin-bottom: 92px;
 }
 
 .logo-background {
@@ -65,8 +67,6 @@ export default {
 
 .content {
 	flex: 1 1 auto;
-	width: min(100%, 50vh);
-	padding: 0 min(16%, 8vh);
 	display: flex;
 	justify-content: center;
 	text-align: center;

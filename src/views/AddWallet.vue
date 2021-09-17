@@ -116,7 +116,6 @@ export default {
 	padding: var(--spacing);
 	align-items: center;
 	justify-content: space-evenly;
-	backdrop-filter: brightness(1.7);
 }
 
 .card {
