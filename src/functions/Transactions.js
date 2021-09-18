@@ -1,4 +1,5 @@
 import ArweaveStore, { arweave } from '@/store/ArweaveStore'
+import { getCurrentHeight, getBlocks } from '@/store/BlockStore'
 
 export async function buildTransaction (target, ar, tags, data) {
 	const txSettings = {
@@ -35,4 +36,15 @@ export async function manageUpload (tx) {
 	localStorage.removeItem(storageKey)
 	setTimeout(() => delete ArweaveStore.uploads[tx.id], 1000)
 	return uploader.lastResponseStatus
+}
+
+export async function getFeeRange () {
+	const height = await getCurrentHeight()
+	const recentBlocks = await getBlocks(height - 2, height)
+	const getBlockFeeParam = (block) => {
+		const fees = block.map(tx => tx.node.fee.winston)
+		return { min: Math.min(...fees), max: Math.max(...fees), length: fees.length }
+	}
+	const blocksParam = Object.values(recentBlocks).map(block => getBlockFeeParam(block))
+	console.log(blocksParam)
 }

@@ -5,8 +5,8 @@ import { reactive, watch } from 'vue'
 
 
 const BlockStore = reactive({
-	currentBlock: null,
-	currentBlockStatus: {},
+	currentHeight: null,
+	currentHeightStatus: {},
 	blocks: {},
 	blocksStatus: {},
 })
@@ -15,22 +15,32 @@ export default BlockStore
 
 
 
-export async function getCurrentBlock () {
-	if (BlockStore.currentBlockStatus.loading) { return }
-	BlockStore.currentBlockStatus.loading = true
+export async function getCurrentHeight () {
+	if (BlockStore.currentHeightStatus.loading) { return currentHeightPromise() }
+	BlockStore.currentHeightStatus.loading = true
 	await sleepUntilVisible()
 
 	try {
-		BlockStore.currentBlock = (await arweave.network.getInfo())?.height
+		BlockStore.currentHeight = (await arweave.network.getInfo())?.height
 	} catch (e) { console.error(e) }
 
-	setTimeout(() => BlockStore.currentBlockStatus.loading = false, 60000)
+	setTimeout(() => BlockStore.currentHeightStatus.loading = false, 60000)
+	return BlockStore.currentHeight
+}
+
+function currentHeightPromise () {
+	return new Promise(resolve => {
+		watch(() => BlockStore.currentHeight, (height) => {
+			if (height) { resolve(height) }
+		})
+	})
 }
 
 export async function getBlocks (min, max) {
 	await sleepUntilVisible()
 	const newQueries = []
 	for (let n = min; n <= max; n++) {
+		BlockStore.blocks[n] ??= []
 		BlockStore.blocksStatus[n] ??= {}
 		if (BlockStore.blocksStatus[n]?.completed) { continue }
 		if (!BlockStore.blocksStatus[n]?.loading) { newQueries.push(n) }
@@ -44,7 +54,7 @@ export async function getBlocks (min, max) {
 			const transactions = await arDB.search().min(min).max(max).findAll()
 			for (let n = min; n <= max; n++) { BlockStore.blocksStatus[n].completed = true }
 			for (const transaction of transactions) {
-				(BlockStore.blocks[transaction.node.block.height] ??= []).push(transaction)
+				BlockStore.blocks[transaction.node.block.height].push(transaction)
 			}
 		} catch (e) {
 			console.log(e)
@@ -59,7 +69,7 @@ export async function getBlocks (min, max) {
 	for (let n = min; n <= max; n++) { promises.push(blockPromise(n)) }
 	const transactions = await Promise.all(promises)
 	const result = {}
-	for (let n = min, i = 0; n <= max; n++) { result[n] = transactions[i] }
+	for (let n = min, i = 0; n <= max; n++) { result[n] = transactions[i++] }
 	console.log(result)
 	return result
 }

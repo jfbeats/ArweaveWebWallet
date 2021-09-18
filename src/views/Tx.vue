@@ -79,7 +79,7 @@ import InputGrid from '@/components/atomic/InputGrid.vue'
 import Ar from '@/components/atomic/Ar.vue'
 import LocaleCurrency from '@/components/atomic/LocaleCurrency.vue'
 import ArweaveStore, { getTxById } from '@/store/ArweaveStore'
-import BlockStore, { getCurrentBlock } from '@/store/BlockStore'
+import BlockStore, { getCurrentHeight } from '@/store/BlockStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { humanFileSize } from '@/functions/Utils'
 import { watch, computed, ref, toRef } from 'vue'
@@ -99,7 +99,7 @@ export default {
 			return dateObj.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
 				+ ' ' + dateObj.toLocaleTimeString()
 		})
-		const currentBlock = toRef(BlockStore, 'currentBlock')
+		const currentBlock = toRef(BlockStore, 'currentHeight')
 		const tagsSchema = computed(() => {
 			const result = []
 			for (const tag of tx.value.tags) {
@@ -115,7 +115,7 @@ export default {
 
 		watch(() => props.txId, async () => {
 			getTxById(props.txId)
-			getCurrentBlock()
+			getCurrentHeight()
 		}, { immediate: true })
 
 		const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
