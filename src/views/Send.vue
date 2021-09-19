@@ -189,6 +189,7 @@ export default {
 			props.model.quantity = ''
 			props.model.data = ''
 			props.model.tags = []
+			// TODO reset the fee slider
 		}
 
 		const postTx = async () => {
@@ -199,7 +200,8 @@ export default {
 					props.model.target,
 					props.model.quantity,
 					getTagsFromSchema(props.model.tags),
-					props.model.data
+					props.model.data,
+					txFee.value
 				)
 				if (props.wallet.jwk) { await arweave.transactions.sign(tx, props.wallet.jwk) }
 				else if (props.wallet.metaData.provider === 'Ledger') {

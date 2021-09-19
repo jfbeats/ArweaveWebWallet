@@ -1,7 +1,7 @@
 import ArweaveStore, { arweave } from '@/store/ArweaveStore'
 import { getCurrentHeight, getBlocks } from '@/store/BlockStore'
 
-export async function buildTransaction (target, ar, tags, data) {
+export async function buildTransaction (target, ar, tags, data, arFee) {
 	const txSettings = {
 		target: target || '',
 		quantity: ar ? arweave.ar.arToWinston(ar) : '0',
@@ -9,6 +9,7 @@ export async function buildTransaction (target, ar, tags, data) {
 	if (data) { txSettings.data = data instanceof File ? await readFile(data) : data }
 	const txObj = await arweave.createTransaction(txSettings)
 	for (const tag of tags) { txObj.addTag(tag.name, tag.value) }
+	txObj.reward = arweave.ar.arToWinston(arFee)
 	return txObj
 }
 
