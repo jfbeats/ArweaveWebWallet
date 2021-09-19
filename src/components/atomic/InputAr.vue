@@ -72,7 +72,6 @@ export default {
 	height: var(--height);
 	display: flex;
 	align-items: center;
-	transition: 0.3s ease;
 }
 
 .vertical.input-ar {

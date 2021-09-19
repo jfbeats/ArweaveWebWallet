@@ -59,7 +59,6 @@ export default {
 	height: 12em;
 	position: relative;
 	overflow: hidden;
-	transition: 0.3s ease;
 	display: flex;
 }
 

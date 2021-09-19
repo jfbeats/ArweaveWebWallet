@@ -124,9 +124,12 @@ a.reset {
 	background: #ffffff06;
 	border: 0.5px solid var(--border2);
 	border-radius: var(--border-radius);
+	outline: none;
+	transition: 0.3s ease;
 }
 
-.input-box.focus {
+.input-box.focus,
+.input-box:focus {
 	background: #ffffff08;
 	box-shadow: 0 0 10px 0 #ffffff11;
 	border: 0.5px solid var(--border3);

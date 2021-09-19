@@ -36,7 +36,6 @@ export default {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	transition: 0.3s ease;
 	position: relative;
 }
 
