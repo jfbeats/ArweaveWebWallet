@@ -59,12 +59,7 @@
 			</div>
 
 			<div class="row flex-row" style="align-items:flex-end; margin-top:3em;">
-				<div>
-					<div>Size {{ txSizeDisplay }}</div>
-					<div>Fee
-						<Ar class="ar" :ar="txFee" />&nbsp;<LocaleCurrency class="small secondary" :ar="txFee">|</LocaleCurrency>
-					</div>
-				</div>
+				<SendFee :size="txSize" :target="model.target" @update="fee => txFee=fee" />
 				<Button @click="postTx" :style="submitStyle" :disabled="loading || !txFee" :icon="require('@/assets/icons/north_east.svg')">
 					Submit
 				</Button>
@@ -89,20 +84,18 @@ import InputAr from '@/components/atomic/InputAr.vue'
 import InputData from '@/components/atomic/InputData.vue'
 import InputGrid from '@/components/atomic/InputGrid.vue'
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
-import Ar from '@/components/atomic/Ar.vue'
-import LocaleCurrency from '@/components/atomic/LocaleCurrency.vue'
+import SendFee from '@/components/SendFee.vue'
 import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
-import ArweaveStore, { arweave } from '@/store/ArweaveStore'
+import { arweave } from '@/store/ArweaveStore'
 import { buildTransaction, manageUpload } from '@/functions/Transactions'
 import Ledger from '@/functions/Ledger'
-import axios from 'axios'
 import BigNumber from 'bignumber.js'
-import { debounce, humanFileSize, base64UrlToHex, addressHashToColor } from '@/functions/Utils'
+import { base64UrlToHex, addressHashToColor } from '@/functions/Utils'
 import { computed, reactive, ref, watch } from 'vue'
 
 export default {
-	components: { Input, InputAr, InputData, InputGrid, AddressIcon, Ar, LocaleCurrency, Button, Icon },
+	components: { Input, InputAr, InputData, InputGrid, AddressIcon, SendFee, Button, Icon },
 	props: ['wallet', 'model'],
 	setup (props) {
 
@@ -145,20 +138,8 @@ export default {
 			const data = props.model.data
 			return data.size || data.length || '0'
 		})
-		const txSizeDisplay = computed(() => humanFileSize(txSize.value))
 		const txFee = ref(null)
 
-		const feeUrl = computed(() => {
-			const address = props.model.target
-			return ArweaveStore.gatewayURL + 'price/' + txSize.value + '/' + (address.match(/^[a-z0-9_-]{43}$/i) ? address : '')
-		})
-		const updateFee = async () => { txFee.value = arweave.ar.winstonToAr((await axios.get(feeUrl.value)).data) }
-		const updateFeeDebounced = debounce(updateFee)
-		updateFee()
-		watch(() => feeUrl.value, () => {
-			txFee.value = null
-			updateFeeDebounced()
-		})
 		const getTagsFromSchema = (tagsSchema) => {
 			const result = []
 			for (const row of tagsSchema) { result.push({ name: row.items[0].value, value: row.items[1].value }) }
@@ -242,7 +223,7 @@ export default {
 			rgba(${addressHashColor.value},0.3))`
 		}))
 
-		return { maskAddress, setMax, filesAdded, addTag, txSizeDisplay, txFee, postTx, submitStyle, loading, validation }
+		return { maskAddress, setMax, filesAdded, addTag, txSize, txFee, postTx, submitStyle, loading, validation }
 	}
 }
 </script>
@@ -291,10 +272,6 @@ export default {
 
 .secondary {
 	color: var(--element-secondary);
-}
-
-.small {
-	font-size: 0.75em;
 }
 
 .button {
