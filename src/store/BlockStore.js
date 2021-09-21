@@ -1,6 +1,7 @@
 import { arweave, arDB } from '@/store/ArweaveStore'
 import { sleepUntilVisible } from '@/store/InterfaceStore'
 import { reactive, watch } from 'vue'
+import axios from 'axios'
 
 
 
@@ -9,6 +10,8 @@ const BlockStore = reactive({
 	currentHeightStatus: {},
 	blocks: {},
 	blocksStatus: {},
+	mempool: {},
+	mempoolStatus: {},
 })
 
 export default BlockStore
@@ -26,14 +29,6 @@ export async function getCurrentHeight () {
 
 	setTimeout(() => BlockStore.currentHeightStatus.loading = false, 60000)
 	return BlockStore.currentHeight
-}
-
-function currentHeightPromise () {
-	return new Promise(resolve => {
-		watch(() => BlockStore.currentHeight, (height) => {
-			if (height) { resolve(height) }
-		})
-	})
 }
 
 export async function getBlocks (min, max) {
@@ -72,6 +67,30 @@ export async function getBlocks (min, max) {
 	for (let n = min, i = 0; n <= max; n++) { result[n] = transactions[i++] }
 	console.log(result)
 	return result
+}
+
+export async function getPending () {
+	return (await axios.get(ArweaveStore.gatewayURL + 'tx/pending')).data
+}
+
+export async function getMempool (pending) {
+	const ids = pending || await getPending()
+	const txs = []
+	while (ids.length > 0) {
+		const txBatch = ids.splice(0, 500)
+		txs.push(... await arDB.search().ids(txBatch).findAll())
+	}
+	return txs
+}
+
+
+
+function currentHeightPromise () {
+	return new Promise(resolve => {
+		watch(() => BlockStore.currentHeight, (height) => {
+			if (height) { resolve(height) }
+		})
+	})
 }
 
 function groupContinuousNumbers (blocks) {

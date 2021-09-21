@@ -1,5 +1,6 @@
 import ArweaveStore, { arweave } from '@/store/ArweaveStore'
-import { getCurrentHeight, getBlocks } from '@/store/BlockStore'
+import { getPending, getMempool } from '@/store/BlockStore'
+import BigNumber from 'bignumber.js'
 
 export async function buildTransaction (target, ar, tags, data, arFee) {
 	const txSettings = {
@@ -40,12 +41,22 @@ export async function manageUpload (tx) {
 }
 
 export async function getFeeRange () {
-	const height = await getCurrentHeight()
-	const recentBlocks = await getBlocks(height - 2, height)
-	const getBlockFeeParam = (block) => {
-		const fees = block.map(tx => tx.node.fee.winston)
-		return { min: Math.min(...fees), max: Math.max(...fees), length: fees.length }
-	}
-	const blocksParam = Object.values(recentBlocks).map(block => getBlockFeeParam(block))
-	console.log(blocksParam)
+	// return { min: new BigNumber('4000000'), max: new BigNumber('60000000'), value: new BigNumber('5000000') }
+	
+	const range = { value: null, min: null, max: new BigNumber('145605600') }
+
+	return range
+
+	const ids = await getPending()
+	if (ids.length <= 1000) { return range }
+	
+	const txs = await getMempool(ids)
+	const fees = txs.map(tx => tx.node.fee.winston)
+	const sortedFees = fees.sort((a, b) => b - a)
+	range.min = new BigNumber(sortedFees[sortedFees.length - 1])
+	range.max = new BigNumber(sortedFees[0])
+	const selectedFee = new BigNumber(sortedFees.splice(0, 1000).slice(-10)[0])
+	const finalFee = selectedFee.plus('1')
+	range.value = finalFee
+	return range
 }

@@ -1,12 +1,12 @@
 <template>
-	<input class="slider input-box" type="range" min="0" max="1000" v-model="model">
+	<input class="slider input-box" v-model="model" type="range" min="0" :max="max" :disabled="!max">
 </template>
 
 <script>
 import { computed } from 'vue'
 
 export default {
-	props: ['modelValue'],
+	props: ['modelValue', 'max'],
 	setup (props, { emit }) {
 		const model = computed({
 			get () { return props.modelValue },
@@ -38,6 +38,10 @@ input[type="range"]:focus::-webkit-slider-thumb {
 	opacity: 1;
 }
 
+input[type="range"]:disabled::-webkit-slider-thumb {
+	opacity: 0;
+}
+
 input[type="range"]::-webkit-slider-thumb {
 	opacity: 0.2;
 	appearance: none;
@@ -61,6 +65,10 @@ input[type="range"]::-webkit-slider-runnable-track {
 /*mozilla*/
 input[type="range"]:focus::-moz-range-thumb {
 	opacity: 1;
+}
+
+input[type="range"]:disabled::-moz-range-thumb {
+	opacity: 0;
 }
 
 input[type="range"]::-moz-range-thumb {
@@ -93,6 +101,10 @@ input[type="range"]::-ms-fill-lower {
 
 input[type="range"]:focus::-ms-thumb {
 	opacity: 1;
+}
+
+input[type="range"]:disabled::-ms-thumb {
+	opacity: 0;
 }
 
 input[type="range"]::-ms-thumb {
