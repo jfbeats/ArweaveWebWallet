@@ -24,16 +24,16 @@ export default {
 		const marks = computed(() => Object.values(props.settings).sort((a, b) => a - b))
 		const range = computed(() => props.settings.max ? new BigNumber(props.settings.max.minus(props.settings.min || '0')) : null)
 		const poke = (e) => {
-			if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' || !range.value) { return }
+			if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'ArrowUp' && e.key !== 'ArrowDown' || !range.value) { return }
 			e.preventDefault()
 			const currentValue = new BigNumber(model.value)
 			const pokeAmount = range.value.dividedToIntegerBy('100')
 			let nextValue = null
-			if (e.key === 'ArrowLeft') { 
+			if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { 
 				nextValue = currentValue.minus(pokeAmount)
 				if (nextValue.isLessThan(props.settings.min || 0)) { nextValue = props.settings.min || 0 }
 			}
-			if (e.key === 'ArrowRight') { 
+			if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { 
 				nextValue = currentValue.plus(pokeAmount)
 				if (nextValue.isGreaterThan(props.settings.max)) { nextValue = props.settings.max }
 			}
