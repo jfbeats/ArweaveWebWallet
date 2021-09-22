@@ -42,21 +42,18 @@ export async function manageUpload (tx) {
 
 export async function getFeeRange () {
 	// return { min: new BigNumber('4000000'), max: new BigNumber('60000000'), value: new BigNumber('5000000') }
-	
-	const range = { value: null, min: null, max: new BigNumber('145605600') }
 
-	return range
+	const range = { value: null, min: null, max: new BigNumber('145605600') }
 
 	const ids = await getPending()
 	if (ids.length <= 1000) { return range }
-	
+
 	const txs = await getMempool(ids)
 	const fees = txs.map(tx => tx.node.fee.winston)
 	const sortedFees = fees.sort((a, b) => b - a)
-	range.min = new BigNumber(sortedFees[sortedFees.length - 1])
-	range.max = new BigNumber(sortedFees[0])
-	const selectedFee = new BigNumber(sortedFees.splice(0, 1000).slice(-10)[0])
-	const finalFee = selectedFee.plus('1')
-	range.value = finalFee
+	const nextBlock = sortedFees.slice(0, 1000)
+	range.min = (new BigNumber(nextBlock.slice(-1)[0])).plus('1')
+	range.max = (new BigNumber(nextBlock[0])).plus('1')
+	range.value = (new BigNumber(nextBlock.slice(-10)[0])).plus('1')
 	return range
 }

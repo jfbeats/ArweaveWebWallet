@@ -47,6 +47,7 @@ export default {
 				if (!txFee.value || !range[key]) { result[key] = null }
 				else { result[key] = range[key].minus(txFee.value)  > 0 ? range[key].minus(txFee.value) : '0' }
 			}
+			slider.value = result.value || '0'
 			return result
 		})
 

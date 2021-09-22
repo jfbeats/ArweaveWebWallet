@@ -1,5 +1,5 @@
 <template>
-	<input class="slider input-box" v-model="model" type="range" min="0" :max="max" :disabled="!max">
+	<input class="slider input-box" v-model="model" type="range" min="0" :step="max / 200" :max="max" :disabled="!max">
 </template>
 
 <script>

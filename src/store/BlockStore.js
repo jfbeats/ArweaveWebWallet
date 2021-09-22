@@ -74,11 +74,17 @@ export async function getPending () {
 }
 
 export async function getMempool (pending) {
-	const ids = pending || await getPending()
+	const currentIds = pending || await getPending()
 	const txs = []
+	const ids = currentIds.filter((id) => {
+		if (!BlockStore.mempool[id]) { return true }
+		txs.push(BlockStore.mempool[id])
+	})
 	while (ids.length > 0) {
-		const txBatch = ids.splice(0, 500)
-		txs.push(... await arDB.search().ids(txBatch).findAll())
+		const idBatch = ids.splice(0, 500)
+		const newTxs = await arDB.search().ids(idBatch).findAll()
+		newTxs.forEach(newTx => BlockStore.mempool[newTx.node.id] = newTx)
+		txs.push(... newTxs)
 	}
 	return txs
 }
