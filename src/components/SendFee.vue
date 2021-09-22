@@ -4,7 +4,7 @@
 		<div>Fee
 			<Ar class="ar" :ar="userFeeAr" />&nbsp;<LocaleCurrency class="small secondary" :ar="userFeeAr">|</LocaleCurrency>
 		</div>
-		<Slider v-model="slider" :max="sliderParam.max" />
+		<Slider v-model="slider" :settings="sliderSettings" />
 	</div>
 </template>
 
@@ -41,15 +41,21 @@ export default {
 		const range = reactive({})
 		getFeeRange().then(obj => Object.assign(range, obj))
 		const slider = ref('0')
-		const sliderParam = computed(() => {
-			const result = {}
-			for (const key in range) {
-				if (!txFee.value || !range[key]) { result[key] = null }
-				else { result[key] = range[key].minus(txFee.value)  > 0 ? range[key].minus(txFee.value) : '0' }
+		const sliderSettings = computed(() => {
+			const result = {
+				min: 0,
+				minRange: factorInBaseFee(range.min),
+				default: factorInBaseFee(range.default),
+				maxRange: factorInBaseFee(range.max),
+				max: factorInBaseFee(range.max),
 			}
-			slider.value = result.value || '0'
+			slider.value = result.default || '0'
 			return result
 		})
+		const factorInBaseFee = (fee) => {
+			if (!fee || !txFee.value) { return null }
+			return fee.minus(txFee.value) > 0 ? fee.minus(txFee.value) : new BigNumber('0')
+		}
 
 		const userFee = computed(() => {
 			if (!txFee.value || !slider.value) { return null }
@@ -63,7 +69,7 @@ export default {
 		})
 		watch(userFeeAr, userFeeAr => emit('update', userFeeAr))
 
-		return { txSizeDisplay, userFeeAr, slider, sliderParam }
+		return { txSizeDisplay, userFeeAr, slider, sliderSettings }
 	}
 }
 </script>

@@ -41,9 +41,9 @@ export async function manageUpload (tx) {
 }
 
 export async function getFeeRange () {
-	// return { min: new BigNumber('4000000'), max: new BigNumber('60000000'), value: new BigNumber('5000000') }
+	// return { min: new BigNumber('40000000'), max: new BigNumber('60000000'), default: new BigNumber('50000000') }
 
-	const range = { value: null, min: null, max: new BigNumber('145605600') }
+	const range = { default: null, min: null, max: new BigNumber('145605600') }
 
 	const ids = await getPending()
 	if (ids.length <= 1000) { return range }
@@ -54,6 +54,6 @@ export async function getFeeRange () {
 	const nextBlock = sortedFees.slice(0, 1000)
 	range.min = (new BigNumber(nextBlock.slice(-1)[0])).plus('1')
 	range.max = (new BigNumber(nextBlock[0])).plus('1')
-	range.value = (new BigNumber(nextBlock.slice(-10)[0])).plus('1')
+	range.default = (new BigNumber(nextBlock.slice(-10)[0])).plus('1')
 	return range
 }
