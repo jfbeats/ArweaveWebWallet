@@ -1,4 +1,4 @@
-import { arweave, arDB } from '@/store/ArweaveStore'
+import ArweaveStore, { arweave, arDB } from '@/store/ArweaveStore'
 import { sleepUntilVisible } from '@/store/InterfaceStore'
 import { reactive, watch } from 'vue'
 import axios from 'axios'
