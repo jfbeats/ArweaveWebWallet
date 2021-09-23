@@ -23,25 +23,29 @@ export default {
 			get () { return props.modelValue },
 			set (value) {
 				const snapTo = snap(value)
-				snapped.value = snapTo
 				emit('update:modelValue', snapTo || value)
 				console.log(snapTo || value)
 			}
 		})
 		const snapped = ref(null)
 		const range = computed(() => props.settings.max ? new BigNumber(props.settings.max.minus(props.settings.min || '0')) : null)
-		const snapAmount = computed(() => range.value.dividedToIntegerBy('51'))
+		const snapAmount = computed(() => range.value.dividedToIntegerBy('50'))
 		const pokeAmount = computed(() => range.value.dividedToIntegerBy('50'))
 		const snap = (e) => {
+			snapped.value = null
 			if (!range.value) { return null }
 			const bigNumber = new BigNumber(e)
-			const result = { num: null, distance: range.value }
+			const result = { setting: null, distance: range.value }
 			for (const setting in props.settings) {
 				if (!props.settings[setting]) { continue }
 				const distance = props.settings[setting].minus(bigNumber).absoluteValue()
-				if (distance.lt(result.distance)) { result.num = props.settings[setting].toString(); result.distance = distance }
+				if (distance.lt(result.distance)) { result.setting = setting; result.distance = distance }
 			}
-			if (result.distance.lt(snapAmount.value)) { return result.num }
+			if (result.distance.lt(snapAmount.value)) {
+				const nearest = props.settings[result.setting].toString()
+				if (['minRange', 'default', 'maxRange'].includes(result.setting)) { snapped.value = nearest }
+				return nearest
+			}
 			return null
 		}
 		const poke = (e) => {

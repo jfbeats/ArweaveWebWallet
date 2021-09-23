@@ -54,6 +54,6 @@ export async function getFeeRange () {
 	const nextBlock = sortedFees.slice(0, 1000)
 	range.min = (new BigNumber(nextBlock.slice(-1)[0])).plus('1')
 	range.max = (new BigNumber(nextBlock[0])).plus('1')
-	range.default = (new BigNumber(nextBlock.slice(-10)[0])).plus('1')
+	range.default = (new BigNumber(nextBlock.slice(-100)[0])).plus('1')
 	return range
 }
