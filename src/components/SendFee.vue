@@ -43,7 +43,7 @@ export default {
 		const slider = ref('0')
 		const sliderSettings = computed(() => {
 			const result = {
-				min: 0,
+				min: new BigNumber('0'),
 				minRange: factorInBaseFee(range.min),
 				default: factorInBaseFee(range.default),
 				maxRange: factorInBaseFee(range.max),
