@@ -12,20 +12,16 @@ export function humanFileSize (size) {
 	return (size / Math.pow(1024, i)).toFixed(2) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
 }
 
-export function base64UrlToHex (str) {
-	let base64 = str.replace(/-/g, '+').replace(/_/g, '/')
-	const pad = base64.length % 4
-	if (pad) { base64 += new Array(5 - pad).join('=') }
-	const raw = atob(base64)
-	let result = ''
-	for (let i = 0; i < raw.length; i++) {
-		const hex = raw.charCodeAt(i).toString(16)
-		result += (hex.length === 2 ? hex : '0' + hex)
-	}
-	return result
+export async function addressToHash (address) {
+	if (!address) { return null }
+	const hashBuffer = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(address))
+	const hashArray = Array.from(new Uint8Array(hashBuffer))
+	const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+	return hashHex
 }
 
 export function addressHashToColor (addressHash) {
+	if (!addressHash) { return [0, 0, 0] }
 	const colors = hsl2rgb(parseInt(addressHash.substr(-7), 16) / 0xfffffff, 0.25, 0.6)
 	return colors.map(Math.round)
 }

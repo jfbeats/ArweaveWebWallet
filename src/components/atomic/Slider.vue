@@ -75,7 +75,7 @@ export default {
 		})
 
 		const thumbWidth = 4
-		const thumbPosition = computed(() => new BigNumber(model.value).dividedBy(range.value || '1').times(100 - thumbWidth))
+		const thumbPosition = computed(() => new BigNumber(model.value).dividedBy(range.value && range.value.gt(0) ? range.value : '1').times(100 - thumbWidth))
 
 		return { model, range, focus, hover, poke, rangeStart, rangeEnd, snapped, thumbWidth, thumbPosition }
 	}

@@ -8,11 +8,9 @@
 
 <script>
 // Vue component made from https://github.com/stewartlord/identicon.js/
-// arweave addresses are : 
-// pub key -> base64url decode -> SHA-256 -> base64url encode -> ar address
-// so a base64url decode return the SHA-256 hash
-import { addressHashToColor, base64UrlToHex } from '@/functions/Utils'
-import { computed } from 'vue'
+// from a SHA-256 hash of the arweave address
+import { addressHashToColor, addressToHash } from '@/functions/Utils'
+import { computed, ref, watch } from 'vue'
 
 export default {
 	props: ['address'],
@@ -20,12 +18,14 @@ export default {
 		const size = 5
 		const cell = size / 5
 		const stroke = size * 0.04
-		const addressHash = computed(() => base64UrlToHex(props.address))
+		const addressHash = ref(null)
+		watch(() => props.address, async (val) => addressHash.value = await addressToHash(val), { immediate: true })
 		const style = computed(() => ({
 			color: `rgb(${addressHashToColor(addressHash.value).join(',')})`,
 		}))
 		const rects = computed(() => {
 			const result = []
+			if (!addressHash.value) { return result }
 			for (let i = 0; i < 15; i++) {
 				if (parseInt(addressHash.value.charAt(i), 16) % 2) { continue }
 				if (i < 5) {

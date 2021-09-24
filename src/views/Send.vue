@@ -91,7 +91,7 @@ import { arweave } from '@/store/ArweaveStore'
 import { buildTransaction, manageUpload } from '@/functions/Transactions'
 import Ledger from '@/functions/Ledger'
 import BigNumber from 'bignumber.js'
-import { base64UrlToHex, addressHashToColor } from '@/functions/Utils'
+import { addressToHash, addressHashToColor } from '@/functions/Utils'
 import { computed, reactive, ref, watch } from 'vue'
 
 export default {
@@ -216,7 +216,8 @@ export default {
 			loading.value = false
 		}
 
-		const addressHash = computed(() => base64UrlToHex(props.wallet.key))
+		const addressHash = ref(null)
+		watch(() => props.wallet.key, async (val) => addressHash.value = await addressToHash(val), { immediate: true })
 		const addressHashColor = computed(() => addressHashToColor(addressHash.value).join(','))
 		const submitStyle = computed(() => ({
 			'--border': `rgba(${addressHashColor.value},0.8)`,
