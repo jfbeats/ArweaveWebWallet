@@ -4,6 +4,9 @@ import mitt from 'mitt'
 const InterfaceStore = reactive({
 	windowWidth: window.innerWidth,
 	windowVisible: !document.hidden,
+	toolbar: {
+		links: true,
+	},
 	breakpoints: {
 		verticalLayout: false,
 		verticalContent: false,

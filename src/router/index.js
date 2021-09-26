@@ -91,10 +91,22 @@ const routes = [
 		}
 	},
 	{
+		path: '/connect',
+		name: 'Connect',
+		component: () => import('@/views/Connect.vue'),
+		meta: { title: 'Connect' }
+	},
+	{
 		path: '/:pathMatch(.*)*',
-		redirect: () => ArweaveStore.wallets[0]
-			? { name: 'TxList', params: { walletId: ArweaveStore.wallets[0].id } }
-			: { name: 'Welcome' }
+		redirect: () => {
+			if (window.opener) {
+				InterfaceStore.toolbar.links = false
+				return { name: 'Connect' }
+			}
+			return ArweaveStore.wallets[0]
+				? { name: 'TxList', params: { walletId: ArweaveStore.wallets[0].id } }
+				: { name: 'Welcome' }
+		}
 	},
 ]
 
