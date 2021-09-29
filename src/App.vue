@@ -1,6 +1,6 @@
 <template>
-	<div class="app" :class="{ verticalLayout, verticalContent }">
-		<Toolbar class="toolbar" @drop.prevent="droppedFiles" />
+	<div class="app" :class="{ verticalLayout, verticalContent, hasToolbar }">
+		<Toolbar v-if="hasToolbar" class="toolbar" @drop.prevent="droppedFiles" />
 		<router-view v-slot="{ Component }" @drop.prevent="droppedFiles">
 			<div class="router">
 				<transition :name="$route.meta.transition?.nameLayout" mode="out-in" @before-enter="emitter.emit('beforeEnter')" @after-enter="emitter.emit('afterEnter')" @before-leave="emitter.emit('beforeLeave')" @after-leave="emitter.emit('afterLeave')">
@@ -33,6 +33,7 @@ export default {
 		const verticalLayout = toRef(InterfaceStore.breakpoints, 'verticalLayout')
 		const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
 		const dragOverlay = toRef(InterfaceStore, 'dragOverlay')
+		const hasToolbar = toRef(InterfaceStore.toolbar, 'enabled')
 		const router = useRouter()
 		const route = useRoute()
 		router.afterEach((to, from) => {
@@ -96,7 +97,7 @@ export default {
 			window.swRegistration?.waiting?.postMessage({ type: 'SKIP_WAITING' })
 		}
 
-		return { verticalLayout, verticalContent, dragOverlay, emitter }
+		return { verticalLayout, verticalContent, dragOverlay, hasToolbar, emitter }
 	},
 	methods: {
 		async droppedFiles (e) {
@@ -159,14 +160,18 @@ export default {
 
 .router,
 #viewport {
-	padding-inline-start: 80px;
 	width: 100%;
 	min-width: 0;
 	min-height: 100vh;
 }
 
-.verticalLayout .router,
-.verticalLayout #viewport {
+.hasToolbar .router,
+.hasToolbar #viewport {
+	padding-inline-start: 80px;
+}
+
+.hasToolbar.verticalLayout .router,
+.hasToolbar.verticalLayout #viewport {
 	padding-inline-start: 0;
 	padding-top: 80px;
 }

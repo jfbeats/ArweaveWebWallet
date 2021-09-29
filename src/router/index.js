@@ -97,11 +97,16 @@ const routes = [
 		meta: { title: 'Connect' }
 	},
 	{
+		path: '/connector',
+		name: 'Connector',
+		component: () => import('@/views/Connector.vue'),
+	},
+	{
 		path: '/:pathMatch(.*)*',
 		redirect: () => {
-			if (window.opener) {
-				InterfaceStore.toolbar.links = false
-				return { name: 'Connect' }
+			if (window.parent && window.parent !== window) {
+				InterfaceStore.toolbar.enabled = false
+				return { name: 'Connector' }
 			}
 			return ArweaveStore.wallets[0]
 				? { name: 'TxList', params: { walletId: ArweaveStore.wallets[0].id } }

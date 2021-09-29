@@ -5,6 +5,7 @@ const InterfaceStore = reactive({
 	windowWidth: window.innerWidth,
 	windowVisible: !document.hidden,
 	toolbar: {
+		enabled: true,
 		links: true,
 	},
 	breakpoints: {

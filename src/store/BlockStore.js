@@ -121,4 +121,8 @@ function blockPromise (n) {
 	})
 }
 
-window.getBlocks = getBlocks
+
+if (process.env.NODE_ENV === 'development') {
+	window.BlockStore = BlockStore
+	window.getBlocks = getBlocks
+}
