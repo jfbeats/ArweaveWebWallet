@@ -39,23 +39,34 @@ async function processMessage () {
 async function broadcastMessage (message) {
 	localStorage.setItem(requestChannel, JSON.stringify(message))
 	await new Promise(resolve => setTimeout(() => resolve(), 500))
-	if (!localStorage.getItem(responseChannel)) {
+	if (!(await heartbeat('client'))) {
 		const popup = window.open(window.location.href, '_blank', 'location,resizable,scrollbars,width=360,height=600')
 		if (!popup) { } // popup blocked
 	}
 	return new Promise(resolve => {
 		const userActionListener = (e) => {
 			if (!e.newValue || e.key !== responseChannel) { return }
-			if (e.newValue === 'accepted' || e.newValue === 'rejected') { 
-				resolve(e.newValue)
+			if (e.newValue === 'accepted' || e.newValue === 'rejected') {
 				window.removeEventListener('storage', userActionListener)
+				resolve(e.newValue)
 			}
 		}
 		window.addEventListener('storage', userActionListener)
 	})
 }
 
-
+export async function heartbeat (instanceName) {
+	localStorage.setItem('heartbeat:' + instanceName, '')
+	return new Promise(resolve => {
+		const heartbeatListener = (e) => {
+			if (e.key !== 'heartbeat:' + instanceName) { return }
+			window.removeEventListener('storage', heartbeatListener)
+			resolve(true)
+		}
+		window.addEventListener('storage', heartbeatListener)
+		setTimeout(() => resolve(false), 1000)
+	})
+}
 
 
 
@@ -67,10 +78,15 @@ export function launchConnector () {
 		messageQueue.push(message)
 		processMessage()
 	})
+	window.addEventListener('storage', (e) => {
+		if (e.key === 'heartbeat:' + instanceName) { localStorage.removeItem('heartbeat:' + instanceName) }
+	})
 }
 
 
 
 export function launchClient () {
-
+	window.addEventListener('storage', (e) => {
+		if (e.key === 'heartbeat:client') { localStorage.removeItem('heartbeat:client') }
+	})
 }
