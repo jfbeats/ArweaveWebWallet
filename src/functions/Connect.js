@@ -1,4 +1,4 @@
-import { reactive, watchEffect } from 'vue'
+import { reactive, watchEffect, watch } from 'vue'
 
 const origin = new URLSearchParams(window.location.hash.slice(1)).get('origin')
 const instance = origin + Math.random().toString().slice(2)
@@ -12,22 +12,21 @@ const state = reactive({
 	wallet: null,
 	processing: false,
 })
-watchEffect(() => localStorage.setItem(stateChannel, JSON.stringify(state)))
+const stopState = watchEffect(() => localStorage.setItem(stateChannel, JSON.stringify(state)))
 window.addEventListener('message', (e) => {
 	if (e.key !== stateChannel || e.newValue === e.oldValue) { return }
 	try { Object.assign(state, JSON.parse(e.newValue)) } catch (e) { }
 })
+watch(() => state.wallet, (wallet) => wallet ? connect(wallet) : disconnect())
 
 
 
 export function connect (walletAddress) {
 	postMessage({ method: 'connect', params: { address: walletAddress } })
-	state.wallet = walletAddress
 }
 
 export function disconnect () {
 	postMessage({ method: 'disconnect' })
-	state.wallet = null
 }
 
 export function postMessage (message) {
@@ -101,7 +100,13 @@ export function launchConnector () {
 		processMessage()
 	})
 	window.addEventListener('storage', (e) => {
-		if (e.key === 'heartbeat:' + instanceName) { localStorage.setItem('heartbeat:' + instanceName, 'ok') }
+		if (e.key === 'heartbeat:' + instance && e.newValue === '') { localStorage.setItem('heartbeat:' + instance, 'ok') }
+	})
+	window.addEventListener('beforeunload', () => {
+		stopState()
+		localStorage.removeItem(responseChannel)
+		localStorage.removeItem(requestChannel)
+		localStorage.removeItem(stateChannel)
 	})
 }
 
@@ -110,6 +115,15 @@ export function launchConnector () {
 export function launchClient () {
 	state.type = 'client'
 	window.addEventListener('storage', (e) => {
-		if (e.key === 'heartbeat:client') { localStorage.setItem('heartbeat:client', 'ok') }
+		if ((e.key === 'heartbeat:client' || e.key === 'heartbeat:' + instance) && e.newValue === '') { console.log(e.newValue) ;localStorage.setItem('heartbeat:client', 'ok') }
+	})
+	window.addEventListener('beforeunload', () => {
+		stopState()
+		localStorage.removeItem(responseChannel)
+		localStorage.removeItem(requestChannel)
+		localStorage.removeItem(stateChannel)
 	})
 }
+
+
+window.heartbeat = heartbeat
