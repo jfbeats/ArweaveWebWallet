@@ -7,21 +7,21 @@ const responseChannel = 'connectorResult:' + instance
 const stateChannel = 'connectorState:' + instance
 const messageQueue = []
 
-const state = reactive({
+const stateInit = {
 	origin,
 	wallet: null,
-	processing: false,
-})
-const stopState = watchEffect(() => localStorage.setItem(stateChannel, JSON.stringify(state)))
-window.addEventListener('message', (e) => {
-	if (e.key !== stateChannel || e.newValue === e.oldValue) { return }
-	try { Object.assign(state, JSON.parse(e.newValue)) } catch (e) { }
-})
+}
+localStorage.setItem(stateChannel, JSON.stringify(stateInit))
+const { state, closeChannel } = getChannel(instance)
+const { states, closeChannels } = getChannels()
+export { state, states }
+
 watch(() => state.wallet, (wallet) => wallet ? connect(wallet) : disconnect())
 
 
 
 export function getChannels () {
+	const channels = {}
 	const states = reactive({})
 	const getInstanceNames = () => {
 		const chPrefix = 'connectorState:'
@@ -32,27 +32,32 @@ export function getChannels () {
 		return result
 	}
 	const instanciate = async (name) => {
-		states[name] = null
-		if (!(await heartbeat(name))) { delete states[name]; return null }
-		if (!Object.keys(states).includes(name)) { return null }
-		states[name] = getChannel(name)
+		channels[name] = null
+		if (!(await heartbeat(name))) { delete channels[name]; return null }
+		if (!Object.keys(channels).includes(name)) { return null }
+		channels[name] = getChannel(name)
+		states[name] = channels[name].state
+	}
+	const close = (name) => {
+		channels[name]?.closeChannel()
+		delete channels[name]
+		delete states[name]
 	}
 	const storageListener = () => {
 		const names = getInstanceNames()
-		for (const instance in states) {
-			if (!names.includes(instance)) { states[instance]?.closeChannel(); delete states[instance] }
+		for (const name in channels) {
+			if (names.includes(name)) { continue }
+			close(name)
 		}
 		for (const name of names) {
-			if (!Object.keys(states).includes(name)) { instanciate(name) }
+			if (Object.keys(channels).includes(name) || name === instance) { continue }
+			instanciate(name)
 		}
 	}
 	window.addEventListener('storage', storageListener)
 	const closeChannels = () => {
 		window.removeEventListener('storage', storageListener)
-		for (const instance in states) {
-			states[instance]?.closeChannel()
-			delete states[instance]
-		}
+		for (const instance in channels) { close(instance) }
 	}
 	storageListener()
 	return { states, closeChannels }
@@ -168,7 +173,8 @@ export function launchConnector () {
 		if (e.key === 'heartbeat:' + instance && e.newValue === '') { localStorage.setItem('heartbeat:' + instance, 'ok') }
 	})
 	window.addEventListener('beforeunload', () => {
-		stopState()
+		closeChannel()
+		closeChannels()
 		cleanup(instance)
 	})
 }
@@ -182,7 +188,8 @@ export function launchClient () {
 		if (e.key === 'heartbeat:' + instance && e.newValue === '') { localStorage.setItem('heartbeat:' + instance, 'ok') }
 	})
 	window.addEventListener('beforeunload', () => {
-		stopState()
+		closeChannel()
+		closeChannels()
 		cleanup(instance)
 	})
 }
