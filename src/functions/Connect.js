@@ -1,18 +1,33 @@
+import { reactive, watchEffect } from 'vue'
+
 const origin = new URLSearchParams(window.location.hash.slice(1)).get('origin')
 const instance = origin + Math.random().toString().slice(2)
 const requestChannel = 'connector:' + instance
 const responseChannel = 'connectorResult:' + instance
+const stateChannel = 'connectorState:' + instance
 const messageQueue = []
-let connectedWallet = null
+
+const state = reactive({
+	origin,
+	wallet: null,
+	processing: false,
+})
+watchEffect(() => localStorage.setItem(stateChannel, JSON.stringify(state)))
+window.addEventListener('message', (e) => {
+	if (e.key !== stateChannel || e.newValue === e.oldValue) { return }
+	try { Object.assign(state, JSON.parse(e.newValue)) } catch (e) { }
+})
+
+
 
 export function connect (walletAddress) {
 	postMessage({ method: 'connect', params: { address: walletAddress } })
-	connectedWallet = walletAddress
+	state.wallet = walletAddress
 }
 
 export function disconnect () {
 	postMessage({ method: 'disconnect' })
-	connectedWallet = null
+	state.wallet = null
 }
 
 export function postMessage (message) {
@@ -20,7 +35,8 @@ export function postMessage (message) {
 }
 
 async function processMessage () {
-	if (!messageQueue.length || localStorage.getItem(requestChannel)) { return }
+	if (!messageQueue.length || state.processing) { return }
+	state.processing = true
 	const message = messageQueue[0]
 	let action = null // check if message can be processed right away
 	action ??= await broadcastMessage(message)
@@ -33,6 +49,7 @@ async function processMessage () {
 	messageQueue.splice(0, 1)
 	localStorage.removeItem(responseChannel)
 	localStorage.removeItem(requestChannel)
+	state.processing = false
 	processMessage()
 }
 
@@ -58,19 +75,24 @@ async function broadcastMessage (message) {
 export async function heartbeat (instanceName) {
 	localStorage.setItem('heartbeat:' + instanceName, '')
 	return new Promise(resolve => {
-		const heartbeatListener = (e) => {
-			if (e.key !== 'heartbeat:' + instanceName) { return }
+		const heartbeatListener = async (e) => {
+			if (e.key !== 'heartbeat:' + instanceName || !e.newValue) { return }
+			heartbeatReturn(true)
+		}
+		const heartbeatReturn = (result) => {
+			localStorage.removeItem('heartbeat:' + instanceName)
 			window.removeEventListener('storage', heartbeatListener)
-			resolve(true)
+			resolve(result)
 		}
 		window.addEventListener('storage', heartbeatListener)
-		setTimeout(() => resolve(false), 1000)
+		setTimeout(() => heartbeatReturn(false), 1000)
 	})
 }
 
 
 
 export function launchConnector () {
+	state.type = 'connector'
 	window.addEventListener('message', (e) => {
 		if (e.source !== window.parent || e.origin !== origin) { return }
 		if (![].includes(e.data.method)) { postMessage({ error: 'Unsupported method', id: e.data.id }) }
@@ -79,14 +101,15 @@ export function launchConnector () {
 		processMessage()
 	})
 	window.addEventListener('storage', (e) => {
-		if (e.key === 'heartbeat:' + instanceName) { localStorage.removeItem('heartbeat:' + instanceName) }
+		if (e.key === 'heartbeat:' + instanceName) { localStorage.setItem('heartbeat:' + instanceName, 'ok') }
 	})
 }
 
 
 
 export function launchClient () {
+	state.type = 'client'
 	window.addEventListener('storage', (e) => {
-		if (e.key === 'heartbeat:client') { localStorage.removeItem('heartbeat:client') }
+		if (e.key === 'heartbeat:client') { localStorage.setItem('heartbeat:client', 'ok') }
 	})
 }
