@@ -5,6 +5,10 @@
 			<Address class="small" :address="currentWallet.key" />
 			<Button @click="connect(currentWallet.key)">Connect</Button>
 		</div>
+		Channels {{ Object.keys(stateChannels).length }}
+		<div v-for="(stateChannel, name) in stateChannels" :key="name">
+			{{ stateChannel }}
+		</div>
 	</div>
 </template>
 
@@ -13,14 +17,24 @@ import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import Address from '@/components/atomic/Address.vue'
 import Button from '@/components/atomic/Button.vue'
 import ArweaveStore from '@/store/ArweaveStore'
-import { connect } from '@/functions/Connect'
-import { computed } from 'vue'
+import InterfaceStore from '@/store/InterfaceStore'
+import { getChannels } from '@/functions/Connect'
+import { computed, onBeforeUnmount } from 'vue'
 
 export default {
 	components: { AddressIcon, Address, Button },
 	setup () {
+		InterfaceStore.toolbar.links = false
+		const channels = getChannels()
+		const stateChannels = channels.states
+
+		onBeforeUnmount(() => {
+			channels.closeChannels()
+			InterfaceStore.toolbar.links = true
+		})
+
 		const currentWallet = computed(() => ArweaveStore.currentWallet)
-		return { currentWallet, connect }
+		return { currentWallet, stateChannels }
 	}
 }
 </script>

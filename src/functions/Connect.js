@@ -21,6 +21,65 @@ watch(() => state.wallet, (wallet) => wallet ? connect(wallet) : disconnect())
 
 
 
+export function getChannels () {
+	const states = reactive({})
+	const getInstanceNames = () => {
+		const chPrefix = 'connectorState:'
+		const result = []
+		for (const key in localStorage) {
+			if (key.includes(chPrefix)) { result.push(key.slice(chPrefix.length)) }
+		}
+		return result
+	}
+	const instanciate = async (name) => {
+		states[name] = null
+		if (!(await heartbeat(name))) { delete states[name]; return null }
+		if (!Object.keys(states).includes(name)) { return null }
+		states[name] = getChannel(name)
+	}
+	const storageListener = () => {
+		const names = getInstanceNames()
+		for (const instance in states) {
+			if (!names.includes(instance)) { states[instance]?.closeChannel(); delete states[instance] }
+		}
+		for (const name of names) {
+			if (!Object.keys(states).includes(name)) { instanciate(name) }
+		}
+	}
+	window.addEventListener('storage', storageListener)
+	const closeChannels = () => {
+		window.removeEventListener('storage', storageListener)
+		for (const instance in states) {
+			states[instance]?.closeChannel()
+			delete states[instance]
+		}
+	}
+	storageListener()
+	return { states, closeChannels }
+}
+
+export function getChannel (instanceName) {
+	const stateChannel = 'connectorState:' + instanceName
+	const state = reactive({})
+	try { Object.assign(state, JSON.parse(localStorage.getItem(stateChannel))) } catch (e) { }
+	const storageListener = (e) => {
+		if (e.key !== stateChannel || e.newValue === e.oldValue) { return }
+		try { Object.assign(state, JSON.parse(e.newValue)) } catch (e) { }
+	}
+	const stopUpdate = watchEffect(() => {
+		if (JSON.stringify(state) === localStorage.getItem(stateChannel)) { return }
+		localStorage.setItem(stateChannel, JSON.stringify(state))
+	})
+	window.addEventListener('storage', storageListener)
+	const closeChannel = () => {
+		window.removeEventListener('storage', storageListener)
+		stopUpdate()
+	}
+	return { state, closeChannel }
+}
+
+
+
 export function connect (walletAddress) {
 	postMessage({ method: 'connect', params: { address: walletAddress } })
 }
@@ -88,6 +147,12 @@ export async function heartbeat (instanceName) {
 	})
 }
 
+function cleanup (instanceName) {
+	localStorage.removeItem('connector:' + instanceName)
+	localStorage.removeItem('connectorResult:' + instanceName)
+	localStorage.removeItem('connectorState:' + instanceName)
+}
+
 
 
 export function launchConnector () {
@@ -104,9 +169,7 @@ export function launchConnector () {
 	})
 	window.addEventListener('beforeunload', () => {
 		stopState()
-		localStorage.removeItem(responseChannel)
-		localStorage.removeItem(requestChannel)
-		localStorage.removeItem(stateChannel)
+		cleanup(instance)
 	})
 }
 
@@ -115,13 +178,12 @@ export function launchConnector () {
 export function launchClient () {
 	state.type = 'client'
 	window.addEventListener('storage', (e) => {
-		if ((e.key === 'heartbeat:client' || e.key === 'heartbeat:' + instance) && e.newValue === '') { console.log(e.newValue) ;localStorage.setItem('heartbeat:client', 'ok') }
+		if (e.key === 'heartbeat:client' && e.newValue === '') { localStorage.setItem('heartbeat:client', 'ok') }
+		if (e.key === 'heartbeat:' + instance && e.newValue === '') { localStorage.setItem('heartbeat:' + instance, 'ok') }
 	})
 	window.addEventListener('beforeunload', () => {
 		stopState()
-		localStorage.removeItem(responseChannel)
-		localStorage.removeItem(requestChannel)
-		localStorage.removeItem(stateChannel)
+		cleanup(instance)
 	})
 }
 

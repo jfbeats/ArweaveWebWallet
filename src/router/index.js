@@ -108,6 +108,9 @@ const routes = [
 				InterfaceStore.toolbar.enabled = false
 				return { name: 'Connector' }
 			}
+			if (window.opener) {
+				return { name: 'Connect' }
+			}
 			return ArweaveStore.wallets[0]
 				? { name: 'TxList', params: { walletId: ArweaveStore.wallets[0].id } }
 				: { name: 'Welcome' }
