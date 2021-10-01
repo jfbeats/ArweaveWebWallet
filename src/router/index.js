@@ -1,6 +1,7 @@
-import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHistory, createWebHashHistory, START_LOCATION } from 'vue-router'
 import ArweaveStore, { getWalletById, loadDemo } from '@/store/ArweaveStore'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
+import { launchConnector, launchClient } from '@/functions/Connect'
 import Wallet from '@/views/Wallet.vue'
 import TxList from '@/views/TxList.vue'
 import Send from '@/views/Send.vue'
@@ -125,6 +126,13 @@ const router = createRouter({
 		const position = savedPosition || { top: 0 }
 		emitter.once('beforeEnter', () => resolve(position))
 	})
+})
+
+router.beforeEach((to, from) => {
+	if (from === START_LOCATION) {
+		if (to.name === 'Connector') { launchConnector() } 
+		else { launchClient() }
+	}
 })
 
 export default router

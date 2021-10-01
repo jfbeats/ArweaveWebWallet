@@ -22,7 +22,6 @@ import Toolbar from '@/components/Toolbar'
 import ArweaveStore from './store/ArweaveStore'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import { addWallet } from '@/functions/Wallets.js'
-import { launchConnector, launchClient } from '@/functions/Connect'
 import { useRoute, useRouter } from 'vue-router'
 import { toRef } from 'vue'
 
@@ -97,9 +96,6 @@ export default {
 		const refreshApp = () => {
 			window.swRegistration?.waiting?.postMessage({ type: 'SKIP_WAITING' })
 		}
-
-		if (route.name === 'Connector') { launchConnector() } 
-		else { launchClient() }
 
 		return { verticalLayout, verticalContent, dragOverlay, hasToolbar, emitter }
 	},

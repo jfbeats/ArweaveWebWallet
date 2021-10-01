@@ -5,11 +5,9 @@
 </template>
 
 <script>
-import { launchConnector } from '@/functions/Connect'
 
 export default {
 	setup () {
-		launchConnector()
 	}
 }
 </script>

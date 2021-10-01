@@ -2,8 +2,6 @@ import { reactive, watchEffect, watch } from 'vue'
 
 const origin = new URLSearchParams(window.location.hash.slice(1)).get('origin')
 const instance = origin + Math.random().toString().slice(2)
-const requestChannel = 'connector:' + instance
-const responseChannel = 'connectorResult:' + instance
 const stateChannel = 'connectorState:' + instance
 const messageQueue = []
 
@@ -110,32 +108,24 @@ async function processMessage () {
 	if (action === 'rejected') { response.error = 'rejected' }
 	postMessage(response)
 	messageQueue.splice(0, 1)
-	localStorage.removeItem(responseChannel)
-	localStorage.removeItem(requestChannel)
+	delete state.response
+	delete state.request
 	state.processing = false
 	processMessage()
 }
 
 async function broadcastMessage (message) {
-	localStorage.setItem(requestChannel, JSON.stringify(message))
+	state.request = message
 	await new Promise(resolve => setTimeout(() => resolve(), 500))
 	if (!(await heartbeat('client'))) {
 		const popup = window.open(window.location.href, '_blank', 'location,resizable,scrollbars,width=360,height=600')
 		if (!popup) { } // popup blocked
 	}
-	return new Promise(resolve => {
-		const userActionListener = (e) => {
-			if (!e.newValue || e.key !== responseChannel) { return }
-			if (e.newValue === 'accepted' || e.newValue === 'rejected') {
-				window.removeEventListener('storage', userActionListener)
-				resolve(e.newValue)
-			}
-		}
-		window.addEventListener('storage', userActionListener)
-	})
+	return new Promise(resolve => { watch(() => state.response, (val) => val && resolve(val)) })
 }
 
 export async function heartbeat (instanceName) {
+	if (instanceName === instance) { return true }
 	localStorage.setItem('heartbeat:' + instanceName, '')
 	return new Promise(resolve => {
 		const heartbeatListener = async (e) => {
@@ -144,18 +134,14 @@ export async function heartbeat (instanceName) {
 		}
 		const heartbeatReturn = (result) => {
 			localStorage.removeItem('heartbeat:' + instanceName)
+			if (result) { clearTimeout(timeout) }
+			if (!result) { localStorage.removeItem('connectorState:' + instanceName) }
 			window.removeEventListener('storage', heartbeatListener)
 			resolve(result)
 		}
 		window.addEventListener('storage', heartbeatListener)
-		setTimeout(() => heartbeatReturn(false), 1000)
+		const timeout = setTimeout(() => heartbeatReturn(false), 1000)
 	})
-}
-
-function cleanup (instanceName) {
-	localStorage.removeItem('connector:' + instanceName)
-	localStorage.removeItem('connectorResult:' + instanceName)
-	localStorage.removeItem('connectorState:' + instanceName)
 }
 
 
@@ -169,14 +155,6 @@ export function launchConnector () {
 		messageQueue.push(message)
 		processMessage()
 	})
-	window.addEventListener('storage', (e) => {
-		if (e.key === 'heartbeat:' + instance && e.newValue === '') { localStorage.setItem('heartbeat:' + instance, 'ok') }
-	})
-	window.addEventListener('beforeunload', () => {
-		closeChannel()
-		closeChannels()
-		cleanup(instance)
-	})
 }
 
 
@@ -185,14 +163,13 @@ export function launchClient () {
 	state.type = 'client'
 	window.addEventListener('storage', (e) => {
 		if (e.key === 'heartbeat:client' && e.newValue === '') { localStorage.setItem('heartbeat:client', 'ok') }
-		if (e.key === 'heartbeat:' + instance && e.newValue === '') { localStorage.setItem('heartbeat:' + instance, 'ok') }
-	})
-	window.addEventListener('beforeunload', () => {
-		closeChannel()
-		closeChannels()
-		cleanup(instance)
 	})
 }
 
 
-window.heartbeat = heartbeat
+
+window.addEventListener('storage', (e) => {
+	if (e.key === 'heartbeat:' + instance && e.newValue === '') { localStorage.setItem('heartbeat:' + instance, 'ok') }
+})
+
+window.addEventListener('beforeunload', () => { closeChannel(); closeChannels(); localStorage.removeItem(stateChannel) })
