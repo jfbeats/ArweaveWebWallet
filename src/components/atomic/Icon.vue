@@ -1,14 +1,12 @@
 <template>
 	<div class="icon">
 		<transition name="fade-fast" mode="out-in">
-			<div v-if="icon" :key="icon" class="icon-background">
-				<svg v-if="icon == 'loader'" class="loader" height="100" width="100" viewBox="0 0 100 100" :class="{ spin: progress == null }">
-					<circle stroke="#ffffff22" :stroke-width="thickness" fill="transparent" :r="normalizedRadius" :cx="50" :cy="50" />
-					<circle stroke="currentColor" :stroke-dasharray="circumference + ' ' + circumference" :style="{ strokeDashoffset }" :stroke-width="thickness" stroke-linecap="round" fill="transparent" :r="normalizedRadius" :cx="50" :cy="50" @animationiteration="finishAnimation = false"  :class="{ spin: progress == null || finishAnimation }" />
-				</svg>
-				<span v-else-if="isSymbol" class="symbol no-select">{{ icon }}</span>
-				<img v-else class="img no-select" :src="icon" draggable="false">
-			</div>
+			<svg v-if="icon == 'loader'" class="loader" height="100" width="100" viewBox="0 0 100 100" :class="{ spin: progress == null }">
+				<circle stroke="#ffffff22" :stroke-width="thickness" fill="transparent" :r="normalizedRadius" :cx="50" :cy="50" />
+				<circle stroke="currentColor" :stroke-dasharray="circumference + ' ' + circumference" :style="{ strokeDashoffset }" :stroke-width="thickness" stroke-linecap="round" fill="transparent" :r="normalizedRadius" :cx="50" :cy="50" @animationiteration="finishAnimation = false" :class="{ spin: progress == null || finishAnimation }" />
+			</svg>
+			<span v-else-if="isSymbol" :key="icon" class="symbol no-select">{{ icon }}</span>
+			<img v-else class="img no-select" :key="icon" :src="icon" draggable="false">
 		</transition>
 	</div>
 </template>
@@ -42,25 +40,15 @@ export default {
 	height: 1em;
 	width: 1em;
 	border-radius: inherit;
-	/* display: flex;
-	align-items: center;
-	justify-content: center; */
-	transition: 0.3s ease;
-}
-
-.icon-background {
-	width: 100%;
-	height: 100%;
-	/* background: var(--background2); */
-	border-radius: inherit;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	transition: 0.3s ease;
 }
 
 .img {
-	width: 1em;
-	height: 1em;
+	width: inherit;
+	height: inherit;
 	object-fit: contain;
 }
 
