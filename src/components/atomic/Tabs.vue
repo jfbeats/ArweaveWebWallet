@@ -1,21 +1,34 @@
 <template>
-	<div class="tabs">
-		<router-link class="tab" v-for="tab in tabs" :key="tab.name" :to="{query: { ...$route.query, [query]: tab.name.toLowerCase() }}" :style="{'--color': tab.color}" :class="{active: isActive(tab)}" replace>
+	<div v-if="queryName" class="tabs">
+		<router-link class="tab" v-for="tab in tabs" :key="tab.name" :to="{query: { ...$route.query, [queryName]: tab.name.toLowerCase() }}" :style="{'--color': tab.color}" :class="{active: isActive(tab)}" replace>
 			{{ tab.name }}
 		</router-link>
+	</div>
+	<div v-else class="tabs">
+		<button type="button" class="tab" v-for="tab in tabs" :key="tab.name" :style="{'--color': tab.color}" :class="{active: model === tab.name}" @click="model = tab.name">
+			{{ tab.name }}
+		</button>
 	</div>
 </template>
 
 <script>
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 export default {
-	props: ['query', 'tabs'],
-	methods: {
-		isActive (tab) {
-			const currentQuery = this.$route.query[this.query]
-			return currentQuery 
+	props: ['queryName', 'tabs', 'modelValue'],
+	setup (props, { emit }) {
+		const model = computed({
+			get () { return props.modelValue },
+			set (value) { emit('update:modelValue', value) }
+		})
+		const route = useRoute()
+		const isActive = (tab) => {
+			const currentQuery = route.query[props.queryName]
+			return currentQuery
 				? currentQuery === tab.name.toLowerCase()
-				: this.tabs.indexOf(tab) === 0
+				: props.tabs.indexOf(tab) === 0
 		}
+		return { model, isActive }
 	},
 }
 </script>

@@ -63,6 +63,7 @@ button {
 	padding: 0;
 	font-size: 1em;
 	cursor: pointer;
+	line-height: inherit;
 }
 
 a {

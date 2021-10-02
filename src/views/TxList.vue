@@ -1,6 +1,6 @@
 <template>
 	<div class="tx-list flex-column">
-		<Tabs query="view" :tabs="tabs" />
+		<Tabs queryName="view" :tabs="tabs" />
 		<transition :name="transitionName" mode="out-in">
 			<div class="list flex-column" :key="selectedQuery">
 				<transition-group name="fade-list">
