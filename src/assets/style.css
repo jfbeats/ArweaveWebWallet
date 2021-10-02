@@ -135,6 +135,11 @@ a.reset {
 	border: 0.5px solid var(--border3);
 }
 
+.secondary-text {
+	font-size: 0.75em;
+	color: var(--element-secondary);
+}
+
 .ellipsis {
 	white-space: nowrap;
 	overflow: hidden;

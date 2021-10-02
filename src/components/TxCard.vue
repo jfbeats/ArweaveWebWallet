@@ -8,12 +8,12 @@
 
 				<div>
 					<div v-if="isValue">
-						<Ar class="ar" :ar="value" />&nbsp;<LocaleCurrency class="small" :ar="value">|</LocaleCurrency>
+						<Ar class="ar" :ar="value" />&nbsp;<LocaleCurrency class="secondary-text" :ar="value">|</LocaleCurrency>
 					</div>
 					<div v-else>
 						{{ dataType || 'Data' }}
 					</div>
-					<div class="small">
+					<div class="secondary-text">
 						{{ context }}
 					</div>
 				</div>
@@ -25,9 +25,9 @@
 					<div class="right-text">
 						<Address v-if="relativeAddress" class="address" :address="relativeAddress" />
 						<div v-else class="ellipsis">
-							<Ar :ar="tx.fee.ar" />&nbsp;<LocaleCurrency class="small" :ar="tx.fee.ar">|</LocaleCurrency>
+							<Ar :ar="tx.fee.ar" />&nbsp;<LocaleCurrency class="secondary-text" :ar="tx.fee.ar">|</LocaleCurrency>
 						</div>
-						<div class="small ellipsis">{{ date + ' ' + time }}</div>
+						<div class="secondary-text ellipsis">{{ date + ' ' + time }}</div>
 					</div>
 					<div class="margin" />
 				</div>
@@ -194,10 +194,5 @@ export default {
 	width: 100%;
 	height: 100%;
 	opacity: 0.2;
-}
-
-.small {
-	font-size: 0.75em;
-	color: var(--element-secondary);
 }
 </style>

@@ -7,19 +7,19 @@
 					<div class="row flex-row">
 						<div class="item" style="font-size:1.5em;">
 							<Ar class="ar" :ar="tx.quantity.ar" />
-							<LocaleCurrency class="small" :ar="tx.quantity.ar"></LocaleCurrency>
+							<LocaleCurrency class="secondary-text" :ar="tx.quantity.ar"></LocaleCurrency>
 						</div>
 					</div>
 					<div class="row flex-row">
 						<div class="item">
 							<AddressIcon :address="tx.owner.address" />
-							<Address class="small" :address="tx.owner.address" />
+							<Address class="secondary-text" :address="tx.owner.address" />
 						</div>
 					</div>
 					<div class="row flex-row">
 						<div class="item">
 							<AddressIcon :address="tx.recipient" />
-							<Address class="small" :address="tx.recipient" />
+							<Address class="secondary-text" :address="tx.recipient" />
 						</div>
 					</div>
 				</div>
@@ -47,7 +47,7 @@
 						<h3>Data</h3>
 						<div>Data size {{ humanFileSize(tx.data.size) }}</div>
 						<div>Fee
-							<Ar class="ar" :ar="tx.fee.ar" />&nbsp;<LocaleCurrency class="small" :ar="tx.fee.ar">|</LocaleCurrency>
+							<Ar class="ar" :ar="tx.fee.ar" />&nbsp;<LocaleCurrency class="secondary-text" :ar="tx.fee.ar">|</LocaleCurrency>
 						</div>
 					</div>
 				</div>
@@ -184,11 +184,6 @@ h3 {
 	padding: var(--spacing) 0;
 	background: var(--background2);
 	border: 0.5px solid var(--border);
-}
-
-.small {
-	font-size: 0.75em;
-	color: var(--element-secondary);
 }
 
 .selector.inline {

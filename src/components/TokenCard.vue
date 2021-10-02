@@ -5,7 +5,7 @@
 				<img class="img" :src="img">
 				<div>
 					<div>{{ token.name }}</div>
-					<div>{{ balance }} <span class="small">{{ token.ticker }}</span></div>
+					<div>{{ balance }} <span class="secondary-text">{{ token.ticker }}</span></div>
 				</div>
 			</router-link>
 		</div>
@@ -45,9 +45,5 @@ export default {
 .img {
 	width: 48px;
 	height: 48px;
-}
-
-.small {
-	font-size: 0.75em;
 }
 </style>
