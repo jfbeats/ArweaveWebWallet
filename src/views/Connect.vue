@@ -2,17 +2,23 @@
 	<div class="connect">
 		<div class="wallet" v-if="currentWallet">
 			<AddressIcon :address="currentWallet.key" />
-			<Address class="small" :address="currentWallet.key" />
+			<Address class="secondary-text" :address="currentWallet.key" />
 			<Button @click="connect(currentWallet.key)">Connect</Button>
 		</div>
-		Channels {{ Object.keys(states).length }}
-		<div v-for="(state, name) in states" :key="name">
-			{{ state }}
+		<div class="flex-column">
+			<ConnectionCard v-for="(connector, name) in connectors" :key="name" :state="connector" />
+			<div>
+				<div>All Channels {{ Object.keys(states).length }}</div>
+				<div v-for="(state, name) in states" :key="name">
+					{{ state }}
+				</div>
+			</div>
 		</div>
 	</div>
 </template>
 
 <script>
+import ConnectionCard from '@/components/ConnectionCard.vue'
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import Address from '@/components/atomic/Address.vue'
 import Button from '@/components/atomic/Button.vue'
@@ -22,13 +28,20 @@ import { states } from '@/functions/Connect'
 import { computed, onBeforeUnmount } from 'vue'
 
 export default {
-	components: { AddressIcon, Address, Button },
+	components: { ConnectionCard, AddressIcon, Address, Button },
 	setup () {
 		InterfaceStore.toolbar.links = false
-		onBeforeUnmount(() => InterfaceStore.toolbar.links = true )
+		onBeforeUnmount(() => InterfaceStore.toolbar.links = true)
 		const currentWallet = computed(() => ArweaveStore.currentWallet)
+		const connectors = computed(() => {
+			const result = {}
+			for (const key in states) {
+				if (states[key].type === 'connector') { result[key] = states[key] }
+			}
+			return result
+		})
 
-		return { currentWallet, states }
+		return { currentWallet, connectors, states }
 	}
 }
 </script>
@@ -54,10 +67,5 @@ export default {
 	width: 128px;
 	height: 128px;
 	border-radius: var(--border-radius);
-}
-
-.small {
-	font-size: 0.75em;
-	color: var(--element-secondary);
 }
 </style>
