@@ -81,10 +81,4 @@ export default {
 	align-items: center;
 	/* height: 1em; */
 }
-
-.address {
-	/* line-height: 4; */
-	font-size: 0.75em;
-	color: var(--element-secondary);
-}
 </style>

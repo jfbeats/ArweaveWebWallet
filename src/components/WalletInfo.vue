@@ -5,7 +5,7 @@
 				<Icon class="logo" :icon="walletInfo.img" />
 				{{ arweaveId?.Name || walletInfo.name }}
 			</div>
-			<Address :address="wallet.key" />
+			<Address class="secondary-text" :address="wallet.key" />
 		</div>
 	</transition>
 </template>
@@ -44,10 +44,5 @@ export default {
 
 .logo {
 	margin-inline-end: 1em;
-}
-
-.address {
-	font-size: 0.75em;
-	color: var(--element-secondary);
 }
 </style>
