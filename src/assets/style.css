@@ -1,5 +1,6 @@
 :root {
 	--spacing: 24px;
+	--column-width: 700px;
 	--background: #151515;
 	--background2: #181818;
 	--background3: #262626;
@@ -45,7 +46,7 @@ body:before {
 	z-index: -10;
 	background: url("~@/assets/background.svg") no-repeat center center;
 	background-size: cover;
-  }
+}
 
 h1, h2, h3, h4, h5 {
 	font-weight: normal;
@@ -86,7 +87,7 @@ a.reset {
 	pointer-events: none;
 }
 
-#viewport > * {
+#viewport>* {
 	pointer-events: all;
 }
 
@@ -107,7 +108,7 @@ a.reset {
 	/* gap: var(--spacing); */
 }
 
-.flex-row > * + * {
+.flex-row>*+* {
 	margin-inline-start: var(--spacing);
 }
 
@@ -117,7 +118,7 @@ a.reset {
 	/* gap: var(--spacing); */
 }
 
-.flex-column > * + * {
+.flex-column>*+* {
 	margin-block-start: var(--spacing);
 }
 
@@ -129,8 +130,7 @@ a.reset {
 	transition: 0.3s ease;
 }
 
-.input-box.focus,
-.input-box:focus {
+.input-box.focus, .input-box:focus {
 	background: #ffffff08;
 	box-shadow: 0 0 10px 0 #ffffff11;
 	border: 0.5px solid var(--border3);
