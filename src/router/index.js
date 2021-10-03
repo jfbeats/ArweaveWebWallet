@@ -130,8 +130,9 @@ const router = createRouter({
 
 router.beforeEach((to, from) => {
 	if (from === START_LOCATION) {
-		if (to.name === 'Connector') { launchConnector() } 
+		if (to.name === 'Connector') { launchConnector() }
 		else { launchClient() }
+		// TODO if existing client window detected, try to switch to it?
 	}
 })
 
