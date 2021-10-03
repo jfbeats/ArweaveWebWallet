@@ -21,6 +21,7 @@ export async function getArweaveId (address) {
 	if ((ProfileStore.arweaveIdStatus[address] ??= {}).loading) { return }
 	if (!address.match(/^[a-z0-9_-]{43}$/i)) { return }
 	ProfileStore.arweaveIdStatus[address].loading = true
+	await sleepUntilVisible()
 
 	try {
 		const arweaveIdTx = (await arDB.search().from(address).tag('App-Name', 'arweave-id').findOne())[0]?.node
@@ -38,6 +39,7 @@ export async function getArverify (address) {
 	if ((ProfileStore.arverifyStatus[address] ??= {}).loading) { return }
 	if (!address.match(/^[a-z0-9_-]{43}$/i)) { return }
 	ProfileStore.arverifyStatus[address].loading = true
+	await sleepUntilVisible()
 
 	try {
 		ProfileStore.arverify[address] = await getVerification(address)
