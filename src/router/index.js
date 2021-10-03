@@ -67,6 +67,12 @@ const routes = [
 		meta: {},
 	},
 	{
+		path: '/connect',
+		name: 'Connect',
+		component: () => import('@/views/Connect.vue'),
+		meta: { title: 'Connect' }
+	},
+	{
 		path: '/add',
 		name: 'AddWallet',
 		component: () => import('@/views/AddWallet.vue'),
@@ -90,12 +96,6 @@ const routes = [
 			loadDemo()
 			return { name: 'Welcome' }
 		}
-	},
-	{
-		path: '/connect',
-		name: 'Connect',
-		component: () => import('@/views/Connect.vue'),
-		meta: { title: 'Connect' }
 	},
 	{
 		path: '/connector',
