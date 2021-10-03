@@ -11,10 +11,25 @@
 			</div>
 		</div>
 		<WalletTabs :addresses="addresses" v-model="currentAddress" />
-		<Tabs :tabs="tabs" v-model="currentTab" />
-		<div>{{ currentTab }}</div>
-		<!-- TODO request -> switch connected wallet or connect a new wallet when none are connected -->
-		<div class="secondary-text">{{ state }}</div>
+		<transition :name="transitionName" mode="out-in">
+			<div v-if="currentAddress" :key="currentAddress" class="flex-column">
+				<Tabs :tabs="tabs" v-model="currentTab" />
+				<transition :name="transitionName" mode="out-in">
+					<div :key="currentTab">
+						<div v-if="currentTab === 'Requests'">
+							Requests
+						</div>
+						<div v-else-if="currentTab === 'Permissions'">
+							Permissions
+						</div>
+					</div>
+				</transition>
+			</div>
+			<div v-else>
+				Select a wallet
+			</div>
+		</transition>
+		<!-- TODO request -> "switch/connect" wallet modal -->
 	</div>
 </template>
 
@@ -23,7 +38,7 @@ import WalletTabs from '@/components/WalletTabs.vue'
 import Tabs from '@/components/atomic/Tabs.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import ArweaveStore from '@/store/ArweaveStore'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 export default {
 	components: { WalletTabs, Tabs, Icon },
@@ -36,7 +51,13 @@ export default {
 			{ name: 'Permissions', color: 'var(--green)' },
 		]
 		const currentTab = ref(tabs[0].name)
-		return { addresses, currentAddress, tabs, currentTab }
+
+		const transitionName = ref(null)
+		const selectTransitionName = (val, oldVal) => val > oldVal ? transitionName.value = 'slide-left' : transitionName.value = 'slide-right'
+		watch(() => tabs.findIndex(tab => tab.name === currentTab.value), selectTransitionName)
+		watch(() => ArweaveStore.wallets.findIndex(wallet => wallet.key === currentAddress.value), selectTransitionName)
+
+		return { addresses, currentAddress, tabs, currentTab, transitionName }
 	}
 }
 </script>

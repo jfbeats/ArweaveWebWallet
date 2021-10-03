@@ -1,4 +1,4 @@
-import { reactive, watchEffect, watch } from 'vue'
+import { reactive, watchEffect, watch, computed } from 'vue'
 
 const origin = new URLSearchParams(window.location.hash.slice(1)).get('origin')
 const instance = origin + Math.random().toString().slice(2)
@@ -12,7 +12,8 @@ const stateInit = {
 localStorage.setItem(stateChannel, JSON.stringify(stateInit))
 const { state, closeChannel } = getChannel(instance)
 const { states, closeChannels } = getChannels()
-export { state, states }
+const connectors = computed(() => Object.fromEntries(Object.entries(states).filter(([key, value]) => value.type === 'connector')))
+export { state, states, connectors }
 
 watch(() => state.wallet, (wallet) => wallet ? connect(wallet) : disconnect())
 

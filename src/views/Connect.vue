@@ -1,17 +1,15 @@
 <template>
-	<div class="connect">
-		<div class="wallet" v-if="currentWallet">
+	<div class="connect flex-column">
+		<!-- <div class="wallet" v-if="currentWallet">
 			<AddressIcon :address="currentWallet.key" />
 			<Address class="secondary-text" :address="currentWallet.key" />
 			<Button @click="connect(currentWallet.key)">Connect</Button>
-		</div>
-		<div class="flex-column">
-			<ConnectionCard v-for="(connector, name) in connectors" :key="name" :state="connector" />
-			<div>
-				<div>All Channels {{ Object.keys(states).length }}</div>
-				<div v-for="(state, name) in states" :key="name">
-					{{ state }}
-				</div>
+		</div> -->
+		<ConnectionCard v-for="(connector, name) in connectors" :key="name" :state="connector" />
+		<div class="secondary-text">
+			<div>All Channels {{ Object.keys(states).length }}</div>
+			<div v-for="(state, name) in states" :key="name">
+				{{ state }}
 			</div>
 		</div>
 	</div>
@@ -24,22 +22,16 @@ import Address from '@/components/atomic/Address.vue'
 import Button from '@/components/atomic/Button.vue'
 import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
-import { states } from '@/functions/Connect'
+import { states, connectors } from '@/functions/Connect'
 import { computed, onBeforeUnmount } from 'vue'
 
 export default {
 	components: { ConnectionCard, AddressIcon, Address, Button },
 	setup () {
-		InterfaceStore.toolbar.links = false
-		onBeforeUnmount(() => InterfaceStore.toolbar.links = true)
+		// InterfaceStore.toolbar.links = false
+		// onBeforeUnmount(() => InterfaceStore.toolbar.links = true)
 		const currentWallet = computed(() => ArweaveStore.currentWallet)
-		const connectors = computed(() => {
-			const result = {}
-			for (const key in states) {
-				if (states[key].type === 'connector') { result[key] = states[key] }
-			}
-			return result
-		})
+
 
 		return { currentWallet, connectors, states }
 	}
@@ -53,6 +45,11 @@ export default {
 	flex-direction: column;
 	align-items: center;
 	min-height: 100%;
+}
+
+.connection-card {
+	width: 100%;
+	max-width: var(--column-width);
 }
 
 .wallet {
