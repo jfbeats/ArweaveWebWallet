@@ -5,6 +5,11 @@
 			<svg class="thumb" role="presentation" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
 				<rect :x="thumbPosition+'%'" :width="thumbWidth+'%'" y="0" height="100%"></rect>
 			</svg>
+			<transition name="fade-fast">
+				<svg v-if="progress != null" class="progress" role="presentation" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+					<rect class="progress-rect" x="0" :width="progress+'%'" y="0" height="100%"></rect>
+				</svg>
+			</transition>
 		</div>
 		<svg v-if="rangeStart" class="range" role="presentation" width="100%" height="8" xmlns="http://www.w3.org/2000/svg">
 			<rect :x="rangeStart.toString() +'%'" :width="rangeEnd.minus(rangeStart).toString() +'%'" y="50%" height="2" rx="1" ry="1"></rect>
@@ -17,7 +22,7 @@ import BigNumber from 'bignumber.js'
 import { computed, ref } from 'vue'
 
 export default {
-	props: ['modelValue', 'settings'],
+	props: ['modelValue', 'settings', 'progress'],
 	setup (props, { emit }) {
 		const model = computed({
 			get () { return props.modelValue },
@@ -96,7 +101,8 @@ export default {
 	position: relative;
 }
 
-.thumb {
+.thumb,
+.progress {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -118,6 +124,10 @@ export default {
 
 .disabled .thumb {
 	opacity: 0;
+}
+
+.progress-rect {
+	transition: width 0.1s ease;
 }
 
 input[type="range"] {

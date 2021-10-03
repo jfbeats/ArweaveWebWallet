@@ -4,7 +4,7 @@
 		<div>Fee
 			<Ar class="ar" :ar="userFeeAr" />&nbsp;<LocaleCurrency class="small secondary" :ar="userFeeAr">|</LocaleCurrency>
 		</div>
-		<Slider v-model="slider" :settings="sliderSettings" />
+		<Slider v-model="slider" :settings="sliderSettings" :progress="progress" />
 	</div>
 </template>
 
@@ -13,6 +13,7 @@ import Slider from '@/components/atomic/Slider.vue'
 import Ar from '@/components/atomic/Ar.vue'
 import LocaleCurrency from '@/components/atomic/LocaleCurrency.vue'
 import ArweaveStore, { arweave } from '@/store/ArweaveStore'
+import BlockStore from '@/store/BlockStore'
 import { getFeeRange } from '@/functions/Transactions'
 import { debounce, humanFileSize } from '@/functions/Utils'
 import axios from 'axios'
@@ -69,7 +70,9 @@ export default {
 		})
 		watch(userFeeAr, userFeeAr => emit('update', userFeeAr))
 
-		return { txSizeDisplay, userFeeAr, slider, sliderSettings }
+		const progress = computed(() => !!sliderSettings.value.max && BlockStore.mempoolStatus.progress)
+
+		return { txSizeDisplay, userFeeAr, slider, sliderSettings, progress }
 	}
 }
 </script>
