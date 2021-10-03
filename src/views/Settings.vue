@@ -81,7 +81,7 @@ export default {
 
 .column {
 	width: 100%;
-	max-width: 700px;
+	max-width: var(--column-width);
 }
 
 .group {

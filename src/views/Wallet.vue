@@ -67,7 +67,7 @@ export default {
 }
 
 .wallet-info {
-	max-width: 700px;
+	max-width: var(--column-width);
 	padding: var(--spacing);
 	padding-inline-end: 0;
 }

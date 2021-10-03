@@ -120,7 +120,7 @@ export default {
 
 .card {
 	width: 100%;
-	max-width: 700px;
+	max-width: var(--column-width);
 	overflow: hidden;
 }
 
