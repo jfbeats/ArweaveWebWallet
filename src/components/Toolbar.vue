@@ -127,6 +127,11 @@ export default {
 .controls {
 	display: flex;
 	flex-direction: inherit;
+	margin: 12px 0;
+}
+
+.verticalLayout .controls {
+	margin: 0 12px;
 }
 
 .control {
