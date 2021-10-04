@@ -5,8 +5,10 @@
 			<Address class="secondary-text" :address="currentWallet.key" />
 			<Button @click="connect(currentWallet.key)">Connect</Button>
 		</div> -->
-		<ConnectionCard v-for="(connector, name) in connectors" :key="name" :state="connector" />
-		<div class="secondary-text">
+		<transition-group name="fade-list">
+			<ConnectionCard v-for="(connector, name) in connectors" :key="name" :state="connector" class="fade-list-item" />
+		</transition-group>
+		<div class="bottom-info secondary-text">
 			<div>All Channels {{ Object.keys(states).length }}</div>
 			<div v-for="(state, name) in states" :key="name">
 				{{ state }}
@@ -64,5 +66,12 @@ export default {
 	width: 128px;
 	height: 128px;
 	border-radius: var(--border-radius);
+}
+
+.bottom-info {
+	flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
 }
 </style>

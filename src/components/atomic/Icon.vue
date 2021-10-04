@@ -15,6 +15,7 @@
 
 <script>
 import { computed, ref, watch } from 'vue'
+
 export default {
 	props: ['icon', 'progress'],
 	setup (props) {

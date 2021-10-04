@@ -1,47 +1,46 @@
 <template>
 	<div class="connection-card card flex-column">
 		<div class="flex-row">
-			<div class="page-logo-container">
-				<Icon v-if="state.appInfo?.logo" class="page-logo" :icon="state.appInfo?.logo" />
-				<Icon v-else class="page-logo placeholder" :icon="require('@/assets/icons/connection.svg')" />
-			</div>
+			<IconBackground :icon="require('@/assets/icons/connection.svg')" :img="state.appInfo?.logo" />
 			<div>
 				<div>{{ state.appInfo?.name || 'Connector' }}</div>
 				<div class="secondary-text">{{ state.origin }}</div>
 			</div>
+			<WalletTabs :addresses="addresses" v-model="currentAddress" />
 		</div>
-		<WalletTabs :addresses="addresses" v-model="currentAddress" />
-		<transition :name="transitionName" mode="out-in">
-			<div v-if="currentAddress" :key="currentAddress" class="flex-column">
-				<Tabs :tabs="tabs" v-model="currentTab" />
+		<div class="flex-column">
+			<Tabs :tabs="tabs" v-model="currentTab" :disabled="!currentAddress" />
+			<div class="container flex-column">
 				<transition :name="transitionName" mode="out-in">
-					<div :key="currentTab">
-						<div v-if="currentTab === 'Requests'">
-							Requests
+					<div :key="currentAddress + currentTab" class="content">
+						<div v-if="!currentAddress" class="info flex-column">
+							Select a wallet
 						</div>
-						<div v-else-if="currentTab === 'Permissions'">
-							Permissions
+						<div v-else-if="currentTab === 'Requests'" class="flex-column">
+							<div v-if="currentAddress === state.wallet">Connected</div>
+							<!-- <Notification v-else /> -->
+							<div v-else>Wip</div>
+						</div>
+						<div v-else-if="currentTab === 'Permissions'" class="flex-column">
+							Wip
 						</div>
 					</div>
 				</transition>
 			</div>
-			<div v-else>
-				Select a wallet
-			</div>
-		</transition>
-		<!-- TODO request -> "switch/connect" wallet modal -->
+		</div>
 	</div>
 </template>
 
 <script>
 import WalletTabs from '@/components/WalletTabs.vue'
 import Tabs from '@/components/atomic/Tabs.vue'
-import Icon from '@/components/atomic/Icon.vue'
+import IconBackground from '@/components/atomic/IconBackground.vue'
+import Notification from '@/components/Notification.vue'
 import ArweaveStore from '@/store/ArweaveStore'
 import { computed, ref, watch } from 'vue'
 
 export default {
-	components: { WalletTabs, Tabs, Icon },
+	components: { WalletTabs, Tabs, IconBackground, Notification },
 	props: ['state'],
 	setup () {
 		const addresses = computed(() => ArweaveStore.wallets.map(wallet => wallet.key))
@@ -50,12 +49,14 @@ export default {
 			{ name: 'Requests', color: 'var(--orange)' },
 			{ name: 'Permissions', color: 'var(--green)' },
 		]
-		const currentTab = ref(tabs[0].name)
+		const currentTab = ref(null)
 
 		const transitionName = ref(null)
 		const selectTransitionName = (val, oldVal) => val > oldVal ? transitionName.value = 'slide-left' : transitionName.value = 'slide-right'
 		watch(() => tabs.findIndex(tab => tab.name === currentTab.value), selectTransitionName)
 		watch(() => ArweaveStore.wallets.findIndex(wallet => wallet.key === currentAddress.value), selectTransitionName)
+
+		watch(() => currentAddress.value, (val, oldVal) => { if (val && !oldVal) { currentTab.value = tabs[0].name } })
 
 		return { addresses, currentAddress, tabs, currentTab, transitionName }
 	}
@@ -63,24 +64,39 @@ export default {
 </script>
 
 <style scoped>
-.page-logo-container {
-	background: var(--background);
-	border-radius: var(--border-radius);
-	width: 64px;
-	height: 64px;
-}
-
-.page-logo {
-	width: 100%;
-	height: 100%;
-}
-
-.page-logo.placeholder {
-	padding: 10px;
-	opacity: 0.5;
-}
-
 .flex-row {
 	align-items: center;
+}
+
+.wallet-tabs {
+	flex: 1 1 100px;
+    justify-content: flex-end;
+}
+
+.container {
+	height: 400px;
+	max-height: 60vh;
+	background: var(--background);
+	border-radius: var(--border-radius);
+	align-items: center;
+	justify-content: flex-start;
+	overflow: hidden auto;
+}
+
+.content {
+	width: 100%;
+	height: 100%;
+	/* padding: var(--spacing);
+	border-bottom: 0.5px solid #ffffff20; */
+}
+
+.info {
+	height: 100%;
+	align-items: center;
+	justify-content: center;
+}
+
+.notification {
+	padding: var(--spacing);
 }
 </style>
