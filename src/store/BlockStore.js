@@ -80,6 +80,8 @@ export async function getMempool (pending) {
 		if (!BlockStore.mempool[id]) { return true }
 		txs.push(BlockStore.mempool[id])
 	})
+	console.log('Mempool: fetched from cache', txs.length)
+	console.log('Mempool: need to fetch', ids.length)
 	const txsTotal = ids.length
 	let txsLoaded = 0
 	BlockStore.mempoolStatus.progress = 0

@@ -5,15 +5,15 @@
 			<svg class="thumb" role="presentation" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
 				<rect :x="thumbPosition+'%'" :width="thumbWidth+'%'" y="0" height="100%"></rect>
 			</svg>
-			<transition name="fade-fast">
-				<svg v-if="progress != null" class="progress" role="presentation" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-					<rect class="progress-rect" x="0" :width="progress+'%'" y="0" height="100%"></rect>
-				</svg>
-			</transition>
 		</div>
 		<svg v-if="rangeStart" class="range" role="presentation" width="100%" height="8" xmlns="http://www.w3.org/2000/svg">
 			<rect :x="rangeStart.toString() +'%'" :width="rangeEnd.minus(rangeStart).toString() +'%'" y="50%" height="2" rx="1" ry="1"></rect>
 		</svg>
+		<transition name="fade-fast">
+			<svg v-if="progress != null" class="progress" role="presentation" width="100%" height="8" xmlns="http://www.w3.org/2000/svg">
+				<rect class="progress-rect" x="0" :width="progress+'%'" y="50%" height="2" rx="1" ry="1"></rect>
+			</svg>
+		</transition>
 	</div>
 </template>
 
@@ -101,8 +101,7 @@ export default {
 	position: relative;
 }
 
-.thumb,
-.progress {
+.thumb {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -124,10 +123,6 @@ export default {
 
 .disabled .thumb {
 	opacity: 0;
-}
-
-.progress-rect {
-	transition: width 0.1s ease;
 }
 
 input[type="range"] {
@@ -152,7 +147,8 @@ input[type="range"]:focus {
 	outline: 0;
 }
 
-.range {
+.range,
+.progress {
 	position: absolute;
 	fill: var(--color);
 	opacity: 0;
@@ -162,6 +158,15 @@ input[type="range"]:focus {
 .focus .range {
 	opacity: 1;
 	filter: drop-shadow(0 0 6px #ffffff66);
+}
+
+.progress {
+	opacity: 0.75;
+	filter: drop-shadow(0 0 6px #ffffff66);
+}
+
+.progress-rect {
+	transition: width 0.2s ease;
 }
 
 /* -------------------------------------------- */

@@ -70,7 +70,7 @@ export default {
 		})
 		watch(userFeeAr, userFeeAr => emit('update', userFeeAr))
 
-		const progress = computed(() => !sliderSettings.value.max ? BlockStore.mempoolStatus.progress : null)
+		const progress = computed(() => BlockStore.mempoolStatus.progress)
 
 		return { txSizeDisplay, userFeeAr, slider, sliderSettings, progress }
 	}
