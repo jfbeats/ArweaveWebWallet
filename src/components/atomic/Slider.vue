@@ -157,12 +157,12 @@ input[type="range"]:focus {
 
 .focus .range {
 	opacity: 1;
-	filter: drop-shadow(0 0 6px #ffffff66);
+	filter: drop-shadow(0 -2px 6px #ffffff66);
 }
 
 .progress {
 	opacity: 0.75;
-	filter: drop-shadow(0 0 6px #ffffff66);
+	filter: drop-shadow(0 -2px 6px #ffffff66);
 }
 
 .progress-rect {

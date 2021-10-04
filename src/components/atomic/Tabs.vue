@@ -5,7 +5,7 @@
 		</router-link>
 	</div>
 	<div v-else class="tabs">
-		<button type="button" class="tab" v-for="tab in tabs" :key="tab.name" :style="{'--color': tab.color}" :class="{active: model === tab.name}" @click="model = tab.name">
+		<button type="button" class="tab" v-for="tab in tabs" :key="tab.name" :style="{'--color': tab.color}" :class="{active: model === tab.name}" @click="model = tab.name" :disabled="disabled">
 			{{ tab.name }}
 		</button>
 	</div>
@@ -16,7 +16,7 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 
 export default {
-	props: ['queryName', 'tabs', 'modelValue'],
+	props: ['queryName', 'tabs', 'modelValue', 'disabled'],
 	setup (props, { emit }) {
 		const model = computed({
 			get () { return props.modelValue },
@@ -56,6 +56,11 @@ export default {
 
 .tab:hover {
 	opacity: 1;
+}
+
+.tab:disabled {
+	opacity: var(--element-disabled-opacity);
+	cursor: unset;
 }
 
 .tab.active {
