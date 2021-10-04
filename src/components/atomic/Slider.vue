@@ -29,7 +29,6 @@ export default {
 			set (value) {
 				const snapTo = snap(value)
 				emit('update:modelValue', snapTo || value)
-				console.log(snapTo || value)
 			}
 		})
 		const snapped = ref(null)
