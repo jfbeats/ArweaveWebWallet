@@ -9,6 +9,9 @@ const stateInit = {
 	origin,
 	wallet: null,
 }
+window.addEventListener('storage', (e) => {
+	if (e.key === 'heartbeat:' + instance && e.newValue === '') { localStorage.setItem('heartbeat:' + instance, 'ok') }
+})
 localStorage.setItem(stateChannel, JSON.stringify(stateInit))
 const { state, closeChannel } = getChannel(instance)
 const { states, closeChannels } = getChannels()
@@ -32,7 +35,7 @@ export function getChannels () {
 	}
 	const instanciate = async (name) => {
 		channels[name] = null
-		if (!(await heartbeat(name))) { delete channels[name]; return null }
+		if (!(await heartbeat(name))) { close(name); return null }
 		if (!Object.keys(channels).includes(name)) { return null }
 		channels[name] = getChannel(name)
 		states[name] = channels[name].state
@@ -43,14 +46,14 @@ export function getChannels () {
 		delete states[name]
 	}
 	const storageListener = () => {
-		const names = getInstanceNames()
-		for (const name in channels) {
-			if (names.includes(name)) { continue }
-			close(name)
+		const storageChannels = getInstanceNames()
+		for (const channel in channels) {
+			if (storageChannels.includes(channel)) { continue }
+			close(channel)
 		}
-		for (const name of names) {
-			if (Object.keys(channels).includes(name) || name === instance) { continue }
-			instanciate(name)
+		for (const storageChannel of storageChannels) {
+			if (Object.keys(channels).includes(storageChannel) || storageChannel === instance) { continue }
+			instanciate(storageChannel)
 		}
 	}
 	window.addEventListener('storage', storageListener)
@@ -125,24 +128,25 @@ async function broadcastMessage (message) {
 	return new Promise(resolve => { watch(() => state.response, (val) => val && resolve(val)) })
 }
 
-export async function heartbeat (instanceName) {
+export async function heartbeat (instanceName, timeout) {
 	if (instanceName === instance) { return true }
-	localStorage.setItem('heartbeat:' + instanceName, '')
-	return new Promise(resolve => {
+	const promise = new Promise(resolve => {
 		const heartbeatListener = async (e) => {
-			if (e.key !== 'heartbeat:' + instanceName || !e.newValue) { return }
-			heartbeatReturn(true)
+			if (e.key === 'heartbeat:' + instanceName && e.newValue) { heartbeatReturn(true) }
 		}
 		const heartbeatReturn = (result) => {
-			localStorage.removeItem('heartbeat:' + instanceName)
-			if (result) { clearTimeout(timeout) }
+			if (result) { clearTimeout(cleanupTimeout) }
+			setTimeout(() => localStorage.removeItem('heartbeat:' + instanceName), 1000)
 			if (!result) { localStorage.removeItem('connectorState:' + instanceName) }
 			window.removeEventListener('storage', heartbeatListener)
 			resolve(result)
 		}
 		window.addEventListener('storage', heartbeatListener)
-		const timeout = setTimeout(() => heartbeatReturn(false), 1000)
+		const cleanupTimeout = setTimeout(() => heartbeatReturn(false), 60000)
+		if (timeout) { setTimeout(() => resolve(false), timeout) }
 	})
+	localStorage.setItem('heartbeat:' + instanceName, '')
+	return promise
 }
 
 
@@ -168,9 +172,5 @@ export function launchClient () {
 }
 
 
-
-window.addEventListener('storage', (e) => {
-	if (e.key === 'heartbeat:' + instance && e.newValue === '') { localStorage.setItem('heartbeat:' + instance, 'ok') }
-})
 
 window.addEventListener('beforeunload', () => { closeChannel(); closeChannels(); localStorage.removeItem(stateChannel) })
