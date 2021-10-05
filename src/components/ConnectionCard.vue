@@ -1,10 +1,12 @@
 <template>
 	<div class="connection-card card flex-column">
-		<div class="flex-row">
-			<IconBackground :icon="require('@/assets/icons/connection.svg')" :img="state.appInfo?.logo" />
-			<div>
-				<div>{{ state.appInfo?.name || 'Connector' }}</div>
-				<div class="secondary-text">{{ state.origin }}</div>
+		<div class="flex-row" style="flex-wrap:wrap;">
+			<div class="flex-row" >
+				<IconBackground :icon="require('@/assets/icons/connection.svg')" :img="state.appInfo?.logo" />
+				<div>
+					<div>{{ state.appInfo?.name || 'Connector' }}</div>
+					<div class="secondary-text">{{ state.origin }}</div>
+				</div>
 			</div>
 			<WalletTabs :addresses="addresses" v-model="currentAddress" />
 		</div>
@@ -70,7 +72,7 @@ export default {
 
 .wallet-tabs {
 	flex: 1 1 100px;
-    justify-content: flex-end;
+	justify-content: flex-end;
 }
 
 .container {
@@ -97,6 +99,8 @@ export default {
 }
 
 .notification {
+	--spacing: 8px;
 	padding: var(--spacing);
+	border-bottom: 0.5px solid var(--border);
 }
 </style>

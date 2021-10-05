@@ -1,5 +1,5 @@
 <template>
-	<div class="page-logo-container">
+	<div class="icon-background">
 		<Icon v-if="img" class="page-logo" :icon="img" />
 		<Icon v-else class="page-logo placeholder" :icon="icon" />
 	</div>
@@ -18,7 +18,7 @@ export default {
 </script>
 
 <style scoped>
-.page-logo-container {
+.icon-background {
 	background: var(--background);
 	border-radius: var(--border-radius);
 	overflow: hidden;
