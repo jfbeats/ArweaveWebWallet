@@ -2,7 +2,7 @@
 	<div class="app" :class="{ verticalLayout, verticalContent, hasToolbar }">
 		<Toolbar v-if="hasToolbar" class="toolbar" @drop.prevent="droppedFiles" />
 		<router-view v-slot="{ Component }" @drop.prevent="droppedFiles">
-			<div class="router">
+			<div class="router" :class="{ sticky }">
 				<transition :name="$route.meta.transition?.nameLayout" mode="out-in" @before-enter="emitter.emit('beforeEnter')" @after-enter="emitter.emit('afterEnter')" @before-leave="emitter.emit('beforeLeave')" @after-leave="emitter.emit('afterLeave')">
 					<component :is="Component" />
 				</transition>
@@ -23,7 +23,7 @@ import ArweaveStore from './store/ArweaveStore'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import { addWallet } from '@/functions/Wallets.js'
 import { useRoute, useRouter } from 'vue-router'
-import { toRef } from 'vue'
+import { ref, toRef } from 'vue'
 
 export default {
 	components: {
@@ -32,6 +32,9 @@ export default {
 	setup () {
 		const verticalLayout = toRef(InterfaceStore.breakpoints, 'verticalLayout')
 		const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
+		const sticky = ref(false)
+		emitter.on('beforeEnter', () => sticky.value = InterfaceStore.sticky)
+		emitter.on('afterLeave', () => sticky.value = InterfaceStore.sticky)
 		const dragOverlay = toRef(InterfaceStore, 'dragOverlay')
 		const hasToolbar = toRef(InterfaceStore.toolbar, 'enabled')
 		const router = useRouter()
@@ -97,7 +100,7 @@ export default {
 			window.swRegistration?.waiting?.postMessage({ type: 'SKIP_WAITING' })
 		}
 
-		return { verticalLayout, verticalContent, dragOverlay, hasToolbar, emitter }
+		return { verticalLayout, verticalContent, sticky, dragOverlay, hasToolbar, emitter }
 	},
 	methods: {
 		async droppedFiles (e) {
@@ -119,9 +122,23 @@ export default {
 
 <style scoped>
 .app {
-	min-height: 100vh;
-	overflow: hidden;
 	display: flex;
+}
+
+.app:before {
+	overflow: hidden;
+	content: "";
+	display: block;
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	width: 100vw;
+	height: 100%;
+	z-index: -10;
+	background: url("~@/assets/background.svg") no-repeat center center;
+	background-size: cover;
 }
 
 .toolbar {
@@ -151,6 +168,12 @@ export default {
 
 .router {
 	position: relative;
+	--current-vh: 100vh;
+	overflow: hidden;
+}
+
+.router.sticky {
+	overflow: unset;
 }
 
 #viewport {
@@ -162,7 +185,6 @@ export default {
 #viewport {
 	width: 100%;
 	min-width: 0;
-	min-height: 100vh;
 }
 
 .hasToolbar .router,
@@ -172,6 +194,7 @@ export default {
 
 .hasToolbar.verticalLayout .router,
 .hasToolbar.verticalLayout #viewport {
+	--current-vh: calc(100vh - 80px);
 	padding-inline-start: 0;
 	padding-top: 80px;
 }

@@ -1,15 +1,8 @@
 <template>
 	<div class="folding-layout">
-		<div v-if="verticalContent" class="left" :class="{ hasRight: hasRight() }">
+		<div class="left" :class="{ hasRight: hasRight() }">
 			<slot name="left" />
 		</div>
-		<teleport to="#viewport" v-else>
-			<div class="left" :class="{ hasRight: hasRight() }">
-				<transition :name="$route.meta.transition?.nameLayout" appear>
-					<slot name="left" />
-				</transition>
-			</div>
-		</teleport>
 		<div class="right">
 			<slot name="right" />
 		</div>
@@ -18,10 +11,13 @@
 
 <script>
 import InterfaceStore from '@/store/InterfaceStore'
-import { toRef } from 'vue'
+import { onUnmounted, toRef, watch } from 'vue'
 export default {
 	setup () {
 		const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
+		watch(() => verticalContent.value, (val) => val ? InterfaceStore.sticky = false : InterfaceStore.sticky = true, {immediate: true})
+		
+		onUnmounted(() => InterfaceStore.sticky = false)
 		return { verticalContent }
 	},
 	methods: {
@@ -35,12 +31,19 @@ export default {
 .folding-layout {
 	width: 100%;
 	position: relative;
+	display: flex;
+}
+
+.verticalContent .folding-layout {
+	flex-direction: column;
 }
 
 .left {
 	scrollbar-width: none;
 	overflow: auto;
-	height: 100vh;
+	height: var(--current-vh);
+	position: sticky;
+	top: 0;
 }
 
 .left::-webkit-scrollbar {
@@ -59,8 +62,8 @@ export default {
 }
 
 .right {
-	padding-inline-start: 40vw;
 	width: 100%;
+	flex: 1 1 0;
 }
 
 .verticalContent .right {

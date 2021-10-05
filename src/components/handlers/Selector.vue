@@ -63,23 +63,23 @@ export default {
 </script>
 
 <style scoped>
-.frame-container {
-	
+.frame-container,
+.data-container {
 	width: 100%;
-	/* height: 100vh; */
 	background: var(--background2);
-	box-shadow: 0 0 0 2px #aaa;
-	border-radius: 32px;
+	outline: 0.5px solid var(--border);
+}
+
+.frame-container {
+	height: var(--current-vh);
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
 }
 
 .data-container {
+	min-height: var(--current-vh);
 	padding: var(--spacing);
-	background: var(--background2);
-	outline: 0.5px solid var(--border);
-	/* min-height: 100vh; */
 }
 
 .iframe {

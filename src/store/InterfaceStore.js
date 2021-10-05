@@ -12,6 +12,7 @@ const InterfaceStore = reactive({
 		verticalLayout: false,
 		verticalContent: false,
 	},
+	sticky: false,
 	dragOverlay: false,
 	wallet: {
 		send: {

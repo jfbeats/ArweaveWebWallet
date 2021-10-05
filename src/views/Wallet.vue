@@ -82,7 +82,11 @@ export default {
 }
 
 .router-view {
-	max-width: 1000px;
+	max-width: var(--column-large-width);
+}
+
+.verticalContent .router-view {
+	max-width: 100%;
 }
 
 .actions {

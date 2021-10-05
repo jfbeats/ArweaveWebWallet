@@ -46,7 +46,7 @@ export default {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	min-height: 100%;
+	min-height: var(--current-vh);
 }
 
 .connection-card {

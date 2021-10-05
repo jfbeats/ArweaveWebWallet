@@ -37,7 +37,7 @@ export default {
 <style scoped>
 .welcome {
 	width: 100%;
-	min-height: 100%;
+	min-height: var(--current-vh);
 	padding: 92px;
 	display: flex;
 	flex-direction: column;

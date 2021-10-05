@@ -127,7 +127,7 @@ export default {
 
 <style scoped>
 .meta {
-	max-width: 900px;
+	max-width: var(--column-large-width);
 	padding: var(--spacing);
 }
 
@@ -187,7 +187,7 @@ h3 {
 }
 
 .selector.inline {
-	min-height: 100vh;
+	min-height: var(--current-vh);
 	border-start-end-radius: 0;
 	border-end-end-radius: 0;
 }

@@ -72,11 +72,11 @@ export default {
 <style scoped>
 .settings {
 	padding: 32px;
-	background: var(--background2);
+	min-height: var(--current-vh);
 	width: 100%;
-	min-height: 100%;
 	display: flex;
 	justify-content: center;
+	background: var(--background2);
 }
 
 .column {
