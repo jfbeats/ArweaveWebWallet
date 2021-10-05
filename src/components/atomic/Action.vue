@@ -1,6 +1,6 @@
 <template>
 	<router-link class="action">
-		<Icon class="img" :icon="img" />
+		<Icon :icon="img" />
 		<span class="text">
 			<slot></slot>
 		</span>
@@ -40,7 +40,7 @@ export default {
 	box-shadow: 5px 0 0 -3px var(--element-secondary);
 }
 
-.img {
+.icon {
 	/* height: 1em; */
 	font-size: 1.2em;
 }
