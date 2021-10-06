@@ -150,7 +150,7 @@ export default {
 	z-index: 10;
 	background: var(--background);
 	height: 100%;
-	width: auto;
+	width: 80px;
 	scrollbar-width: none;
 	position: fixed;
 	outline: 0.5px solid var(--border);
@@ -161,7 +161,7 @@ export default {
 }
 
 .verticalLayout .toolbar {
-	height: auto;
+	height: 80px;
 	width: 100%;
 	flex-direction: row;
 }
