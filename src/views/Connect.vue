@@ -5,13 +5,14 @@
 			<Address class="secondary-text" :address="currentWallet.key" />
 			<Button @click="connect(currentWallet.key)">Connect</Button>
 		</div> -->
+		<div v-if="previousPage" @click="navigateBack">Return to {{ state.origin || 'previous page' }}</div>
 		<transition-group name="fade-list">
 			<ConnectionCard v-for="(connector, name) in connectors" :key="name" :state="connector" class="fade-list-item" />
 		</transition-group>
 		<div class="bottom-info secondary-text">
 			<div>All Channels {{ Object.keys(states).length }}</div>
-			<div v-for="(state, name) in states" :key="name">
-				{{ state }}
+			<div v-for="(extState, name) in states" :key="name">
+				{{ extState }}
 			</div>
 		</div>
 	</div>
@@ -24,7 +25,7 @@ import Address from '@/components/atomic/Address.vue'
 import Button from '@/components/atomic/Button.vue'
 import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
-import { states, connectors } from '@/functions/Connect'
+import { state, states, connectors } from '@/functions/Connect'
 import { computed, onBeforeUnmount } from 'vue'
 
 export default {
@@ -34,8 +35,15 @@ export default {
 		// onBeforeUnmount(() => InterfaceStore.toolbar.links = true)
 		const currentWallet = computed(() => ArweaveStore.currentWallet)
 
+		const previousPage = !!window.opener
+		const navigateBack = () => {
+			if (!previousPage) { return }
+			try {
+				window.open('', 'parent')
+			} catch (e) { console.log(e)}
+		}
 
-		return { currentWallet, connectors, states }
+		return { currentWallet, previousPage, navigateBack, connectors, state, states }
 	}
 }
 </script>

@@ -1,5 +1,6 @@
 :root {
-	--spacing: 24px;
+	--spacing-default: 24px;
+	--spacing: var(--spacing-default);
 	--column-width: 700px;
 	--column-large-width: 1000px;
 	--background: #151515;

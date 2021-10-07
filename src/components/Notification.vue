@@ -1,18 +1,18 @@
 <template>
-	<div class="notification" :class="{ expanded }">
+	<div class="notification" :class="{ expanded: data.expanded }">
 		<div class="flex-row">
-			<div class="flex-row">
-				<IconBackground :icon="icon || require('@/assets/icons/notification.svg')" :img="img" />
+			<div class="flex-row" style="flex: 1 1 0;">
+				<IconBackground :icon="data.icon || require('@/assets/icons/notification.svg')" :img="data.img" />
 				<div class="content">
-					<div v-if="expanded" class="secondary-text">Date</div>
-					<div class="title">Notification example</div>
-					<div class="secondary-text">Notif info Notif info Notif info Notif info Notif info Notif info Notif info Notif info Notif info Notif info Notif info Notif infoNotif info Notif info Notif info Notif info Notif info</div>
-					<div v-if="expanded" class="actions flex-row">
-						Actions
+					<Date v-if="data.expanded" class="secondary-text" :timestamp="data.timestamp" />
+					<div class="title">{{ data.title }}</div>
+					<div class="secondary-text"><slot /></div>
+					<div v-if="data.expanded" class="actions flex-row">
+						<button v-for="action in data.actions" :key="action.name" @click="action.run" type="button" class="action flex-row"><Icon :icon="action.img" /><div>{{ action.name }}</div></button>
 					</div>
 				</div>
 			</div>
-			<Expand v-model="expanded" />
+			<Expand v-model="data.expanded" />
 		</div>
 	</div>
 </template>
@@ -22,23 +22,25 @@
 <script>
 import IconBackground from '@/components/atomic/IconBackground.vue'
 import Icon from '@/components/atomic/Icon.vue'
+import Date from '@/components/atomic/Date.vue'
 import Expand from '@/components/atomic/Expand.vue'
 import { ref } from 'vue'
 
 export default {
-	components: { IconBackground, Icon, Expand },
-	props: ['icon', 'img'],
-	setup () {
-		const expanded = ref(true)
-
-		return { expanded }
-	}
+	components: { IconBackground, Icon, Date, Expand },
+	props: ['data'],
+	setup (props) {	}
 }
 </script>
 
 
 
 <style scoped>
+.notification {
+	--spacing-notification: 8px;
+	--spacing: var(--spacing-notification);
+}
+
 .icon-background {
 	flex: 0 0 auto;
 	width: 52px;
@@ -64,6 +66,15 @@ export default {
 .actions {
 	padding-top: 0.5em;
 	font-size: 0.9em;
+}
+
+.action {
+	--spacing: var(--spacing-default);
+	align-items: center;
+}
+
+.action > * {
+	--spacing: var(--spacing-notification);
 }
 
 .expand {

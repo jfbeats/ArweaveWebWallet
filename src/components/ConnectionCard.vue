@@ -1,7 +1,7 @@
 <template>
 	<div class="connection-card card flex-column">
 		<div class="flex-row" style="flex-wrap:wrap;">
-			<div class="flex-row" >
+			<div class="flex-row">
 				<IconBackground :icon="require('@/assets/icons/connection.svg')" :img="state.appInfo?.logo" />
 				<div>
 					<div>{{ state.appInfo?.name || 'Connector' }}</div>
@@ -19,9 +19,12 @@
 							Select a wallet
 						</div>
 						<div v-else-if="currentTab === 'Requests'" class="flex-column">
-							<div v-if="currentAddress === state.wallet">Connected</div>
-							<!-- <Notification v-else /> -->
-							<div v-else>Wip</div>
+							<transition-group name="fade-list">
+								<div v-if="currentAddress === state.wallet" class="fade-list-item">Connected</div>
+								<Notification v-else :data="connectData" class="fade-list-item">
+									{{ connectData.content }}
+								</Notification>
+							</transition-group>
 						</div>
 						<div v-else-if="currentTab === 'Permissions'" class="flex-column">
 							Wip
@@ -44,7 +47,7 @@ import { computed, ref, watch } from 'vue'
 export default {
 	components: { WalletTabs, Tabs, IconBackground, Notification },
 	props: ['state'],
-	setup () {
+	setup (props) {
 		const addresses = computed(() => ArweaveStore.wallets.map(wallet => wallet.key))
 		const currentAddress = ref(null)
 		const tabs = [
@@ -53,6 +56,23 @@ export default {
 		]
 		const currentTab = ref(null)
 
+		const connectData = computed(() => {
+			const action = props.state.wallet ? 'Switch' : 'Connect'
+			const content = !props.state.wallet ? 
+				`Connect to ${ props.state.appInfo?.name || props.state.origin } from the account ${ currentAddress.value }`
+				: `Switch to ${ currentAddress.value }`
+			return {
+				title: action,
+				timestamp: Date.now(), // todo
+				actions: [
+					{ name: action, img: require('@/assets/icons/y.svg'), run: () => props.state.wallet = currentAddress.value },
+					{ name: 'Exit', img: require('@/assets/icons/x.svg'), run: () => props.state.wallet = false },
+				],
+				expanded: true,
+				content,
+			}
+		})
+
 		const transitionName = ref(null)
 		const selectTransitionName = (val, oldVal) => val > oldVal ? transitionName.value = 'slide-left' : transitionName.value = 'slide-right'
 		watch(() => tabs.findIndex(tab => tab.name === currentTab.value), selectTransitionName)
@@ -60,7 +80,7 @@ export default {
 
 		watch(() => currentAddress.value, (val, oldVal) => { if (val && !oldVal) { currentTab.value = tabs[0].name } })
 
-		return { addresses, currentAddress, tabs, currentTab, transitionName }
+		return { addresses, currentAddress, tabs, currentTab, connectData, transitionName }
 	}
 }
 </script>
@@ -99,7 +119,6 @@ export default {
 }
 
 .notification {
-	--spacing: 8px;
 	padding: var(--spacing);
 	border-bottom: 0.5px solid var(--border);
 }

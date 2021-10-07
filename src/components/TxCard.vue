@@ -27,7 +27,9 @@
 						<div v-else class="ellipsis">
 							<Ar :ar="tx.fee.ar" />&nbsp;<LocaleCurrency class="secondary-text" :ar="tx.fee.ar">|</LocaleCurrency>
 						</div>
-						<div class="secondary-text ellipsis">{{ date + ' ' + time }}</div>
+						<div v-if="upload" class="secondary-text ellipsis">{{ upload }}</div>
+						<div v-else-if="isPending">Pending</div>
+						<div v-else class="secondary-text ellipsis"><Date :timestamp="timestamp" /></div>
 					</div>
 					<div class="margin" />
 				</div>
@@ -54,21 +56,20 @@ import LocaleCurrency from '@/components/atomic/LocaleCurrency'
 import TxIcon from '@/components/atomic/TxIcon'
 import AddressIcon from '@/components/atomic/AddressIcon'
 import MoreInfo from '@/components/MoreInfo'
+import Date from '@/components/atomic/Date.vue'
 import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
 
 export default {
-	components: { Address, Ar, TxIcon, AddressIcon, LocaleCurrency, MoreInfo },
+	components: { Address, Ar, TxIcon, AddressIcon, LocaleCurrency, MoreInfo, Date },
 	props: ['tx'],
 	computed: {
-		date () {
-			if (ArweaveStore.uploads[this.tx.id]) { return `Uploading ${ArweaveStore.uploads[this.tx.id].upload}%` }
-			if (this.isPending) { return 'Pending' }
-			return new Date(this.tx.block.timestamp * 1000).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+		timestamp () {
+			return this.tx.block.timestamp * 1000
 		},
-		time () {
-			if (this.isPending) { return '' }
-			return new Date(this.tx.block.timestamp * 1000).toLocaleTimeString()
+		upload () {
+			if (!ArweaveStore.uploads[this.tx.id]) { return null }
+			return `Uploading ${ArweaveStore.uploads[this.tx.id].upload}%`
 		},
 		direction () {
 			if (!ArweaveStore.currentWallet) { return null }
