@@ -24,7 +24,7 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "arweaveViewLandscape.svg"
   },
   {
-    "revision": "b1ba2af35b5b9471f1e6",
+    "revision": "369cc3da1fa672b74cd0",
     "url": "css/app.9aafcfb2.css"
   },
   {
@@ -40,10 +40,6 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "css/chunk-58efb009.89057387.css"
   },
   {
-    "revision": "ab0d8bd429a268a908a1",
-    "url": "css/chunk-600d550b.4ea47e92.css"
-  },
-  {
     "revision": "5e8bb25b8eb2f3782ee8",
     "url": "css/chunk-725a54b0.d2ff8df1.css"
   },
@@ -54,6 +50,10 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
     "revision": "bb971d7f8dc6622e161b",
     "url": "css/chunk-7e271c8c.5817efb9.css"
+  },
+  {
+    "revision": "9d03fb083b3864634972",
+    "url": "css/chunk-ba88dcc0.58f3b15f.css"
   },
   {
     "revision": "d074050bfadb47770bab",
@@ -128,12 +128,12 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "img/y.c5a842a1.svg"
   },
   {
-    "revision": "6363a17a8a67d24b1f3d16d856cb0a16",
+    "revision": "3c730358d52d6814115eec3f0580c9a4",
     "url": "index.html"
   },
   {
-    "revision": "b1ba2af35b5b9471f1e6",
-    "url": "js/app.b5d097ed.js"
+    "revision": "369cc3da1fa672b74cd0",
+    "url": "js/app.41f19529.js"
   },
   {
     "revision": "ad6242b69248cdf715a0",
@@ -148,10 +148,6 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "js/chunk-58efb009.5de37baf.js"
   },
   {
-    "revision": "ab0d8bd429a268a908a1",
-    "url": "js/chunk-600d550b.ebfb7e6f.js"
-  },
-  {
     "revision": "5e8bb25b8eb2f3782ee8",
     "url": "js/chunk-725a54b0.60a96ebc.js"
   },
@@ -162,6 +158,10 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
     "revision": "bb971d7f8dc6622e161b",
     "url": "js/chunk-7e271c8c.91e4ccdc.js"
+  },
+  {
+    "revision": "9d03fb083b3864634972",
+    "url": "js/chunk-ba88dcc0.6a99ce11.js"
   },
   {
     "revision": "d074050bfadb47770bab",
