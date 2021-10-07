@@ -32,7 +32,7 @@ export default {
 }
 
 .page-logo.placeholder {
-	padding: 10px;
+	padding: 10%;
 	opacity: 0.75;
 }
 </style>

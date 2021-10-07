@@ -2,13 +2,13 @@
 	<div class="connection-card card flex-column">
 		<div class="flex-row" style="flex-wrap:wrap;">
 			<div class="flex-row">
-				<IconBackground :icon="require('@/assets/icons/connection.svg')" :img="state.appInfo?.logo" />
+				<IconBackground :img="state.appInfo?.logo" :icon="require('@/assets/icons/connection.svg')" />
 				<div>
 					<div>{{ state.appInfo?.name || 'Connector' }}</div>
 					<div class="secondary-text">{{ state.origin }}</div>
 				</div>
 			</div>
-			<WalletTabs :addresses="addresses" v-model="currentAddress" />
+			<WalletTabs :addresses="addresses" v-model="currentAddress" exit="true" @exit="disconnect" />
 		</div>
 		<div class="flex-column">
 			<Tabs :tabs="tabs" v-model="currentTab" :disabled="!currentAddress" />
@@ -49,12 +49,14 @@ export default {
 	props: ['state'],
 	setup (props) {
 		const addresses = computed(() => ArweaveStore.wallets.map(wallet => wallet.key))
-		const currentAddress = ref(null)
+		const currentAddress = ref(props.state.wallet)
 		const tabs = [
 			{ name: 'Requests', color: 'var(--orange)' },
 			{ name: 'Permissions', color: 'var(--green)' },
 		]
-		const currentTab = ref(null)
+		const currentTab = ref(currentAddress.value ? 'Requests' : null)
+
+		const disconnect = () => props.state.wallet = false
 
 		const connectData = computed(() => {
 			const action = props.state.wallet ? 'Switch' : 'Connect'
@@ -66,7 +68,7 @@ export default {
 				timestamp: Date.now(), // todo
 				actions: [
 					{ name: action, img: require('@/assets/icons/y.svg'), run: () => props.state.wallet = currentAddress.value },
-					{ name: 'Exit', img: require('@/assets/icons/x.svg'), run: () => props.state.wallet = false },
+					{ name: 'Exit', img: require('@/assets/icons/x.svg'), run: disconnect },
 				],
 				expanded: true,
 				content,
@@ -80,7 +82,7 @@ export default {
 
 		watch(() => currentAddress.value, (val, oldVal) => { if (val && !oldVal) { currentTab.value = tabs[0].name } })
 
-		return { addresses, currentAddress, tabs, currentTab, connectData, transitionName }
+		return { addresses, currentAddress, tabs, currentTab, connectData, transitionName, disconnect }
 	}
 }
 </script>
