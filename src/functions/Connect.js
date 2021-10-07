@@ -1,12 +1,15 @@
 import { reactive, watchEffect, watch, computed } from 'vue'
 
-const origin = new URLSearchParams(window.location.hash.slice(1)).get('origin')
+const hash = new URLSearchParams(window.location.hash.slice(1))
+const origin = hash.get('origin')
+const appInfo = { name: hash.get('name'), logo: hash.get('logo') }
 const instance = origin + Math.random().toString().slice(2)
 const stateChannel = 'connectorState:' + instance
 const messageQueue = []
 
 const stateInit = {
 	origin,
+	appInfo,
 	wallet: null,
 }
 window.addEventListener('storage', (e) => {

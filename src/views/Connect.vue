@@ -5,7 +5,7 @@
 			<Address class="secondary-text" :address="currentWallet.key" />
 			<Button @click="connect(currentWallet.key)">Connect</Button>
 		</div> -->
-		<div v-if="previousPage" @click="navigateBack">Return to {{ state.origin || 'previous page' }}</div>
+		<div v-if="previousPage" @click="navigateBack">Return to {{ state.appInfo?.name || state.origin || 'previous page' }}</div>
 		<transition-group name="fade-list">
 			<ConnectionCard v-for="(connector, name) in connectors" :key="name" :state="connector" class="fade-list-item" />
 		</transition-group>
