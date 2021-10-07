@@ -108,6 +108,7 @@ export default {
 .content {
 	width: 100%;
 	height: 100%;
+	position: relative;
 	/* padding: var(--spacing);
 	border-bottom: 0.5px solid #ffffff20; */
 }
@@ -119,6 +120,7 @@ export default {
 }
 
 .notification {
+	width: 100%;
 	padding: var(--spacing);
 	border-bottom: 0.5px solid var(--border);
 }
