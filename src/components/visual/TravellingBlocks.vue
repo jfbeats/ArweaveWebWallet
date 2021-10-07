@@ -4,14 +4,13 @@
 			<div class="bubbles">
 				<div class="bubble" v-for="n in nbBlocks" :key="n" :style="`--size:${5+Math.random()*2}rem; --distance:${120+Math.random()*100}px; --position:${Math.random()*100}%; --time:${4+Math.random()*18}s; --delay:${-1*(4+Math.random()*2)}s;`" />
 			</div>
-
 		</div>
 		<svg style="position:absolute;">
 			<defs>
 				<filter id="blob">
-					<feGaussianBlur in="SourceGraphic" stdDeviation="7" result="blur" />
-					<feColorMatrix in="blur" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -11" result="blob" />
-					<feMorphology in="blob" result="mask" operator="erode" radius="1" />
+					<feGaussianBlur in="SourceGraphic" result="blur" stdDeviation="7" />
+					<feColorMatrix in="blur" result="blob" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -11" />
+					<feMorphology in="blob" result="mask" operator="erode" radius="2" />
 					<feComposite in="blob" in2="mask" operator="out" />
 				</filter>
 			</defs>
@@ -33,7 +32,6 @@ export default {
 
 <style scoped>
 .travelling-blocks {
-	--footer-background: #fff;
 	width: 100%;
 	overflow: hidden;
 	pointer-events: none;
@@ -53,7 +51,7 @@ export default {
 	bottom: -1rem;
 	height: 3rem;
 	width: 120%;
-	background: var(--footer-background);
+	background: #ffffff;
 	filter: url("#blob");
 }
 
