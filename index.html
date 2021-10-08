@@ -17,13 +17,10 @@
 	<meta property="og:type" content="website">
 	<meta name="twitter:card" content="summary_large_image">
 	<script type="module">
-		import process from "process";
-		import { Buffer } from "buffer";
+		import { Buffer } from "buffer"
 		if (window.global === undefined) {
-			// window.process = process;
-			window.global = window;
-			window.Buffer = Buffer;
-			window.process = { env: {} }
+			window.global = window
+			window.Buffer = Buffer
 		}
 	</script>
 </head>
