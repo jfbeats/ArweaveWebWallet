@@ -28,7 +28,7 @@
 							<Ar :ar="tx.fee.ar" />&nbsp;<LocaleCurrency class="secondary-text" :ar="tx.fee.ar">|</LocaleCurrency>
 						</div>
 						<div v-if="upload" class="secondary-text ellipsis">{{ upload }}</div>
-						<div v-else-if="isPending">Pending</div>
+						<div v-else-if="isPending" class="secondary-text ellipsis">Pending</div>
 						<div v-else class="secondary-text ellipsis"><Date :timestamp="timestamp" /></div>
 					</div>
 					<div class="margin" />
