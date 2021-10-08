@@ -50,12 +50,12 @@
 </template>
 
 <script>
-import Address from '@/components/atomic/Address'
-import Ar from '@/components/atomic/Ar'
-import LocaleCurrency from '@/components/atomic/LocaleCurrency'
-import TxIcon from '@/components/atomic/TxIcon'
-import AddressIcon from '@/components/atomic/AddressIcon'
-import MoreInfo from '@/components/MoreInfo'
+import Address from '@/components/atomic/Address.vue'
+import Ar from '@/components/atomic/Ar.vue'
+import LocaleCurrency from '@/components/atomic/LocaleCurrency.vue'
+import TxIcon from '@/components/atomic/TxIcon.vue'
+import AddressIcon from '@/components/atomic/AddressIcon.vue'
+import MoreInfo from '@/components/MoreInfo.vue'
 import Date from '@/components/atomic/Date.vue'
 import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'

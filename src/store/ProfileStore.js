@@ -51,6 +51,6 @@ export async function getArverify (address) {
 
 
 
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.DEV) {
 	window.ProfileStore = ProfileStore
 }

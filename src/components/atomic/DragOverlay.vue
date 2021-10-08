@@ -39,7 +39,7 @@ export default {
 .dragOverlay::after {
 	content: "";
 	text-align: center;
-	background-image: url("~@/assets/icons/drop.svg");
+	background-image: url("@/assets/icons/drop.svg");
 	background-position: center;
 	background-repeat: no-repeat;
 	background-origin: center;

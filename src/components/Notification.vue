@@ -2,13 +2,18 @@
 	<div class="notification" :class="{ expanded: data.expanded }">
 		<div class="flex-row">
 			<div class="flex-row" style="flex: 1 1 0;">
-				<IconBackground :icon="data.icon || require('@/assets/icons/notification.svg')" :img="data.img" />
+				<IconBackground :icon="data.icon || iconNotification" :img="data.img" />
 				<div class="content">
 					<Date v-if="data.expanded" class="secondary-text" :timestamp="data.timestamp" />
 					<div class="title">{{ data.title }}</div>
-					<div class="secondary-text"><slot /></div>
+					<div class="secondary-text">
+						<slot />
+					</div>
 					<div v-if="data.expanded" class="actions flex-row">
-						<button v-for="action in data.actions" :key="action.name" @click="action.run" type="button" class="action flex-row"><Icon :icon="action.img" /><div>{{ action.name }}</div></button>
+						<button v-for="action in data.actions" :key="action.name" @click="action.run" type="button" class="action flex-row">
+							<Icon :icon="action.img" />
+							<div>{{ action.name }}</div>
+						</button>
 					</div>
 				</div>
 			</div>
@@ -26,10 +31,14 @@ import Date from '@/components/atomic/Date.vue'
 import Expand from '@/components/atomic/Expand.vue'
 import { ref } from 'vue'
 
+import iconNotification from '@/assets/icons/notification.svg'
+
 export default {
 	components: { IconBackground, Icon, Date, Expand },
 	props: ['data'],
-	setup (props) {	}
+	setup (props) {
+		return { iconNotification }
+	}
 }
 </script>
 

@@ -9,9 +9,12 @@
 	</div>
 </template>
 
+
+
 <script>
 import InterfaceStore from '@/store/InterfaceStore'
 import { onUnmounted, toRef, watch } from 'vue'
+
 export default {
 	setup () {
 		const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
@@ -26,6 +29,8 @@ export default {
 	},
 }
 </script>
+
+
 
 <style scoped>
 .folding-layout {

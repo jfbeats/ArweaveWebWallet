@@ -1,6 +1,9 @@
 import { reactive, watch } from 'vue'
 import mitt from 'mitt'
 
+import logoArweaveBlack from '@/assets/logos/arweaveBlack.svg'
+import logoArweave from '@/assets/logos/arweave.svg'
+
 const InterfaceStore = reactive({
 	windowWidth: window.innerWidth,
 	windowVisible: !document.hidden,
@@ -65,8 +68,8 @@ const faviconEl = document.createElement('link')
 faviconEl.setAttribute('rel', 'favicon icon')
 const setFavicon = (e) => {
 	faviconEl.remove()
-	if (e.matches) { faviconEl.setAttribute('href', require('@/assets/logos/arweaveBlack.svg')) }
-	else { faviconEl.setAttribute('href', require('@/assets/logos/arweave.svg')) }
+	if (e.matches) { faviconEl.setAttribute('href', logoArweaveBlack) }
+	else { faviconEl.setAttribute('href', logoArweave) }
 	document.head.appendChild(faviconEl)
 }
 if (window.matchMedia) {

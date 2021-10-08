@@ -2,7 +2,7 @@
 	<div class="connection-card card flex-column">
 		<div class="flex-row" style="flex-wrap:wrap;">
 			<div class="flex-row">
-				<IconBackground :img="state.appInfo?.logo" :icon="require('@/assets/icons/connection.svg')" />
+				<IconBackground :img="state.appInfo?.logo" :icon="iconConnection" />
 				<div>
 					<div>{{ state.appInfo?.name || 'Connector' }}</div>
 					<div class="secondary-text">{{ state.origin }}</div>
@@ -36,6 +36,8 @@
 	</div>
 </template>
 
+
+
 <script>
 import WalletTabs from '@/components/WalletTabs.vue'
 import Tabs from '@/components/atomic/Tabs.vue'
@@ -43,6 +45,10 @@ import IconBackground from '@/components/atomic/IconBackground.vue'
 import Notification from '@/components/Notification.vue'
 import ArweaveStore from '@/store/ArweaveStore'
 import { computed, ref, watch } from 'vue'
+
+import iconConnection from '@/assets/icons/connection.svg'
+import iconY from '@/assets/icons/y.svg'
+import iconX from '@/assets/icons/x.svg'
 
 export default {
 	components: { WalletTabs, Tabs, IconBackground, Notification },
@@ -67,8 +73,8 @@ export default {
 				title: action,
 				timestamp: Date.now(), // todo
 				actions: [
-					{ name: action, img: require('@/assets/icons/y.svg'), run: () => props.state.wallet = currentAddress.value },
-					{ name: 'Exit', img: require('@/assets/icons/x.svg'), run: disconnect },
+					{ name: action, img: iconY, run: () => props.state.wallet = currentAddress.value },
+					{ name: 'Exit', img: iconX, run: disconnect },
 				],
 				expanded: true,
 				content,
@@ -82,10 +88,12 @@ export default {
 
 		watch(() => currentAddress.value, (val, oldVal) => { if (val && !oldVal) { currentTab.value = tabs[0].name } })
 
-		return { addresses, currentAddress, tabs, currentTab, connectData, transitionName, disconnect }
+		return { addresses, currentAddress, tabs, currentTab, connectData, transitionName, disconnect, iconConnection }
 	}
 }
 </script>
+
+
 
 <style scoped>
 .flex-row {

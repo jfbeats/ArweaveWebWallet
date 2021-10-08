@@ -27,8 +27,8 @@ export default {
 	components: { ArweaveOutlineLogo, TravellingBlocks },
 	setup () {
 		return {
-			description: process.env.VUE_APP_DESCRIPTION,
-			title: process.env.VUE_APP_TITLE,
+			description: import.meta.env.VITE_DESCRIPTION,
+			title: import.meta.env.VITE_TITLE,
 		}
 	}
 }

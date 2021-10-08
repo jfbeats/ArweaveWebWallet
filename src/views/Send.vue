@@ -6,7 +6,7 @@
 				<h2 class="heading flex-row"><img class="img" src="@/assets/icons/north_east.svg"><span>Send</span></h2>
 			</label>
 			<div class="row flex-row">
-				<Input v-model.trim="model.target" :icon="require('@/assets/icons/person.svg')" placeholder="Address" :mask="maskAddress" id="target" />
+				<Input v-model.trim="model.target" :icon="iconPerson" placeholder="Address" :mask="maskAddress" id="target" />
 				<AddressIcon class="address-icon" :address="model.target" />
 			</div>
 			<div class="row bottom flex-row">
@@ -60,7 +60,7 @@
 
 			<div class="row flex-row" style="align-items:flex-end; margin-top:3em;">
 				<SendFee :size="txSize" :target="model.target" @update="fee => txFee=fee" />
-				<Button @click="postTx" :style="submitStyle" :disabled="loading || !txFee" :icon="require('@/assets/icons/north_east.svg')">
+				<Button @click="postTx" :style="submitStyle" :disabled="loading || !txFee" :icon="iconNorthEast">
 					Submit
 				</Button>
 			</div>
@@ -93,6 +93,10 @@ import Ledger from '@/functions/Ledger'
 import BigNumber from 'bignumber.js'
 import { addressToHash, addressHashToColor } from '@/functions/Utils'
 import { computed, reactive, ref, watch } from 'vue'
+
+import iconPerson from '@/assets/icons/person.svg'
+import iconNorthEast from '@/assets/icons/north_east.svg'
+import iconLabel from '@/assets/icons/label.svg'
 
 export default {
 	components: { Input, InputAr, InputData, InputGrid, AddressIcon, SendFee, Button, Icon },
@@ -128,7 +132,7 @@ export default {
 
 		const tagSchema = (name, value) => ({
 			items: [
-				{ name: 'Tag', value: name || '', icon: require('@/assets/icons/label.svg') },
+				{ name: 'Tag', value: name || '', icon: iconLabel },
 				{ name: 'Value', value: value || '' }
 			], deletable: true, key: Math.random()
 		})
@@ -226,7 +230,7 @@ export default {
 			rgba(${addressHashColor.value},0.3))`
 		}))
 
-		return { maskAddress, setMax, filesAdded, addTag, txSize, txFee, postTx, submitStyle, loading, validation }
+		return { maskAddress, setMax, filesAdded, addTag, txSize, txFee, postTx, submitStyle, loading, validation, iconPerson, iconNorthEast }
 	}
 }
 </script>

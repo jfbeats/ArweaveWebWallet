@@ -7,7 +7,7 @@
 				<span>Key file</span>
 			</h2>
 			<InputData v-model="passphraseInput" @files="importFile" :disabled="isCreatingWallet" placeholder="Import passphrase or key file" /><br>
-			<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create()" :disabled="passphraseInput.length && !isPassphrase" :icon="require('@/assets/logos/arweave.svg')">
+			<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create()" :disabled="passphraseInput.length && !isPassphrase" :icon="logoArweave">
 				Create new wallet
 			</Button>
 
@@ -34,16 +34,18 @@
 
 		<div class="card">
 			<h2>Hardware</h2>
-			<Button v-if="supportsWebUSB()" @click="importLedger()" :icon="require('@/assets/logos/ledger.svg')">
+			<Button v-if="supportsWebUSB()" @click="importLedger()" :icon="logoLedger">
 				Ledger
 			</Button>
-			<Button v-else disabled :icon="require('@/assets/logos/ledger.svg')">
+			<Button v-else disabled :icon="logoLedger">
 				Ledger not supported for this browser
 			</Button>
 		</div>
 
 	</div>
 </template>
+
+
 
 <script>
 import InputData from '@/components/atomic/InputData.vue'
@@ -53,6 +55,9 @@ import Ledger from '@/functions/Ledger.js'
 import { addWallet, watchWallet, generateMnemonic, validateMnemonic, addMnemonic } from '@/functions/Wallets.js'
 import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+
+import logoArweave from '@/assets/logos/arweave.svg'
+import logoLedger from '@/assets/logos/ledger.svg'
 
 export default {
 	components: { InputData, Button, Icon },
@@ -104,7 +109,7 @@ export default {
 		const supportsWebUSB = () => {
 			return !!window.navigator.usb
 		}
-		return { passphraseInput, popup, isPassphrase, isValidPassphrase, create, importLedger, supportsWebUSB, isCreatingWallet, isGeneratingWallet, createdWallet, goToCreatedWallet, importPassphrase, confirmPassphrase, importFile }
+		return { passphraseInput, popup, isPassphrase, isValidPassphrase, create, importLedger, supportsWebUSB, isCreatingWallet, isGeneratingWallet, createdWallet, goToCreatedWallet, importPassphrase, confirmPassphrase, importFile, logoArweave, logoLedger }
 	},
 }
 </script>

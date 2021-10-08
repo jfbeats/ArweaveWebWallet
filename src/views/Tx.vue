@@ -73,8 +73,8 @@
 <script>
 import Selector from '@/components/handlers/Selector.vue'
 import FoldingLayout from '@/components/FoldingLayout.vue'
-import Address from '@/components/atomic/Address'
-import AddressIcon from '@/components/atomic/AddressIcon'
+import Address from '@/components/atomic/Address.vue'
+import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import InputGrid from '@/components/atomic/InputGrid.vue'
 import Ar from '@/components/atomic/Ar.vue'
 import LocaleCurrency from '@/components/atomic/LocaleCurrency.vue'

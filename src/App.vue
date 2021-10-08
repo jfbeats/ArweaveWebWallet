@@ -18,10 +18,10 @@
 
 
 <script>
-import Toolbar from '@/components/Toolbar'
+import Toolbar from '@/components/Toolbar.vue'
 import ArweaveStore from './store/ArweaveStore'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
-import { addWallet } from '@/functions/Wallets.js'
+import { addWallet } from '@/functions/Wallets'
 import { useRoute, useRouter } from 'vue-router'
 import { ref, toRef } from 'vue'
 
@@ -137,7 +137,7 @@ export default {
 	width: 100vw;
 	height: 100%;
 	z-index: -10;
-	background: url("~@/assets/background.svg") no-repeat center center;
+	background: url("@/assets/background.svg") no-repeat center center;
 	background-size: cover;
 }
 

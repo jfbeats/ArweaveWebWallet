@@ -369,7 +369,7 @@ watch(() => ArweaveStore.conversion.settings, (settings) => {
 
 
 export function loadDemo () {
-	if (!ArweaveStore.wallets.length || process.env.NODE_ENV === 'development') {
+	if (!ArweaveStore.wallets.length || import.meta.env.DEV) {
 		console.log('loading test wallets')
 		pushWallet({ key: 'TId0Wix2KFl1gArtAT6Do1CbWU_0wneGvS5X9BfW5PE' })
 		pushWallet({ key: 'Bf3pWqxD1qwwF2fcE9bPNyQp_5TSlAYPJ3JNMgJSj4c' })
@@ -380,7 +380,7 @@ export function loadDemo () {
 
 
 
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.DEV) {
 	window.ArweaveStore = ArweaveStore
 	window.arweave = arweave
 	window.arDB = arDB

@@ -1,36 +1,33 @@
 {
 	"name": "arweave-web-wallet",
 	"version": "0.1.0",
-	"private": true,
 	"scripts": {
-		"serve": "vue-cli-service serve",
-		"build": "vue-cli-service build",
-		"report": "vue-cli-service build --report",
-		"deploy": "vue-cli-service build && arkb deploy dist --wallet ../arweaveWallet.json --use-bundler http://bundler.arweave.net:10000",
-		"deploy-confirm": "vue-cli-service build && arkb deploy dist --wallet ../arweaveWallet.json --auto-confirm --use-bundler http://bundler.arweave.net:10000"
+		"dev": "vite",
+		"build": "vite build",
+		"serve": "vite preview",
+		"deploy": "npm run build && arkb deploy dist --wallet ../arweaveWallet.json --use-bundler http://bundler.arweave.net:10000",
+		"deploy-confirm": "npm run build && arkb deploy dist --wallet ../arweaveWallet.json --auto-confirm --use-bundler http://bundler.arweave.net:10000"
 	},
 	"dependencies": {
-		"@ledgerhq/hw-transport-webusb": "^5.53.1",
+		"@ledgerhq/hw-transport-webusb": "^6.7.0",
 		"@zondax/ledger-arweave": "^0.2.0",
-		"ardb": "^1.0.8",
+		"ardb": "1.0.8",
 		"arverify": "^0.0.11",
-		"arweave": "^1.10.13",
+		"arweave": "^1.10.17",
 		"bignumber.js": "^9.0.1",
 		"bip39": "^3.0.4",
-		"core-js": "^3.6.5",
+		"buffer": "^6.0.3",
 		"human-crypto-keys": "^0.1.4",
 		"mitt": "^3.0.0",
-		"register-service-worker": "^1.7.1",
-		"smartweave": "^0.4.39",
-		"vue": "^3.0.0",
-		"vue-router": "^4.0.0-0",
+		"process": "^0.11.10",
+		"register-service-worker": "^1.7.2",
+		"smartweave": "^0.4.45",
+		"vue": "^3.2.16",
+		"vue-router": "^4.0.11",
 		"vue-slicksort": "^2.0.0-alpha.5"
 	},
 	"devDependencies": {
-		"@vue/cli-plugin-babel": "~4.5.0",
-		"@vue/cli-plugin-pwa": "^4.5.13",
-		"@vue/cli-plugin-router": "~4.5.0",
-		"@vue/cli-service": "~4.5.0",
-		"@vue/compiler-sfc": "^3.0.0"
+		"@vitejs/plugin-vue": "^1.9.3",
+		"vite": "^2.6.4"
 	}
 }

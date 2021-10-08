@@ -4,13 +4,13 @@
 			<h2>Wallet Settings</h2>
 			<div class="flex-column">
 				<WalletOptions class="wallet-options" v-for="wallet in ArweaveStore.wallets" :key="wallet.id" :wallet="wallet" />
-				<Button v-if="!ArweaveStore.wallets.length" style="font-size:1.5em; background:var(--background3);" @click="$router.push({ name: 'AddWallet'})" icon="+" />
+				<Button v-if="!ArweaveStore.wallets.length" style="font-size:1.5em; background:var(--background3);" @click="$router.push({ name: 'AddWallet' })" icon="+" />
 			</div>
 			<h2>App Settings</h2>
 			<div class="group">
 				<p>Gateway</p>
 				<div class="flex-row">
-					<Input v-model="gateway" :placeholder="ArweaveStore.gatewayURL" :icon="require('@/assets/logos/arweave.svg')" style="flex:1 1 0;" @keyup.enter="gateway && setGateway()" />
+					<Input v-model="gateway" :placeholder="ArweaveStore.gatewayURL" :icon="logoArweave" style="flex:1 1 0;" @keyup.enter="gateway && setGateway()" />
 					<Button @click="setGateway()">{{ gateway ? 'Submit' : 'Reset' }}</Button>
 				</div>
 			</div>
@@ -21,7 +21,7 @@
 			<!-- <div class="group">
 				<p>Fund the project</p>
 				<InputAr v-model="amount" />
-			</div> -->
+			</div>-->
 		</div>
 	</div>
 </template>
@@ -38,6 +38,8 @@ import Icon from '@/components/atomic/Icon.vue'
 import ArweaveStore, { updateArweave } from '@/store/ArweaveStore'
 import axios from 'axios'
 import { reactive, ref, computed } from 'vue'
+
+import logoArweave from '@/assets/logos/arweave.svg'
 
 export default {
 	components: { WalletOptions, Input, InputAr, Select, Button, Icon },
@@ -63,7 +65,7 @@ export default {
 
 		const amount = ref('')
 
-		return { ArweaveStore, gateway, setGateway, options, amount, currencySymbol }
+		return { ArweaveStore, gateway, setGateway, options, amount, currencySymbol, logoArweave }
 	},
 }
 </script>

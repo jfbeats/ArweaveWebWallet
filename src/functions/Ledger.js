@@ -90,7 +90,7 @@ export default Ledger
 
 // Testing
 
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.DEV) {
 	window.arweaveWallet = Ledger
 	window.testTx = async () => {
 		const tx = await arweave.createTransaction({ data: '😁', })

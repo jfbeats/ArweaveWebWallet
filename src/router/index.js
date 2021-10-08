@@ -120,7 +120,7 @@ const routes = [
 ]
 
 const router = createRouter({
-	history: process.env.BASE_URL === '/' ? createWebHistory() : createWebHashHistory(),
+	history: import.meta.env.BASE_URL === '/' ? createWebHistory() : createWebHashHistory(),
 	routes,
 	scrollBehavior: (to, from, savedPosition) => new Promise((resolve) => {
 		const position = savedPosition || { top: 0 }

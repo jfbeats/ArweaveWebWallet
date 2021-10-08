@@ -130,7 +130,7 @@ function blockPromise (n) {
 }
 
 
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.DEV) {
 	window.BlockStore = BlockStore
 	window.getBlocks = getBlocks
 }
