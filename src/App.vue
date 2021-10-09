@@ -6,13 +6,13 @@
 				<transition :name="$route.meta.transition?.nameLayout" mode="out-in" @before-enter="emitter.emit('beforeEnter')" @after-enter="emitter.emit('afterEnter')" @before-leave="emitter.emit('beforeLeave')" @after-leave="emitter.emit('afterLeave')">
 					<component :is="Component" />
 				</transition>
+				<UpdateAvailable />
 			</div>
 		</router-view>
 		<transition name="fade">
 			<div v-if="dragOverlay" class="overlay" />
 		</transition>
 		<div id="viewport" />
-		<UpdateAvailable />
 	</div>
 </template>
 

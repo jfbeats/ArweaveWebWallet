@@ -22,12 +22,11 @@ export default {
 
 <style scoped>
 .update-available {
-	position: absolute;
+	position: fixed;
 	z-index: 10;
 	bottom: 0;
-	left: 80px;
 	background: var(--background);
-	padding: var(--spacing);
+	padding: var(--spacing) var(--spacing) var(--spacing) 0;
 	border-top: 0.5px solid var(--border);
 	border-right: 0.5px solid var(--border);
 	border-top-right-radius: var(--border-radius);
