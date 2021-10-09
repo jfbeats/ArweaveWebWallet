@@ -12,6 +12,7 @@
 			<div v-if="dragOverlay" class="overlay" />
 		</transition>
 		<div id="viewport" />
+		<UpdateAvailable />
 	</div>
 </template>
 
@@ -19,16 +20,15 @@
 
 <script>
 import Toolbar from '@/components/Toolbar.vue'
-import ArweaveStore from './store/ArweaveStore'
+import UpdateAvailable from '@/components/UpdateAvailable.vue'
+import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import { addWallet } from '@/functions/Wallets'
 import { useRoute, useRouter } from 'vue-router'
 import { ref, toRef } from 'vue'
 
 export default {
-	components: {
-		Toolbar
-	},
+	components: { Toolbar, UpdateAvailable },
 	setup () {
 		const verticalLayout = toRef(InterfaceStore.breakpoints, 'verticalLayout')
 		const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
@@ -84,21 +84,6 @@ export default {
 		}
 
 		emitter.on('afterEnter', () => route.meta.transition = {})
-
-		document.addEventListener('swUpdated', () => updateAvailable(), { once: true })
-		if (navigator.serviceWorker) {
-			navigator.serviceWorker.addEventListener('controllerchange', () => {
-				if (window.swRefreshing) { return }
-				window.swRefreshing = true
-				window.location.reload()
-			})
-		}
-		const updateAvailable = () => {
-			if (window.confirm('Click ok to update the app')) { refreshApp() }
-		}
-		const refreshApp = () => {
-			window.swRegistration?.waiting?.postMessage({ type: 'SKIP_WAITING' })
-		}
 
 		return { verticalLayout, verticalContent, sticky, dragOverlay, hasToolbar, emitter }
 	},

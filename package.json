@@ -19,8 +19,6 @@
 		"buffer": "^6.0.3",
 		"human-crypto-keys": "^0.1.4",
 		"mitt": "^3.0.0",
-		"process": "^0.11.10",
-		"register-service-worker": "^1.7.2",
 		"smartweave": "^0.4.45",
 		"vue": "^3.2.16",
 		"vue-router": "^4.0.11",
@@ -29,6 +27,7 @@
 	"devDependencies": {
 		"@rollup/plugin-inject": "^4.0.2",
 		"@vitejs/plugin-vue": "^1.9.3",
-		"vite": "^2.6.4"
+		"vite": "^2.6.4",
+		"vite-plugin-pwa": "^0.11.3"
 	}
 }
