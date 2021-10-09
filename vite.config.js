@@ -11,7 +11,7 @@ export default ({ mode }) => {
 	return defineConfig({
 		plugins: [
 			vue(),
-			processHtml({ inject: {data: { ...process.env }}, minify: true }),
+			processHtml({ inject: { data: { ...process.env } }, minify: true }),
 			VitePWA({
 				manifest: {
 					name: process.env.VITE_TITLE,
@@ -51,7 +51,12 @@ export default ({ mode }) => {
 		},
 		build: {
 			rollupOptions: {
-				plugins: [inject({ Buffer: ['Buffer', 'Buffer'] })],
+				plugins: [
+					inject({
+						include: ['node_modules/@ledgerhq/**'],
+						modules: { Buffer: ['buffer', 'Buffer'], }
+					})
+				],
 			},
 		},
 		server: {
