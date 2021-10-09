@@ -1,7 +1,8 @@
 import { defineConfig, loadEnv } from 'vite'
-import { VitePWA } from 'vite-plugin-pwa'
-import vue from '@vitejs/plugin-vue'
 import path from 'path'
+import vue from '@vitejs/plugin-vue'
+import { VitePWA } from 'vite-plugin-pwa'
+import processHtml from 'vite-plugin-html'
 import inject from '@rollup/plugin-inject'
 
 export default ({ mode }) => {
@@ -10,6 +11,7 @@ export default ({ mode }) => {
 	return defineConfig({
 		plugins: [
 			vue(),
+			processHtml({ inject: {data: { ...process.env }}, minify: true }),
 			VitePWA({
 				manifest: {
 					name: process.env.VITE_TITLE,
@@ -54,7 +56,7 @@ export default ({ mode }) => {
 		},
 		server: {
 			port: 8080,
-			https: true,
+			https: false,
 		}
 	})
 }
