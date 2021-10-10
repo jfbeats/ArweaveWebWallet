@@ -4,45 +4,16 @@ import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 import processHtml from 'vite-plugin-html'
 import inject from '@rollup/plugin-inject'
+import pwaOptions from './src/pwaOptions'
 
 export default ({ mode }) => {
-	process.env = { ...process.env, ...loadEnv(mode, process.cwd()) }
+	const env = { ...process.env, ...loadEnv(mode, process.cwd()) }
 
 	return defineConfig({
 		plugins: [
 			vue(),
-			processHtml({ inject: { data: { ...process.env } }, minify: true }),
-			VitePWA({
-				manifest: {
-					name: process.env.VITE_TITLE,
-					short_name: process.env.VITE_TITLE,
-					description: process.env.VITE_DESCRIPTION,
-					theme_color: process.env.VITE_BACKGROUND,
-					background_color: process.env.VITE_BACKGROUND,
-					display: 'standalone',
-					start_url: '.',
-					icons: [
-						{
-							src: 'arweave.svg',
-							type: 'image/svg+xml',
-							sizes: 'any',
-							purpose: 'monochrome any',
-						},
-						{
-							src: 'arweave-192.png',
-							type: 'image/png',
-							sizes: '192x192',
-							purpose: 'monochrome any',
-						},
-						{
-							src: 'arweave-512.png',
-							type: 'image/png',
-							sizes: '512x512',
-							purpose: 'monochrome any',
-						}
-					]
-				}
-			})
+			processHtml({ inject: { data: { ...env } }, minify: true }),
+			VitePWA(pwaOptions(env))
 		],
 		resolve: {
 			alias: {
