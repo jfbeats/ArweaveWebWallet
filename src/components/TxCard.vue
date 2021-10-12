@@ -2,38 +2,33 @@
 	<div class="tx-card" :class="{ verticalElement }">
 		<div class="tx-content" :class="{ 'flex-row': !verticalElement, 'flex-column': verticalElement }">
 			<router-link class="left reset" :to="{ name: 'Tx', params: { txId: tx.id } }">
-
 				<TxIcon class="tx-icon" :tx="tx" :direction="direction" />
 				<div class="margin" />
-
 				<div>
 					<div v-if="isValue">
-						<Ar class="ar" :ar="value" />&nbsp;<LocaleCurrency class="secondary-text" :ar="value">|</LocaleCurrency>
+						<Ar class="ar" :ar="value" />&nbsp;
+						<LocaleCurrency class="secondary-text" :ar="value">|</LocaleCurrency>
 					</div>
-					<div v-else>
-						{{ dataType || 'Data' }}
-					</div>
-					<div class="secondary-text">
-						{{ context }}
-					</div>
+					<div v-else>{{ dataType || 'Data' }}</div>
+					<div class="secondary-text">{{ context }}</div>
 				</div>
-
 			</router-link>
 			<div class="right">
-
 				<div class="right-content">
 					<div class="right-text">
 						<Address v-if="relativeAddress" class="address" :address="relativeAddress" />
 						<div v-else class="ellipsis">
-							<Ar :ar="tx.fee.ar" />&nbsp;<LocaleCurrency class="secondary-text" :ar="tx.fee.ar">|</LocaleCurrency>
+							<Ar :ar="tx.fee.ar" />&nbsp;
+							<LocaleCurrency class="secondary-text" :ar="tx.fee.ar">|</LocaleCurrency>
 						</div>
 						<div v-if="upload" class="secondary-text ellipsis">{{ upload }}</div>
 						<div v-else-if="isPending" class="secondary-text ellipsis">Pending</div>
-						<div v-else class="secondary-text ellipsis"><Date :timestamp="timestamp" /></div>
+						<div v-else class="secondary-text ellipsis">
+							<Date :timestamp="timestamp" />
+						</div>
 					</div>
 					<div class="margin" />
 				</div>
-
 				<MoreInfo v-if="relativeAddress" :key="relativeAddress">
 					<template v-slot:icon>
 						<AddressIcon :address="relativeAddress" />
@@ -42,8 +37,9 @@
 						<div>Info here</div>
 					</template>
 				</MoreInfo>
-				<span v-else class="cloud"><img class="file-type no-select" src="@/assets/icons/cloud.svg" draggable="false"></span>
-
+				<span v-else class="cloud">
+					<img class="file-type no-select" src="@/assets/icons/cloud.svg" draggable="false" />
+				</span>
 			</div>
 		</div>
 	</div>

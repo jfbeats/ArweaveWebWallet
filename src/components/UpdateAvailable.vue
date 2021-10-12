@@ -1,7 +1,5 @@
 <template>
-	<button type="button" class="update-available" v-if="needRefresh" @click="updateServiceWorker()">
-		Update ready, click to reload
-	</button>
+	<button type="button" class="update-available" v-if="needRefresh" @click="updateServiceWorker()">Update ready, click to reload</button>
 </template>
 
 

@@ -9,7 +9,7 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 
 export default {
 	props: {
-		observe: [ Array, String ],
+		observe: [Array, String],
 		threshold: { default: 0 },
 		once: { type: Boolean, default: false },
 	},

@@ -1,6 +1,6 @@
 <template>
 	<!-- @click="expand=!expand" -->
-	<div class="wrapper" :class="{expand: expand}"> 
+	<div class="wrapper" :class="{ expand: expand }">
 		<div class="header">
 			<slot name="icon"></slot>
 		</div>
@@ -42,7 +42,7 @@ export default {
 }
 
 .wrapper::-webkit-scrollbar {
-  display: none;
+	display: none;
 }
 
 .header {

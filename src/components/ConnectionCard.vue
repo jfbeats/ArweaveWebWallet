@@ -15,20 +15,14 @@
 			<div class="container flex-column">
 				<transition :name="transitionName" mode="out-in">
 					<div :key="currentAddress + currentTab" class="content">
-						<div v-if="!currentAddress" class="info flex-column">
-							Select a wallet
-						</div>
+						<div v-if="!currentAddress" class="info flex-column">Select a wallet</div>
 						<div v-else-if="currentTab === 'Requests'" class="flex-column">
 							<transition-group name="fade-list">
 								<div v-if="currentAddress === state.wallet" class="fade-list-item">Connected</div>
-								<Notification v-else :data="connectData" class="fade-list-item">
-									{{ connectData.content }}
-								</Notification>
+								<Notification v-else :data="connectData" class="fade-list-item">{{ connectData.content }}</Notification>
 							</transition-group>
 						</div>
-						<div v-else-if="currentTab === 'Permissions'" class="flex-column">
-							Wip
-						</div>
+						<div v-else-if="currentTab === 'Permissions'" class="flex-column">Wip</div>
 					</div>
 				</transition>
 			</div>
@@ -66,9 +60,9 @@ export default {
 
 		const connectData = computed(() => {
 			const action = props.state.wallet ? 'Switch' : 'Connect'
-			const content = !props.state.wallet ? 
-				`Connect to ${ props.state.appInfo?.name || props.state.origin } from the account ${ currentAddress.value }`
-				: `Switch to ${ currentAddress.value }`
+			const content = !props.state.wallet ?
+				`Connect to ${props.state.appInfo?.name || props.state.origin} from the account ${currentAddress.value}`
+				: `Switch to ${currentAddress.value}`
 			return {
 				title: action,
 				timestamp: Date.now(), // todo

@@ -1,8 +1,12 @@
 <template>
 	<div class="balance flex-column">
 		<div class="amounts">
-			<div><Ar :ar="wallet.balance" /></div>
-			<div><LocaleCurrency :ar="wallet.balance" /></div>
+			<div>
+				<Ar :ar="wallet.balance" />
+			</div>
+			<div>
+				<LocaleCurrency :ar="wallet.balance" />
+			</div>
 		</div>
 		<WalletInfo :wallet="wallet" />
 	</div>

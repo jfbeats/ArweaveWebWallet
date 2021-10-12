@@ -1,8 +1,10 @@
 <template>
 	<div>
 		<div>Size {{ txSizeDisplay }}</div>
-		<div>Fee
-			<Ar class="ar" :ar="userFeeAr" />&nbsp;<LocaleCurrency class="small secondary" :ar="userFeeAr">|</LocaleCurrency>
+		<div>
+			Fee
+			<Ar class="ar" :ar="userFeeAr" />&nbsp;
+			<LocaleCurrency class="small secondary" :ar="userFeeAr">|</LocaleCurrency>
 		</div>
 		<Slider v-model="slider" :settings="sliderSettings" :progress="progress" />
 	</div>

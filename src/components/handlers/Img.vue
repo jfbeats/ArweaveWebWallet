@@ -1,5 +1,5 @@
 <template>
-	<Observer observe="resize" @resize="resize" class="img"  :class="{ x, y }">
+	<Observer observe="resize" @resize="resize" class="img" :class="{ x, y }">
 		<div class="frame-scroller">
 			<img ref="imgRef" :src="src" @load="load" />
 		</div>
@@ -30,11 +30,9 @@ export default {
 			emit('load')
 		}
 
-		const x = computed(() => elAspect.value && imgAspect.value 
-			&& elAspect.value < imgAspect.value)
-		const y = computed(() => elAspect.value && imgAspect.value 
-			&& elAspect.value >= imgAspect.value)
-		
+		const x = computed(() => elAspect.value && imgAspect.value && elAspect.value < imgAspect.value)
+		const y = computed(() => elAspect.value && imgAspect.value && elAspect.value >= imgAspect.value)
+
 		// Todo snap to center
 
 		return { x, y, resize, load, imgRef }

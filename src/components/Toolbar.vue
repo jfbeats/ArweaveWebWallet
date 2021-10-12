@@ -12,14 +12,14 @@
 		<div class="controls" v-if="links">
 			<transition name="fade-fast">
 				<router-link v-if="connectorsNum" class="icon control" :class="{ verticalLayout }" to="/connect" aria-label="Add Wallet">
-					<img class="small" src="@/assets/icons/connection.svg" alt="Connections">
+					<img class="small" src="@/assets/icons/connection.svg" alt="Connections" />
 				</router-link>
 			</transition>
 			<router-link class="icon control" :class="{ verticalLayout }" to="/add" aria-label="Add Wallet">
-				<img class="small" src="@/assets/icons/add_box.svg" alt="Add Wallet">
+				<img class="small" src="@/assets/icons/add_box.svg" alt="Add Wallet" />
 			</router-link>
 			<router-link class="icon control" :class="{ verticalLayout }" to="/settings" aria-label="Settings">
-				<img class="small" src="@/assets/icons/settings.svg" alt="Settings">
+				<img class="small" src="@/assets/icons/settings.svg" alt="Settings" />
 			</router-link>
 		</div>
 		<DragOverlay />

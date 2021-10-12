@@ -2,7 +2,7 @@
 	<div class="travelling-blocks">
 		<div class="footer">
 			<div class="bubbles">
-				<div class="bubble" v-for="n in nbBlocks" :key="n" :style="`--size:${5+Math.random()*2}rem; --distance:${120+Math.random()*100}px; --position:${Math.random()*100}%; --time:${4+Math.random()*18}s; --delay:${-1*(4+Math.random()*2)}s;`" />
+				<div class="bubble" v-for="n in nbBlocks" :key="n" :style="`--size:${5 + Math.random() * 2}rem; --distance:${120 + Math.random() * 100}px; --position:${Math.random() * 100}%; --time:${4 + Math.random() * 18}s; --delay:${-1 * (4 + Math.random() * 2)}s;`" />
 			</div>
 		</div>
 		<svg style="position:absolute;">

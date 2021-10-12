@@ -18,8 +18,8 @@ import { onUnmounted, toRef, watch } from 'vue'
 export default {
 	setup () {
 		const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
-		watch(() => verticalContent.value, (val) => val ? InterfaceStore.sticky = false : InterfaceStore.sticky = true, {immediate: true})
-		
+		watch(() => verticalContent.value, (val) => val ? InterfaceStore.sticky = false : InterfaceStore.sticky = true, { immediate: true })
+
 		onUnmounted(() => InterfaceStore.sticky = false)
 		return { verticalContent }
 	},

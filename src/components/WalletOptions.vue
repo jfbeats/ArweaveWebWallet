@@ -12,7 +12,6 @@
 				<div @click="deleteWallet(wallet)">Delete</div>
 			</div>
 		</div>
-
 	</div>
 </template>
 

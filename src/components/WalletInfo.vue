@@ -5,7 +5,9 @@
 				<Icon class="logo" :icon="walletInfo.img" />
 				<div>{{ arweaveId?.Name || walletInfo.name }}</div>
 			</div>
-			<div><Address class="secondary-text" :address="wallet.key" /></div>
+			<div>
+				<Address class="secondary-text" :address="wallet.key" />
+			</div>
 		</div>
 	</transition>
 </template>
