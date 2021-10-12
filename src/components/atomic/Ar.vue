@@ -28,7 +28,7 @@ export default {
 }
 
 .ar::before {
-  content: "\200b";
+	content: "\200b";
 }
 
 .symbol {

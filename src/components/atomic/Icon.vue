@@ -5,8 +5,8 @@
 				<circle stroke="#ffffff22" :stroke-width="thickness" fill="transparent" :r="normalizedRadius" :cx="50" :cy="50" />
 				<circle stroke="currentColor" :stroke-dasharray="circumference + ' ' + circumference" :style="{ strokeDashoffset }" :stroke-width="thickness" stroke-linecap="round" fill="transparent" :r="normalizedRadius" :cx="50" :cy="50" @animationiteration="finishAnimation = false" :class="{ spin: progress == null || finishAnimation }" />
 			</svg>
-			<span v-else-if="isSymbol" :key="icon" class="symbol no-select">{{ icon }}</span>
-			<img v-else class="img no-select" :key="icon" :src="icon" draggable="false">
+			<span v-else-if="isSymbol" :key="'s' + icon" class="symbol no-select">{{ icon }}</span>
+			<img v-else class="img no-select" :key="icon" :src="icon" draggable="false" />
 		</transition>
 	</div>
 </template>

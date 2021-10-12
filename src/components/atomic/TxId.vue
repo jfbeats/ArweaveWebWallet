@@ -4,9 +4,7 @@
 			<strong>
 				<slot></slot>
 			</strong>
-			<span class="id">
-				{{ txId }}
-			</span>
+			<span class="id">{{ txId }}</span>
 		</span>
 	</div>
 </template>

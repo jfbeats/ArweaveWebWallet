@@ -1,7 +1,5 @@
 <template>
-	<span>
-		{{ date }} {{ time }}
-	</span>
+	<span>{{ date }} {{ time }}</span>
 </template>
 
 <script>

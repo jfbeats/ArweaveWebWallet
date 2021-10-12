@@ -1,6 +1,6 @@
 <template>
-	<svg xmlns='http://www.w3.org/2000/svg' :viewBox="`0 0 ${size + stroke * 2} ${size + stroke * 2}`" :style="style">
-		<g style="fill:currentColor; stroke:currentColor;" :style="{ strokeWidth:stroke }" stroke-linejoin="round">
+	<svg xmlns="http://www.w3.org/2000/svg" :viewBox="`0 0 ${size + stroke * 2} ${size + stroke * 2}`" :style="style">
+		<g style="fill:currentColor; stroke:currentColor;" :style="{ strokeWidth: stroke }" stroke-linejoin="round">
 			<rect v-for="rect in rects" :key="rect" :x="rect.x" :y="rect.y" :width="rect.w" :height="rect.h" />
 		</g>
 	</svg>

@@ -1,7 +1,7 @@
 <template>
 	<div class="input input-box" :class="{ focus }">
 		<Icon v-if="icon" :icon="icon" />
-		<input class="text" v-model="model" :placeholder="placeholder" @focus="focus = true" @blur="focus = false" :disabled="disabled" :id="id">
+		<input class="text" v-model="model" :placeholder="placeholder" @focus="focus = true" @blur="focus = false" :disabled="disabled" :id="id" />
 		<Icon v-for="action in actions" :key="action.icon" :icon="action.icon" @click="action.function" />
 	</div>
 </template>

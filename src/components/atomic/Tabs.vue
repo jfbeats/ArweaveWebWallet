@@ -1,13 +1,9 @@
 <template>
 	<div v-if="queryName" class="tabs">
-		<router-link class="tab" v-for="tab in tabs" :key="tab.name" :to="{query: { ...$route.query, [queryName]: tab.name.toLowerCase() }}" :style="{'--color': tab.color}" :class="{active: isActive(tab)}" replace>
-			{{ tab.name }}
-		</router-link>
+		<router-link class="tab" v-for="tab in tabs" :key="tab.name" :to="{ query: { ...$route.query, [queryName]: tab.name.toLowerCase() } }" :style="{ '--color': tab.color }" :class="{ active: isActive(tab) }" replace>{{ tab.name }}</router-link>
 	</div>
 	<div v-else class="tabs">
-		<button type="button" class="tab" v-for="tab in tabs" :key="tab.name" :style="{'--color': tab.color}" :class="{active: model === tab.name}" @click="model = tab.name" :disabled="disabled">
-			{{ tab.name }}
-		</button>
+		<button type="button" class="tab" v-for="tab in tabs" :key="tab.name" :style="{ '--color': tab.color }" :class="{ active: model === tab.name }" @click="model = tab.name" :disabled="disabled">{{ tab.name }}</button>
 	</div>
 </template>
 

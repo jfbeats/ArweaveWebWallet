@@ -2,10 +2,10 @@
 	<div class="address-icon no-select">
 		<transition name="fade-fast">
 			<Identicon class="identicon" v-if="isValid && address" :address="address" alt="wallet logo" draggable="false" @dragstart.prevent />
-			<img class="identicon cloud" v-else src="@/assets/icons/cloud.svg" draggable="false" @dragstart.prevent>
+			<img class="identicon cloud" v-else src="@/assets/icons/cloud.svg" draggable="false" @dragstart.prevent />
 		</transition>
 		<transition name="fade-fast">
-			<img class="image" v-if="isValid && arweaveId?.Image" :src="ArweaveStore.gatewayURL + arweaveId?.Image" alt="wallet profile picture" draggable="false" @dragstart.prevent>
+			<img class="image" v-if="isValid && arweaveId?.Image" :src="ArweaveStore.gatewayURL + arweaveId?.Image" alt="wallet profile picture" draggable="false" @dragstart.prevent />
 		</transition>
 	</div>
 </template>

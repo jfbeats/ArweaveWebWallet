@@ -29,6 +29,6 @@ export default {
 }
 
 .locale-currency::before {
-  content: "\200b";
+	content: "\200b";
 }
 </style>

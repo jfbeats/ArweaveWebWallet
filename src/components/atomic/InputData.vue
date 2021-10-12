@@ -1,20 +1,26 @@
 <template>
 	<div class="input-data input-box" :class="{ focus }" @drop.stop.prevent="handleFiles">
-		<textarea v-show="!isFile" v-model="model" @focus="focus=1" @blur="focus=0" :disabled="disabled" :id="id" :placeholder="placeholder"></textarea>
+		<textarea v-show="!isFile" v-model="model" @focus="focus = 1" @blur="focus = 0" :disabled="disabled" :id="id" :placeholder="placeholder"></textarea>
 		<transition name="fade">
 			<div v-if="!model && !dragOverlay" class="overlay passthrough">
-				<div class="big-icon-container"><img class="img" src="@/assets/icons/text.svg"></div>
+				<div class="big-icon-container">
+					<img class="img" src="@/assets/icons/text.svg" />
+				</div>
 				<div class="spacer" />
 				<div class="big-icon-container not-passthrough">
-					<label for="file-picker" class="file-picker-label"><img class="img" src="@/assets/icons/drop.svg"></label>
-					<input type="file" id="file-picker" class="file-input" @change="handleFiles" :disabled="disabled">
+					<label for="file-picker" class="file-picker-label">
+						<img class="img" src="@/assets/icons/drop.svg" />
+					</label>
+					<input type="file" id="file-picker" class="file-input" @change="handleFiles" :disabled="disabled" />
 				</div>
 			</div>
 			<div v-else-if="isFile" class="overlay">
-				<div class="big-icon-container focus"><img class="img" src="@/assets/icons/cloud.svg"></div>
+				<div class="big-icon-container focus">
+					<img class="img" src="@/assets/icons/cloud.svg" />
+				</div>
 				<button class="clear" @click="clearFiles" type="button">
 					<div class="icon-container">
-						<img class="icon no-select" src="@/assets/icons/x.svg" draggable="false">
+						<img class="icon no-select" src="@/assets/icons/x.svg" draggable="false" />
 					</div>
 				</button>
 			</div>

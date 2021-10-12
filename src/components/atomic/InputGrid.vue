@@ -2,9 +2,9 @@
 	<div v-if="schema.length > 0" class="input-grid input-box" :class="{ focus }">
 		<div v-for="(row, index) in schema" :key="row.key" class="row">
 			<div class="inputs">
-				<div v-for="(input, inputIndex) in row.items" :key="row.key + input.name" class="input" :class="{ flip: row.items.length==2 && inputIndex==1 }">
+				<div v-for="(input, inputIndex) in row.items" :key="row.key + input.name" class="input" :class="{ flip: row.items.length == 2 && inputIndex == 1 }">
 					<Icon v-if="input.icon" :icon="input.icon" />
-					<input v-model="input.value" v-bind="input.attrs" class="text" :placeholder="input.name" @focus="focus=(index+1)*(inputIndex+1)" @blur="focus=0" :disabled="disabled">
+					<input v-model="input.value" v-bind="input.attrs" class="text" :placeholder="input.name" @focus="focus = (index + 1) * (inputIndex + 1)" @blur="focus = 0" :disabled="disabled" />
 				</div>
 			</div>
 			<button v-if="row.deletable" class="remove" @click="removeRow(index)" type="button">

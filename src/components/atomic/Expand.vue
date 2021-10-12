@@ -29,7 +29,6 @@ export default {
 	width: 1.5em;
 	height: 1.5em;
 	display: flex;
-
 }
 
 svg {

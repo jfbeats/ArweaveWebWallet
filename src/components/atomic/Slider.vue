@@ -1,17 +1,17 @@
 <template>
-	<div class="slider" :class="{ focus: focus || hover, snapped, disabled: !settings.max }" :style="{ '--thumb-width': thumbWidth+'%' }">
+	<div class="slider" :class="{ focus: focus || hover, snapped, disabled: !settings.max }" :style="{ '--thumb-width': thumbWidth + '%' }">
 		<div class="slider-container input-box" :class="{ focus, hover }">
-			<input v-model="model" type="range" min="0" :max="settings.max" :disabled="!settings.max" @focus="focus = true" @blur="focus = false" @mouseover="hover = true" @mouseleave="hover = false" @keydown="poke">
+			<input v-model="model" type="range" min="0" :max="settings.max" :disabled="!settings.max" @focus="focus = true" @blur="focus = false" @mouseover="hover = true" @mouseleave="hover = false" @keydown="poke" />
 			<svg class="thumb" role="presentation" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-				<rect :x="thumbPosition+'%'" :width="thumbWidth+'%'" y="0" height="100%"></rect>
+				<rect :x="thumbPosition + '%'" :width="thumbWidth + '%'" y="0" height="100%" />
 			</svg>
 		</div>
 		<svg v-if="rangeStart" class="range" role="presentation" width="100%" height="11" xmlns="http://www.w3.org/2000/svg">
-			<rect :x="rangeStart.toString() +'%'" :width="rangeEnd.minus(rangeStart).toString() +'%'" y="10" height="1" rx="0.5" ry="0.5"></rect>
+			<rect :x="rangeStart.toString() + '%'" :width="rangeEnd.minus(rangeStart).toString() + '%'" y="10" height="1" rx="0.5" ry="0.5" />
 		</svg>
 		<transition name="fade-fast">
 			<svg v-if="progress != null" class="progress" role="presentation" width="100%" height="11" xmlns="http://www.w3.org/2000/svg">
-				<rect class="progress-rect" x="0" :width="progress+'%'" y="10" height="1" rx="0.5" ry="0.5"></rect>
+				<rect class="progress-rect" x="0" :width="progress + '%'" y="10" height="1" rx="0.5" ry="0.5" />
 			</svg>
 		</transition>
 	</div>

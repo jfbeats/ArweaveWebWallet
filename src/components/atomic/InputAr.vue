@@ -2,11 +2,11 @@
 	<div class="input-ar input-box" :class="{ focus }">
 		<div class="input">
 			<Icon :icon="logoArweave" />
-			<input v-model="model" inputmode="numeric" class="text" placeholder="AR" @focus="focus = 1" @blur="focus = 0" :disabled="disabled" :id="id">
+			<input v-model="model" inputmode="numeric" class="text" placeholder="AR" @focus="focus = 1" @blur="focus = 0" :disabled="disabled" :id="id" />
 		</div>
 		<div v-if="currentPrice" class="spacer"></div>
 		<div v-if="currentPrice" class="input">
-			<input v-model="model2" inputmode="numeric" class="text right" :placeholder="currency" @focus="focus = 2" @blur="focus = 0" :disabled="disabled">
+			<input v-model="model2" inputmode="numeric" class="text right" :placeholder="currency" @focus="focus = 2" @blur="focus = 0" :disabled="disabled" />
 			<Icon :icon="currencySymbol" />
 		</div>
 	</div>
@@ -26,7 +26,7 @@ export default {
 	props: ['modelValue', 'disabled', 'id'],
 	setup (props, { emit }) {
 		const model = computed({
-			get () { 
+			get () {
 				const value = props.modelValue
 				if (focus.value === 0) {
 					input2.value = value && !isNaN(value) ? +(value * currentPrice.value).toFixed(2) : ''
