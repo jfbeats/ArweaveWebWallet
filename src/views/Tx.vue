@@ -65,7 +65,7 @@
 		</template>
 
 		<template #right v-if="isData">
-			<Selector :tx="tx" class="selector" :class="{ inline: !verticalContent }" />
+			<Selector :tx="tx" :class="{ inline: !verticalContent }" />
 		</template>
 	</FoldingLayout>
 </template>
@@ -188,13 +188,9 @@ h3 {
 
 .selector.inline {
 	min-height: var(--current-vh);
-	border-start-end-radius: 0;
-	border-end-end-radius: 0;
 }
 
-.verticalContent .selector {
+.verticalContent .selector.iframe-container {
 	min-height: 80vh;
-	border-end-start-radius: 0;
-	border-end-end-radius: 0;
 }
 </style>

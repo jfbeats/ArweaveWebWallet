@@ -1,25 +1,26 @@
 <template>
-	<div v-if="data.handler === 'iframe'" v-show="data.loaded" key="iframe" class="frame-container">
-		<iframe class="iframe" :src="gatewayLink" @load="data.loaded=true" />
+	<div v-if="data.handler === 'iframe'" v-show="data.loaded" key="iframe" class="selector iframe-container">
+		<iframe class="iframe" :src="gatewayLink" @load="data.loaded = true" />
 	</div>
-	<div v-else-if="data.handler === 'img'" v-show="data.loaded" key="img" class="frame-container">
-		<img class="img" :src="gatewayLink" @load="data.loaded=true">
+	<div v-else-if="data.handler === 'img'" v-show="data.loaded" key="img" class="selector img-container">
+		<Img :src="gatewayLink" @load="data.loaded = true" />
 	</div>
-	<div v-else-if="data.handler === 'smartweave'" key="smartweave">
+	<div v-else-if="data.handler === 'smartweave'" key="smartweave" class="selector">
 		<SmartWeave :tx="tx" />
 	</div>
-	<div v-else-if="data.handler === 'json' || data.handler === 'raw'" key="json" class="data-container">
+	<div v-else-if="data.handler === 'json' || data.handler === 'raw'" key="json" class="selector data-container">
 		<pre class="raw">{{ data.payload }}</pre>
 	</div>
 </template>
 
 <script>
 import ArweaveStore, { arweave } from '@/store/ArweaveStore'
+import Img from '@/components/handlers/Img.vue'
 import SmartWeave from '@/components/handlers/SmartWeave.vue'
 import { computed, reactive, watch } from 'vue'
 
 export default {
-	components: { SmartWeave },
+	components: { Img, SmartWeave },
 	props: ['tx'],
 	setup (props) {
 		const data = reactive({
@@ -40,8 +41,8 @@ export default {
 				data.handler = 'iframe'
 			} else if (props.tx.data?.type?.split('/')[0] === 'image') {
 				data.handler = 'img'
-			// } else if (props.tx.tags?.find(el => el.name === 'App-Name')?.value === 'SmartWeaveContract') {
-			// 	data.handler = 'smartweave'
+				// } else if (props.tx.tags?.find(el => el.name === 'App-Name')?.value === 'SmartWeaveContract') {
+				// 	data.handler = 'smartweave'
 			} else {
 				data.handler = 'raw'
 				try {
@@ -63,18 +64,19 @@ export default {
 </script>
 
 <style scoped>
-.frame-container,
+.iframe-container,
+.img-container,
 .data-container {
 	width: 100%;
 	background: var(--background2);
 	outline: 0.5px solid var(--border);
 }
 
-.frame-container {
-	height: var(--current-vh);
+.iframe-container,
+.img-container {
+	/* height: var(--current-vh); */
 	display: flex;
 	flex-direction: column;
-	overflow: hidden;
 }
 
 .data-container {
@@ -88,13 +90,6 @@ export default {
 	height: 100%;
 	border: 0;
 	opacity: 0.6;
-}
-
-.img {
-	flex: 1 1 0;
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
 }
 
 .raw {
