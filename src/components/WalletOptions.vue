@@ -75,10 +75,4 @@ export default {
 	min-width: 0;
 	padding: 0 var(--spacing);
 }
-
-.wallet-info {
-	display: flex;
-	align-items: center;
-	/* height: 1em; */
-}
 </style>

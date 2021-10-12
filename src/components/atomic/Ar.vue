@@ -1,9 +1,10 @@
 <template>
-	<span class="ar">
-		<transition name="fade-fast" mode="out-in">
-			<span v-if="amountRounded" :key="amountRounded"> {{ amountRounded }} <span class="symbol">AR</span></span>
-		</transition>
-	</span>
+	<transition name="fade-fast" mode="out-in">
+		<span class="ar" :key="amountRounded">
+			{{ amountRounded || '' }}
+			<span v-if="amountRounded" class="symbol">AR</span>
+		</span>
+	</transition>
 </template>
 
 <script>
@@ -24,6 +25,10 @@ export default {
 .ar {
 	white-space: nowrap;
 	display: inline-block;
+}
+
+.ar::before {
+  content: "\200b";
 }
 
 .symbol {

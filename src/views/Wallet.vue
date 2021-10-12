@@ -2,16 +2,14 @@
 	<div class="wallet">
 		<FoldingLayout v-if="wallet">
 			<template #left>
-				<div class="wallet-info">
-					<transition :name="$route.meta.transition?.nameWallet" mode="out-in">
-						<div :key="wallet.key">
-							<Balance :wallet="wallet" />
-							<div class="actions">
-								<Action v-for="action in actions" :key="action.name" :to="{ name: action.name, query: { ...$route.query } }" :img="action.img" replace>{{ action.text }}</Action>
-							</div>
+				<transition :name="$route.meta.transition?.nameWallet" mode="out-in">
+					<div class="user-info flex-column" :key="wallet.key">
+						<Balance :wallet="wallet" />
+						<div class="actions">
+							<Action v-for="action in actions" :key="action.name" :to="{ name: action.name, query: { ...$route.query } }" :img="action.img" replace>{{ action.text }}</Action>
 						</div>
-					</transition>
-				</div>
+					</div>
+				</transition>
 			</template>
 			<template #right>
 				<div class="wallet-view">
@@ -70,13 +68,13 @@ export default {
 	width: 100%;
 }
 
-.wallet-info {
+.user-info {
 	max-width: var(--column-width);
 	padding: var(--spacing);
 	padding-inline-end: 0;
 }
 
-.verticalContent .wallet-info {
+.verticalContent .user-info {
 	max-width: 100%;
 	padding: var(--spacing);
 }

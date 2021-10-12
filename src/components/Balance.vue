@@ -1,8 +1,8 @@
 <template>
 	<div class="balance flex-column">
 		<div class="amounts">
-			<Ar :ar="wallet.balance" /><br>
-			<LocaleCurrency :ar="wallet.balance" />
+			<div><Ar :ar="wallet.balance" /></div>
+			<div><LocaleCurrency :ar="wallet.balance" /></div>
 		</div>
 		<WalletInfo :wallet="wallet" />
 	</div>
@@ -23,8 +23,8 @@ export default {
 .balance {
 	border-radius: 24px;
 	overflow: hidden;
-	line-height: 1.2;
-	padding: var(--spacing) 0;
+	/* line-height: 1.2; */
+	/* padding: var(--spacing) 0; */
 	display: flex;
 	flex-direction: column;
 }
@@ -33,11 +33,7 @@ export default {
 	padding: var(--spacing);
 }
 
-.amounts {
+.ar {
 	font-size: 2em;
-}
-
-.locale-currency {
-	font-size: 0.5em;
 }
 </style>

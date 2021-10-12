@@ -1,11 +1,7 @@
 <template>
-	<span class="locale-currency">
-		<transition name="fade-fast" mode="out-in">
-			<span v-if="converted" :key="converted">
-				<slot></slot> {{ converted }}
-			</span>
-		</transition>
-	</span>
+	<transition name="fade-fast" mode="out-in">
+		<span class="locale-currency" :key="converted">{{ converted || '' }}</span>
+	</transition>
 </template>
 
 <script>
@@ -30,5 +26,9 @@ export default {
 .locale-currency {
 	white-space: nowrap;
 	display: inline-block;
+}
+
+.locale-currency::before {
+  content: "\200b";
 }
 </style>

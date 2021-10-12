@@ -1,11 +1,11 @@
 <template>
 	<transition name="fade-fast" mode="out-in">
-		<div :key="wallet.key">
-			<div class="wallet-info">
+		<div class="wallet-info" :key="wallet.key">
+			<div class="name">
 				<Icon class="logo" :icon="walletInfo.img" />
-				{{ arweaveId?.Name || walletInfo.name }}
+				<div>{{ arweaveId?.Name || walletInfo.name }}</div>
 			</div>
-			<Address class="secondary-text" :address="wallet.key" />
+			<div><Address class="secondary-text" :address="wallet.key" /></div>
 		</div>
 	</transition>
 </template>
@@ -38,11 +38,9 @@ export default {
 </script>
 
 <style scoped>
-.wallet-info {
-	margin: 0 0 var(--spacing) 0;
+.name {
 	display: flex;
 	align-items: center;
-	height: 1em;
 }
 
 .logo {

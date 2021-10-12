@@ -24,6 +24,18 @@
 	--blue: #5E81AC;
 }
 
+@media (max-width: 500px) {
+	:root {
+		--spacing: 16px;
+	}
+}
+
+@media (max-width: 400px) {
+	:root {
+		--spacing: 12px;
+	}
+}
+
 html {
 	box-sizing: border-box;
 	background-color: #0f0f0f;

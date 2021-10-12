@@ -47,6 +47,7 @@ export default {
 	scrollbar-width: none;
 	overflow: auto;
 	height: var(--current-vh);
+	min-width: 0;
 	position: sticky;
 	top: 0;
 }
@@ -68,6 +69,7 @@ export default {
 
 .right {
 	width: 100%;
+	min-width: 0;
 	flex: 1 1 0;
 }
 

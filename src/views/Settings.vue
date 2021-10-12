@@ -73,7 +73,7 @@ export default {
 
 <style scoped>
 .settings {
-	padding: 32px;
+	padding: var(--spacing);
 	min-height: var(--current-vh);
 	width: 100%;
 	display: flex;
