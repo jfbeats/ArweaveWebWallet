@@ -9,7 +9,7 @@
 				<div v-if="!completedQuery" class="loader-container">
 					<Icon icon="loader" />
 				</div>
-				<Observer @intersection="fetchQuery" class="bottom" v-show="!fetchLoading && !completedQuery" />
+				<Observer observe="intersection" @intersection="fetchQuery" class="bottom" v-show="!fetchLoading && !completedQuery" />
 			</div>
 		</transition>
 	</div>
