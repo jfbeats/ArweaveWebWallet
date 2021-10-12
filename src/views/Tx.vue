@@ -2,7 +2,6 @@
 	<FoldingLayout v-if="tx">
 		<template #left>
 			<div class="meta flex-column">
-
 				<div class="card">
 					<div class="row flex-row">
 						<div class="item" style="font-size:1.5em;">
@@ -26,7 +25,6 @@
 
 				<h3>Properties</h3>
 				<div class="card flex-column">
-
 					<div>
 						<h3>ID</h3>
 						<div class="ellipsis">{{ tx.id }}</div>
@@ -37,17 +35,22 @@
 						<h3>Pending</h3>
 					</div>
 					<div v-else>
-						<h3>Block </h3>
+						<h3>Block</h3>
 						<div class="ellipsis">{{ tx.block.id }}</div>
-						<span>{{ tx.block.height }}<template v-if="currentBlock"> / {{ currentBlock }}</template></span>
+						<span>
+							{{ tx.block.height }}
+							<template v-if="currentBlock">/ {{ currentBlock }}</template>
+						</span>
 						<div>{{ date }}</div>
 					</div>
 
 					<div>
 						<h3>Data</h3>
 						<div>Data size {{ humanFileSize(tx.data.size) }}</div>
-						<div>Fee
-							<Ar class="ar" :ar="tx.fee.ar" />&nbsp;<LocaleCurrency class="secondary-text" :ar="tx.fee.ar">|</LocaleCurrency>
+						<div>
+							Fee
+							<Ar class="ar" :ar="tx.fee.ar" />&nbsp;
+							<LocaleCurrency class="secondary-text" :ar="tx.fee.ar">|</LocaleCurrency>
 						</div>
 					</div>
 				</div>
@@ -59,8 +62,7 @@
 					</div>
 				</template>
 
-				<br v-if="verticalContent">
-
+				<br v-if="verticalContent" />
 			</div>
 		</template>
 

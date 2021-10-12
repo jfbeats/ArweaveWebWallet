@@ -2,7 +2,6 @@
 	<div class="edit-wallet">
 		<h2>Edit New Wallets</h2>
 		<WalletOptions class="wallet-options card" v-for="wallet in wallets" :key="wallet.id" :wallet="wallet" />
-
 	</div>
 </template>
 

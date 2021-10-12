@@ -4,16 +4,14 @@
 			<AddressIcon :address="currentWallet.key" />
 			<Address class="secondary-text" :address="currentWallet.key" />
 			<Button @click="connect(currentWallet.key)">Connect</Button>
-		</div> -->
+		</div>-->
 		<div v-if="previousPage" @click="navigateBack">Return to {{ state.appInfo?.name || state.origin || 'previous page' }}</div>
 		<transition-group name="fade-list">
 			<ConnectionCard v-for="(connector, name) in connectors" :key="name" :state="connector" class="fade-list-item" />
 		</transition-group>
 		<div class="bottom-info secondary-text">
 			<div>All Channels {{ Object.keys(states).length }}</div>
-			<div v-for="(extState, name) in states" :key="name">
-				{{ extState }}
-			</div>
+			<div v-for="(extState, name) in states" :key="name">{{ extState }}</div>
 		</div>
 	</div>
 </template>
@@ -40,7 +38,7 @@ export default {
 			if (!previousPage) { return }
 			try {
 				window.open('', 'parent')
-			} catch (e) { console.log(e)}
+			} catch (e) { console.log(e) }
 		}
 
 		return { currentWallet, previousPage, navigateBack, connectors, state, states }
@@ -78,8 +76,8 @@ export default {
 
 .bottom-info {
 	flex: 1 0 auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
 }
 </style>

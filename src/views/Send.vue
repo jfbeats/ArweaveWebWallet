@@ -3,7 +3,10 @@
 		<form>
 			<!-- TODO Autocomplete local addrs -->
 			<label for="target">
-				<h2 class="heading flex-row"><img class="img" src="@/assets/icons/north_east.svg"><span>Send</span></h2>
+				<h2 class="heading flex-row">
+					<img class="img" src="@/assets/icons/north_east.svg" />
+					<span>Send</span>
+				</h2>
 			</label>
 			<div class="row flex-row">
 				<Input v-model.trim="model.target" :icon="iconPerson" placeholder="Address" :mask="maskAddress" id="target" />
@@ -18,7 +21,9 @@
 			</div>
 
 			<label for="quantity">
-				<h3 class="heading flex-row"><span>Amount</span></h3>
+				<h3 class="heading flex-row">
+					<span>Amount</span>
+				</h3>
 			</label>
 			<InputAr v-model="model.quantity" id="quantity" />
 			<div class="row bottom flex-row">
@@ -31,7 +36,9 @@
 			</div>
 
 			<label for="data">
-				<h3 class="heading flex-row"><span>Data</span></h3>
+				<h3 class="heading flex-row">
+					<span>Data</span>
+				</h3>
 			</label>
 			<InputData v-model="model.data" @files="filesAdded" id="data" />
 			<div class="row bottom flex-row">
@@ -44,9 +51,13 @@
 
 			<div class="row flex-row">
 				<label for="add-tag">
-					<h3 class="heading flex-row" style="display:block;"><span>Tags</span></h3>
+					<h3 class="heading flex-row" style="display:block;">
+						<span>Tags</span>
+					</h3>
 				</label>
-				<div v-if="!model.tags.length"><button type="button" class="secondary" @click="addTag()" id="add-tag">Add</button></div>
+				<div v-if="!model.tags.length">
+					<button type="button" class="secondary" @click="addTag()" id="add-tag">Add</button>
+				</div>
 			</div>
 			<InputGrid :schema="model.tags" />
 			<div v-if="model.tags.length" class="row bottom flex-row">
@@ -59,10 +70,8 @@
 			</div>
 
 			<div class="row flex-row" style="align-items:flex-end; margin-top:3em;">
-				<SendFee :size="txSize" :target="model.target" @update="fee => txFee=fee" />
-				<Button @click="postTx" :style="submitStyle" :disabled="loading || !txFee" :icon="iconNorthEast">
-					Submit
-				</Button>
+				<SendFee :size="txSize" :target="model.target" @update="fee => txFee = fee" />
+				<Button @click="postTx" :style="submitStyle" :disabled="loading || !txFee" :icon="iconNorthEast">Submit</Button>
 			</div>
 			<div>
 				<transition name="slide-up">

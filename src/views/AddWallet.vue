@@ -1,23 +1,15 @@
 <template>
 	<div class="add-wallet flex-column">
-
 		<div class="card">
 			<h2 style="display:flex; justify-content:space-between;">
 				<span>Passphrase</span>
 				<span>Key file</span>
 			</h2>
-			<InputData v-model="passphraseInput" @files="importFile" :disabled="isCreatingWallet" placeholder="Import passphrase or key file" /><br>
-			<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create()" :disabled="passphraseInput.length && !isPassphrase" :icon="logoArweave">
-				Create new wallet
-			</Button>
-
-			<Button v-else-if="isCreatingWallet" :disabled="!createdWallet" @click="goToCreatedWallet" :icon="!createdWallet ? 'loader' : ''">
-				{{ !createdWallet ? 'Generating, write down the passphrase' : 'Passphrase saved? Click here to proceed' }}
-			</Button>
-
-			<Button v-else :disabled="!isPassphrase || isGeneratingWallet" @click="isValidPassphrase ? importPassphrase() : confirmPassphrase()">
-				Import passphrase
-			</Button>
+			<InputData v-model="passphraseInput" @files="importFile" :disabled="isCreatingWallet" placeholder="Import passphrase or key file" />
+			<br />
+			<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create()" :disabled="passphraseInput.length && !isPassphrase" :icon="logoArweave">Create new wallet</Button>
+			<Button v-else-if="isCreatingWallet" :disabled="!createdWallet" @click="goToCreatedWallet" :icon="!createdWallet ? 'loader' : ''">{{ !createdWallet ? 'Generating, write down the passphrase' : 'Passphrase saved? Click here to proceed' }}</Button>
+			<Button v-else :disabled="!isPassphrase || isGeneratingWallet" @click="isValidPassphrase ? importPassphrase() : confirmPassphrase()">Import passphrase</Button>
 			<transition name="fade-fast" mode="in-out">
 				<div v-if="popup.enabled" :key="popup.message" class="overlay flex-column">
 					<div style="flex:1 1 auto; display:flex; flex-direction:column; align-items:center; justify-content:space-evenly; margin-bottom:var(--spacing);">
@@ -29,19 +21,12 @@
 					</div>
 				</div>
 			</transition>
-
 		</div>
-
 		<div class="card">
 			<h2>Hardware</h2>
-			<Button v-if="supportsWebUSB()" @click="importLedger()" :icon="logoLedger">
-				Ledger
-			</Button>
-			<Button v-else disabled :icon="logoLedger">
-				Ledger not supported for this browser
-			</Button>
+			<Button v-if="supportsWebUSB()" @click="importLedger()" :icon="logoLedger">Ledger</Button>
+			<Button v-else disabled :icon="logoLedger">Ledger not supported for this browser</Button>
 		</div>
-
 	</div>
 </template>
 
