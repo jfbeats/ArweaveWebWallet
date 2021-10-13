@@ -4,7 +4,9 @@ const hash = new URLSearchParams(window.location.hash.slice(1))
 const origin = hash.get('origin')
 const appInfo = { name: hash.get('name'), logo: hash.get('logo') }
 const instance = origin + Math.random().toString().slice(2)
-const stateChannel = 'connectorState:' + instance
+const chPrefix = 'connectorState:'
+const heartbeatPrefix = 'heartbeat:'
+const stateChannel = chPrefix + instance
 const messageQueue = []
 
 const stateInit = {
@@ -12,14 +14,18 @@ const stateInit = {
 	appInfo,
 	wallet: null,
 }
-window.addEventListener('storage', (e) => {
-	if (e.key === 'heartbeat:' + instance && e.newValue === '') { localStorage.setItem('heartbeat:' + instance, 'ok') }
-})
+const globalStorageListener = (e) => {
+	if (e.key === heartbeatPrefix + instance && e.newValue === '') {
+		localStorage.setItem(heartbeatPrefix + instance, 'ok')
+	}
+}
+window.addEventListener('storage', globalStorageListener)
 localStorage.setItem(stateChannel, JSON.stringify(stateInit))
 const { state, closeChannel } = getChannel(instance)
 const { states, closeChannels } = getChannels()
 const connectors = computed(() => Object.fromEntries(Object.entries(states).filter(([key, value]) => value.type === 'connector')))
-export { state, states, connectors }
+const clients = computed(() => Object.fromEntries(Object.entries(states).filter(([key, value]) => value.type === 'client')))
+export { state, states, connectors, clients }
 
 watch(() => state.wallet, (wallet) => wallet ? connect(wallet) : disconnect())
 
@@ -29,7 +35,6 @@ export function getChannels () {
 	const channels = {}
 	const states = reactive({})
 	const getInstanceNames = () => {
-		const chPrefix = 'connectorState:'
 		const result = []
 		for (const key in localStorage) {
 			if (key.includes(chPrefix)) { result.push(key.slice(chPrefix.length)) }
@@ -69,7 +74,7 @@ export function getChannels () {
 }
 
 export function getChannel (instanceName) {
-	const stateChannel = 'connectorState:' + instanceName
+	const stateChannel = chPrefix + instanceName
 	const state = reactive({})
 	try { Object.assign(state, JSON.parse(localStorage.getItem(stateChannel))) } catch (e) { }
 	const storageListener = (e) => {
@@ -124,23 +129,27 @@ async function processMessage () {
 async function broadcastMessage (message) {
 	state.request = message
 	await new Promise(resolve => setTimeout(() => resolve(), 500))
-	if (!(await heartbeat('client'))) {
+	if (!Object.keys(clients.value).length) {
 		const popup = window.open(window.location.href, '_blank', 'location,resizable,scrollbars,width=360,height=600')
 		if (!popup) { } // popup blocked
 	}
-	return new Promise(resolve => { watch(() => state.response, (val) => val && resolve(val)) })
+	return new Promise(resolve => {
+		const watchStop = watch(() => state.response, (res) => {
+			if (res) { resolve(res); watchStop() }
+		})
+	})
 }
 
 export async function heartbeat (instanceName, timeout) {
 	if (instanceName === instance) { return true }
 	const promise = new Promise(resolve => {
 		const heartbeatListener = async (e) => {
-			if (e.key === 'heartbeat:' + instanceName && e.newValue) { heartbeatReturn(true) }
+			if (e.key === heartbeatPrefix + instanceName && e.newValue) { heartbeatReturn(true) }
 		}
 		const heartbeatReturn = (result) => {
 			if (result) { clearTimeout(cleanupTimeout) }
-			setTimeout(() => localStorage.removeItem('heartbeat:' + instanceName), 1000)
-			if (!result) { localStorage.removeItem('connectorState:' + instanceName) }
+			setTimeout(() => localStorage.removeItem(heartbeatPrefix + instanceName), 1000)
+			if (!result) { localStorage.removeItem(chPrefix + instanceName) }
 			window.removeEventListener('storage', heartbeatListener)
 			resolve(result)
 		}
@@ -148,8 +157,43 @@ export async function heartbeat (instanceName, timeout) {
 		const cleanupTimeout = setTimeout(() => heartbeatReturn(false), 60000)
 		if (timeout) { setTimeout(() => resolve(false), timeout) }
 	})
-	localStorage.setItem('heartbeat:' + instanceName, '')
+	localStorage.setItem(heartbeatPrefix + instanceName, '')
 	return promise
+}
+
+function cleanHeartbeats () {
+	for (const key in localStorage) {
+		if (!key.includes(heartbeatPrefix)) { continue }
+		const relatedChannel = chPrefix + key.slice(heartbeatPrefix.length)
+		if (localStorage.getItem(relatedChannel)) { continue }
+		localStorage.removeItem(key)
+	}
+}
+
+async function instanceStartPromise (filter, timeout) {
+	return new Promise(resolve => {
+		const watchStop = watch(() => states, () => {
+			for (const name in states) {
+				const currentInstance = states[name]
+				if (!Object.entries(filter).find(attr => currentInstance[attr[0]] !== attr[1])) {
+					resolve(name)
+					watchStop()
+				}
+			}
+		}, { deep: true, immediate: true })
+		if (timeout) { setTimeout(() => resolve(false), timeout) }
+	})
+}
+
+async function instanceStopPromise (name) {
+	return new Promise(resolve => {
+		const watchStop = watch(() => states, () => {
+			if (!states[name]) {
+				resolve(true)
+				watchStop()
+			}
+		}, { deep: true, immediate: true })
+	})
 }
 
 
@@ -163,17 +207,28 @@ export function launchConnector () {
 		messageQueue.push(message)
 		processMessage()
 	})
+	const handleNoClient = async () => {
+		const clientName = await instanceStartPromise({ origin }, 5000)
+		if (clientName) { await instanceStopPromise(clientName) }
+		await new Promise(resolve => setTimeout(() => resolve(), 500))
+		if (state.wallet) { return }
+		if (!Object.keys(clients.value).length) { disconnect() }
+	}
+	handleNoClient()
 }
 
 
 
 export function launchClient () {
 	state.type = 'client'
-	window.addEventListener('storage', (e) => {
-		if (e.key === 'heartbeat:client' && e.newValue === '') { localStorage.setItem('heartbeat:client', 'ok') }
-	})
 }
 
 
 
-window.addEventListener('beforeunload', () => { closeChannel(); closeChannels(); localStorage.removeItem(stateChannel) })
+cleanHeartbeats()
+window.addEventListener('beforeunload', () => {
+	window.removeEventListener('storage', globalStorageListener)
+	closeChannel()
+	closeChannels()
+	localStorage.removeItem(stateChannel)
+})
