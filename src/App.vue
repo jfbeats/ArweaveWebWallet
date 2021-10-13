@@ -67,7 +67,7 @@ export default {
 			to.meta.transition.param = param
 			to.meta.transition.name = param.to.position < param.from.position ? 'slide-down' : 'slide-up'
 			to.meta.transition.nameLayout = convertTransitionName(to.meta.transition.name)
-			if (param.to.position === param.from.position && to.params.walletId !== from.params.walletId) {
+			if (to.params.walletId && from.params.walletId && to.params.walletId !== from.params.walletId) {
 				const toWallet = ArweaveStore.wallets.findIndex(el => el.id == to.params.walletId)
 				const fromWallet = ArweaveStore.wallets.findIndex(el => el.id == from.params.walletId)
 				const transition = toWallet < fromWallet ? 'slide-down' : 'slide-up'
