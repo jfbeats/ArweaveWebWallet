@@ -1,6 +1,6 @@
 <template>
 	<div class="connection-card card flex-column">
-		<div class="flex-row" style="flex-wrap:wrap;">
+		<div :class="[verticalLayout ? 'flex-column' : 'flex-row']">
 			<div class="flex-row">
 				<IconBackground :img="state.appInfo?.logo" :icon="iconConnection" />
 				<div>
@@ -38,7 +38,8 @@ import Tabs from '@/components/atomic/Tabs.vue'
 import IconBackground from '@/components/atomic/IconBackground.vue'
 import Notification from '@/components/Notification.vue'
 import ArweaveStore from '@/store/ArweaveStore'
-import { computed, ref, watch } from 'vue'
+import InterfaceStore from '@/store/InterfaceStore'
+import { computed, ref, toRef, watch } from 'vue'
 
 import iconConnection from '@/assets/icons/connection.svg'
 import iconY from '@/assets/icons/y.svg'
@@ -75,6 +76,7 @@ export default {
 			}
 		})
 
+		const verticalLayout = toRef(InterfaceStore.breakpoints, 'verticalLayout')
 		const transitionName = ref(null)
 		const selectTransitionName = (val, oldVal) => val > oldVal ? transitionName.value = 'slide-left' : transitionName.value = 'slide-right'
 		watch(() => tabs.findIndex(tab => tab.name === currentTab.value), selectTransitionName)
@@ -82,7 +84,7 @@ export default {
 
 		watch(() => currentAddress.value, (val, oldVal) => { if (val && !oldVal) { currentTab.value = tabs[0].name } })
 
-		return { addresses, currentAddress, tabs, currentTab, connectData, transitionName, disconnect, iconConnection }
+		return { addresses, currentAddress, tabs, currentTab, connectData, verticalLayout, transitionName, disconnect, iconConnection }
 	}
 }
 </script>
@@ -95,7 +97,7 @@ export default {
 }
 
 .wallet-tabs {
-	flex: 1 1 100px;
+	flex: 1 1 0;
 	justify-content: flex-end;
 }
 
