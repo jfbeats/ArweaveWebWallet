@@ -185,17 +185,6 @@ async function instanceStartPromise (filter, timeout) {
 	})
 }
 
-async function instanceStopPromise (name) {
-	return new Promise(resolve => {
-		const watchStop = watch(() => states, () => {
-			if (!states[name]) {
-				resolve(true)
-				watchStop()
-			}
-		}, { deep: true, immediate: true })
-	})
-}
-
 
 
 export function launchConnector () {
@@ -207,14 +196,13 @@ export function launchConnector () {
 		messageQueue.push(message)
 		processMessage()
 	})
-	const handleNoClient = async () => {
-		const clientName = await instanceStartPromise({ origin }, 5000)
-		if (clientName) { await instanceStopPromise(clientName) }
-		await new Promise(resolve => setTimeout(() => resolve(), 500))
-		if (state.wallet) { return }
-		if (!Object.keys(clients.value).length) { disconnect() }
-	}
-	handleNoClient()
+	instanceStartPromise({ origin }, 5000).then(() => {
+		watch(() => clients.value, () => {
+			if (!state.wallet && !Object.keys(clients.value).length) {
+				disconnect()
+			}
+		}, { immediate: true })
+	})
 }
 
 
