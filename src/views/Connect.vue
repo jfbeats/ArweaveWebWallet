@@ -5,7 +5,6 @@
 			<Address class="secondary-text" :address="currentWallet.key" />
 			<Button @click="connect(currentWallet.key)">Connect</Button>
 		</div>-->
-		<div v-if="previousPage" @click="navigateBack">Return to {{ state.appInfo?.name || state.origin || 'previous page' }}</div>
 		<transition-group name="fade-list">
 			<ConnectionCard v-for="(connector, name) in connectors" :key="name" :state="connector" class="fade-list-item" />
 		</transition-group>
@@ -33,15 +32,7 @@ export default {
 		// onBeforeUnmount(() => InterfaceStore.toolbar.links = true)
 		const currentWallet = computed(() => ArweaveStore.currentWallet)
 
-		const previousPage = !!window.opener
-		const navigateBack = () => {
-			if (!previousPage) { return }
-			try {
-				window.open('', 'parent')
-			} catch (e) { console.log(e) }
-		}
-
-		return { currentWallet, previousPage, navigateBack, connectors, state, states }
+		return { currentWallet, connectors, state, states }
 	}
 }
 </script>

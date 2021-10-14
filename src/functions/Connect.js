@@ -170,19 +170,39 @@ function cleanHeartbeats () {
 	}
 }
 
+export function findInstance (filter) {
+	for (const name in states) {
+		const currentInstance = states[name]
+		if (!Object.entries(filter).find(attr => currentInstance[attr[0]] !== attr[1])) {
+			return name
+		}
+	}
+}
+
 async function instanceStartPromise (filter, timeout) {
 	return new Promise(resolve => {
 		const watchStop = watch(() => states, () => {
-			for (const name in states) {
-				const currentInstance = states[name]
-				if (!Object.entries(filter).find(attr => currentInstance[attr[0]] !== attr[1])) {
-					resolve(name)
-					watchStop()
-				}
-			}
+			const name = findInstance(filter)
+			if (!name) { return }
+			resolve(name)
+			watchStop()
 		}, { deep: true, immediate: true })
 		if (timeout) { setTimeout(() => resolve(false), timeout) }
 	})
+}
+
+export function navigateBack () {
+	if (!navigateBackAvailable()) { return }
+	try {
+		window.open('', 'parent')
+		window.opener.focus()
+	} catch (e) { console.log(e) }
+}
+
+export function navigateBackAvailable (origin) {
+	if (origin && state.origin !== origin) { return false }
+	if (!window.opener) { return false }
+	return true
 }
 
 

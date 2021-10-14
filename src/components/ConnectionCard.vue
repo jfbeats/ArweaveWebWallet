@@ -1,13 +1,14 @@
 <template>
 	<div class="connection-card card flex-column">
 		<div :class="[verticalLayout ? 'flex-column' : 'flex-row']">
-			<div class="flex-row">
+			<button type="button" class="flex-row" @click="navigateBack" :disabled="!navigateBackAvailable(state.origin)">
 				<IconBackground :img="state.appInfo?.logo" :icon="iconConnection" />
 				<div>
 					<div>{{ state.appInfo?.name || 'Connector' }}</div>
 					<div class="secondary-text">{{ state.origin }}</div>
 				</div>
-			</div>
+				<Icon v-if="navigateBackAvailable(state.origin)" :icon="iconLauch" />
+			</button>
 			<WalletTabs :addresses="addresses" v-model="currentAddress" exit="true" @exit="disconnect" />
 		</div>
 		<div class="flex-column">
@@ -36,17 +37,20 @@
 import WalletTabs from '@/components/WalletTabs.vue'
 import Tabs from '@/components/atomic/Tabs.vue'
 import IconBackground from '@/components/atomic/IconBackground.vue'
+import Icon from '@/components/atomic/Icon.vue'
 import Notification from '@/components/Notification.vue'
 import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
+import { navigateBack, navigateBackAvailable } from '@/functions/Connect'
 import { computed, ref, toRef, watch } from 'vue'
 
 import iconConnection from '@/assets/icons/connection.svg'
 import iconY from '@/assets/icons/y.svg'
 import iconX from '@/assets/icons/x.svg'
+import iconLauch from '@/assets/icons/launch.svg'
 
 export default {
-	components: { WalletTabs, Tabs, IconBackground, Notification },
+	components: { WalletTabs, Tabs, IconBackground, Icon, Notification },
 	props: ['state'],
 	setup (props) {
 		const addresses = computed(() => ArweaveStore.wallets.map(wallet => wallet.key))
@@ -84,7 +88,7 @@ export default {
 
 		watch(() => currentAddress.value, (val, oldVal) => { if (val && !oldVal) { currentTab.value = tabs[0].name } })
 
-		return { addresses, currentAddress, tabs, currentTab, connectData, verticalLayout, transitionName, disconnect, iconConnection }
+		return { addresses, currentAddress, tabs, currentTab, connectData, verticalLayout, transitionName, disconnect, navigateBack, navigateBackAvailable, iconConnection, iconLauch }
 	}
 }
 </script>
@@ -129,5 +133,13 @@ export default {
 	width: 100%;
 	padding: var(--spacing);
 	border-bottom: 0.5px solid var(--border);
+}
+
+.icon-background {
+	flex: 0 0 auto;
+}
+
+.icon {
+	opacity: var(--element-secondary-opacity);
 }
 </style>
