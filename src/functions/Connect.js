@@ -8,7 +8,6 @@ const chPrefix = 'connectorState:'
 const heartbeatPrefix = 'heartbeat:'
 const stateChannel = chPrefix + instance
 const messageQueue = []
-
 const stateInit = {
 	origin,
 	appInfo,
@@ -27,11 +26,72 @@ const connectors = computed(() => Object.fromEntries(Object.entries(states).filt
 const clients = computed(() => Object.fromEntries(Object.entries(states).filter(([key, value]) => value.type === 'client')))
 export { state, states, connectors, clients }
 
-watch(() => state.wallet, (wallet) => wallet ? connect(wallet) : disconnect())
+
+
+export function connect (walletAddress) {
+	postMessage({ method: 'connect', params: { address: walletAddress } })
+}
+
+export function disconnect () {
+	postMessage({ method: 'disconnect' })
+}
+
+export function postMessage (message) {
+	window.parent.postMessage({ jsonrpc: '2.0', ...message }, origin)
+}
+
+export function navigateBack () {
+	if (!navigateBackAvailable()) { return }
+	try {
+		window.open('', 'parent')
+		window.opener.focus()
+	} catch (e) { console.log(e) }
+}
+
+export function navigateBackAvailable (origin) {
+	if (origin && state.origin !== origin) { return false }
+	if (!window.opener) { return false }
+	return true
+}
 
 
 
-export function getChannels () {
+async function processMessage () {
+	if (!messageQueue.length || state.processing) { return }
+	state.processing = true
+	const message = messageQueue[0]
+	let action = null // check if message can be processed right away
+	action ??= await broadcastMessage(message)
+	const response = { id: message.data.id }
+	if (action === 'accepted') {
+		// process request
+	}
+	if (action === 'rejected') { response.error = 'rejected' }
+	postMessage(response)
+	messageQueue.splice(0, 1)
+	delete state.response
+	delete state.request
+	state.processing = false
+	processMessage()
+}
+
+async function broadcastMessage (message) {
+	state.request = message
+	await new Promise(resolve => setTimeout(() => resolve(), 500))
+	if (!Object.keys(clients.value).length) {
+		const popup = window.open(window.location.href, '_blank', 'location,resizable,scrollbars,width=360,height=600')
+		if (!popup) { } // popup blocked
+	}
+	return new Promise(resolve => {
+		const watchStop = watch(() => state.response, (res) => {
+			if (res) { resolve(res); watchStop() }
+		})
+	})
+}
+
+
+
+function getChannels () {
 	const channels = {}
 	const states = reactive({})
 	const getInstanceNames = () => {
@@ -73,7 +133,7 @@ export function getChannels () {
 	return { states, closeChannels }
 }
 
-export function getChannel (instanceName) {
+function getChannel (instanceName) {
 	const stateChannel = chPrefix + instanceName
 	const state = reactive({})
 	try { Object.assign(state, JSON.parse(localStorage.getItem(stateChannel))) } catch (e) { }
@@ -93,54 +153,7 @@ export function getChannel (instanceName) {
 	return { state, closeChannel }
 }
 
-
-
-export function connect (walletAddress) {
-	postMessage({ method: 'connect', params: { address: walletAddress } })
-}
-
-export function disconnect () {
-	postMessage({ method: 'disconnect' })
-}
-
-export function postMessage (message) {
-	window.parent.postMessage({ jsonrpc: '2.0', ...message }, origin)
-}
-
-async function processMessage () {
-	if (!messageQueue.length || state.processing) { return }
-	state.processing = true
-	const message = messageQueue[0]
-	let action = null // check if message can be processed right away
-	action ??= await broadcastMessage(message)
-	const response = { id: message.data.id }
-	if (action === 'accepted') {
-		// process request
-	}
-	if (action === 'rejected') { response.error = 'rejected' }
-	postMessage(response)
-	messageQueue.splice(0, 1)
-	delete state.response
-	delete state.request
-	state.processing = false
-	processMessage()
-}
-
-async function broadcastMessage (message) {
-	state.request = message
-	await new Promise(resolve => setTimeout(() => resolve(), 500))
-	if (!Object.keys(clients.value).length) {
-		const popup = window.open(window.location.href, '_blank', 'location,resizable,scrollbars,width=360,height=600')
-		if (!popup) { } // popup blocked
-	}
-	return new Promise(resolve => {
-		const watchStop = watch(() => state.response, (res) => {
-			if (res) { resolve(res); watchStop() }
-		})
-	})
-}
-
-export async function heartbeat (instanceName, timeout) {
+async function heartbeat (instanceName, timeout) {
 	if (instanceName === instance) { return true }
 	const promise = new Promise(resolve => {
 		const heartbeatListener = async (e) => {
@@ -170,15 +183,6 @@ function cleanHeartbeats () {
 	}
 }
 
-export function findInstance (filter) {
-	for (const name in states) {
-		const currentInstance = states[name]
-		if (!Object.entries(filter).find(attr => currentInstance[attr[0]] !== attr[1])) {
-			return name
-		}
-	}
-}
-
 async function instanceStartPromise (filter, timeout) {
 	return new Promise(resolve => {
 		const watchStop = watch(() => states, () => {
@@ -191,24 +195,20 @@ async function instanceStartPromise (filter, timeout) {
 	})
 }
 
-export function navigateBack () {
-	if (!navigateBackAvailable()) { return }
-	try {
-		window.open('', 'parent')
-		window.opener.focus()
-	} catch (e) { console.log(e) }
-}
-
-export function navigateBackAvailable (origin) {
-	if (origin && state.origin !== origin) { return false }
-	if (!window.opener) { return false }
-	return true
+export function findInstance (filter) {
+	for (const name in states) {
+		const currentInstance = states[name]
+		if (!Object.entries(filter).find(attr => currentInstance[attr[0]] !== attr[1])) {
+			return name
+		}
+	}
 }
 
 
 
 export function launchConnector () {
 	state.type = 'connector'
+	watch(() => state.wallet, (wallet) => wallet ? connect(wallet) : disconnect())
 	window.addEventListener('message', (e) => {
 		if (e.source !== window.parent || e.origin !== origin) { return }
 		if (![].includes(e.data.method)) { postMessage({ error: 'Unsupported method', id: e.data.id }) }
@@ -224,8 +224,6 @@ export function launchConnector () {
 		}, { immediate: true })
 	})
 }
-
-
 
 export function launchClient () {
 	state.type = 'client'
