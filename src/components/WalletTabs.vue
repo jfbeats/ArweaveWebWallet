@@ -62,6 +62,7 @@ export default {
 	height: 40px;
 	color: var(--red);
 	position: relative;
+	flex: 0 0 auto;
 }
 
 .exit-background {
@@ -74,6 +75,8 @@ export default {
 }
 
 .exit svg {
+	width: 100%;
+	height: 100%;
 	padding: 20%;
 }
 </style>

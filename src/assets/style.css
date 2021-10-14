@@ -64,6 +64,7 @@ button {
 	font-size: 1em;
 	cursor: pointer;
 	line-height: inherit;
+	text-align: inherit;
 }
 
 a {
