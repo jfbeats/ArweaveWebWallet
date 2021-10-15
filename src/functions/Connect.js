@@ -1,3 +1,4 @@
+import Arweave from 'arweave'
 import { reactive, watchEffect, watch, computed } from 'vue'
 
 const hash = new URLSearchParams(window.location.hash.slice(1))
@@ -60,13 +61,19 @@ async function processMessage () {
 	if (!messageQueue.length || state.processing) { return }
 	state.processing = true
 	const message = messageQueue[0]
-	let action = null // check if message can be processed right away
-	action ??= await broadcastMessage(message)
 	const response = { id: message.data.id }
-	if (action === 'accepted') {
-		// process request
+	try {
+		let action = null // check if message can be processed right away
+		action ??= await broadcastMessage(message)
+		if (action === 'accepted') {
+			response.result = await runProcedure(message)
+		} else {
+			response.error = 'rejected'
+		}
+	} catch (e) {
+		console.error(e)
+		response.error = 'error'
 	}
-	if (action === 'rejected') { response.error = 'rejected' }
 	postMessage(response)
 	messageQueue.splice(0, 1)
 	delete state.response
@@ -75,9 +82,18 @@ async function processMessage () {
 	processMessage()
 }
 
+async function runProcedure (message) {
+	return procedures[message.method](JSON.parse(message.params))
+}
+
+const procedures = {
+	async signTransaction (messageParams) {
+		console.log('tx would be signed here', messageParams)
+		return '😁'
+	},
+}
+
 async function broadcastMessage (message) {
-	state.request = message
-	await new Promise(resolve => setTimeout(() => resolve(), 500))
 	if (!Object.keys(clients.value).length) {
 		const popup = window.open(window.location.href, '_blank', 'location,resizable,scrollbars,width=360,height=600')
 		if (!popup) { } // popup blocked
@@ -86,7 +102,16 @@ async function broadcastMessage (message) {
 		const watchStop = watch(() => state.response, (res) => {
 			if (res) { resolve(res); watchStop() }
 		})
+		state.request = broadcasts[message.method](JSON.parse(message.params))
 	})
+}
+
+const broadcasts = {
+	signTransaction (messageParams) {
+		const res = { ...messageParams }
+		delete res.data
+		return res
+	},
 }
 
 
@@ -211,10 +236,14 @@ export function launchConnector () {
 	watch(() => state.wallet, (wallet) => wallet ? connect(wallet) : disconnect())
 	window.addEventListener('message', (e) => {
 		if (e.source !== window.parent || e.origin !== origin) { return }
-		if (![].includes(e.data.method)) { postMessage({ error: 'Unsupported method', id: e.data.id }) }
-		const message = { instance, state: null, data: e.data }
-		messageQueue.push(message)
-		processMessage()
+		const message = e.data // Todo check types
+		console.info(`MessageChannel:${new URL(origin).hostname}->${location.hostname}`, message)
+		if (Object.keys(procedures).includes(e.data.method)) {
+			messageQueue.push(message)
+			processMessage()
+		} else {
+			postMessage({ error: 'Unsupported method', id: e.data.id })
+		}
 	})
 	instanceStartPromise({ origin }, 5000).then(() => {
 		watch(() => clients.value, () => {
