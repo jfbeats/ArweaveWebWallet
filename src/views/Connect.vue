@@ -22,7 +22,7 @@ import Address from '@/components/atomic/Address.vue'
 import Button from '@/components/atomic/Button.vue'
 import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
-import { state, states, connectors } from '@/functions/Connect'
+import { state, states, connectors } from '@/functions/Channels'
 import { computed, onBeforeUnmount } from 'vue'
 
 export default {
