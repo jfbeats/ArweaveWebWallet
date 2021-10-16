@@ -30,6 +30,7 @@ export { state, states, connectors, clients }
 
 
 export function connect (walletAddress) {
+	// todo reject the whole queue
 	postMessage({ method: 'connect', params: { address: walletAddress } })
 }
 
@@ -61,18 +62,19 @@ async function processMessage () {
 	if (!messageQueue.length || state.processing) { return }
 	state.processing = true
 	const message = messageQueue[0]
-	const response = { id: message.data.id }
+	const response = { id: message.id }
 	try {
-		let action = null // check if message can be processed right away
+		await verifyMessage(message)
+		let action = null // todo check if message can be processed right away
 		action ??= await broadcastMessage(message)
 		if (action === 'accepted') {
-			response.result = await runProcedure(message)
+			response.result = await runMessage(message)
 		} else {
 			response.error = 'rejected'
 		}
 	} catch (e) {
 		console.error(e)
-		response.error = 'error'
+		response.error = e
 	}
 	postMessage(response)
 	messageQueue.splice(0, 1)
@@ -82,15 +84,8 @@ async function processMessage () {
 	processMessage()
 }
 
-async function runProcedure (message) {
-	return procedures[message.method](JSON.parse(message.params))
-}
-
-const procedures = {
-	async signTransaction (messageParams) {
-		console.log('tx would be signed here', messageParams)
-		return '😁'
-	},
+async function verifyMessage (message) {
+	return await procedures[message.method].verify(JSON.parse(message.params))
 }
 
 async function broadcastMessage (message) {
@@ -98,19 +93,33 @@ async function broadcastMessage (message) {
 		const popup = window.open(window.location.href, '_blank', 'location,resizable,scrollbars,width=360,height=600')
 		if (!popup) { } // popup blocked
 	}
-	return new Promise(resolve => {
-		const watchStop = watch(() => state.response, (res) => {
+	const watcher = new Promise(resolve => {
+		const watchStop = watch(() => state.response, res => {
 			if (res) { resolve(res); watchStop() }
 		})
-		state.request = broadcasts[message.method](JSON.parse(message.params))
 	})
+	state.request = await procedures[message.method].broadcast(JSON.parse(message.params))
+	return watcher
 }
 
-const broadcasts = {
-	signTransaction (messageParams) {
-		const res = { ...messageParams }
-		delete res.data
-		return res
+async function runMessage (message) {
+	return await procedures[message.method].run(JSON.parse(message.params))
+}
+
+const procedures = {
+	signTransaction: {
+		verify (params) {
+			if (params.format !== 2) { throw 'unsupported format' }
+			if (params.owner && params.owner !== state.wallet) { throw 'Wrong owner' }
+		},
+		broadcast (params) {
+			const fields = ['target', 'quantity', 'tags', 'data_size', 'reward']
+			return Object.fromEntries(Object.entries(params).filter(entry => fields.includes(entry[0])))
+		},
+		async run (params) {
+			console.log('tx would be signed here', params)
+			return '😁'
+		},
 	},
 }
 
@@ -238,11 +247,15 @@ export function launchConnector () {
 		if (e.source !== window.parent || e.origin !== origin) { return }
 		const message = e.data // Todo check types
 		console.info(`MessageChannel:${new URL(origin).hostname}->${location.hostname}`, message)
-		if (Object.keys(procedures).includes(e.data.method)) {
+		if (
+			typeof message.method === 'string'
+			&& (!message.params || typeof message.params === 'string')
+			&& Object.keys(procedures).includes(message.method)
+		) {
 			messageQueue.push(message)
 			processMessage()
 		} else {
-			postMessage({ error: 'Unsupported method', id: e.data.id })
+			postMessage({ error: 'Unsupported method', id: message.id })
 		}
 	})
 	instanceStartPromise({ origin }, 5000).then(() => {
