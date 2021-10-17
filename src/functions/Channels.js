@@ -13,8 +13,9 @@ const stateInit = {
 	wallet: null,
 }
 const globalStorageListener = (e) => {
-	if (e.key === heartbeatPrefix + instance && e.newValue === '') {
-		localStorage.setItem(heartbeatPrefix + instance, 'ok')
+	const partialKey = heartbeatPrefix + instance
+	if (e.key.slice(0, partialKey.length) === partialKey && e.newValue === '') {
+		localStorage.setItem(e.key, 'ok')
 	}
 }
 window.addEventListener('storage', globalStorageListener)
@@ -91,13 +92,14 @@ function getChannel (instanceName) {
 
 async function heartbeat (instanceName, timeout) {
 	if (instanceName === instance) { return true }
+	const fullKey = heartbeatPrefix + instanceName + instance
 	const promise = new Promise(resolve => {
 		const heartbeatListener = async (e) => {
-			if (e.key === heartbeatPrefix + instanceName && e.newValue) { heartbeatReturn(true) }
+			if (e.key === fullKey && e.newValue) { heartbeatReturn(true) }
 		}
 		const heartbeatReturn = (result) => {
 			if (result) { clearTimeout(cleanupTimeout) }
-			setTimeout(() => localStorage.removeItem(heartbeatPrefix + instanceName), 1000)
+			setTimeout(() => localStorage.removeItem(fullKey), 1000)
 			if (!result) { localStorage.removeItem(chPrefix + instanceName) }
 			window.removeEventListener('storage', heartbeatListener)
 			resolve(result)
@@ -106,7 +108,7 @@ async function heartbeat (instanceName, timeout) {
 		const cleanupTimeout = setTimeout(() => heartbeatReturn(false), 60000)
 		if (timeout) { setTimeout(() => resolve(false), timeout) }
 	})
-	localStorage.setItem(heartbeatPrefix + instanceName, '')
+	localStorage.setItem(fullKey, '')
 	return promise
 }
 
