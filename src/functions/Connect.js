@@ -107,18 +107,18 @@ export function launchConnector () {
 	watch(() => state.wallet, (wallet) => wallet ? connect(wallet) : disconnect())
 	window.addEventListener('message', (e) => {
 		if (e.source !== window.parent || e.origin !== origin) { return }
-		const message = e.data // Todo check types
+		const message = e.data
 		console.info(`MessageChannel:${new URL(origin).hostname}->${location.hostname}`, message)
 		if (
-			typeof message.method === 'string'
-			&& (!message.params || typeof message.params === 'string')
-			&& Object.keys(procedures).includes(message.method)
+			typeof message.method !== 'string'
+			|| !Object.keys(procedures).includes(message.method)
+			|| 'params' in message && typeof message.params !== 'string'
 		) {
-			messageQueue.push(message)
-			processMessage()
-		} else {
 			postMessage({ error: 'Unsupported method', id: message.id })
+			return
 		}
+		messageQueue.push(message)
+		processMessage()
 	})
 	instanceStartPromise({ origin }, 5000).then(() => {
 		watch(() => clients.value, () => {
@@ -128,6 +128,8 @@ export function launchConnector () {
 		}, { immediate: true })
 	})
 }
+
+
 
 export function launchClient () {
 	state.type = 'client'
