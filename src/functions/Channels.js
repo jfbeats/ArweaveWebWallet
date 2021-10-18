@@ -73,20 +73,31 @@ function getChannels () {
 function getChannel (instanceName) {
 	const stateChannel = chPrefix + instanceName
 	const state = reactive({})
-	try { Object.assign(state, JSON.parse(localStorage.getItem(stateChannel))) } catch (e) { }
+	let stop
+	const start = () => {
+		stop = watch(() => state, () => {
+			const stateString = JSON.stringify(state)
+			if (stateString === localStorage.getItem(stateChannel)) { return }
+			localStorage.setItem(stateChannel, stateString)
+		}, { deep: true })
+	}
+	const update = (val) => {
+		if (stop) { stop() }
+		try { Object.assign(state, JSON.parse(val)) } catch (e) { }
+		start()
+	}
 	const storageListener = (e) => {
 		if (e.key !== stateChannel || e.newValue === e.oldValue) { return }
-		try { Object.assign(state, JSON.parse(e.newValue)) } catch (e) { }
+		update(e.newValue)
 	}
-	const stopUpdate = watchEffect(() => {
-		if (JSON.stringify(state) === localStorage.getItem(stateChannel)) { return }
-		localStorage.setItem(stateChannel, JSON.stringify(state))
-	})
-	window.addEventListener('storage', storageListener)
 	const closeChannel = () => {
 		window.removeEventListener('storage', storageListener)
-		stopUpdate()
+		stop()
 	}
+
+	window.addEventListener('storage', storageListener)
+	update(localStorage.getItem(stateChannel))
+
 	return { state, closeChannel }
 }
 
