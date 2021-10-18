@@ -105,7 +105,6 @@ export default {
 	min-height: var(--current-vh);
 	padding: var(--spacing);
 	align-items: center;
-	justify-content: space-evenly;
 }
 
 .card {

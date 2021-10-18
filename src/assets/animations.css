@@ -1,9 +1,9 @@
 .slide-up-enter-active, .slide-down-enter-active, .slide-left-enter-active, .slide-right-enter-active {
-	transition: 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+	transition: 0.36s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .slide-up-leave-active, .slide-down-leave-active, .slide-left-leave-active, .slide-right-leave-active {
-	transition: 0.1s ease;
+	transition: 0.08s ease;
 }
 
 .slide-up-enter-from, .slide-down-leave-to {
