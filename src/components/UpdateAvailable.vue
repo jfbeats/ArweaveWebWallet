@@ -24,7 +24,7 @@ export default {
 	z-index: 10;
 	bottom: 0;
 	background: var(--background);
-	padding: var(--spacing) var(--spacing) var(--spacing) 0;
+	padding: var(--spacing);
 	border-top: 0.5px solid var(--border);
 	border-right: 0.5px solid var(--border);
 	border-top-right-radius: var(--border-radius);
