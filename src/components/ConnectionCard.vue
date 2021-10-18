@@ -54,12 +54,16 @@ export default {
 	props: ['state'],
 	setup (props) {
 		const addresses = computed(() => ArweaveStore.wallets.map(wallet => wallet.key))
-		const currentAddress = ref(props.state.wallet)
+		const currentAddress = ref(props.state.wallet || addresses.value[0])
 		const tabs = [
 			{ name: 'Requests', color: 'var(--orange)' },
 			{ name: 'Permissions', color: 'var(--green)' },
 		]
-		const currentTab = ref(currentAddress.value ? 'Requests' : null)
+		const currentTab = ref(currentAddress.value ? tabs[0].name : null)
+		watch(() => props.state.wallet, (wallet) => {
+			currentAddress.value = wallet
+			currentTab.value = tabs[0].name
+		})
 
 		const disconnect = () => props.state.wallet = false
 
