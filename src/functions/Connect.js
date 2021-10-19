@@ -123,7 +123,7 @@ export function launchConnector () {
 	instanceStartPromise({ origin }, 5000).then(() => {
 		watch(() => clients.value, () => {
 			if (!state.wallet && !Object.keys(clients.value).length) {
-				disconnect()
+				// disconnect()
 			}
 		}, { immediate: true })
 	})
