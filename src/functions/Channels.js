@@ -12,22 +12,12 @@ const stateInit = {
 	appInfo,
 	wallet: null,
 }
-const globalStorageListener = (e) => {
-	const partialKey = heartbeatPrefix + instance
-	if (e.key.slice(0, partialKey.length) === partialKey && e.newValue === '') {
-		localStorage.setItem(e.key, 'ok')
-	}
-}
-window.addEventListener('storage', globalStorageListener)
-localStorage.setItem(stateChannel, JSON.stringify(stateInit))
-const { state, closeChannel } = getChannel(instance)
-const { states, closeChannels } = getChannels()
-const filterChannels = (filter) => Object.fromEntries(Object.entries(states).filter(([key, state]) =>
-	!Object.entries(filter || {}).find(([key, value]) => typeof value === 'function' ? !value(state[key]) : state[key] !== value)))
+const { state, initChannel, closeChannel } = getChannel(instance)
+const { states, initChannels, closeChannels } = getChannels()
 const connectors = computed(() => filterChannels({ type: 'connector' }))
 const clients = computed(() => filterChannels({ type: 'client' }))
 
-export { origin, state, states, filterChannels, connectors, clients }
+export { origin, state, states, connectors, clients }
 
 
 
@@ -42,6 +32,7 @@ function getChannels () {
 		if (!(await heartbeat(name))) { close(name); return null }
 		if (!Object.keys(channels).includes(name)) { return null }
 		channels[name] = getChannel(name)
+		channels[name].initChannel()
 		states[name] = channels[name].state
 	}
 	const close = (name) => {
@@ -58,13 +49,15 @@ function getChannels () {
 			else if (runningChannels.includes(channel)) { close(channel) }
 		}
 	}
+	const initChannels = () => {
+		window.addEventListener('storage', storageListener)
+		storageListener()
+	}
 	const closeChannels = () => {
 		window.removeEventListener('storage', storageListener)
 		for (const channel in channels) { close(channel) }
 	}
-	window.addEventListener('storage', storageListener)
-	storageListener()
-	return { states, closeChannels }
+	return { states, initChannels, closeChannels }
 }
 
 function getChannel (instanceName) {
@@ -87,13 +80,15 @@ function getChannel (instanceName) {
 		if (e.key !== stateChannel || e.newValue === e.oldValue) { return }
 		update(e.newValue)
 	}
+	const initChannel = () => {
+		window.addEventListener('storage', storageListener)
+		update(localStorage.getItem(stateChannel))
+	}
 	const closeChannel = () => {
 		window.removeEventListener('storage', storageListener)
-		stop()
+		if (stop) { stop() }
 	}
-	window.addEventListener('storage', storageListener)
-	update(localStorage.getItem(stateChannel))
-	return { state, closeChannel }
+	return { state, initChannel, closeChannel }
 }
 
 async function heartbeat (instanceName, timeout) {
@@ -111,7 +106,7 @@ async function heartbeat (instanceName, timeout) {
 			resolve(result)
 		}
 		window.addEventListener('storage', heartbeatListener)
-		const cleanupTimeout = setTimeout(() => heartbeatReturn(false), Math.max(60000, timeout || 0))
+		const cleanupTimeout = setTimeout(() => heartbeatReturn(false), Math.max(5000, timeout || 0))
 		if (timeout) { setTimeout(() => resolve(false), timeout) }
 	})
 	localStorage.setItem(fullKey, '')
@@ -139,12 +134,37 @@ export async function instanceStartPromise (filter, timeout) {
 	})
 }
 
+export function filterChannels (filter) {
+	return Object.fromEntries(Object.entries(states).filter(([key, state]) =>
+		!Object.entries(filter || {}).find(([key, value]) => typeof value === 'function' ? !value(state[key]) : state[key] !== value)))
+}
 
+function globalStorageListener (e) {
+	const partialKey = heartbeatPrefix + instance
+	if (e.key.slice(0, partialKey.length) === partialKey && e.newValue === '') {
+		localStorage.setItem(e.key, 'ok')
+	}
+}
 
-cleanHeartbeats()
-window.addEventListener('beforeunload', () => {
+async function init () {
+	if (document.hasStorageAccess) {
+		while (!await document.hasStorageAccess()) { await new Promise(resolve => setTimeout(resolve, 1000)) }
+	}
+	window.addEventListener('storage', globalStorageListener)
+	localStorage.setItem(stateChannel, JSON.stringify(stateInit))
+	initChannel()
+	initChannels()
+}
+
+function close () {
 	window.removeEventListener('storage', globalStorageListener)
 	closeChannel()
 	closeChannels()
 	localStorage.removeItem(stateChannel)
-})
+}
+
+
+
+cleanHeartbeats()
+init()
+window.addEventListener('beforeunload', close)
