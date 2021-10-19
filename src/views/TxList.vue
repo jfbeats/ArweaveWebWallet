@@ -2,7 +2,7 @@
 	<div class="tx-list flex-column">
 		<Tabs queryName="view" :tabs="tabs" />
 		<transition :name="transitionName" mode="out-in">
-			<div class="list flex-column" :key="selectedQuery">
+			<div class="flex-column" :key="selectedQuery">
 				<transition-group name="fade-list">
 					<TxCard class="card fade-list-item" v-for="tx in txs" :key="tx.node.id" :tx="tx.node" />
 				</transition-group>
@@ -75,10 +75,6 @@ export default {
 
 .tabs {
 	z-index: 1;
-}
-
-.list {
-	position: relative;
 }
 
 .bottom {
