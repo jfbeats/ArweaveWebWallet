@@ -18,6 +18,7 @@ export default ({ mode }) => {
 		resolve: {
 			alias: {
 				'@': path.resolve(__dirname, 'src'),
+				stream: 'stream-browserify',
 			}
 		},
 		build: {

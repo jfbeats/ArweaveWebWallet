@@ -20,6 +20,7 @@
 		"human-crypto-keys": "^0.1.4",
 		"mitt": "^3.0.0",
 		"smartweave": "^0.4.45",
+		"stream-browserify": "^3.0.0",
 		"vue": "^3.2.16",
 		"vue-router": "^4.0.11",
 		"vue-slicksort": "^2.0.0-alpha.5"
