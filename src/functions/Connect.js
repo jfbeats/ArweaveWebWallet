@@ -1,8 +1,9 @@
 import Arweave from 'arweave'
-import { origin, state, clients, instanceStartPromise } from '@/functions/Channels'
+import { state, clients, instanceStartPromise } from '@/functions/Channels'
 import { watch } from 'vue'
 
 const messageQueue = []
+const { origin, session } = state
 
 
 
@@ -34,6 +35,25 @@ export function navigateBackAvailable (origin) {
 }
 
 
+
+async function messageListener (e) {
+	if (e.source !== window.parent || e.origin !== origin) { return }
+	const message = e.data
+	console.info(`MessageChannel:${new URL(origin).hostname}->${location.hostname}`, message)
+	if (
+		typeof message.method !== 'string'
+		|| !Object.keys(procedures).includes(message.method)
+		|| 'params' in message && typeof message.params !== 'string'
+	) {
+		postMessage({ error: 'Unsupported method', id: message.id })
+		return
+	}
+	if (
+		state.type === 'connector' 
+	) {}
+	messageQueue.push(message)
+	processMessage()
+}
 
 async function processMessage () {
 	if (!messageQueue.length || state.processing) { return }
@@ -102,35 +122,29 @@ const procedures = {
 
 
 
-export function launchConnector () {
-	state.type = 'connector'
-	watch(() => state.wallet, (wallet) => wallet ? connect(wallet) : disconnect())
-	window.addEventListener('message', (e) => {
-		if (e.source !== window.parent || e.origin !== origin) { return }
-		const message = e.data
-		console.info(`MessageChannel:${new URL(origin).hostname}->${location.hostname}`, message)
-		if (
-			typeof message.method !== 'string'
-			|| !Object.keys(procedures).includes(message.method)
-			|| 'params' in message && typeof message.params !== 'string'
-		) {
-			postMessage({ error: 'Unsupported method', id: message.id })
-			return
-		}
-		messageQueue.push(message)
-		processMessage()
-	})
-	instanceStartPromise({ origin }, 5000).then(() => {
-		watch(() => clients.value, () => {
-			if (!state.wallet && !Object.keys(clients.value).length) {
-				// disconnect()
-			}
-		}, { immediate: true })
-	})
+function launch () {
+	if (window.opener) {
+		state.type = 'popup'
+		localStorage.setItem('global', '1')
+		watch(() => state.wallet, (wallet) => wallet ? connect(wallet) : disconnect())
+	} else if (window.parent && window.parent !== window) {
+		state.type = 'connector'
+		watch(() => state.wallet, (wallet) => wallet ? connect(wallet) : disconnect())
+		window.addEventListener('message', messageListener)
+		instanceStartPromise({ origin, session }).then(() => {
+			watch(() => clients.value, () => {
+				if (!state.wallet && !Object.keys(clients.value).length) {
+					disconnect()
+				}
+			}, { immediate: true })
+		})
+	} else {
+		state.type = 'client'
+		localStorage.setItem('global', '1')
+	}
 }
 
 
 
-export function launchClient () {
-	state.type = 'client'
-}
+launch()
+export { state }

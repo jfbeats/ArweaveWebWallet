@@ -2,6 +2,7 @@ import { reactive, watch, computed } from 'vue'
 
 const hash = new URLSearchParams(window.location.hash.slice(1))
 const origin = hash.get('origin')
+const session = hash.get('session')
 const appInfo = { name: hash.get('name'), logo: hash.get('logo') }
 const instance = origin + Math.random().toString().slice(2)
 const chPrefix = 'connectorState:'
@@ -9,6 +10,7 @@ const heartbeatPrefix = 'heartbeat:'
 const stateChannel = chPrefix + instance
 const stateInit = {
 	origin,
+	session,
 	appInfo,
 	wallet: null,
 }
@@ -17,7 +19,7 @@ const { states, initChannels, closeChannels } = getChannels()
 const connectors = computed(() => filterChannels({ type: 'connector' }))
 const clients = computed(() => filterChannels({ type: 'client' }))
 
-export { origin, state, states, connectors, clients }
+export { state, states, connectors, clients }
 
 
 
@@ -62,19 +64,18 @@ function getChannels () {
 
 function getChannel (instanceName) {
 	const stateChannel = chPrefix + instanceName
-	const state = reactive({})
-	let stop
-	const start = () => {
-		stop = watch(() => state, () => {
-			const stateString = JSON.stringify(state)
-			if (stateString === localStorage.getItem(stateChannel)) { return }
-			localStorage.setItem(stateChannel, stateString)
-		}, { deep: true })
+	const state = reactive(instanceName === instance ? stateInit : {})
+	const writeState = () => {
+		const stateString = JSON.stringify(state)
+		if (stateString === localStorage.getItem(stateChannel)) { return }
+		localStorage.setItem(stateChannel, stateString)
 	}
+	let stopWrite
+	const startWrite = () => stopWrite = watch(() => state, writeState, { deep: true })
 	const update = (val) => {
-		if (stop) { stop() }
+		if (stopWrite) { stopWrite() }
 		try { Object.assign(state, JSON.parse(val)) } catch (e) { }
-		start()
+		startWrite()
 	}
 	const storageListener = (e) => {
 		if (e.key !== stateChannel || e.newValue === e.oldValue) { return }
@@ -82,11 +83,12 @@ function getChannel (instanceName) {
 	}
 	const initChannel = () => {
 		window.addEventListener('storage', storageListener)
+		if (instanceName === instance) { writeState() }
 		update(localStorage.getItem(stateChannel))
 	}
 	const closeChannel = () => {
 		window.removeEventListener('storage', storageListener)
-		if (stop) { stop() }
+		if (stopWrite) { stopWrite() }
 	}
 	return { state, initChannel, closeChannel }
 }
@@ -148,10 +150,10 @@ function globalStorageListener (e) {
 
 async function init () {
 	if (document.hasStorageAccess) {
+		if (!await document.hasStorageAccess()) { }
 		while (!await document.hasStorageAccess()) { await new Promise(resolve => setTimeout(resolve, 1000)) }
 	}
 	window.addEventListener('storage', globalStorageListener)
-	localStorage.setItem(stateChannel, JSON.stringify(stateInit))
 	initChannel()
 	initChannels()
 }

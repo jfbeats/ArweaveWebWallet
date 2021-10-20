@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory, createWebHashHistory, START_LOCATION } from 'vue-router'
 import ArweaveStore, { getWalletById, loadDemo } from '@/store/ArweaveStore'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
-import { launchConnector, launchClient } from '@/functions/Connect'
+import { state } from '@/functions/Connect'
 import Wallet from '@/views/Wallet.vue'
 import TxList from '@/views/TxList.vue'
 import Send from '@/views/Send.vue'
@@ -105,13 +105,8 @@ const routes = [
 	{
 		path: '/:pathMatch(.*)*',
 		redirect: () => {
-			if (window.parent && window.parent !== window) {
-				InterfaceStore.toolbar.enabled = false
-				return { name: 'Connector' }
-			}
-			if (window.opener) {
-				return { name: 'Connect' }
-			}
+			if (state.type === 'connector') { InterfaceStore.toolbar.enabled = false; return { name: 'Connector' } }
+			if (state.type === 'popup') { return { name: 'Connect' } }
 			return ArweaveStore.wallets[0]
 				? { name: 'TxList', params: { walletId: ArweaveStore.wallets[0].id } }
 				: { name: 'Welcome' }
@@ -126,14 +121,6 @@ const router = createRouter({
 		const position = savedPosition || { top: 0 }
 		emitter.once('beforeEnter', () => resolve(position))
 	})
-})
-
-router.beforeEach((to, from) => {
-	if (from === START_LOCATION) {
-		if (to.name === 'Connector') { launchConnector() }
-		else { launchClient() }
-		// TODO if existing client window detected, try to switch to it?
-	}
 })
 
 export default router
