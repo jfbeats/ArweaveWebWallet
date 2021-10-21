@@ -1,5 +1,5 @@
 import Arweave from 'arweave'
-import { state, clients, instanceStartPromise } from '@/functions/Channels'
+import { state, instanceStartPromise } from '@/functions/Channels'
 import { watch } from 'vue'
 
 const messageQueue = []
@@ -9,7 +9,7 @@ const { origin, session } = state
 
 export function connect (walletAddress) {
 	// todo reject the whole queue
-	postMessage({ method: 'connect', params: { address: walletAddress } })
+	postMessage({ method: 'connect', params: walletAddress })
 }
 
 export function disconnect () {
@@ -63,7 +63,6 @@ async function processMessage () {
 	try {
 		await verifyMessage(message)
 		let action = null // todo check if message can be processed right away
-		action ??= await broadcastMessage(message)
 		if (action === 'accepted') {
 			response.result = await runMessage(message)
 		} else {
@@ -85,20 +84,6 @@ async function verifyMessage (message) {
 	return await procedures[message.method].verify(JSON.parse(message.params))
 }
 
-async function broadcastMessage (message) {
-	if (!Object.keys(clients.value).length) {
-		const popup = window.open(window.location.href, '_blank', 'location,resizable,scrollbars,width=360,height=600')
-		if (!popup) { } // popup blocked
-	}
-	const watcher = new Promise(resolve => {
-		const watchStop = watch(() => state.response, res => {
-			if (res) { resolve(res); watchStop() }
-		})
-	})
-	state.request = await procedures[message.method].broadcast(JSON.parse(message.params))
-	return watcher
-}
-
 async function runMessage (message) {
 	return await procedures[message.method].run(JSON.parse(message.params))
 }
@@ -108,10 +93,6 @@ const procedures = {
 		verify (params) {
 			if (params.format !== 2) { throw 'unsupported format' }
 			if (params.owner && params.owner !== state.wallet) { throw 'Wrong owner' }
-		},
-		broadcast (params) {
-			const fields = ['target', 'quantity', 'tags', 'data_size', 'reward']
-			return Object.fromEntries(Object.entries(params).filter(entry => fields.includes(entry[0])))
 		},
 		async run (params) {
 			console.log('tx would be signed here', params)
@@ -132,11 +113,7 @@ function launch () {
 		watch(() => state.wallet, (wallet) => wallet ? connect(wallet) : disconnect())
 		window.addEventListener('message', messageListener)
 		instanceStartPromise({ origin, session }).then(() => {
-			watch(() => clients.value, () => {
-				if (!state.wallet && !Object.keys(clients.value).length) {
-					disconnect()
-				}
-			}, { immediate: true })
+			
 		})
 	} else {
 		state.type = 'client'

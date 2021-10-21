@@ -36,9 +36,9 @@ export async function sleepUntilVisible () {
 }
 
 emitter.once = (eventName, fn) => {
-	const handler = (...args) => {
+	const handler = (e) => {
 		emitter.off(eventName, handler)
-		fn(...args)
+		fn(e)
 	}
 	emitter.on(eventName, handler)
 }

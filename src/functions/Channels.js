@@ -17,9 +17,8 @@ const stateInit = {
 const { state, initChannel, closeChannel } = getChannel(instance)
 const { states, initChannels, closeChannels } = getChannels()
 const connectors = computed(() => filterChannels({ type: 'connector' }))
-const clients = computed(() => filterChannels({ type: 'client' }))
 
-export { state, states, connectors, clients }
+export { state, states, connectors }
 
 
 
@@ -137,8 +136,9 @@ export async function instanceStartPromise (filter, timeout) {
 }
 
 export function filterChannels (filter) {
-	return Object.fromEntries(Object.entries(states).filter(([key, state]) =>
-		!Object.entries(filter || {}).find(([key, value]) => typeof value === 'function' ? !value(state[key]) : state[key] !== value)))
+	const filterFunction = ([key, state]) => typeof filter === 'function' ? filter(state)
+		: !Object.entries(filter || {}).find(([key, value]) => state[key] !== value)
+	return Object.fromEntries(Object.entries(states).filter(filterFunction))
 }
 
 function globalStorageListener (e) {
