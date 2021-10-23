@@ -6,7 +6,7 @@
 			<Button @click="connect(currentWallet.key)">Connect</Button>
 		</div>-->
 		<transition-group name="fade-list">
-			<ConnectionCard v-for="(connector, name) in connectors" :key="name" :state="connector" class="fade-list-item" />
+			<ConnectionCard v-for="(connector, name) in iframes" :key="name" :state="connector" class="fade-list-item" />
 		</transition-group>
 		<div class="bottom-info secondary-text">
 			<div>All Channels {{ Object.keys(states).length }}</div>
@@ -22,7 +22,7 @@ import Address from '@/components/atomic/Address.vue'
 import Button from '@/components/atomic/Button.vue'
 import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
-import { state, states, connectors } from '@/functions/Channels'
+import { state, states, iframes } from '@/functions/Channels'
 import { computed, onBeforeUnmount } from 'vue'
 
 export default {
@@ -32,7 +32,7 @@ export default {
 		// onBeforeUnmount(() => InterfaceStore.toolbar.links = true)
 		const currentWallet = computed(() => ArweaveStore.currentWallet)
 
-		return { currentWallet, connectors, state, states }
+		return { currentWallet, iframes, state, states }
 	}
 }
 </script>

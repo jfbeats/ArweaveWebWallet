@@ -16,9 +16,9 @@ const stateInit = {
 }
 const { state, initChannel, closeChannel } = getChannel(instance)
 const { states, initChannels, closeChannels } = getChannels()
-const connectors = computed(() => filterChannels({ type: 'connector' }))
+const iframes = computed(() => filterChannels({ type: 'iframe' }))
 
-export { state, states, connectors }
+export { state, states, iframes }
 
 
 
@@ -121,18 +121,6 @@ function cleanHeartbeats () {
 		if (localStorage.getItem(relatedChannel)) { continue }
 		localStorage.removeItem(key)
 	}
-}
-
-export async function instanceStartPromise (filter, timeout) {
-	return new Promise(resolve => {
-		const watchStop = watch(() => states, () => {
-			const name = Object.keys(filterChannels(filter))[0]
-			if (!name) { return }
-			resolve(name)
-			watchStop()
-		}, { deep: true, immediate: true })
-		if (timeout) { setTimeout(() => { resolve(false); watchStop() }, timeout) }
-	})
 }
 
 export function filterChannels (filter) {

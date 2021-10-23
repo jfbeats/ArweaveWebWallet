@@ -1,9 +1,40 @@
 import Arweave from 'arweave'
-import { state, instanceStartPromise } from '@/functions/Channels'
-import { watch } from 'vue'
+import { state, filterChannels } from '@/functions/Channels'
+import { watch, watchEffect } from 'vue'
 
+let windowRef
 const messageQueue = []
 const { origin, session } = state
+
+if (window.opener) {
+	state.type = 'popup'
+	windowRef = window.opener
+	localStorage.setItem('global', '1')
+	watch(() => state.wallet, (wallet) => wallet ? connect(wallet) : disconnect())
+	window.addEventListener('message', messageListener)
+	watchEffect(() => {
+		const linkedInstance = Object.entries(filterChannels({ origin, session, type: 'iframe' }))[0]?.[1]
+		if (linkedInstance) { state.link = true }
+		else { state.link = false }
+	})
+} else if (window.parent && window.parent !== window) {
+	state.type = 'iframe'
+	windowRef = window.parent
+	watch(() => state.wallet, (wallet) => wallet ? connect(wallet) : disconnect())
+	window.addEventListener('message', messageListener)
+	state.task = { name: 'default', from: 0 }
+	watchEffect(() => {
+		const linkedInstance = Object.entries(filterChannels({ origin, session, type: 'popup' }))[0]?.[1]
+		if (linkedInstance) { state.link = true }
+		else {
+			if (state.link && !state.wallet) { disconnect() }
+			state.link = false
+		}
+	})
+} else {
+	state.type = 'client'
+	localStorage.setItem('global', '1')
+}
 
 
 
@@ -17,7 +48,7 @@ export function disconnect () {
 }
 
 export function postMessage (message) {
-	window.parent.postMessage({ jsonrpc: '2.0', ...message }, origin)
+	windowRef.postMessage({ ...message }, origin)
 }
 
 export function navigateBack () {
@@ -37,21 +68,20 @@ export function navigateBackAvailable (origin) {
 
 
 async function messageListener (e) {
-	if (e.source !== window.parent || e.origin !== origin) { return }
+	if (e.source !== windowRef || e.origin !== origin) { return }
 	const message = e.data
-	console.info(`MessageChannel:${new URL(origin).hostname}->${location.hostname}`, message)
+	console.info(`${location.hostname}:${state.type}:`, message)
 	if (
 		typeof message.method !== 'string'
 		|| !Object.keys(procedures).includes(message.method)
-		|| 'params' in message && typeof message.params !== 'string'
+		|| typeof message.id !== 'number'
 	) {
+		console.log('posted error')
 		postMessage({ error: 'Unsupported method', id: message.id })
 		return
 	}
-	if (
-		state.type === 'connector' 
-	) {}
 	messageQueue.push(message)
+	// await active ?? if so skip completed messages
 	processMessage()
 }
 
@@ -61,67 +91,41 @@ async function processMessage () {
 	const message = messageQueue[0]
 	const response = { id: message.id }
 	try {
-		await verifyMessage(message)
-		let action = null // todo check if message can be processed right away
+		let action = 'rejected' // todo check if message can be processed right away
 		if (action === 'accepted') {
-			response.result = await runMessage(message)
+			response.result = await procedures[message.method](JSON.parse(message.params))
 		} else {
 			response.error = 'rejected'
 		}
 	} catch (e) {
 		console.error(e)
-		response.error = e
+		response.error = e.message
 	}
 	postMessage(response)
 	messageQueue.splice(0, 1)
-	delete state.response
-	delete state.request
 	state.processing = false
 	processMessage()
 }
 
-async function verifyMessage (message) {
-	return await procedures[message.method].verify(JSON.parse(message.params))
-}
-
-async function runMessage (message) {
-	return await procedures[message.method].run(JSON.parse(message.params))
-}
-
 const procedures = {
-	signTransaction: {
-		verify (params) {
+	async signTransaction (params) {
+		if (typeof message.params !== 'string')
 			if (params.format !== 2) { throw 'unsupported format' }
-			if (params.owner && params.owner !== state.wallet) { throw 'Wrong owner' }
-		},
-		async run (params) {
-			console.log('tx would be signed here', params)
-			return '😁'
-		},
+		if (params.owner && params.owner !== state.wallet) { throw 'Wrong owner' }
+		console.log('tx would be signed here', params)
+		return '😁'
 	},
 }
 
 
 
-function launch () {
-	if (window.opener) {
-		state.type = 'popup'
-		localStorage.setItem('global', '1')
-		watch(() => state.wallet, (wallet) => wallet ? connect(wallet) : disconnect())
-	} else if (window.parent && window.parent !== window) {
-		state.type = 'connector'
-		watch(() => state.wallet, (wallet) => wallet ? connect(wallet) : disconnect())
-		window.addEventListener('message', messageListener)
-		instanceStartPromise({ origin, session }).then(() => {
-			
-		})
-	} else {
-		state.type = 'client'
-		localStorage.setItem('global', '1')
+function setTask (task, from) {
+	if (!state.link) { return }
+	if (task === 'default') {
+
 	}
 }
 
 
 
-launch()
 export { state }

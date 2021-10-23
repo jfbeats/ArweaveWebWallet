@@ -11,7 +11,7 @@
 		</SlickList>
 		<div class="controls" v-if="links">
 			<transition name="fade-fast">
-				<router-link v-if="connectorsNum" class="icon control" :class="{ verticalLayout }" to="/connect" aria-label="Add Wallet">
+				<router-link v-if="iframesNum" class="icon control" :class="{ verticalLayout }" to="/connect" aria-label="Add Wallet">
 					<img class="small" src="@/assets/icons/connection.svg" alt="Connections" />
 				</router-link>
 			</transition>
@@ -34,7 +34,7 @@ import DragOverlay from '@/components/atomic/DragOverlay.vue'
 import { SlickList, SlickItem } from 'vue-slicksort'
 import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
-import { connectors } from '@/functions/Channels'
+import { iframes } from '@/functions/Channels'
 import { saveWalletsOrder } from '@/functions/Wallets'
 import { computed, toRef } from 'vue'
 import { useRoute } from 'vue-router'
@@ -66,8 +66,8 @@ export default {
 				ArweaveStore.wallets = value
 			}
 		})
-		const connectorsNum = computed(() => Object.keys(connectors.value).length)
-		return { navTo, select, selected, wallets, verticalLayout, axis, links, connectorsNum }
+		const iframesNum = computed(() => Object.keys(iframes.value).length)
+		return { navTo, select, selected, wallets, verticalLayout, axis, links, iframesNum }
 	},
 }
 </script>

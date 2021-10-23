@@ -105,7 +105,7 @@ const routes = [
 	{
 		path: '/:pathMatch(.*)*',
 		redirect: () => {
-			if (state.type === 'connector') { InterfaceStore.toolbar.enabled = false; return { name: 'Connector' } }
+			if (state.type === 'iframe') { InterfaceStore.toolbar.enabled = false; return { name: 'Connector' } }
 			if (state.type === 'popup') { return { name: 'Connect' } }
 			return ArweaveStore.wallets[0]
 				? { name: 'TxList', params: { walletId: ArweaveStore.wallets[0].id } }
