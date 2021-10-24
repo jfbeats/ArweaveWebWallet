@@ -1,5 +1,6 @@
 import ArweaveStore, { arweave, arDB } from '@/store/ArweaveStore'
 import { sleepUntilVisible } from '@/store/InterfaceStore'
+import { awaitEffect } from '@/functions/Utils'
 import { reactive, watch } from 'vue'
 import axios from 'axios'
 
@@ -74,6 +75,8 @@ export async function getPending () {
 }
 
 export async function getMempool (pending) {
+	await awaitEffect(() => !BlockStore.mempoolStatus.loading)
+	BlockStore.mempoolStatus.loading = true
 	const currentIds = pending || await getPending()
 	const txs = []
 	const ids = currentIds.filter((id) => {
@@ -91,9 +94,10 @@ export async function getMempool (pending) {
 		txsLoaded += idBatch.length
 		BlockStore.mempoolStatus.progress = txsLoaded / txsTotal * 100
 		newTxs.forEach(newTx => BlockStore.mempool[newTx.node.id] = newTx)
-		txs.push(... newTxs)
+		txs.push(...newTxs)
 	}
 	setTimeout(() => delete BlockStore.mempoolStatus.progress, 1000)
+	BlockStore.mempoolStatus.loading = false
 	return txs
 }
 

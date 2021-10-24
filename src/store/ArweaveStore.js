@@ -1,5 +1,6 @@
 import Arweave from 'arweave'
 import ArDB from 'ardb'
+import { awaitEffect } from '@/functions/Utils'
 import axios from 'axios'
 import { reactive, watch } from 'vue'
 import InterfaceStore, { sleepUntilVisible } from '@/store/InterfaceStore'
@@ -111,11 +112,7 @@ export async function updateWalletBalance (wallet) {
 
 export async function fetchTransactions (wallet, query) {
 	if (!wallet || wallet.queriesStatus[query]?.completed) { return }
-	if (wallet.queriesStatus[query]?.fetchTransactions) {
-		return new Promise(resolve => {
-			watch(() => wallet.queriesStatus[query].fetchTransactions, (value) => { if (!value) { resolve() } })
-		})
-	}
+	await awaitEffect(() => !wallet.queriesStatus[query]?.fetchTransactions)
 	wallet.queriesStatus[query] ??= {}
 	wallet.queriesStatus[query].fetchTransactions = true
 	if (query === 'all') {
@@ -198,11 +195,7 @@ async function fetchTransactionsAll (wallet) {
 export async function updateTransactions (wallet, query) {
 	if (!wallet.queries[query] || wallet.queries[query].length === 0) { return fetchTransactions(wallet, query) }
 	if (!wallet || wallet.queriesStatus[query]?.fetchTransactions) { return }
-	if (wallet.queriesStatus[query]?.updateTransactions) {
-		return new Promise(resolve => {
-			watch(() => wallet.queriesStatus[query].updateTransactions, (value) => { if (!value) { resolve() } })
-		})
-	}
+	await awaitEffect(() => !wallet.queriesStatus[query]?.updateTransactions)
 	wallet.queriesStatus[query].updateTransactions = true
 	await sleepUntilVisible()
 	if (query === 'all') {

@@ -1,3 +1,7 @@
+import { watchEffect } from 'vue'
+
+
+
 export function debounce (fun, timeout = 500) {
 	let timer
 	return (...args) => {
@@ -50,4 +54,16 @@ export function unpackTags (tags) {
 		else { result[name] = value }
 	}
 	return result
+}
+
+export async function awaitEffect(effect) {
+	let watchStop
+	const promise = new Promise(resolve => {
+		watchStop = watchEffect(() => {
+			if (effect()) { resolve() }
+		})
+	})
+	await promise
+	watchStop()
+	return promise
 }
