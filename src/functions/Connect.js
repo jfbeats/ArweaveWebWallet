@@ -1,5 +1,6 @@
 import Arweave from 'arweave'
-import { state, filterChannels } from '@/functions/Channels'
+import { state, filterChannels, hasStorageAccess, awaitStorageAccess } from '@/functions/Channels'
+import { awaitEffect } from '@/functions/Utils'
 import { watch, watchEffect } from 'vue'
 
 let windowRef
@@ -9,20 +10,18 @@ const { origin, session } = state
 if (window.opener) {
 	state.type = 'popup'
 	windowRef = window.opener
-	localStorage.setItem('global', '1')
 	watch(() => state.wallet, (wallet) => wallet ? connect(wallet) : disconnect())
-	window.addEventListener('message', messageListener)
 	watchEffect(() => {
 		const linkedInstance = Object.entries(filterChannels({ origin, session, type: 'iframe' }))[0]?.[1]
 		if (linkedInstance) { state.link = true }
 		else { state.link = false }
 	})
+	window.addEventListener('message', messageListener)
+	postMessage({ method: 'ready' })
 } else if (window.parent && window.parent !== window) {
 	state.type = 'iframe'
 	windowRef = window.parent
 	watch(() => state.wallet, (wallet) => wallet ? connect(wallet) : disconnect())
-	window.addEventListener('message', messageListener)
-	state.task = { name: 'default', from: 0 }
 	watchEffect(() => {
 		const linkedInstance = Object.entries(filterChannels({ origin, session, type: 'popup' }))[0]?.[1]
 		if (linkedInstance) { state.link = true }
@@ -31,6 +30,8 @@ if (window.opener) {
 			state.link = false
 		}
 	})
+	window.addEventListener('message', messageListener)
+	postMessage({ method: 'ready' })
 } else {
 	state.type = 'client'
 	localStorage.setItem('global', '1')
@@ -68,42 +69,39 @@ export function navigateBackAvailable (origin) {
 
 
 async function messageListener (e) {
+	const { method, id } = e.data
 	if (e.source !== windowRef || e.origin !== origin) { return }
-	const message = e.data
-	console.info(`${location.hostname}:${state.type}:`, message)
-	if (
-		typeof message.method !== 'string'
-		|| !Object.keys(procedures).includes(message.method)
-		|| typeof message.id !== 'number'
-	) {
-		console.log('posted error')
-		postMessage({ error: 'Unsupported method', id: message.id })
-		return
+	console.info(`${location.hostname}:${state.type}:`, e.data)
+	if (typeof method !== 'string') { return }
+	if (typeof id !== 'number') { return }
+	if (!Object.keys(procedures).includes(method)) {
+		return postMessage({ error: 'Unsupported method', id })
 	}
-	messageQueue.push(message)
-	// await active ?? if so skip completed messages
+	messageQueue.push(e.data)
+	// await storage
+	// skip completed messages
 	processMessage()
 }
 
 async function processMessage () {
 	if (!messageQueue.length || state.processing) { return }
 	state.processing = true
-	const message = messageQueue[0]
-	const response = { id: message.id }
+	const { method, params, id } = messageQueue[0]
+	const response = { id }
 	try {
 		let action = 'rejected' // todo check if message can be processed right away
 		if (action === 'accepted') {
-			response.result = await procedures[message.method](JSON.parse(message.params))
+			response.result = await procedures[method](JSON.parse(params))
 		} else {
 			response.error = 'rejected'
 		}
 	} catch (e) {
-		console.error(e)
 		response.error = e.message
 	}
 	postMessage(response)
 	messageQueue.splice(0, 1)
 	state.processing = false
+	// update current id, watch linked component id somewhere
 	processMessage()
 }
 

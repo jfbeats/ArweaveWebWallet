@@ -136,11 +136,17 @@ function globalStorageListener (e) {
 	}
 }
 
+export async function hasStorageAccess () {
+	if (document.hasStorageAccess && !await document.hasStorageAccess()) { return false }
+	if (localStorage.getItem('global')) { return true }
+}
+
+export async function awaitStorageAccess () {
+	while (!await hasStorageAccess()) { await new Promise(resolve => setTimeout(resolve, 1000)) }
+}
+
 async function init () {
-	if (document.hasStorageAccess) {
-		if (!await document.hasStorageAccess()) { }
-		while (!await document.hasStorageAccess()) { await new Promise(resolve => setTimeout(resolve, 1000)) }
-	}
+	await awaitStorageAccess()
 	window.addEventListener('storage', globalStorageListener)
 	initChannel()
 	initChannels()
