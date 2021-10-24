@@ -52,6 +52,6 @@
 }
 
 .fade-list-leave-active {
-	position: absolute !important;
+	position: absolute;
 	z-index: -1;
 }
