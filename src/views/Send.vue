@@ -100,7 +100,7 @@ import { arweave } from '@/store/ArweaveStore'
 import { buildTransaction, manageUpload } from '@/functions/Transactions'
 import Ledger from '@/functions/Ledger'
 import BigNumber from 'bignumber.js'
-import { addressToHash, addressHashToColor } from '@/functions/Utils'
+import { addressToHash, addressHashToColor, awaitEffect } from '@/functions/Utils'
 import { computed, reactive, ref, watch } from 'vue'
 
 import iconPerson from '@/assets/icons/person.svg'
@@ -116,11 +116,7 @@ export default {
 
 		const setMax = async () => {
 			const balance = new BigNumber(props.wallet.balance)
-			if (!txFee.value) {
-				await new Promise(resolve => {
-					watch(() => txFee.value, (value) => { if (value) { resolve() } })
-				})
-			}
+			await awaitEffect(() => txFee.value)
 			props.model.quantity = balance.minus(txFee.value).toString()
 		}
 
