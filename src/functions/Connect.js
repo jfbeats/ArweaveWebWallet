@@ -91,7 +91,7 @@ async function processMessage () {
 	try {
 		let action = 'rejected' // todo check if message can be processed right away
 		if (action === 'accepted') {
-			response.result = await procedures[method](JSON.parse(params))
+			response.result = await procedures[method](params)
 		} else {
 			response.error = 'rejected'
 		}
