@@ -76,7 +76,7 @@ export default {
 
 <style scoped>
 #nav {
-	padding: 8px;
+	padding: calc(var(--toolbar-spacing) / 2);
 	user-select: none;
 	justify-content: space-between;
 }
@@ -88,12 +88,14 @@ export default {
 
 .drag-container {
 	z-index: 10;
+	display: flex;
+	width: calc(var(--toolbar-size) - var(--toolbar-spacing));
+	height: calc(var(--toolbar-size) - var(--toolbar-spacing));
 }
 
 .icon {
-	padding: 8px;
-	width: 64px;
-	height: 64px;
+	padding: calc(var(--toolbar-spacing) / 2);
+	flex: 1 1 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -102,22 +104,22 @@ export default {
 }
 
 .wallet {
-	border-radius: 18px;
+	border-radius: var(--border-radius3);
 	opacity: var(--element-disabled-opacity);
 }
 
 .dragging .wallet {
 	opacity: 1;
 	padding: 0;
-	transform: translateX(calc(100% + var(--spacing)));
+	transform: translateX(calc(100% + calc(var(--toolbar-spacing) * 2)));
 }
 
 [dir="rtl"] .dragging .wallet {
-	transform: translateX(calc(-100% - var(--spacing)));
+	transform: translateX(calc(-100% - calc(var(--toolbar-spacing) * 2)));
 }
 
 .dragging .wallet.verticalLayout {
-	transform: translateY(calc(100% + var(--spacing)));
+	transform: translateY(calc(100% + calc(var(--toolbar-spacing) * 2)));
 }
 
 .wallet:hover {
@@ -127,15 +129,15 @@ export default {
 .controls {
 	display: flex;
 	flex-direction: inherit;
-	margin: 12px 0;
+	margin: calc(var(--toolbar-spacing) / 2) 0;
 }
 
 .verticalLayout .controls {
-	margin: 0 12px;
+	margin: 0 calc(var(--toolbar-spacing) / 2);
 }
 
 .control {
-	border-radius: 18px;
+	border-radius: var(--border-radius);
 	opacity: var(--element-secondary-opacity);
 	width: unset;
 	height: unset;
@@ -147,7 +149,6 @@ export default {
 
 .profile {
 	background: var(--background3);
-	padding: 12px;
 	width: 100%;
 	height: 100%;
 	border-radius: var(--border-radius3);
@@ -156,7 +157,6 @@ export default {
 }
 
 .dragging .profile {
-	padding: 14px;
 	box-shadow: 0 0 12px 1px #00000044;
 }
 
@@ -168,7 +168,6 @@ export default {
 .control.router-link-active,
 .wallet.active {
 	opacity: 1;
-	border-radius: var(--border-radius3);
 	box-shadow: -5px 0 0 -3px var(--element-secondary);
 }
 

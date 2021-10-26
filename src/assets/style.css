@@ -1,5 +1,7 @@
 :root {
-	--spacing-default: 24px;
+	--toolbar-size: 64px;
+	--toolbar-spacing: 10px;
+	--spacing-default: 20px;
 	--spacing: var(--spacing-default);
 	--column-width: 700px;
 	--column-large-width: 1000px;

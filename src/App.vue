@@ -135,7 +135,7 @@ export default {
 	z-index: 10;
 	background: var(--background);
 	height: 100%;
-	width: 80px;
+	width: var(--toolbar-size);
 	scrollbar-width: none;
 	position: fixed;
 	outline: 0.5px solid var(--border);
@@ -146,7 +146,7 @@ export default {
 }
 
 .verticalLayout .toolbar {
-	height: 80px;
+	height: var(--toolbar-size);
 	width: 100%;
 	flex-direction: row;
 }
@@ -174,14 +174,14 @@ export default {
 
 .hasToolbar .router,
 .hasToolbar #viewport {
-	padding-inline-start: 80px;
+	padding-inline-start: var(--toolbar-size);
 }
 
 .hasToolbar.verticalLayout .router,
 .hasToolbar.verticalLayout #viewport {
-	--current-vh: calc(100vh - 80px);
+	--current-vh: calc(100vh - var(--toolbar-size));
 	padding-inline-start: 0;
-	padding-top: 80px;
+	padding-top: var(--toolbar-size);
 }
 
 .overlay {
