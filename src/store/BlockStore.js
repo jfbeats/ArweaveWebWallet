@@ -90,7 +90,7 @@ export async function getMempool (pending) {
 	BlockStore.mempoolStatus.progress = 0
 	while (ids.length > 0) {
 		const idBatch = ids.splice(0, 500)
-		const newTxs = await arDB.search().ids(idBatch).findAll()
+		const newTxs = await arDB.search().ids(idBatch).only(['id', 'fee.winston']).findAll()
 		txsLoaded += idBatch.length
 		BlockStore.mempoolStatus.progress = txsLoaded / txsTotal * 100
 		newTxs.forEach(newTx => BlockStore.mempool[newTx.node.id] = newTx)

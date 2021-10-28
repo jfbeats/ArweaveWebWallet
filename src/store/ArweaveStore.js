@@ -58,7 +58,7 @@ export async function testGateway (gateway) {
 export function updateArweave (gateway) {
 	const settings = typeof gateway === 'string' ? urlToSettings(gateway) : gateway
 	arweave = settings ? Arweave.init(settings) : Arweave.init(gatewayDefault)
-	arDB = new ArDB(arweave)
+	arDB = { search: (...args) => new ArDB(arweave).search(...args) }
 	ArweaveStore.gatewayURL = settingsToUrl(arweave.getConfig().api)
 }
 
