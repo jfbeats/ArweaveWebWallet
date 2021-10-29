@@ -173,9 +173,9 @@ export default {
 	padding-inline-start: var(--toolbar-size);
 }
 
-.hasToolbar::not(.verticalLayout) .router,
+.hasToolbar:not(.verticalLayout) .router,
 
-.hasToolbar::not(.verticalLayout) #viewport {
+.hasToolbar:not(.verticalLayout) #viewport {
 	--current-vw: calc(100vw - var(--toolbar-size));
 
 }
