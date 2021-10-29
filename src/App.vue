@@ -1,6 +1,6 @@
 <template>
 	<div class="app" :class="{ verticalLayout, verticalContent, hasToolbar }">
-		<Toolbar v-if="hasToolbar" class="toolbar no-scrollbar" @drop.prevent="droppedFiles" />
+		<Toolbar v-if="hasToolbar" class="box no-scrollbar" @drop.prevent="droppedFiles" />
 		<router-view v-slot="{ Component }" @drop.prevent="droppedFiles">
 			<div class="router" :class="{ sticky }">
 				<transition :name="$route.meta.transition?.nameLayout" mode="out-in" @before-enter="emitter.emit('beforeEnter')" @after-enter="emitter.emit('afterEnter')" @before-leave="emitter.emit('beforeLeave')" @after-leave="emitter.emit('afterLeave')">
@@ -137,7 +137,6 @@ export default {
 	height: 100%;
 	width: var(--toolbar-size);
 	position: fixed;
-	outline: 0.5px solid var(--border);
 }
 
 .verticalLayout .toolbar {

@@ -8,7 +8,7 @@
 		<div class="connectors flex-row no-scrollbar">
 			<transition-group name="fade-list">
 				<div class="margin" key="margin1"></div>
-				<ConnectionCard v-for="(connector, name) in iframes" :key="name" :state="connector" class="fade-list-item" />
+				<ConnectionCard v-for="(connector, name) in iframes" :key="name" :state="connector" class="box fade-list-item" />
 				<div class="margin" key="margin2"></div>
 			</transition-group>
 		</div>

@@ -1,5 +1,5 @@
 <template>
-	<nav id="nav">
+	<nav class="toolbar" id="nav">
 		<SlickList class="wallets" :axis="axis" :lockAxis="axis" v-model:list="wallets" :pressDelay="150" helperClass="dragging" dir="ltr">
 			<SlickItem v-for="(wallet, i) in wallets" :index="i" :key="wallet.key" draggable="false" class="drag-container">
 				<router-link :to="{ name: navTo, params: { walletId: wallet.id }, query: { ...$route.query } }" custom v-slot="{ href, navigate }">

@@ -1,5 +1,5 @@
 <template>
-	<div class="connection-card card flex-column">
+	<div class="connection-card flex-column">
 		<div :class="[verticalLayout ? 'flex-column' : 'flex-row']">
 			<button type="button" class="flex-row" @click="navigateBack" :disabled="!navigateBackAvailable(state.origin)">
 				<IconBackground :img="state.appInfo?.logo" :icon="iconConnection" />

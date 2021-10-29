@@ -110,6 +110,13 @@ a.reset {
 	position: relative;
 }
 
+.box {
+	padding: var(--spacing);
+	background: var(--background2);
+	outline: 0.5px solid var(--border);
+	position: relative;
+}
+
 .flex-row {
 	display: flex;
 	/* gap: var(--spacing); */

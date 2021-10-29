@@ -1,14 +1,14 @@
 <template>
-	<div v-if="data.handler === 'iframe'" v-show="data.loaded" key="iframe" class="selector iframe-container">
+	<div v-if="data.handler === 'iframe'" v-show="data.loaded" key="iframe" class="selector iframe-container box">
 		<iframe class="iframe" :src="gatewayLink" @load="data.loaded = true" />
 	</div>
-	<div v-else-if="data.handler === 'img'" v-show="data.loaded" key="img" class="selector img-container">
+	<div v-else-if="data.handler === 'img'" v-show="data.loaded" key="img" class="selector img-container box">
 		<Img :src="gatewayLink" @load="data.loaded = true" />
 	</div>
 	<div v-else-if="data.handler === 'smartweave'" key="smartweave" class="selector">
 		<SmartWeave :tx="tx" />
 	</div>
-	<div v-else-if="data.handler === 'json' || data.handler === 'raw'" key="json" class="selector data-container">
+	<div v-else-if="data.handler === 'json' || data.handler === 'raw'" key="json" class="selector data-container box">
 		<pre class="raw">{{ data.payload }}</pre>
 	</div>
 </template>
@@ -68,8 +68,7 @@ export default {
 .img-container,
 .data-container {
 	width: 100%;
-	background: var(--background2);
-	outline: 0.5px solid var(--border);
+	padding: 0;
 }
 
 .iframe-container,
