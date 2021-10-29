@@ -74,7 +74,7 @@
 
 <script>
 import Selector from '@/components/handlers/Selector.vue'
-import FoldingLayout from '@/components/FoldingLayout.vue'
+import FoldingLayout from '@/components/layout/FoldingLayout.vue'
 import Address from '@/components/atomic/Address.vue'
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import InputGrid from '@/components/atomic/InputGrid.vue'

@@ -20,7 +20,7 @@
 </template>
 
 <script>
-import ConnectionCard from '@/components/ConnectionCard.vue'
+import ConnectionCard from '@/components/composed/ConnectionCard.vue'
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import Address from '@/components/atomic/Address.vue'
 import Button from '@/components/atomic/Button.vue'
@@ -69,7 +69,7 @@ export default {
 
 .margin {
 	flex: 1 0 auto;
-	width: var(--current-vw);
+	width: calc(var(--current-vw) * 0.8);
 }
 
 .wallet {

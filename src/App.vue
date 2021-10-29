@@ -19,8 +19,8 @@
 
 
 <script>
-import Toolbar from '@/components/Toolbar.vue'
-import UpdateAvailable from '@/components/UpdateAvailable.vue'
+import Toolbar from '@/components/composed/Toolbar.vue'
+import UpdateAvailable from '@/components/composed/UpdateAvailable.vue'
 import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import { addWallet } from '@/functions/Wallets'

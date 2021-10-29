@@ -29,7 +29,7 @@
 
 
 <script>
-import WalletOptions from '@/components/WalletOptions.vue'
+import WalletOptions from '@/components/composed/WalletOptions.vue'
 import Input from '@/components/atomic/Input.vue'
 import InputAr from '@/components/atomic/InputAr.vue'
 import Select from '@/components/atomic/Select.vue'

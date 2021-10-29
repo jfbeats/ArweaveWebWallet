@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import WalletOptions from '@/components/WalletOptions.vue'
+import WalletOptions from '@/components/composed/WalletOptions.vue'
 import { getWalletById } from '@/store/ArweaveStore'
 
 export default {

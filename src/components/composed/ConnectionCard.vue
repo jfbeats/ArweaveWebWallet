@@ -34,11 +34,11 @@
 
 
 <script>
-import WalletTabs from '@/components/WalletTabs.vue'
+import WalletTabs from '@/components/composed/WalletTabs.vue'
 import Tabs from '@/components/atomic/Tabs.vue'
 import IconBackground from '@/components/atomic/IconBackground.vue'
 import Icon from '@/components/atomic/Icon.vue'
-import Notification from '@/components/Notification.vue'
+import Notification from '@/components/composed/Notification.vue'
 import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { navigateBack, navigateBackAvailable } from '@/functions/Connect'

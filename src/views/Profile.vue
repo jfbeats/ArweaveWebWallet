@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import FoldingLayout from '@/components/FoldingLayout.vue'
+import FoldingLayout from '@/components/layout/FoldingLayout.vue'
 
 export default {
 	components: { FoldingLayout },

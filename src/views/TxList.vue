@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import TxCard from '@/components/TxCard.vue'
+import TxCard from '@/components/composed/TxCard.vue'
 import Tabs from '@/components/atomic/Tabs.vue'
 import Observer from '@/components/function/Observer.vue'
 import Icon from '@/components/atomic/Icon.vue'

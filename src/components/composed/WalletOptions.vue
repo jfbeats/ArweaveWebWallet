@@ -17,7 +17,7 @@
 
 <script>
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
-import WalletInfo from '@/components/WalletInfo.vue'
+import WalletInfo from '@/components/composed/WalletInfo.vue'
 import { deleteWallet, downloadWallet } from '@/functions/Wallets'
 
 export default {

@@ -15,7 +15,7 @@
 <script>
 import Ar from '@/components/atomic/Ar.vue'
 import LocaleCurrency from '@/components/atomic/LocaleCurrency.vue'
-import WalletInfo from '@/components/WalletInfo.vue'
+import WalletInfo from '@/components/composed/WalletInfo.vue'
 
 export default {
 	components: { Ar, LocaleCurrency, WalletInfo },

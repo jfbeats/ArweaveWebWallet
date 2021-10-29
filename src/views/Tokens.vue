@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import TokenCard from '@/components/TokenCard.vue'
+import TokenCard from '@/components/composed/TokenCard.vue'
 import SmartweaveStore from '@/store/SmartweaveStore'
 
 export default {

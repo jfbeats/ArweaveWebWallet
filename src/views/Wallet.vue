@@ -27,8 +27,8 @@
 
 
 <script>
-import FoldingLayout from '@/components/FoldingLayout.vue'
-import Balance from '@/components/Balance.vue'
+import FoldingLayout from '@/components/layout/FoldingLayout.vue'
+import Balance from '@/components/composed/Balance.vue'
 import Action from '@/components/atomic/Action.vue'
 import ArweaveStore, { setCurrentWallet } from '@/store/ArweaveStore'
 import { emitter } from '@/store/InterfaceStore'
