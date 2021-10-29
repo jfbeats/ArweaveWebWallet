@@ -5,10 +5,14 @@
 			<Address class="secondary-text" :address="currentWallet.key" />
 			<Button @click="connect(currentWallet.key)">Connect</Button>
 		</div>-->
-		<transition-group name="fade-list">
-			<ConnectionCard v-for="(connector, name) in iframes" :key="name" :state="connector" class="fade-list-item" />
-		</transition-group>
-		<div class="bottom-info secondary-text">
+		<div class="connectors flex-row no-scrollbar">
+			<transition-group name="fade-list">
+				<div class="margin" key="margin1"></div>
+				<ConnectionCard v-for="(connector, name) in iframes" :key="name" :state="connector" class="fade-list-item" />
+				<div class="margin" key="margin2"></div>
+			</transition-group>
+		</div>
+		<div class="bottom-info secondary-text" style="opacity: 0.0; pointer-events: none;">
 			<div>All Channels {{ Object.keys(states).length }}</div>
 			<div v-for="(extState, name) in states" :key="name">{{ extState }}</div>
 		</div>
@@ -39,16 +43,33 @@ export default {
 
 <style scoped>
 .connect {
-	padding: var(--spacing);
+	/* padding: var(--spacing); */
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	min-height: var(--current-vh);
+	/* min-height: var(--current-vh); */
+}
+
+.connectors {
+	/* overflow: scroll; */
+	width: 100%;
+	height: var(--current-vh);
+	overflow: auto;
+	scroll-snap-type: x mandatory;
 }
 
 .connection-card {
-	width: 100%;
-	max-width: var(--column-width);
+	flex: 1 0 auto;
+	width: var(--current-vw);
+	max-width: var(--column-width-small);
+	border-radius: 0;
+	padding-bottom: 0;
+	scroll-snap-align: center;
+}
+
+.margin {
+	flex: 1 0 auto;
+	width: var(--current-vw);
 }
 
 .wallet {
@@ -66,7 +87,8 @@ export default {
 }
 
 .bottom-info {
-	flex: 1 0 auto;
+	position: absolute;
+	bottom: 0;
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-end;

@@ -1,6 +1,6 @@
 <template>
 	<div class="app" :class="{ verticalLayout, verticalContent, hasToolbar }">
-		<Toolbar v-if="hasToolbar" class="toolbar" @drop.prevent="droppedFiles" />
+		<Toolbar v-if="hasToolbar" class="toolbar no-scrollbar" @drop.prevent="droppedFiles" />
 		<router-view v-slot="{ Component }" @drop.prevent="droppedFiles">
 			<div class="router" :class="{ sticky }">
 				<transition :name="$route.meta.transition?.nameLayout" mode="out-in" @before-enter="emitter.emit('beforeEnter')" @after-enter="emitter.emit('afterEnter')" @before-leave="emitter.emit('beforeLeave')" @after-leave="emitter.emit('afterLeave')">
@@ -136,13 +136,8 @@ export default {
 	background: var(--background);
 	height: 100%;
 	width: var(--toolbar-size);
-	scrollbar-width: none;
 	position: fixed;
 	outline: 0.5px solid var(--border);
-}
-
-.toolbar::-webkit-scrollbar {
-	display: none;
 }
 
 .verticalLayout .toolbar {
@@ -154,6 +149,7 @@ export default {
 .router {
 	position: relative;
 	--current-vh: 100vh;
+	--current-vw: 100vw;
 	overflow: hidden;
 }
 
@@ -175,6 +171,13 @@ export default {
 .hasToolbar .router,
 .hasToolbar #viewport {
 	padding-inline-start: var(--toolbar-size);
+}
+
+.hasToolbar::not(.verticalLayout) .router,
+
+.hasToolbar::not(.verticalLayout) #viewport {
+	--current-vw: calc(100vw - var(--toolbar-size));
+
 }
 
 .hasToolbar.verticalLayout .router,

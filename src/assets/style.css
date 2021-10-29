@@ -3,6 +3,7 @@
 	--toolbar-spacing: 10px;
 	--spacing-default: 20px;
 	--spacing: var(--spacing-default);
+	--column-width-small: 600px;
 	--column-width: 700px;
 	--column-large-width: 1000px;
 	--background: #151515;
@@ -145,6 +146,14 @@ a.reset {
 .secondary-text {
 	font-size: 0.75em;
 	color: var(--element-secondary);
+}
+
+.no-scrollbar {
+	scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+	display: none;
 }
 
 .ellipsis {

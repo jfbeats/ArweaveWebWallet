@@ -11,7 +11,7 @@
 			</button>
 			<WalletTabs :addresses="addresses" v-model="currentAddress" exit="true" @exit="disconnect" />
 		</div>
-		<div class="flex-column">
+		<div class="flex-column" style="flex: 1 1 0;">
 			<Tabs :tabs="tabs" v-model="currentTab" :disabled="!currentAddress" />
 			<div class="container flex-column">
 				<transition :name="transitionName" mode="out-in">
@@ -110,8 +110,9 @@ export default {
 }
 
 .container {
-	height: 400px;
-	max-height: 60vh;
+	flex: 1 1 0;
+	min-height: 200px;
+	/* max-height: 60vh; */
 	background: var(--background);
 	border-radius: var(--border-radius);
 	align-items: center;
