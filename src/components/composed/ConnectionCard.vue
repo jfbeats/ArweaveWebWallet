@@ -89,7 +89,7 @@ export default {
 		watch(() => tabs.findIndex(tab => tab.name === currentTab.value), selectTransitionName)
 		watch(() => ArweaveStore.wallets.findIndex(wallet => wallet.key === currentAddress.value), selectTransitionName)
 
-		watch(() => currentAddress.value, (val, oldVal) => { if (val && !oldVal) { currentTab.value = tabs[0].name } })
+		watch(() => currentAddress.value, () => { currentTab.value = tabs[0].name })
 
 		return { currentAddress, tabs, currentTab, connectData, verticalLayout, transitionName, disconnect, navigateBack, navigateBackAvailable, iconConnection, iconLauch }
 	}
