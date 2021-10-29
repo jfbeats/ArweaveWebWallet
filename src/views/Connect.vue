@@ -56,7 +56,7 @@ export default {
 	max-width: var(--column-width-small);
 	border-radius: 0;
 	padding-bottom: 0;
-	scroll-snap-align: center;
+	scroll-snap-align: start;
 }
 
 .wallet {
