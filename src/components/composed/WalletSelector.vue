@@ -1,7 +1,7 @@
 <template>
 	<div class="wallet-tabs">
-		<button v-for="address in addresses" :key="address" type="button" @click="model = address" class="tab" :class="{ active: address == model }">
-			<AddressIcon :address="address" />
+		<button v-if="model" type="button" @click="selectWallet" class="tab" :class="{ active: InterfaceStore.toolbar.links }">
+			<AddressIcon :address="model" />
 		</button>
 		<button v-if="exit" class="exit" type="button" @click="$emit('exit')">
 			<div class="exit-background" />
@@ -15,17 +15,29 @@
 
 <script>
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
+import ArweaveStore from '@/store/ArweaveStore'
+import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import { computed } from 'vue'
 
 export default {
 	components: { AddressIcon },
-	props: ['addresses', 'modelValue', 'exit'],
+	props: {
+		modelValue: { type: String, default: ArweaveStore.wallets[0]?.key || '' },
+		exit: { type: Boolean, default: false }
+	},
 	setup (props, { emit }) {
 		const model = computed({
 			get () { return props.modelValue },
 			set (value) { emit('update:modelValue', value) }
 		})
-		return { model }
+		const selectWallet = async () => {
+			if (!InterfaceStore.toolbar.links) { emitter.emit('selectWallet', null); return }
+			InterfaceStore.toolbar.links = false
+			const wallet = await emitter.once('selectWallet')
+			if (wallet) { model.value = wallet }
+			InterfaceStore.toolbar.links = true
+		}
+		return { model, selectWallet, InterfaceStore }
 	}
 }
 </script>
@@ -44,8 +56,7 @@ export default {
 	transition: 0.2s ease;
 }
 
-.tab.active,
-.tab:hover {
+.tab.active {
 	opacity: 1;
 }
 

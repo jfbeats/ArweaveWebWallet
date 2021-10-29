@@ -9,13 +9,13 @@
 				</div>
 				<Icon v-if="navigateBackAvailable(state.origin)" :icon="iconLauch" />
 			</button>
-			<WalletTabs :addresses="addresses" v-model="currentAddress" exit="true" @exit="disconnect" />
+			<WalletSelector v-model="currentAddress" :exit="true" @exit="disconnect" />
 		</div>
 		<div class="flex-column" style="flex: 1 1 0;">
 			<Tabs :tabs="tabs" v-model="currentTab" :disabled="!currentAddress" />
 			<div class="container flex-column">
 				<transition :name="transitionName" mode="out-in">
-					<div :key="currentAddress + currentTab" class="content">
+					<div :key="(currentAddress || '') + currentTab" class="content">
 						<div v-if="!currentAddress" class="info flex-column">Select a wallet</div>
 						<div v-else-if="currentTab === 'Requests'" class="flex-column">
 							<transition-group name="fade-list">
@@ -34,7 +34,7 @@
 
 
 <script>
-import WalletTabs from '@/components/composed/WalletTabs.vue'
+import WalletSelector from '@/components/composed/WalletSelector.vue'
 import Tabs from '@/components/atomic/Tabs.vue'
 import IconBackground from '@/components/atomic/IconBackground.vue'
 import Icon from '@/components/atomic/Icon.vue'
@@ -50,11 +50,10 @@ import iconX from '@/assets/icons/x.svg'
 import iconLauch from '@/assets/icons/launch.svg'
 
 export default {
-	components: { WalletTabs, Tabs, IconBackground, Icon, Notification },
+	components: { WalletSelector, Tabs, IconBackground, Icon, Notification },
 	props: ['state'],
 	setup (props) {
-		const addresses = computed(() => ArweaveStore.wallets.map(wallet => wallet.key))
-		const currentAddress = ref(props.state.wallet || addresses.value[0])
+		const currentAddress = ref(props.state.wallet || undefined)
 		const tabs = [
 			{ name: 'Requests', color: 'var(--orange)' },
 			{ name: 'Permissions', color: 'var(--green)' },
@@ -68,16 +67,16 @@ export default {
 		const disconnect = () => props.state.wallet = false
 
 		const connectData = computed(() => {
-			const action = props.state.wallet ? 'Switch' : 'Connect'
+			const connected = props.state.wallet
 			const content = !props.state.wallet ?
 				`Connect to ${props.state.appInfo?.name || props.state.origin} from the account ${currentAddress.value}`
 				: `Switch to ${currentAddress.value}`
 			return {
-				title: action,
+				title: connected ? 'Switch' : 'Connect',
 				timestamp: Date.now(), // todo
 				actions: [
-					{ name: action, img: iconY, run: () => props.state.wallet = currentAddress.value },
-					{ name: 'Exit', img: iconX, run: disconnect },
+					{ name: !connected ? 'Connect' : 'Switch', img: iconY, run: () => props.state.wallet = currentAddress.value },
+					{ name: !connected ? 'Disconnect' : 'Cancel', img: iconX, run: !connected ? disconnect : () => currentAddress.value = props.state.wallet },
 				],
 				expanded: true,
 				content,
@@ -92,7 +91,7 @@ export default {
 
 		watch(() => currentAddress.value, (val, oldVal) => { if (val && !oldVal) { currentTab.value = tabs[0].name } })
 
-		return { addresses, currentAddress, tabs, currentTab, connectData, verticalLayout, transitionName, disconnect, navigateBack, navigateBackAvailable, iconConnection, iconLauch }
+		return { currentAddress, tabs, currentTab, connectData, verticalLayout, transitionName, disconnect, navigateBack, navigateBackAvailable, iconConnection, iconLauch }
 	}
 }
 </script>

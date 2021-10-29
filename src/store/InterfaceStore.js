@@ -28,19 +28,21 @@ const InterfaceStore = reactive({
 })
 
 export const emitter = mitt()
+emitter.once = (eventName, handler) => {
+	return new Promise(resolve => {
+		const wrapper = (e) => {
+			emitter.off(eventName, wrapper)
+			resolve(e)
+			if (handler) { handler(e) }
+		}
+		emitter.on(eventName, wrapper)
+	})
+}
 
 export async function sleepUntilVisible () {
 	return new Promise(resolve => {
 		watch(() => InterfaceStore.windowVisible, (value) => { if (value) { resolve(true) } }, { immediate: true })
 	})
-}
-
-emitter.once = (eventName, fn) => {
-	const handler = (e) => {
-		emitter.off(eventName, handler)
-		fn(e)
-	}
-	emitter.on(eventName, handler)
 }
 
 const updateWindowSize = () => {

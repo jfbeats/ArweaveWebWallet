@@ -3,25 +3,27 @@
 		<SlickList class="wallets" :axis="axis" :lockAxis="axis" v-model:list="wallets" :pressDelay="150" helperClass="dragging" dir="ltr">
 			<SlickItem v-for="(wallet, i) in wallets" :index="i" :key="wallet.key" draggable="false" class="drag-container">
 				<router-link :to="{ name: navTo, params: { walletId: wallet.id }, query: { ...$route.query } }" custom v-slot="{ href, navigate }">
-					<button type="button" class="icon wallet" :href="href" @click="select(wallet, navigate)" :class="{ active: wallet.id == selected, verticalLayout }" draggable="false" @dragstart.prevent>
+					<button type="button" class="icon wallet" :href="href" @click="select(wallet, navigate)" :class="{ active: wallet.id == selected, accent: !links, verticalLayout }" draggable="false" @dragstart.prevent>
 						<AddressIcon class="profile" :address="wallet.key" />
 					</button>
 				</router-link>
 			</SlickItem>
 		</SlickList>
-		<div class="controls" v-if="links">
-			<transition name="fade-fast">
-				<router-link v-if="iframesNum" class="icon control" :class="{ verticalLayout }" to="/connect" aria-label="Add Wallet">
-					<img class="small" src="@/assets/icons/connection.svg" alt="Connections" />
+		<transition name="fade-fast">
+			<div class="controls" v-if="links">
+				<transition name="fade-fast">
+					<router-link v-if="iframesNum" class="icon control" :class="{ verticalLayout }" to="/connect" aria-label="Add Wallet">
+						<img class="small" src="@/assets/icons/connection.svg" alt="Connections" />
+					</router-link>
+				</transition>
+				<router-link class="icon control" :class="{ verticalLayout }" to="/add" aria-label="Add Wallet">
+					<img class="small" src="@/assets/icons/add_box.svg" alt="Add Wallet" />
 				</router-link>
-			</transition>
-			<router-link class="icon control" :class="{ verticalLayout }" to="/add" aria-label="Add Wallet">
-				<img class="small" src="@/assets/icons/add_box.svg" alt="Add Wallet" />
-			</router-link>
-			<router-link class="icon control" :class="{ verticalLayout }" to="/settings" aria-label="Settings">
-				<img class="small" src="@/assets/icons/settings.svg" alt="Settings" />
-			</router-link>
-		</div>
+				<router-link class="icon control" :class="{ verticalLayout }" to="/settings" aria-label="Settings">
+					<img class="small" src="@/assets/icons/settings.svg" alt="Settings" />
+				</router-link>
+			</div>
+		</transition>
 		<DragOverlay />
 	</nav>
 </template>
@@ -33,7 +35,7 @@ import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import DragOverlay from '@/components/atomic/DragOverlay.vue'
 import { SlickList, SlickItem } from 'vue-slicksort'
 import ArweaveStore from '@/store/ArweaveStore'
-import InterfaceStore from '@/store/InterfaceStore'
+import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import { iframes } from '@/functions/Channels'
 import { saveWalletsOrder } from '@/functions/Wallets'
 import { computed, toRef } from 'vue'
@@ -46,8 +48,8 @@ export default {
 		const route = useRoute()
 		const navTo = computed(() => route.matched[0]?.name === 'Wallet' ? null : 'TxList')
 		const select = (wallet, navigate) => {
+			emitter.emit('selectWallet', wallet?.key)
 			if (links.value) { return navigate() }
-			ArweaveStore.currentWallet = wallet
 		}
 		const selected = computed(() => {
 			if (links.value) { return route.params.walletId }
@@ -169,6 +171,10 @@ export default {
 .wallet.active {
 	opacity: 1;
 	box-shadow: -5px 0 0 -3px var(--element-secondary);
+}
+
+.wallet.accent {
+	opacity: 1;
 }
 
 [dir="rtl"] .control.router-link-active,
