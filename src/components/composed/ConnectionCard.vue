@@ -9,21 +9,23 @@
 				</div>
 				<Icon v-if="navigateBackAvailable(state.origin)" :icon="iconLauch" />
 			</button>
-			<WalletSelector v-model="currentAddress" :exit="true" @exit="disconnect" />
+			<WalletSelector v-model="currentAddress" :exit="true" @selectWallet="selectWallet" @exit="disconnect" />
 		</div>
 		<div class="flex-column" style="flex: 1 1 0;">
 			<Tabs :tabs="tabs" v-model="currentTab" :disabled="!currentAddress" />
 			<div class="container flex-column">
 				<transition :name="transitionName" mode="out-in">
 					<div :key="(currentAddress || '') + currentTab" class="content">
-						<div v-if="!currentAddress" class="info flex-column">Select a wallet</div>
-						<div v-else-if="currentTab === 'Requests'" class="flex-column">
-							<transition-group name="fade-list">
-								<div v-if="currentAddress === state.wallet" class="fade-list-item">Connected</div>
-								<Notification v-else :data="connectData" class="fade-list-item">{{ connectData.content }}</Notification>
-							</transition-group>
-						</div>
-						<div v-else-if="currentTab === 'Permissions'" class="flex-column">Wip</div>
+						<transition name="fade-fast" mode="out-in">
+							<div v-if="isSelectingWallet" class="info flex-column">Select a wallet</div>
+							<div v-else-if="currentTab === 'Requests'" class="flex-column">
+								<transition-group name="fade-list">
+									<div v-if="currentAddress === state.wallet" class="fade-list-item">Connected</div>
+									<Notification v-else :data="connectData" class="fade-list-item">{{ connectData.content }}</Notification>
+								</transition-group>
+							</div>
+							<div v-else-if="currentTab === 'Permissions'" class="flex-column">Wip</div>
+						</transition>
 					</div>
 				</transition>
 			</div>
@@ -40,7 +42,7 @@ import IconBackground from '@/components/atomic/IconBackground.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import Notification from '@/components/composed/Notification.vue'
 import ArweaveStore from '@/store/ArweaveStore'
-import InterfaceStore from '@/store/InterfaceStore'
+import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import { navigateBack, navigateBackAvailable } from '@/functions/Connect'
 import { computed, ref, toRef, watch } from 'vue'
 
@@ -66,6 +68,21 @@ export default {
 
 		const disconnect = () => props.state.wallet = false
 
+		const isSelectingWallet = ref(false)
+		const selectWallet = async () => {
+			if (!InterfaceStore.toolbar.links) {
+				if (!currentAddress.value) { currentAddress.value = ArweaveStore.wallets[0]?.key } // todo default wallet
+				emitter.emit('selectWallet', null)
+				return 
+			}
+			InterfaceStore.toolbar.links = false
+			isSelectingWallet.value = true
+			const wallet = await emitter.once('selectWallet')
+			if (wallet) { currentAddress.value = wallet }
+			isSelectingWallet.value = false
+			InterfaceStore.toolbar.links = true
+		}
+
 		const connectData = computed(() => {
 			const connected = props.state.wallet
 			const content = !props.state.wallet ?
@@ -75,13 +92,15 @@ export default {
 				title: connected ? 'Switch' : 'Connect',
 				timestamp: Date.now(), // todo
 				actions: [
-					{ name: !connected ? 'Connect' : 'Switch', img: iconY, run: () => props.state.wallet = currentAddress.value },
-					{ name: !connected ? 'Disconnect' : 'Cancel', img: iconX, run: !connected ? disconnect : () => currentAddress.value = props.state.wallet },
+					{ name: 'Connect', img: iconY, run: () => props.state.wallet = currentAddress.value },
+					{ name: !connected ? 'Switch' : 'Cancel', img: iconX, run: !connected ? selectWallet : () => currentAddress.value = props.state.wallet },
 				],
 				expanded: true,
 				content,
 			}
 		})
+
+
 
 		const verticalLayout = toRef(InterfaceStore.breakpoints, 'verticalLayout')
 		const transitionName = ref(null)
@@ -91,7 +110,9 @@ export default {
 
 		watch(() => currentAddress.value, () => { currentTab.value = tabs[0].name })
 
-		return { currentAddress, tabs, currentTab, connectData, verticalLayout, transitionName, disconnect, navigateBack, navigateBackAvailable, iconConnection, iconLauch }
+		if (!currentAddress.value) { selectWallet() }
+
+		return { currentAddress, tabs, currentTab, isSelectingWallet, selectWallet, connectData, verticalLayout, transitionName, disconnect, navigateBack, navigateBackAvailable, iconConnection, iconLauch }
 	}
 }
 </script>
