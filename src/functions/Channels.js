@@ -16,11 +16,12 @@ const stateInit = {
 const { state, initChannel, closeChannel } = getChannel(instance, chPrefix)
 const { states, initChannels, closeChannels } = getChannels(chPrefix)
 const connectorChannels = getChannels(sharedPrefix)
-const connectors = computed(() => filterChannels((c) => c.wallet !== false, connectorChannels.states))
+const connectors = computed(() => Object.entries(connectorChannels.states)
+	.map(([key, val]) => val).filter(c => c.wallet !== false).sort((a, b) => a.timestamp - b.timestamp))
 export const initConnectorChannel = () => {
 	if (!origin || !session) { return }
 	const channel = getChannel(origin + session, sharedPrefix)
-	if (!channel.state.origin) { Object.assign(channel.state, { origin, session, appInfo }) }
+	if (!channel.state.origin) { Object.assign(channel.state, { origin, session, appInfo, wallet: null, timestamp: Date.now() }) }
 	channel.deleteChannel = () => {
 		channel.closeChannel()
 		localStorage.removeItem(sharedPrefix + origin + session)

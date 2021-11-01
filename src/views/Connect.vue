@@ -6,7 +6,7 @@
 			<Button @click="connect(currentWallet.key)">Connect</Button>
 		</div>-->
 		<Carousel v-model="currentConnectorIndex" class="connectors">
-			<ConnectionCard v-for="(connector, name) in connectors" :key="name" :state="connector" class="box fade-list-item" />
+			<ConnectionCard v-for="connector in connectors" :key="connector.session" :state="connector" class="box fade-list-item" />
 		</Carousel>
 		<div class="bottom-info secondary-text" style="opacity: 0.0; pointer-events: none;">
 			<div>All Channels {{ Object.keys(states).length }}</div>
@@ -29,7 +29,7 @@ import { computed, onBeforeUnmount, ref } from 'vue'
 export default {
 	components: { Carousel, ConnectionCard, AddressIcon, Address, Button },
 	setup () {
-		const currentConnectorIndex = ref(Object.entries(connectors.value).findIndex(([key, value]) => 
+		const currentConnectorIndex = ref(connectors.value.findIndex(value => 
 			value.origin === state.origin && value.session === state.session))
 		// InterfaceStore.toolbar.links = false
 		// onBeforeUnmount(() => InterfaceStore.toolbar.links = true)
