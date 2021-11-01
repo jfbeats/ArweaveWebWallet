@@ -1,5 +1,5 @@
 <template>
-	<div class="wallet-tabs">
+	<div class="wallet-selector">
 		<button v-if="model" type="button" @click="$emit('selectWallet')" class="tab" :class="{ active: InterfaceStore.toolbar.links }">
 			<AddressIcon :address="model" />
 		</button>
@@ -36,12 +36,12 @@ export default {
 </script>
 
 <style scoped>
-.wallet-tabs {
+.wallet-selector {
 	display: flex;
 }
 
-.wallet-tabs > * + * {
-	margin-inline-start: 16px;
+.wallet-selector > * + * {
+	margin-inline-start: var(--spacing);
 }
 
 .tab {

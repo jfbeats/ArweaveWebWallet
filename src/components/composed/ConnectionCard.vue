@@ -9,7 +9,7 @@
 				</div>
 				<Icon v-if="navigateBackAvailable(state.origin)" :icon="iconLauch" />
 			</button>
-			<WalletSelector v-model="currentAddress" :exit="true" @selectWallet="selectWallet" @exit="disconnect" />
+			<WalletSelector v-model="state.wallet" :exit="true" @selectWallet="selectWallet" @exit="disconnect" />
 		</div>
 		<div class="flex-column" style="flex: 1 1 0;">
 			<Tabs :tabs="tabs" v-model="currentTab" :disabled="!currentAddress" />
@@ -17,9 +17,9 @@
 				<transition :name="transitionName" mode="out-in">
 					<div :key="(currentAddress || '') + currentTab" class="content">
 						<transition name="fade-fast" mode="out-in">
-							<div v-if="isSelectingWallet" class="info flex-column">Select a wallet</div>
-							<div v-else-if="currentTab === 'Requests'" class="flex-column">
+							<div v-if="currentTab === 'Requests'" class="flex-column">
 								<transition-group name="fade-list">
+									<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="fade-list-item" />
 									<div v-if="currentAddress === state.wallet" class="fade-list-item">Connected</div>
 									<Notification v-else :data="connectData" class="fade-list-item">{{ connectData.content }}</Notification>
 								</transition-group>
@@ -37,6 +37,7 @@
 
 <script>
 import WalletSelector from '@/components/composed/WalletSelector.vue'
+import WalletTabs from '@/components/composed/WalletTabs.vue'
 import Tabs from '@/components/atomic/Tabs.vue'
 import IconBackground from '@/components/atomic/IconBackground.vue'
 import Icon from '@/components/atomic/Icon.vue'
@@ -52,9 +53,10 @@ import iconX from '@/assets/icons/x.svg'
 import iconLauch from '@/assets/icons/launch.svg'
 
 export default {
-	components: { WalletSelector, Tabs, IconBackground, Icon, Notification },
+	components: { WalletSelector, WalletTabs, Tabs, IconBackground, Icon, Notification },
 	props: ['state'],
 	setup (props) {
+		const addresses = computed(() => ArweaveStore.wallets.map(wallet => wallet.key))
 		const currentAddress = ref(props.state.wallet || undefined)
 		const tabs = [
 			{ name: 'Requests', color: 'var(--orange)' },
@@ -67,20 +69,21 @@ export default {
 		})
 
 		const disconnect = () => props.state.wallet = false
+		const connect = () => {
+			isSelectingWallet.value = false
+			props.state.wallet = currentAddress.value
+		}
+		const goBack = () => {
+			isSelectingWallet.value = false
+			currentAddress.value = props.state.wallet
+		}
 
 		const isSelectingWallet = ref(false)
 		const selectWallet = async () => {
-			if (!InterfaceStore.toolbar.links) {
-				if (!currentAddress.value) { currentAddress.value = ArweaveStore.wallets[0]?.key } // todo default wallet
-				emitter.emit('selectWallet', null)
-				return 
+			if (isSelectingWallet.value) {
+				currentAddress.value = props.state.wallet || ArweaveStore.wallets[0]?.key 
 			}
-			InterfaceStore.toolbar.links = false
-			isSelectingWallet.value = true
-			const wallet = await emitter.once('selectWallet')
-			if (wallet) { currentAddress.value = wallet }
-			isSelectingWallet.value = false
-			InterfaceStore.toolbar.links = true
+			isSelectingWallet.value = !isSelectingWallet.value
 		}
 
 		const connectData = computed(() => {
@@ -92,8 +95,8 @@ export default {
 				title: connected ? 'Switch' : 'Connect',
 				timestamp: Date.now(), // todo
 				actions: [
-					{ name: 'Connect', img: iconY, run: () => props.state.wallet = currentAddress.value },
-					{ name: !connected ? 'Switch' : 'Cancel', img: iconX, run: !connected ? selectWallet : () => currentAddress.value = props.state.wallet },
+					{ name: 'Connect', img: iconY, run: connect },
+					{ name: !connected ? 'Switch' : 'Cancel', img: iconX, run: !connected ? selectWallet : goBack },
 				],
 				expanded: true,
 				content,
@@ -112,7 +115,7 @@ export default {
 
 		if (!currentAddress.value) { selectWallet() }
 
-		return { currentAddress, tabs, currentTab, isSelectingWallet, selectWallet, connectData, verticalLayout, transitionName, disconnect, navigateBack, navigateBackAvailable, iconConnection, iconLauch }
+		return { addresses, currentAddress, tabs, currentTab, isSelectingWallet, selectWallet, connectData, verticalLayout, transitionName, disconnect, navigateBack, navigateBackAvailable, iconConnection, iconLauch }
 	}
 }
 </script>
@@ -124,9 +127,19 @@ export default {
 	align-items: center;
 }
 
-.wallet-tabs {
+.wallet-selector {
 	flex: 1 1 0;
 	justify-content: flex-end;
+}
+
+.wallet-tabs {
+	padding: var(--spacing);
+	justify-content: center;
+	width: 100%;
+}
+
+.fade-list-enter-from, .fade-list-leave-to {
+	transform: translateY(-10px);
 }
 
 .container {
