@@ -6,7 +6,7 @@
 			<Button @click="connect(currentWallet.key)">Connect</Button>
 		</div>-->
 		<Carousel v-model="currentConnectorIndex" class="connectors">
-			<ConnectionCard v-for="(connector, name) in iframes" :key="name" :state="connector" class="box fade-list-item" />
+			<ConnectionCard v-for="(connector, name) in connectors" :key="name" :state="connector" class="box fade-list-item" />
 		</Carousel>
 		<div class="bottom-info secondary-text" style="opacity: 0.0; pointer-events: none;">
 			<div>All Channels {{ Object.keys(states).length }}</div>
@@ -23,19 +23,19 @@ import Address from '@/components/atomic/Address.vue'
 import Button from '@/components/atomic/Button.vue'
 import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
-import { state, states, iframes } from '@/functions/Channels'
+import { state, states, connectors } from '@/functions/Channels'
 import { computed, onBeforeUnmount, ref } from 'vue'
 
 export default {
 	components: { Carousel, ConnectionCard, AddressIcon, Address, Button },
 	setup () {
-		const currentConnectorIndex = ref(Object.entries(iframes.value).findIndex(([key, value]) => 
+		const currentConnectorIndex = ref(Object.entries(connectors.value).findIndex(([key, value]) => 
 			value.origin === state.origin && value.session === state.session))
 		// InterfaceStore.toolbar.links = false
 		// onBeforeUnmount(() => InterfaceStore.toolbar.links = true)
 		const currentWallet = computed(() => ArweaveStore.currentWallet)
 
-		return { currentConnectorIndex, currentWallet, iframes, state, states }
+		return { currentConnectorIndex, currentWallet, connectors, state, states }
 	}
 }
 </script>
@@ -49,7 +49,7 @@ export default {
 
 .connectors {
 	width: 100%;
-	height: var(--current-vh);
+	min-height: var(--current-vh);
 }
 
 .connection-card {

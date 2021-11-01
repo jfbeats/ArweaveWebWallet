@@ -1,37 +1,22 @@
 import Arweave from 'arweave'
-import { state, filterChannels, hasStorageAccess, awaitStorageAccess } from '@/functions/Channels'
+import { state, states, filterChannels, initConnectorChannel, hasStorageAccess, awaitStorageAccess } from '@/functions/Channels'
 import { awaitEffect } from '@/functions/Utils'
-import { watch, watchEffect } from 'vue'
+import { watch, watchEffect, computed } from 'vue'
 
 let windowRef
 const messageQueue = []
 const { origin, session } = state
 
+
+
 if (window.opener) {
 	state.type = 'popup'
 	windowRef = window.opener
-	watch(() => state.wallet, (wallet) => wallet ? connect(wallet) : disconnect())
-	watchEffect(() => {
-		const linkedInstance = Object.entries(filterChannels({ origin, session, type: 'iframe' }))[0]?.[1]
-		if (linkedInstance) { state.link = true }
-		else { state.link = false }
-	})
-	window.addEventListener('message', messageListener)
-	postMessage({ method: 'ready' })
+	initConnector()
 } else if (window.parent && window.parent !== window) {
 	state.type = 'iframe'
 	windowRef = window.parent
-	watch(() => state.wallet, (wallet) => wallet ? connect(wallet) : disconnect())
-	watchEffect(() => {
-		const linkedInstance = Object.entries(filterChannels({ origin, session, type: 'popup' }))[0]?.[1]
-		if (linkedInstance) { state.link = true }
-		else {
-			if (state.link && !state.wallet) { disconnect() }
-			state.link = false
-		}
-	})
-	window.addEventListener('message', messageListener)
-	postMessage({ method: 'ready' })
+	initConnector()
 } else {
 	state.type = 'client'
 	localStorage.setItem('global', '1')
@@ -39,16 +24,33 @@ if (window.opener) {
 
 
 
-export function connect (walletAddress) {
-	// todo reject the whole queue
-	postMessage({ method: 'connect', params: walletAddress })
+async function initConnector () {
+	await awaitStorageAccess()
+	const connectorChannel = initConnectorChannel()
+	connectorChannel.initChannel()
+	const sharedState = connectorChannel.state
+	const connect = () => {
+		// todo reject the whole queue
+		postMessage({ method: 'connect', params: sharedState.wallet })
+	}
+	const disconnect = () => { connectorChannel.deleteChannel(); postMessage({ method: 'disconnect' }) }
+	watchEffect(() => {
+		if (sharedState.wallet === false) { disconnect() }
+		else if (sharedState.wallet) { connect(sharedState.wallet) }
+	})
+	watchEffect(() => {
+		const linkedState = Object.entries(filterChannels({ origin, session, type: state.type == 'popup' ? 'iframe' : 'popup' }))[0]?.[1]
+		if (linkedState) { sharedState.link = true }
+		else if (state.type == 'iframe' && sharedState.link && !sharedState.wallet) { disconnect() }
+	})
+	window.addEventListener('message', messageListener)
+	if (state.type === 'iframe') { window.addEventListener('beforeunload', () => disconnect()) }
+	postMessage({ method: 'ready' })
 }
 
-export function disconnect () {
-	postMessage({ method: 'disconnect' })
-}
 
-export function postMessage (message) {
+
+function postMessage (message) {
 	windowRef.postMessage({ ...message }, origin)
 }
 
@@ -117,12 +119,6 @@ const procedures = {
 
 
 
-function setTask (task, from) {
-	if (!state.link) { return }
-	if (task === 'default') {
-
-	}
-}
 
 
 

@@ -6,33 +6,44 @@ const session = hash.get('session')
 const appInfo = { name: hash.get('name'), logo: hash.get('logo') }
 const instance = origin + Math.random().toString().slice(2)
 const chPrefix = 'connectorState:'
+const sharedPrefix = 'sharedState:'
 const heartbeatPrefix = 'heartbeat:'
 const stateChannel = chPrefix + instance
 const stateInit = {
 	origin,
 	session,
-	appInfo,
-	wallet: null,
 }
-const { state, initChannel, closeChannel } = getChannel(instance)
-const { states, initChannels, closeChannels } = getChannels()
+const { state, initChannel, closeChannel } = getChannel(instance, chPrefix)
+const { states, initChannels, closeChannels } = getChannels(chPrefix)
+const connectorChannels = getChannels(sharedPrefix)
+const connectors = computed(() => filterChannels((c) => c.wallet !== false, connectorChannels.states))
+export const initConnectorChannel = () => {
+	if (!origin || !session) { return }
+	const channel = getChannel(origin + session, sharedPrefix)
+	if (!channel.state.origin) { Object.assign(channel.state, { origin, session, appInfo }) }
+	channel.deleteChannel = () => {
+		channel.closeChannel()
+		localStorage.removeItem(sharedPrefix + origin + session)
+	}
+	return channel
+}
 const iframes = computed(() => filterChannels({ type: 'iframe' }))
 
-export { state, states, iframes }
+export { state, states, connectors, iframes }
 
 
 
-function getChannels () {
+function getChannels (prefix) {
 	const channels = {}
 	const states = reactive({})
 	const getInstanceNames = () => Object.entries(localStorage)
-		.filter(([key, value]) => key.slice(0, chPrefix.length) === chPrefix)
-		.map(([key, value]) => key.slice(chPrefix.length))
+		.filter(([key, value]) => key.slice(0, prefix.length) === prefix)
+		.map(([key, value]) => key.slice(prefix.length))
 	const instanciate = async (name) => {
 		channels[name] = null
-		if (!(await heartbeat(name))) { close(name); return null }
+		if (prefix === chPrefix && !(await heartbeat(name))) { close(name); return null }
 		if (!Object.keys(channels).includes(name)) { return null }
-		channels[name] = getChannel(name)
+		channels[name] = getChannel(name, prefix)
 		channels[name].initChannel()
 		states[name] = channels[name].state
 	}
@@ -61,9 +72,10 @@ function getChannels () {
 	return { states, initChannels, closeChannels }
 }
 
-function getChannel (instanceName) {
-	const stateChannel = chPrefix + instanceName
-	const state = reactive(instanceName === instance ? stateInit : {})
+export function getChannel (instanceName, prefix) {
+	const stateChannel = prefix + instanceName
+	const mustWrite = instanceName === instance && prefix === chPrefix
+	const state = reactive(mustWrite ? stateInit : {})
 	const writeState = () => {
 		const stateString = JSON.stringify(state)
 		if (stateString === localStorage.getItem(stateChannel)) { return }
@@ -73,7 +85,7 @@ function getChannel (instanceName) {
 	const startWrite = () => stopWrite = watch(() => state, writeState, { deep: true })
 	const update = (val) => {
 		if (stopWrite) { stopWrite() }
-		try { Object.assign(state, JSON.parse(val)) } catch (e) { }
+		try { Object.assign(state, JSON.parse(val)) } catch (e) { console.error(e) }
 		startWrite()
 	}
 	const storageListener = (e) => {
@@ -82,7 +94,7 @@ function getChannel (instanceName) {
 	}
 	const initChannel = () => {
 		window.addEventListener('storage', storageListener)
-		if (instanceName === instance) { writeState() }
+		if (mustWrite) { writeState() }
 		update(localStorage.getItem(stateChannel))
 	}
 	const closeChannel = () => {
@@ -123,10 +135,10 @@ function cleanHeartbeats () {
 	}
 }
 
-export function filterChannels (filter) {
+export function filterChannels (filter, object = states) {
 	const filterFunction = ([key, state]) => typeof filter === 'function' ? filter(state)
 		: !Object.entries(filter || {}).find(([key, value]) => state[key] !== value)
-	return Object.fromEntries(Object.entries(states).filter(filterFunction))
+	return Object.fromEntries(Object.entries(object).filter(filterFunction))
 }
 
 function globalStorageListener (e) {
@@ -150,12 +162,14 @@ async function init () {
 	window.addEventListener('storage', globalStorageListener)
 	initChannel()
 	initChannels()
+	connectorChannels.initChannels()
 }
 
 function close () {
 	window.removeEventListener('storage', globalStorageListener)
 	closeChannel()
 	closeChannels()
+	connectorChannels.closeChannels()
 	localStorage.removeItem(stateChannel)
 }
 
