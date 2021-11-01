@@ -15,19 +15,15 @@
 
 <script>
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
-import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { computed } from 'vue'
 
 export default {
 	components: { AddressIcon },
-	props: {
-		modelValue: { default: ArweaveStore.wallets[0]?.key || '' }, // todo default wallet here too
-		exit: { default: false }
-	},
+	props: ['modelValue', 'default', 'exit'],
 	setup (props, { emit }) {
 		const model = computed({
-			get () { return props.modelValue },
+			get () { return props.modelValue || props.default },
 			set (value) { emit('update:modelValue', value) }
 		})
 		return { model, InterfaceStore }

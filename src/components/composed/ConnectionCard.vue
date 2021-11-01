@@ -9,23 +9,25 @@
 				</div>
 				<Icon v-if="navigateBackAvailable(state.origin)" :icon="iconLauch" />
 			</button>
-			<WalletSelector v-model="state.wallet" :exit="true" @selectWallet="selectWallet" @exit="disconnect" />
+			<WalletSelector v-model="state.wallet" :default="defaultAddress" :exit="true" @selectWallet="selectWallet" @exit="disconnect" />
 		</div>
 		<div class="flex-column" style="flex: 1 1 0;">
 			<Tabs :tabs="tabs" v-model="currentTab" :disabled="!currentAddress" />
 			<div class="container flex-column">
 				<transition :name="transitionName" mode="out-in">
 					<div :key="(currentAddress || '') + currentTab" class="content">
-						<transition name="fade-fast" mode="out-in">
-							<div v-if="currentTab === 'Requests'" class="flex-column">
-								<transition-group name="fade-list">
-									<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="fade-list-item" />
-									<div v-if="currentAddress === state.wallet" class="fade-list-item">Connected</div>
-									<Notification v-else :data="connectData" class="fade-list-item">{{ connectData.content }}</Notification>
-								</transition-group>
-							</div>
-							<div v-else-if="currentTab === 'Permissions'" class="flex-column">Wip</div>
-						</transition>
+						<div v-if="currentTab === 'Requests'" class="flex-column">
+							<transition-group name="fade-list">
+								<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="fade-list-item" />
+								<div v-if="currentAddress === state.wallet" class="fade-list-item">Connected</div>
+								<Notification v-else :data="connectData" class="fade-list-item">{{ connectData.content }}</Notification>
+							</transition-group>
+						</div>
+						<div v-else-if="currentTab === 'Permissions'" class="flex-column">
+							<transition-group name="fade-list">
+								<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="fade-list-item" />
+							</transition-group>
+						</div>
 					</div>
 				</transition>
 			</div>
@@ -56,14 +58,16 @@ export default {
 	components: { WalletSelector, WalletTabs, Tabs, IconBackground, Icon, Notification },
 	props: ['state'],
 	setup (props) {
+		const defaultAddress = ArweaveStore.wallets[0]?.key
 		const addresses = computed(() => ArweaveStore.wallets.map(wallet => wallet.key))
-		const currentAddress = ref(props.state.wallet || undefined)
+		const currentAddress = ref(props.state.wallet || defaultAddress)
 		const tabs = [
 			{ name: 'Requests', color: 'var(--orange)' },
 			{ name: 'Permissions', color: 'var(--green)' },
 		]
 		const currentTab = ref(currentAddress.value ? tabs[0].name : null)
 		watch(() => props.state.wallet, (wallet) => {
+			isSelectingWallet.value = false
 			currentAddress.value = wallet
 			currentTab.value = tabs[0].name
 		})
@@ -78,25 +82,24 @@ export default {
 			currentAddress.value = props.state.wallet
 		}
 
-		const isSelectingWallet = ref(false)
+		const isSelectingWallet = ref(!props.state.wallet)
 		const selectWallet = async () => {
 			if (isSelectingWallet.value) {
-				currentAddress.value = props.state.wallet || ArweaveStore.wallets[0]?.key 
+				currentAddress.value = props.state.wallet || ArweaveStore.wallets[0]?.key
 			}
 			isSelectingWallet.value = !isSelectingWallet.value
 		}
 
 		const connectData = computed(() => {
-			const connected = props.state.wallet
 			const content = !props.state.wallet ?
 				`Connect to ${props.state.appInfo?.name || props.state.origin} from the account ${currentAddress.value}`
 				: `Switch to ${currentAddress.value}`
 			return {
-				title: connected ? 'Switch' : 'Connect',
+				title: props.state.wallet ? 'Switch' : 'Connect',
 				timestamp: Date.now(), // todo
 				actions: [
 					{ name: 'Connect', img: iconY, run: connect },
-					{ name: !connected ? 'Switch' : 'Cancel', img: iconX, run: !connected ? selectWallet : goBack },
+					{ name: !props.state.wallet ? 'Switch' : 'Cancel', img: iconX, run: !props.state.wallet ? selectWallet : goBack },
 				],
 				expanded: true,
 				content,
@@ -113,9 +116,7 @@ export default {
 
 		watch(() => currentAddress.value, () => { currentTab.value = tabs[0].name })
 
-		if (!currentAddress.value) { selectWallet() }
-
-		return { addresses, currentAddress, tabs, currentTab, isSelectingWallet, selectWallet, connectData, verticalLayout, transitionName, disconnect, navigateBack, navigateBackAvailable, iconConnection, iconLauch }
+		return { defaultAddress, addresses, currentAddress, tabs, currentTab, isSelectingWallet, selectWallet, connectData, verticalLayout, transitionName, disconnect, navigateBack, navigateBackAvailable, iconConnection, iconLauch }
 	}
 }
 </script>
@@ -138,7 +139,8 @@ export default {
 	width: 100%;
 }
 
-.fade-list-enter-from, .fade-list-leave-to {
+.fade-list-enter-from,
+.fade-list-leave-to {
 	transform: translateY(-10px);
 }
 
