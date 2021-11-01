@@ -48,7 +48,7 @@
 
 .fade-list-enter-from, .fade-list-leave-to {
 	opacity: 0 !important;
-	transform: translateY(10px);
+	transform: translateY(-10px);
 }
 
 .fade-list-leave-active {

@@ -14,25 +14,22 @@
 		<div class="flex-column" style="flex: 1 1 0;">
 			<Tabs :tabs="tabs" v-model="currentTab" :disabled="!currentAddress" />
 			<div class="container">
-				<transition-group name="fade-list">
-					<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="fade-list-item" key="0" />
-					<div key="1" class="fade-list-item">
-						<transition :name="transitionName" mode="out-in">
-							<div :key="(currentAddress || '') + currentTab" class="content">
-								<div v-if="currentTab === 'Requests'" class="flex-column">
-									<transition-group name="fade-list">
-										<div v-if="currentAddress === state.wallet" class="fade-list-item">Connected</div>
-										<Notification v-else :data="connectData" class="fade-list-item">{{ connectData.content }}</Notification>
-									</transition-group>
-								</div>
-								<div v-else-if="currentTab === 'Permissions'" class="flex-column">
-									<!-- <transition-group name="fade-list">
-									</transition-group>-->
-								</div>
-							</div>
-						</transition>
+				<transition :name="transitionName" mode="out-in">
+					<div :key="(currentAddress || '') + currentTab" class="content">
+						<div v-if="currentTab === 'Requests'">
+							<transition-group name="fade-list">
+								<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="fade-list-item" key="0" />
+								<div v-if="currentAddress === state.wallet" class="fade-list-item" key="0">Connected</div>
+								<Notification v-else :data="connectData" class="fade-list-item" key="1">{{ connectData.content }}</Notification>
+							</transition-group>
+						</div>
+						<div v-else-if="currentTab === 'Permissions'" class="flex-column">
+							<transition-group name="fade-list">
+								<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="fade-list-item" key="0" />
+							</transition-group>
+						</div>
 					</div>
-				</transition-group>
+				</transition>
 			</div>
 		</div>
 	</div>
@@ -140,11 +137,7 @@ export default {
 	justify-content: center;
 	width: 100%;
 	border-bottom: 0.5px solid var(--border);
-}
-
-.fade-list-enter-from,
-.fade-list-leave-to {
-	transform: translateY(-10px);
+	margin-bottom: var(--spacing);
 }
 
 .container {
@@ -157,10 +150,6 @@ export default {
 	justify-content: flex-start;
 	overflow: hidden auto;
 	position: relative;
-}
-
-.container > * {
-	margin-bottom: var(--spacing);
 }
 
 .content {
