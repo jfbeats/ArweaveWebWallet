@@ -9,27 +9,30 @@
 				</div>
 				<Icon v-if="navigateBackAvailable(state.origin)" :icon="iconLauch" />
 			</button>
-			<WalletSelector v-model="state.wallet" :default="defaultAddress" :exit="true" @selectWallet="selectWallet" @exit="disconnect" />
+			<WalletSelector v-model="state.wallet" :default="defaultAddress" :exit="true" :active="!isSelectingWallet" @selectWallet="selectWallet" @exit="disconnect" />
 		</div>
 		<div class="flex-column" style="flex: 1 1 0;">
 			<Tabs :tabs="tabs" v-model="currentTab" :disabled="!currentAddress" />
-			<div class="container flex-column">
-				<transition :name="transitionName" mode="out-in">
-					<div :key="(currentAddress || '') + currentTab" class="content">
-						<div v-if="currentTab === 'Requests'" class="flex-column">
-							<transition-group name="fade-list">
-								<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="fade-list-item" />
-								<div v-if="currentAddress === state.wallet" class="fade-list-item">Connected</div>
-								<Notification v-else :data="connectData" class="fade-list-item">{{ connectData.content }}</Notification>
-							</transition-group>
-						</div>
-						<div v-else-if="currentTab === 'Permissions'" class="flex-column">
-							<transition-group name="fade-list">
-								<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="fade-list-item" />
-							</transition-group>
-						</div>
+			<div class="container">
+				<transition-group name="fade-list">
+					<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="fade-list-item" key="0" />
+					<div key="1" class="fade-list-item">
+						<transition :name="transitionName" mode="out-in">
+							<div :key="(currentAddress || '') + currentTab" class="content">
+								<div v-if="currentTab === 'Requests'" class="flex-column">
+									<transition-group name="fade-list">
+										<div v-if="currentAddress === state.wallet" class="fade-list-item">Connected</div>
+										<Notification v-else :data="connectData" class="fade-list-item">{{ connectData.content }}</Notification>
+									</transition-group>
+								</div>
+								<div v-else-if="currentTab === 'Permissions'" class="flex-column">
+									<!-- <transition-group name="fade-list">
+									</transition-group>-->
+								</div>
+							</div>
+						</transition>
 					</div>
-				</transition>
+				</transition-group>
 			</div>
 		</div>
 	</div>
@@ -83,11 +86,10 @@ export default {
 		}
 
 		const isSelectingWallet = ref(!props.state.wallet)
-		const selectWallet = async () => {
-			if (isSelectingWallet.value) {
-				currentAddress.value = props.state.wallet || ArweaveStore.wallets[0]?.key
-			}
-			isSelectingWallet.value = !isSelectingWallet.value
+		const selectWallet = () => {
+			if (!isSelectingWallet.value) { isSelectingWallet.value = true; return }
+			currentAddress.value = props.state.wallet || ArweaveStore.wallets[0]?.key
+			isSelectingWallet.value = false
 		}
 
 		const connectData = computed(() => {
@@ -137,6 +139,7 @@ export default {
 	padding: var(--spacing);
 	justify-content: center;
 	width: 100%;
+	border-bottom: 0.5px solid var(--border);
 }
 
 .fade-list-enter-from,
@@ -153,6 +156,11 @@ export default {
 	align-items: center;
 	justify-content: flex-start;
 	overflow: hidden auto;
+	position: relative;
+}
+
+.container > * {
+	margin-bottom: var(--spacing);
 }
 
 .content {

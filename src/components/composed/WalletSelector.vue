@@ -1,6 +1,6 @@
 <template>
 	<div class="wallet-selector">
-		<button v-if="model" type="button" @click="$emit('selectWallet')" class="tab" :class="{ active: InterfaceStore.toolbar.links }">
+		<button v-if="model" type="button" @click="$emit('selectWallet')" class="tab" :class="{ active }">
 			<AddressIcon :address="model" />
 		</button>
 		<button v-if="exit" class="exit" type="button" @click="$emit('exit')">
@@ -20,7 +20,7 @@ import { computed } from 'vue'
 
 export default {
 	components: { AddressIcon },
-	props: ['modelValue', 'default', 'exit'],
+	props: ['modelValue', 'default', 'exit', 'active'],
 	setup (props, { emit }) {
 		const model = computed({
 			get () { return props.modelValue || props.default },
