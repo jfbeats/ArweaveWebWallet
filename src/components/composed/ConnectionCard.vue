@@ -145,7 +145,7 @@ export default {
 	min-height: 200px;
 	/* max-height: 60vh; */
 	background: var(--background);
-	border-radius: var(--border-radius);
+	border-radius: var(--border-radius) var(--border-radius) 0 0;
 	align-items: center;
 	justify-content: flex-start;
 	overflow: hidden auto;
