@@ -6,7 +6,9 @@
 			<Button @click="connect(currentWallet.key)">Connect</Button>
 		</div>-->
 		<Carousel v-model="currentConnectorIndex" class="connectors">
-			<ConnectionCard v-for="connector in connectors" :key="connector.session" :state="connector" class="box fade-list-item" />
+			<div v-for="connector in connectors" :key="connector.session" class="box fade-list-item">
+				<ConnectionCard :state="connector" />
+			</div>
 		</Carousel>
 		<div class="bottom-info secondary-text" style="opacity: 0.0; pointer-events: none;">
 			<div>All Channels {{ Object.keys(states).length }}</div>
@@ -29,8 +31,16 @@ import { computed, onBeforeUnmount, ref } from 'vue'
 export default {
 	components: { Carousel, ConnectionCard, AddressIcon, Address, Button },
 	setup () {
-		const currentConnectorIndex = ref(connectors.value.findIndex(value => 
+		const currentConnectorIndex = ref(connectors.value.findIndex(value =>
 			value.origin === state.origin && value.session === state.session))
+
+		// const test = ref(false)
+		// const testing = () => {
+		// 	test.value = !test.value
+		// 	setTimeout(testing, 4000)
+		// }
+		// testing()
+		// const connectorsComp = computed(() => test.value ? [connectors.value[0], connectors.value[2]] : connectors.value)
 		// InterfaceStore.toolbar.links = false
 		// onBeforeUnmount(() => InterfaceStore.toolbar.links = true)
 		const currentWallet = computed(() => ArweaveStore.currentWallet)
@@ -52,13 +62,19 @@ export default {
 	min-height: var(--current-vh);
 }
 
-.connection-card {
-	flex: 1 0 auto;
+.box {
+	height: var(--current-vh);
 	width: var(--current-vw);
 	max-width: var(--column-width-small);
-	border-radius: 0;
-	padding-bottom: 0;
+	padding: 0;
 	scroll-snap-align: start;
+	display: inline-block;
+}
+
+.connection-card {
+	padding: var(--spacing);
+	padding-bottom: 0;
+	height: 100%;
 }
 
 .wallet {
@@ -81,5 +97,18 @@ export default {
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-end;
+}
+
+.fade-list-leave-active {
+	position: absolute !important;
+	/* scroll-snap-align: none; */
+}
+
+.fade-list-enter-active {
+	/* scroll-snap-align: none; */
+}
+
+.fade-list-move {
+	/* scroll-snap-align: none; */
 }
 </style>

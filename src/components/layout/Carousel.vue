@@ -1,9 +1,9 @@
 <template>
 	<div ref="root" class="carousel flex-row no-scrollbar">
 		<transition-group name="fade-list">
-			<div class="margin" key="margin1"></div>
+			<div class="margin fade-list-item" key="margin1"></div>
 			<slot />
-			<div class="margin" key="margin2"></div>
+			<div class="margin fade-list-item" key="margin2"></div>
 		</transition-group>
 	</div>
 </template>
@@ -41,11 +41,15 @@ export default {
 <style scoped>
 .carousel {
 	overflow: auto;
+	white-space: nowrap;
 	scroll-snap-type: x mandatory;
+	display: block;
+	overscroll-behavior-x: contain;
+	position: relative;
 }
 
 .margin {
-	flex: 1 0 auto;
 	width: calc(var(--current-vw) * 1);
+	display: inline-block;
 }
 </style>
