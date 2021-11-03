@@ -17,10 +17,10 @@
 				<div class="right-content">
 					<div class="right-text">
 						<Address v-if="relativeAddress" class="address" :address="relativeAddress" />
-						<div v-else class="ellipsis">
+						<!-- <div v-else class="ellipsis">
 							<Ar :ar="tx.fee.ar" />&nbsp;
 							<LocaleCurrency class="secondary-text" :ar="tx.fee.ar">|</LocaleCurrency>
-						</div>
+						</div> -->
 						<div v-if="upload" class="secondary-text ellipsis">{{ upload }}</div>
 						<div v-else-if="isPending" class="secondary-text ellipsis">Pending</div>
 						<div v-else class="secondary-text ellipsis">
@@ -55,62 +55,65 @@ import MoreInfo from '@/components/composed/MoreInfo.vue'
 import Date from '@/components/atomic/Date.vue'
 import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
+import { computed } from 'vue'
 
 export default {
 	components: { Address, Ar, TxIcon, AddressIcon, LocaleCurrency, MoreInfo, Date },
 	props: ['tx'],
-	computed: {
-		timestamp () {
-			return this.tx.block.timestamp * 1000
-		},
-		upload () {
-			if (!ArweaveStore.uploads[this.tx.id]) { return null }
-			return `Uploading ${ArweaveStore.uploads[this.tx.id].upload}%`
-		},
-		direction () {
+	setup (props) {
+		const timestamp = computed(() => {
+			return props.tx.block.timestamp * 1000
+		})
+		const upload = computed(() => {
+			if (!ArweaveStore.uploads[props.tx.id]) { return null }
+			return `Uploading ${ArweaveStore.uploads[props.tx.id].upload}%`
+		})
+		const direction = computed(() => {
 			if (!ArweaveStore.currentWallet) { return null }
 			const currentAddress = ArweaveStore.currentWallet.key
-			if (currentAddress === this.tx.recipient) { return 'in' }
-			else if (currentAddress === this.tx.owner.address) { return 'out' }
+			if (currentAddress === props.tx.recipient) { return 'in' }
+			else if (currentAddress === props.tx.owner.address) { return 'out' }
 			return null
-		},
-		isData () { return this.tx.data.size != 0 },
-		isValue () { return this.tx.quantity.winston != 0 },
-		isPending () { return !this.tx.block },
-		relativeAddress () {
-			if (this.direction === 'in') { return this.tx.owner.address }
-			if (this.direction === 'out') { return this.tx.recipient }
+		})
+		const isData = computed(() => { return props.tx.data.size != 0 })
+		const isValue = computed(() => { return props.tx.quantity.winston != 0 })
+		const isPending = computed(() => { return !props.tx.block })
+		const relativeAddress = computed(() => {
+			if (direction.value === 'in') { return props.tx.owner.address }
+			if (direction.value === 'out') { return props.tx.recipient }
 			return null
-		},
-		value () {
-			return this.tx.quantity.ar
-		},
-		dataType () {
-			if (!this.tx.data.type) { return }
-			if (this.tx.data.type === 'application/x.arweave-manifest+json') { return 'Website' }
-			return this.tx.data.type.split('/').join(' ')
-		},
-		dataInfo () {
-			for (const tag of this.tx.tags) {
+		})
+		const value = computed(() => {
+			return props.tx.quantity.ar
+		})
+		const dataType = computed(() => {
+			if (!props.tx.data.type) { return }
+			if (props.tx.data.type === 'application/x.arweave-manifest+json') { return 'Website' }
+			return props.tx.data.type.split('/').join(' ')
+		})
+		const dataInfo = computed(() => {
+			for (const tag of props.tx.tags) {
 				if (tag.name == 'Service') { return tag.value }
 			}
-			for (const tag of this.tx.tags) {
+			for (const tag of props.tx.tags) {
 				if (tag.name == 'App-Name') { return tag.value }
 			}
-			for (const tag of this.tx.tags) {
+			for (const tag of props.tx.tags) {
 				if (tag.name == 'User-Agent') { return tag.value.split('/')[0] }
 			}
-		},
-		context () {
-			if (this.isValue && this.isData) {
-				return this.dataInfo || this.dataType || 'Payment | Data'
-			} else if (this.isValue) {
-				return this.dataInfo || this.dataType || 'Payment'
-			} else if (this.isData) {
-				return this.dataInfo || 'Data'
+		})
+		const context = computed(() => {
+			if (isValue.value && isData.value) {
+				return dataInfo.value || dataType.value || 'Payment | Data'
+			} else if (isValue.value) {
+				return dataInfo.value || dataType.value || 'Payment'
+			} else if (isData.value) {
+				return dataInfo.value || 'Data'
 			}
-		},
-		verticalElement () { return InterfaceStore.breakpoints.verticalLayout }
+		})
+		const verticalElement = computed(() => { return InterfaceStore.breakpoints.verticalLayout })
+
+		return { timestamp, upload, direction, isData, isValue, isPending, relativeAddress, value, dataType, dataInfo, context, verticalElement }
 	}
 }
 </script>
