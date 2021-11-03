@@ -1,11 +1,11 @@
 <template>
 	<div class="connection-card flex-column">
 		<div class="flex-row">
-			<button type="button" class="flex-row" @click="navigateBack" :disabled="!navigateBackAvailable(state.origin, state.session)">
+			<button type="button" class="info flex-row" @click="navigateBack" :disabled="!navigateBackAvailable(state.origin, state.session)">
 				<IconBackground :img="state.appInfo?.logo" :icon="iconConnection" />
-				<div>
-					<div>{{ state.appInfo?.name || 'Connector' }}</div>
-					<div class="secondary-text">{{ state.origin }}</div>
+				<div style="min-width: 0;">
+					<div class="ellipsis">{{ state.appInfo?.name || 'Connector' }}</div>
+					<div class="secondary-text ellipsis">{{ state.origin }}</div>
 				</div>
 				<Icon v-if="navigateBackAvailable(state.origin, state.session)" :icon="iconLauch" />
 			</button>
@@ -134,8 +134,14 @@ export default {
 	align-items: center;
 }
 
-.wallet-selector {
+.info {
 	flex: 1 1 0;
+	min-width: 0;
+	overflow: hidden;
+}
+
+.wallet-selector {
+	flex: 0 0 auto;
 	justify-content: flex-end;
 }
 
