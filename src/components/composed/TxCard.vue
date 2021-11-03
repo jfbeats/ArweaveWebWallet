@@ -53,13 +53,12 @@ import TxIcon from '@/components/atomic/TxIcon.vue'
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import MoreInfo from '@/components/composed/MoreInfo.vue'
 import Date from '@/components/atomic/Date.vue'
-import Link from '@/components/function/Link.vue'
 import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { computed } from 'vue'
 
 export default {
-	components: { Address, Ar, TxIcon, AddressIcon, LocaleCurrency, MoreInfo, Date, Link },
+	components: { Address, Ar, TxIcon, AddressIcon, LocaleCurrency, MoreInfo, Date },
 	props: ['tx'],
 	setup (props) {
 		const timestamp = computed(() => props.tx.block.timestamp * 1000)

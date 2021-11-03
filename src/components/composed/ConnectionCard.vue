@@ -1,13 +1,13 @@
 <template>
 	<div class="connection-card flex-column">
-		<div :class="[verticalLayout ? 'flex-column' : 'flex-row']">
-			<button type="button" class="flex-row" @click="navigateBack" :disabled="!navigateBackAvailable(state.origin)">
+		<div class="flex-row">
+			<button type="button" class="flex-row" @click="navigateBack" :disabled="!navigateBackAvailable(state.origin, state.session)">
 				<IconBackground :img="state.appInfo?.logo" :icon="iconConnection" />
 				<div>
 					<div>{{ state.appInfo?.name || 'Connector' }}</div>
 					<div class="secondary-text">{{ state.origin }}</div>
 				</div>
-				<Icon v-if="navigateBackAvailable(state.origin)" :icon="iconLauch" />
+				<Icon v-if="navigateBackAvailable(state.origin, state.session)" :icon="iconLauch" />
 			</button>
 			<WalletSelector v-model="state.wallet" :default="defaultAddress" :exit="true" :active="!isSelectingWallet" @selectWallet="selectWallet" @exit="disconnect" />
 		</div>
@@ -19,13 +19,17 @@
 						<div v-if="currentTab === 'Requests'">
 							<transition-group name="fade-list">
 								<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="fade-list-item" key="0" />
-								<div v-if="currentAddress === state.wallet" class="fade-list-item" key="0">Connected</div>
+								<div v-if="currentAddress === state.wallet" class="status fade-list-item" key="0">Connected</div>
 								<Notification v-else :data="connectData" class="fade-list-item" key="1">{{ connectData.content }}</Notification>
+								<div v-if="test" style="padding: var(--spacing);" key="2" class="fade-list-item">
+									<TxCard :tx="test"  />
+								</div>
 							</transition-group>
 						</div>
-						<div v-else-if="currentTab === 'Permissions'" class="flex-column">
+						<div v-else-if="currentTab === 'Permissions'">
 							<transition-group name="fade-list">
 								<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="fade-list-item" key="0" />
+								<div class="status fade-list-item" key="0">WIP</div>
 							</transition-group>
 						</div>
 					</div>
@@ -44,7 +48,8 @@ import Tabs from '@/components/atomic/Tabs.vue'
 import IconBackground from '@/components/atomic/IconBackground.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import Notification from '@/components/composed/Notification.vue'
-import ArweaveStore from '@/store/ArweaveStore'
+import TxCard from '@/components/composed/TxCard.vue'
+import ArweaveStore, { arweave } from '@/store/ArweaveStore'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import { navigateBack, navigateBackAvailable } from '@/functions/Connect'
 import { computed, ref, toRef, watch } from 'vue'
@@ -55,7 +60,7 @@ import iconX from '@/assets/icons/x.svg'
 import iconLauch from '@/assets/icons/launch.svg'
 
 export default {
-	components: { WalletSelector, WalletTabs, Tabs, IconBackground, Icon, Notification },
+	components: { WalletSelector, WalletTabs, Tabs, IconBackground, Icon, Notification, TxCard },
 	props: ['state'],
 	setup (props) {
 		const defaultAddress = ArweaveStore.wallets[0]?.key
@@ -113,9 +118,11 @@ export default {
 		watch(() => tabs.findIndex(tab => tab.name === currentTab.value), selectTransitionName)
 		watch(() => ArweaveStore.wallets.findIndex(wallet => wallet.key === currentAddress.value), selectTransitionName)
 
-		watch(() => currentAddress.value, () => { currentTab.value = tabs[0].name })
+		const test = ref(null)
+		const testing = async () => test.value = await arweave.createTransaction({ data: 'hello', quantity: '100000000000', target: '32s5eCodNO16YMtSkmKNipQMtjpWz_SORUKwkGvrcrg' })
+		testing().then(() => console.log(test.value))
 
-		return { defaultAddress, addresses, currentAddress, tabs, currentTab, isSelectingWallet, selectWallet, connectData, verticalLayout, transitionName, disconnect, navigateBack, navigateBackAvailable, iconConnection, iconLauch }
+		return { test, defaultAddress, addresses, currentAddress, tabs, currentTab, isSelectingWallet, selectWallet, connectData, verticalLayout, transitionName, disconnect, navigateBack, navigateBackAvailable, iconConnection, iconLauch }
 	}
 }
 </script>
@@ -160,10 +167,12 @@ export default {
 	border-bottom: 0.5px solid #ffffff20; */
 }
 
-.info {
-	height: 100%;
+.status {
+	height: 8em;
+	display: flex;
 	align-items: center;
 	justify-content: center;
+	opacity: 0.4;
 }
 
 .notification {
