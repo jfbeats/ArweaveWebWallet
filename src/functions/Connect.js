@@ -55,17 +55,15 @@ function postMessage (message) {
 }
 
 export function navigateBack () {
-	if (!navigateBackAvailable()) { return }
+	if (!window.opener) { return }
 	try {
 		window.open('', 'parent')
 		window.opener.focus()
 	} catch (e) { console.log(e) }
 }
 
-export function navigateBackAvailable (origin) {
-	if (origin && state.origin !== origin) { return false }
-	if (!window.opener) { return false }
-	return true
+export function navigateBackAvailable (origin, session) {
+	return window.opener && state.origin === origin && state.session === session
 }
 
 
