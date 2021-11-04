@@ -27,13 +27,13 @@
 	--blue: #5E81AC;
 }
 
-@media (max-width: 500px) {
+@media (max-width: 499px) {
 	:root {
 		--spacing: 16px;
 	}
 }
 
-@media (max-width: 400px) {
+@media (max-width: 399px) {
 	:root {
 		--spacing: 12px;
 	}
