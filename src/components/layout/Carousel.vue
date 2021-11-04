@@ -26,7 +26,7 @@ export default {
 			return Array(...root.value.children).slice(1, root.value.children.length - 1)
 		})
 		const effect = () => {
-			elements.value?.[model.value]?.scrollIntoView({behavior: "smooth", block: "start", inline: "start"})
+			elements.value?.[Math.max(model.value || 0, 0)]?.scrollIntoView({behavior: "smooth", block: "start", inline: "start"})
 		}
 		watchEffect(effect)
 		onMounted(() => setTimeout(effect))
