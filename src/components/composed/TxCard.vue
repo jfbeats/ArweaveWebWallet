@@ -38,6 +38,7 @@ import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import Date from '@/components/atomic/Date.vue'
 import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
+import { unpackTags } from '@/functions/Utils'
 import { computed } from 'vue'
 
 export default {
@@ -66,13 +67,12 @@ export default {
 		const value = computed(() => props.tx.quantity.ar)
 		const dataType = computed(() => {
 			if (!props.tx.data.type) { return }
-			if (props.tx.data.type === 'application/x.arweave-manifest+json') { return 'Website' }
+			if (props.tx.data.type === 'application/x.arweave-manifest+json') { return 'Folder' }
 			return props.tx.data.type.split('/').join(' ')
 		})
 		const dataInfo = computed(() => {
-			for (const tag of props.tx.tags) { if (tag.name == 'Service') return tag.value }
-			for (const tag of props.tx.tags) { if (tag.name == 'App-Name') return tag.value }
-			for (const tag of props.tx.tags) { if (tag.name == 'User-Agent') return tag.value.split('/')[0] }
+			const tags = unpackTags(props.tx.tags)
+			return tags['Service'] || tags['App-Name'] || tags['User-Agent']?.split('/')[0]
 		})
 		const context = computed(() => {
 			const fallback = isValue.value && isData.value ? 'Payment | Data' : isValue.value ? 'Payment' : isData.value ? 'Data' : props.tx.tags ? 'Tags' : 'Empty'
