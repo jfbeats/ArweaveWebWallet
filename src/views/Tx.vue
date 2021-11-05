@@ -27,7 +27,8 @@
 					<div>
 						<h3>ID</h3>
 						<div class="ellipsis">{{ tx.id }}</div>
-						<a v-if="isData" :href="ArweaveStore.gatewayURL + tx.id" target="_blank">Link</a>
+						<div v-if="isData"><a :href="ArweaveStore.gatewayURL + tx.id" target="_blank">Link</a></div>
+						<div v-if="tx.data?.type === 'application/x.arweave-manifest+json'"><a :href="ArweaveStore.gatewayURL + 'tx/' + tx.id + '/data.json'" target="_blank">Manifest</a></div>
 					</div>
 
 					<div v-if="isPending">
