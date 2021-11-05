@@ -5,8 +5,7 @@
 				<div class="card">
 					<div class="row flex-row">
 						<div class="item" style="font-size:1.5em;">
-							<Ar class="ar" :ar="tx.quantity.ar" />
-							<LocaleCurrency class="secondary-text" :ar="tx.quantity.ar"></LocaleCurrency>
+							<Amount :ar="tx.quantity.ar" />
 						</div>
 					</div>
 					<div class="row flex-row">
@@ -49,8 +48,7 @@
 						<div>Data size {{ humanFileSize(tx.data.size) }}</div>
 						<div>
 							Fee
-							<Ar class="ar" :ar="tx.fee.ar" />&nbsp;
-							<LocaleCurrency class="secondary-text" :ar="tx.fee.ar">|</LocaleCurrency>
+							<Amount :ar="tx.fee.ar" />
 						</div>
 					</div>
 				</div>
@@ -78,8 +76,6 @@ import FoldingLayout from '@/components/layout/FoldingLayout.vue'
 import Address from '@/components/atomic/Address.vue'
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import InputGrid from '@/components/atomic/InputGrid.vue'
-import Ar from '@/components/atomic/Ar.vue'
-import LocaleCurrency from '@/components/atomic/LocaleCurrency.vue'
 import ArweaveStore, { getTxById } from '@/store/ArweaveStore'
 import BlockStore, { getCurrentHeight } from '@/store/BlockStore'
 import InterfaceStore from '@/store/InterfaceStore'
@@ -87,7 +83,7 @@ import { humanFileSize } from '@/functions/Utils'
 import { watch, computed, ref, toRef } from 'vue'
 
 export default {
-	components: { Selector, FoldingLayout, Address, AddressIcon, InputGrid, Ar, LocaleCurrency },
+	components: { Selector, FoldingLayout, Address, AddressIcon, InputGrid },
 	props: {
 		txId: String,
 	},

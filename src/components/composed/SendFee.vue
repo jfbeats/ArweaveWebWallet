@@ -3,8 +3,7 @@
 		<div>Size {{ txSizeDisplay }}</div>
 		<div>
 			Fee
-			<Ar class="ar" :ar="userFeeAr" />&nbsp;
-			<LocaleCurrency class="small secondary" :ar="userFeeAr">|</LocaleCurrency>
+			<Amount :ar="userFeeAr" />
 		</div>
 		<Slider v-model="slider" :settings="sliderSettings" :progress="progress" />
 	</div>
@@ -12,8 +11,6 @@
 
 <script>
 import Slider from '@/components/atomic/Slider.vue'
-import Ar from '@/components/atomic/Ar.vue'
-import LocaleCurrency from '@/components/atomic/LocaleCurrency.vue'
 import ArweaveStore, { arweave } from '@/store/ArweaveStore'
 import BlockStore from '@/store/BlockStore'
 import { getFeeRange } from '@/functions/Transactions'
@@ -23,7 +20,7 @@ import BigNumber from 'bignumber.js'
 import { computed, reactive, ref, watch } from 'vue'
 
 export default {
-	components: { Slider, Ar, LocaleCurrency },
+	components: { Slider },
 	props: ['target', 'size'],
 	setup (props, { emit }) {
 

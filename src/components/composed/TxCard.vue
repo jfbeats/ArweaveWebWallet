@@ -5,11 +5,9 @@
 				<TxIcon class="tx-icon" :tx="tx" :direction="direction" />
 				<div class="margin" />
 				<div>
-					<div v-if="isValue">
-						<Ar class="ar" :ar="value" />&nbsp;
-						<LocaleCurrency class="secondary-text" :ar="value">|</LocaleCurrency>
-					</div>
-					<div v-else>{{ dataType || 'Data' }}</div>
+					<Amount v-if="isValue" :ar="value" />
+					<div v-else-if="isData">{{ dataType || 'Data' }}</div>
+					<div v-else>Transaction</div>
 					<div class="secondary-text">{{ context }}</div>
 				</div>
 			</Link>
@@ -18,28 +16,16 @@
 					<div class="right-text">
 						<Address v-if="relativeAddress" class="address" :address="relativeAddress" />
 						<!-- <div v-else class="ellipsis">
-							<Ar :ar="tx.fee.ar" />&nbsp;
-							<LocaleCurrency class="secondary-text" :ar="tx.fee.ar">|</LocaleCurrency>
+							<Amount :ar="tx.fee.ar" />
 						</div>-->
-						<div v-if="upload" class="secondary-text ellipsis">{{ upload }}</div>
-						<div v-else-if="isPending" class="secondary-text ellipsis">Pending</div>
-						<div v-else class="secondary-text ellipsis">
-							<Date :timestamp="timestamp" />
+						<div class="secondary-text ellipsis">
+							<template v-if="status">{{ status }}</template>
+							<Date v-else-if="timestamp" :timestamp="timestamp" />
 						</div>
 					</div>
 					<div class="margin" />
 				</div>
-				<MoreInfo v-if="relativeAddress" :key="relativeAddress">
-					<template v-slot:icon>
-						<AddressIcon :address="relativeAddress" />
-					</template>
-					<template v-slot:content>
-						<div>Info here</div>
-					</template>
-				</MoreInfo>
-				<span v-else class="cloud">
-					<img class="file-type no-select" src="@/assets/icons/cloud.svg" draggable="false" />
-				</span>
+				<AddressIcon :key="relativeAddress" :address="relativeAddress" :class="{ empty: !relativeAddress }" />
 			</div>
 		</div>
 	</div>
@@ -47,24 +33,21 @@
 
 <script>
 import Address from '@/components/atomic/Address.vue'
-import Ar from '@/components/atomic/Ar.vue'
-import LocaleCurrency from '@/components/atomic/LocaleCurrency.vue'
 import TxIcon from '@/components/atomic/TxIcon.vue'
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
-import MoreInfo from '@/components/composed/MoreInfo.vue'
 import Date from '@/components/atomic/Date.vue'
 import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { computed } from 'vue'
 
 export default {
-	components: { Address, Ar, TxIcon, AddressIcon, LocaleCurrency, MoreInfo, Date },
+	components: { Address, TxIcon, AddressIcon, Date },
 	props: ['tx'],
 	setup (props) {
 		const timestamp = computed(() => props.tx.block.timestamp * 1000)
-		const upload = computed(() => {
-			if (!ArweaveStore.uploads[props.tx.id]) { return null }
-			return `Uploading ${ArweaveStore.uploads[props.tx.id].upload}%`
+		const status = computed(() => {
+			if (ArweaveStore.uploads[props.tx.id]) { return `Uploading ${ArweaveStore.uploads[props.tx.id].upload}%` }
+			if (!props.tx.block) { return 'Pending' }
 		})
 		const direction = computed(() => {
 			if (!ArweaveStore.currentWallet) { return null }
@@ -75,7 +58,6 @@ export default {
 		})
 		const isData = computed(() => props.tx.data.size != 0)
 		const isValue = computed(() => props.tx.quantity.winston != 0)
-		const isPending = computed(() => !props.tx.block)
 		const relativeAddress = computed(() => {
 			if (direction.value === 'in') { return props.tx.owner.address }
 			if (direction.value === 'out') { return props.tx.recipient }
@@ -88,28 +70,18 @@ export default {
 			return props.tx.data.type.split('/').join(' ')
 		})
 		const dataInfo = computed(() => {
-			for (const tag of props.tx.tags) {
-				if (tag.name == 'Service') { return tag.value }
-			}
-			for (const tag of props.tx.tags) {
-				if (tag.name == 'App-Name') { return tag.value }
-			}
-			for (const tag of props.tx.tags) {
-				if (tag.name == 'User-Agent') { return tag.value.split('/')[0] }
-			}
+			for (const tag of props.tx.tags) { if (tag.name == 'Service') return tag.value }
+			for (const tag of props.tx.tags) { if (tag.name == 'App-Name') return tag.value }
+			for (const tag of props.tx.tags) { if (tag.name == 'User-Agent') return tag.value.split('/')[0] }
 		})
 		const context = computed(() => {
-			if (isValue.value && isData.value) {
-				return dataInfo.value || dataType.value || 'Payment | Data'
-			} else if (isValue.value) {
-				return dataInfo.value || dataType.value || 'Payment'
-			} else if (isData.value) {
-				return dataInfo.value || 'Data'
-			}
+			const fallback = isValue.value && isData.value ? 'Payment | Data' : isValue.value ? 'Payment' : isData.value ? 'Data' : props.tx.tags ? 'Tags' : 'Empty'
+			const dataTypeUsed = !isValue.value && isData.value
+			return (dataTypeUsed ? null : dataType.value) || dataInfo.value || fallback
 		})
 		const verticalElement = computed(() => InterfaceStore.breakpoints.verticalLayout)
 
-		return { timestamp, upload, direction, isData, isValue, isPending, relativeAddress, value, dataType, dataInfo, context, verticalElement }
+		return { timestamp, status, direction, isData, isValue, relativeAddress, value, dataType, dataInfo, context, verticalElement }
 	}
 }
 </script>
@@ -172,12 +144,21 @@ export default {
 	margin-inline-start: auto;
 }
 
-.tx-icon {
+.tx-icon,
+.address-icon {
 	width: 48px;
 	height: 48px;
-	border-radius: var(--border-radius2);
-	/* background: var(--background); */
 	flex: 0 0 auto;
+	border-radius: var(--border-radius2);
+}
+
+.address-icon {
+	background: var(--background);
+}
+
+.address-icon.empty {
+	padding: 8px;
+	background: none;
 }
 
 .cloud {

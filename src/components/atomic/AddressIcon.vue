@@ -22,7 +22,7 @@ export default {
 	props: ['address'],
 	components: { Identicon },
 	setup (props) {
-		const isValid = computed(() => props.address.match(/^[a-z0-9_-]{43}$/i))
+		const isValid = computed(() => props.address?.match(/^[a-z0-9_-]{43}$/i))
 		const arweaveId = computed(() => ProfileStore.arweaveId[props.address])
 		watch(() => props.address, async () => {
 			getArweaveId(props.address)
