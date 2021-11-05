@@ -36,44 +36,33 @@ import Address from '@/components/atomic/Address.vue'
 import TxIcon from '@/components/atomic/TxIcon.vue'
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import Date from '@/components/atomic/Date.vue'
-import ArweaveStore from '@/store/ArweaveStore'
+import ArweaveStore, { arweave } from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
-import { unpackTags } from '@/functions/Utils'
+import { unpackTags } from '@/functions/Transactions'
 import { computed } from 'vue'
 
 export default {
 	components: { Address, TxIcon, AddressIcon, Date },
 	props: ['tx'],
 	setup (props) {
-		const timestamp = computed(() => props.tx.block.timestamp * 1000)
+		const tags = computed(() => unpackTags(props.tx.tags))
+		const timestamp = computed(() => props.tx.block?.timestamp * 1000)
 		const status = computed(() => {
 			if (ArweaveStore.uploads[props.tx.id]) { return `Uploading ${ArweaveStore.uploads[props.tx.id].upload}%` }
+			if (!props.tx.id) { return 'Awaiting approval' }
 			if (!props.tx.block) { return 'Pending' }
 		})
-		const direction = computed(() => {
-			if (!ArweaveStore.currentWallet) { return null }
-			const currentAddress = ArweaveStore.currentWallet.key
-			if (currentAddress === props.tx.recipient) { return 'in' }
-			else if (currentAddress === props.tx.owner.address) { return 'out' }
-			return null
-		})
-		const isData = computed(() => props.tx.data.size != 0)
-		const isValue = computed(() => props.tx.quantity.winston != 0)
-		const relativeAddress = computed(() => {
-			if (direction.value === 'in') { return props.tx.owner.address }
-			if (direction.value === 'out') { return props.tx.recipient }
-			return null
-		})
-		const value = computed(() => props.tx.quantity.ar)
+		const direction = computed(() => props.tx.recipient && props.tx.recipient === ArweaveStore.currentWallet?.key ? 'in' : 'out')
+		const relativeAddress = computed(() => direction.value === 'in' ? props.tx.owner.address : props.tx.recipient || props.tx.target)
+		const value = computed(() => props.tx.quantity?.ar || arweave.ar.winstonToAr(props.tx.quantity))
+		const isValue = computed(() => value.value > 0)
+		const isData = computed(() => (props.tx.data?.size || props.tx.data_size) > 0)
 		const dataType = computed(() => {
-			if (!props.tx.data.type) { return }
-			if (props.tx.data.type === 'application/x.arweave-manifest+json') { return 'Folder' }
-			return props.tx.data.type.split('/').join(' ')
+			const type = tags.value['Content-Type']
+			if (type === 'application/x.arweave-manifest+json') { return 'Folder' }
+			return type?.split('/').join(' ')
 		})
-		const dataInfo = computed(() => {
-			const tags = unpackTags(props.tx.tags)
-			return tags['Service'] || tags['App-Name'] || tags['User-Agent']?.split('/')[0]
-		})
+		const dataInfo = computed(() => tags.value['Service'] || tags.value['App-Name'] || tags.value['User-Agent']?.split('/')[0])
 		const context = computed(() => {
 			const fallback = isValue.value && isData.value ? 'Payment | Data' : isValue.value ? 'Payment' : isData.value ? 'Data' : props.tx.tags ? 'Tags' : 'Empty'
 			const dataTypeUsed = !isValue.value && isData.value

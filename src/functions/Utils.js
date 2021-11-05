@@ -46,17 +46,7 @@ export function download (filename, text) {
 	document.body.removeChild(element)
 }
 
-export function unpackTags (tags) {
-	const result = {}
-	for (const { name, value } of tags) {
-		if (typeof result[name] === 'string') { result[name] = [result[name]] }
-		if (Array.isArray(result[name])) { result[name].push(value) }
-		else { result[name] = value }
-	}
-	return result
-}
-
-export async function awaitEffect(effect) {
+export async function awaitEffect (effect) {
 	let watchStop
 	const promise = new Promise(resolve => {
 		watchStop = watchEffect(() => {

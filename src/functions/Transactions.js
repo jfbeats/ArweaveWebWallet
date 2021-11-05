@@ -57,3 +57,12 @@ export async function getFeeRange () {
 	range.default = (new BigNumber(nextBlock.slice(-100)[0])).plus('1')
 	return range
 }
+
+export function unpackTags (tags, intoArrays) {
+	const result = {}
+	for (const { name, value } of tags) {
+		if (intoArrays) { (result[name] ??= []).push(value) }
+		else { result[name] ??= value }
+	}
+	return result
+}

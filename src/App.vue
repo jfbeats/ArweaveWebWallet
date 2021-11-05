@@ -27,9 +27,6 @@ import { addWallet } from '@/functions/Wallets'
 import { useRoute, useRouter } from 'vue-router'
 import { ref, toRef } from 'vue'
 
-import NotificationStore from '@/store/NotificationStore'
-import ServiceWorker from '@/functions/sw'
-
 export default {
 	components: { Toolbar, UpdateAvailable },
 	setup () {

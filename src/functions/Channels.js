@@ -28,9 +28,8 @@ export const initConnectorChannel = () => {
 	}
 	return channel
 }
-const iframes = computed(() => filterChannels({ type: 'iframe' }))
 
-export { state, states, connectors, iframes }
+export { state, states, connectors }
 
 
 
