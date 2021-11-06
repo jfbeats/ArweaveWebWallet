@@ -1,9 +1,16 @@
 import ArweaveStore, { arweave, pushWallet } from '@/store/ArweaveStore'
 import { download } from '@/functions/Utils'
 import { getKeyPairFromMnemonic } from 'human-crypto-keys'
-import { generateMnemonic, validateMnemonic } from 'bip39'
+// import { generateMnemonic as generateM, validateMnemonic as validateM } from 'bip39'
+// import wordlist from 'bip39/src/wordlists/english.json'
 
-export { generateMnemonic, validateMnemonic }
+export function generateMnemonic () {
+	// return generateM(undefined, undefined, wordlist)
+}
+
+export function validateMnemonic (mnemonic) {
+	// return validateM(mnemonic, wordlist)
+}
 
 export async function addMnemonic (mnemonic) {
 	let keyPair = await getKeyPairFromMnemonic(mnemonic, { id: "rsa", modulusLength: 4096 }, { privateKeyFormat: "pkcs8-der" })

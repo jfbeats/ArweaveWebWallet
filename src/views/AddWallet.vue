@@ -6,6 +6,7 @@
 				<span>Key file</span>
 			</h2>
 			<div class="flex-column">
+				<span class="secondary-text">Note: Generating passphrase is temporarily disabled. However, you can always generate it somewhere else and import</span>
 				<InputData v-model="passphraseInput" @files="importFile" :disabled="isCreatingWallet" placeholder="Import passphrase or key file" />
 				<div />
 				<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create()" :disabled="passphraseInput.length && !isPassphrase" :icon="logoArweave">Create new wallet</Button>
@@ -39,6 +40,7 @@ import InputData from '@/components/atomic/InputData.vue'
 import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import Ledger from '@/functions/Ledger.js'
+import { arweave } from '@/store/ArweaveStore'
 import { addWallet, watchWallet, generateMnemonic, validateMnemonic, addMnemonic } from '@/functions/Wallets.js'
 import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -53,15 +55,19 @@ export default {
 		const passphraseInput = ref('')
 		const popup = reactive({})
 		const isPassphrase = computed(() => passphraseInput.value.trim().split(/\s+/g).length >= 12)
-		const isValidPassphrase = computed(() => validateMnemonic(passphraseInput.value))
+		const isValidPassphrase = computed(() => true)
+		// const isValidPassphrase = computed(() => validateMnemonic(passphraseInput.value))
 		const isCreatingWallet = ref(false)
 		const isGeneratingWallet = ref(false)
 		const createdWallet = ref(null)
 		const create = async () => {
-			isCreatingWallet.value = true
-			passphraseInput.value = generateMnemonic()
-			const wallet = addMnemonic(passphraseInput.value)
-			setTimeout(async () => createdWallet.value = await wallet, 10000)
+			const wallet = await addWallet(await arweave.wallets.generate())
+			router.push({ name: 'EditWallet', query: { wallet: wallet.id } })
+
+			// isCreatingWallet.value = true
+			// passphraseInput.value = generateMnemonic()
+			// const wallet = addMnemonic(passphraseInput.value)
+			// setTimeout(async () => createdWallet.value = await wallet, 10000)
 		}
 		const goToCreatedWallet = () => {
 			router.push({ name: 'EditWallet', query: { wallet: createdWallet.value.id } })
