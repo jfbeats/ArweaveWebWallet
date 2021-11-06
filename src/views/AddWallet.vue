@@ -5,11 +5,13 @@
 				<span>Passphrase</span>
 				<span>Key file</span>
 			</h2>
-			<InputData v-model="passphraseInput" @files="importFile" :disabled="isCreatingWallet" placeholder="Import passphrase or key file" />
-			<br />
-			<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create()" :disabled="passphraseInput.length && !isPassphrase" :icon="logoArweave">Create new wallet</Button>
-			<Button v-else-if="isCreatingWallet" :disabled="!createdWallet" @click="goToCreatedWallet" :icon="!createdWallet ? 'loader' : ''">{{ !createdWallet ? 'Generating, write down the passphrase' : 'Passphrase saved? Click here to proceed' }}</Button>
-			<Button v-else :disabled="!isPassphrase || isGeneratingWallet" @click="isValidPassphrase ? importPassphrase() : confirmPassphrase()">Import passphrase</Button>
+			<div class="flex-column">
+				<InputData v-model="passphraseInput" @files="importFile" :disabled="isCreatingWallet" placeholder="Import passphrase or key file" />
+				<div />
+				<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create()" :disabled="passphraseInput.length && !isPassphrase" :icon="logoArweave">Create new wallet</Button>
+				<Button v-else-if="isCreatingWallet" :disabled="!createdWallet" @click="goToCreatedWallet" :icon="!createdWallet ? 'loader' : ''">{{ !createdWallet ? 'Generating, write down the passphrase' : 'Passphrase saved? Click here to proceed' }}</Button>
+				<Button v-else :disabled="!isPassphrase || isGeneratingWallet" @click="isValidPassphrase ? importPassphrase() : confirmPassphrase()">Import passphrase</Button>
+			</div>
 			<transition name="fade-fast" mode="in-out">
 				<div v-if="popup.enabled" :key="popup.message" class="overlay flex-column">
 					<div style="flex:1 1 auto; display:flex; flex-direction:column; align-items:center; justify-content:space-evenly; margin-bottom:var(--spacing);">
