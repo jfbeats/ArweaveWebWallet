@@ -1,5 +1,5 @@
 <template>
-	<div class="tx-card" :class="{ verticalElement }">
+	<div class="tx-card no-scrollbar" :class="{ verticalElement }">
 		<div class="tx-content" :class="{ 'flex-row': !verticalElement, 'flex-column': verticalElement }">
 			<Link class="left reset" :to="tx.id ? { name: 'Tx', params: { txId: tx.id } } : ''">
 				<TxIcon class="tx-icon" :tx="tx" :direction="direction" />
@@ -77,12 +77,8 @@ export default {
 
 <style scoped>
 .tx-card {
-	overflow: auto;
-	scrollbar-width: none;
-}
-
-.tx-card::-webkit-scrollbar {
-	display: none;
+	overflow-x: auto;
+	display: inline;
 }
 
 .tx-content {

@@ -1,6 +1,6 @@
 <template>
 	<div class="folding-layout">
-		<div class="left" :class="{ hasRight: hasRight() }">
+		<div class="left no-scrollbar" :class="{ hasRight: hasRight() }">
 			<slot name="left" />
 		</div>
 		<div class="right">
@@ -44,16 +44,11 @@ export default {
 }
 
 .left {
-	scrollbar-width: none;
 	overflow: auto;
 	height: var(--current-vh);
 	min-width: 0;
 	position: sticky;
 	top: 0;
-}
-
-.left::-webkit-scrollbar {
-	display: none;
 }
 
 .left.hasRight {
