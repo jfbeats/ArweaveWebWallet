@@ -15,7 +15,7 @@
 		"arverify": "^0.0.11",
 		"arweave": "^1.10.17",
 		"bignumber.js": "^9.0.1",
-		"bip39": "^3.0.4",
+		"bip39-web-crypto": "^4.0.1",
 		"buffer": "^6.0.3",
 		"human-crypto-keys": "^0.1.4",
 		"mitt": "^3.0.0",

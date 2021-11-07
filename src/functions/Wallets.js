@@ -1,15 +1,15 @@
 import ArweaveStore, { arweave, pushWallet } from '@/store/ArweaveStore'
 import { download } from '@/functions/Utils'
 import { getKeyPairFromMnemonic } from 'human-crypto-keys'
-// import { generateMnemonic as generateM, validateMnemonic as validateM } from 'bip39'
-// import wordlist from 'bip39/src/wordlists/english.json'
+import { generateMnemonic as generateM, validateMnemonic as validateM } from 'bip39-web-crypto'
+import wordlist from 'bip39-web-crypto/src/wordlists/english.json'
 
-export function generateMnemonic () {
-	// return generateM(undefined, undefined, wordlist)
+export async function generateMnemonic () {
+	return generateM(undefined, undefined, wordlist)
 }
 
-export function validateMnemonic (mnemonic) {
-	// return validateM(mnemonic, wordlist)
+export async function validateMnemonic (mnemonic) {
+	return validateM(mnemonic, wordlist)
 }
 
 export async function addMnemonic (mnemonic) {
@@ -69,7 +69,7 @@ export async function downloadWallet (wallet) {
 export function loadWallets () {
 	let wallets = []
 	try { wallets = JSON.parse(localStorage.getItem('wallets')) }
-	catch (e) { localStorage.removeItem('wallets') }
+	catch (e) { localStorage.removeItem('wallets') } // TODO critical error
 	orderWallets(wallets)
 	return wallets
 }
@@ -98,6 +98,9 @@ export function saveWalletsOrder (wallets) {
 	}
 	localStorage.setItem('walletsOrder', JSON.stringify(walletsIds))
 }
+
+
+
 
 function init () {
 	const wallets = loadWallets()
