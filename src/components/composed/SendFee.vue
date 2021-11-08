@@ -24,19 +24,17 @@ export default {
 	props: ['target', 'size'],
 	setup (props, { emit }) {
 
-		const txSizeDisplay = computed(() => humanFileSize(props.size))
-		const feeUrl = computed(() => {
-			const address = props.target
-			return ArweaveStore.gatewayURL + 'price/' + props.size + '/' + (address.match(/^[a-z0-9_-]{43}$/i) ? address : '')
-		})
+		const address = computed(() => props.target.slice(0,43).match(/^[a-z0-9_-]{43}$/i) ? props.target.slice(0,43) : '')
 		const txFee = ref(null)
-		const updateFee = async () => { txFee.value = (await axios.get(feeUrl.value)).data }
+		const updateFee = async () => { txFee.value = await arweave.transactions.getPrice(props.size, address.value) }
 		const updateFeeDebounced = debounce(updateFee)
 		updateFee()
-		watch(() => feeUrl.value, () => {
+		watch(() => address.value + props.size, () => {
 			txFee.value = null
 			updateFeeDebounced()
 		})
+
+		const txSizeDisplay = computed(() => humanFileSize(props.size))
 
 		const range = reactive({})
 		getFeeRange().then(obj => Object.assign(range, obj))
