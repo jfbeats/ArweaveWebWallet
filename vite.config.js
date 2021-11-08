@@ -4,6 +4,7 @@ import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 import processHtml from 'vite-plugin-html'
 import inject from '@rollup/plugin-inject'
+import svgLoader from 'vite-svg-loader'
 import pwaOptions from './src/pwaOptions'
 
 export default ({ mode }) => {
@@ -13,7 +14,8 @@ export default ({ mode }) => {
 		plugins: [
 			vue(),
 			processHtml({ inject: { data: { ...env } }, minify: true }),
-			VitePWA(pwaOptions(env))
+			svgLoader({ svgoConfig: { multipass: true } }),
+			VitePWA(pwaOptions(env)),
 		],
 		resolve: {
 			alias: {

@@ -20,7 +20,7 @@
 </template>
 
 <script>
-import ArweaveOutlineLogo from '@/components/visual/ArweaveOutlineLogo.vue'
+import ArweaveOutlineLogo from '@/assets/logos/arweaveOutline.svg?component'
 import TravellingBlocks from '@/components/visual/TravellingBlocks.vue'
 
 export default {

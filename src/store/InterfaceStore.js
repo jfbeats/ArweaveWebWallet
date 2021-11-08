@@ -1,8 +1,8 @@
 import { reactive, watch } from 'vue'
 import mitt from 'mitt'
 
-import logoArweaveBlack from '@/assets/logos/arweaveBlack.svg'
-import logoArweave from '@/assets/logos/arweave.svg'
+import logoArweaveBlack from '@/assets/logos/arweaveBlack.svg?url'
+import logoArweave from '@/assets/logos/arweave.svg?url'
 
 const InterfaceStore = reactive({
 	windowWidth: window.innerWidth,

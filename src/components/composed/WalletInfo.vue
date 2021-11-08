@@ -2,7 +2,7 @@
 	<transition name="fade-fast" mode="out-in">
 		<div class="wallet-info" :key="wallet.key">
 			<div class="name">
-				<Icon class="logo" :icon="walletInfo.img" />
+				<Icon class="logo" :icon="walletInfo.icon" />
 				<div>{{ arweaveId?.Name || walletInfo.name }}</div>
 			</div>
 			<div>
@@ -18,8 +18,8 @@ import Icon from '@/components/atomic/Icon.vue'
 import ProfileStore, { getArweaveId } from '@/store/ProfileStore'
 import { computed, watch } from '@vue/runtime-core'
 
-import logoLedger from '@/assets/logos/ledger.svg'
-import logoArweave from '@/assets/logos/arweave.svg'
+import LogoLedger from '@/assets/logos/ledger.svg?component'
+import LogoArweave from '@/assets/logos/arweave.svg?component'
 
 export default {
 	components: { Address, Icon },
@@ -27,8 +27,8 @@ export default {
 	setup (props) {
 		const arweaveId = computed(() => ProfileStore.arweaveId[props.wallet.key])
 		const walletInfo = computed(() => {
-			if (props.wallet.metaData?.provider === 'Ledger') { return { img: logoLedger, name: 'Ledger' } }
-			return { img: logoArweave, name: 'Arweave wallet' }
+			if (props.wallet.metaData?.provider === 'Ledger') { return { icon: LogoLedger, name: 'Ledger' } }
+			return { icon: LogoArweave, name: 'Arweave wallet' }
 		})
 		watch(() => props.wallet.key, () => {
 			getArweaveId(props.wallet.key)

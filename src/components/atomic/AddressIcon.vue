@@ -2,7 +2,7 @@
 	<div class="address-icon no-select">
 		<transition name="fade-fast">
 			<Identicon class="identicon" v-if="isValid && address" :address="address" alt="wallet logo" draggable="false" @dragstart.prevent />
-			<img class="identicon cloud" v-else src="@/assets/icons/cloud.svg" draggable="false" @dragstart.prevent />
+			<IconCloud v-else class="identicon cloud" draggable="false" @dragstart.prevent />
 		</transition>
 		<transition name="fade-fast">
 			<img class="image" v-if="isValid && arweaveId?.Image" :src="ArweaveStore.gatewayURL + arweaveId?.Image" alt="wallet profile picture" draggable="false" @dragstart.prevent />
@@ -18,9 +18,11 @@ import Identicon from '@/components/atomic/Identicon.vue'
 import ProfileStore, { getArweaveId } from '@/store/ProfileStore'
 import { computed, watch } from 'vue'
 
+import IconCloud from '@/assets/icons/cloud.svg?component'
+
 export default {
 	props: ['address'],
-	components: { Identicon },
+	components: { Identicon, IconCloud },
 	setup (props) {
 		const isValid = computed(() => props.address?.match(/^[a-z0-9_-]{43}$/i))
 		const arweaveId = computed(() => ProfileStore.arweaveId[props.address])

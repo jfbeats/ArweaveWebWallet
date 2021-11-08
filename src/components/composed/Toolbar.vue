@@ -13,14 +13,14 @@
 			<div class="controls" v-if="links">
 				<transition name="fade-fast">
 					<router-link v-if="connectors.length" class="icon control" :class="{ verticalLayout }" to="/connect" aria-label="Add Wallet">
-						<img class="small" src="@/assets/icons/connection.svg" alt="Connections" />
+						<IconConnection class="small" alt="Connections" />
 					</router-link>
 				</transition>
 				<router-link class="icon control" :class="{ verticalLayout }" to="/add" aria-label="Add Wallet">
-					<img class="small" src="@/assets/icons/add_box.svg" alt="Add Wallet" />
+					<IconAddBox class="small" alt="Add Wallet" />
 				</router-link>
 				<router-link class="icon control" :class="{ verticalLayout }" to="/settings" aria-label="Settings">
-					<img class="small" src="@/assets/icons/settings.svg" alt="Settings" />
+					<IconSettings class="small" alt="Settings" />
 				</router-link>
 			</div>
 		</transition>
@@ -41,9 +41,13 @@ import { saveWalletsOrder } from '@/functions/Wallets'
 import { computed, toRef } from 'vue'
 import { useRoute } from 'vue-router'
 
+import IconConnection from '@/assets/icons/connection.svg?component'
+import IconAddBox from '@/assets/icons/add_box.svg?component'
+import IconSettings from '@/assets/icons/settings.svg?component'
+
 export default {
 	name: 'Toolbar',
-	components: { AddressIcon, DragOverlay, SlickList, SlickItem },
+	components: { AddressIcon, DragOverlay, SlickList, SlickItem, IconConnection, IconAddBox, IconSettings },
 	setup () {
 		const route = useRoute()
 		const navTo = computed(() => route.matched[0]?.name === 'Wallet' ? null : 'TxList')

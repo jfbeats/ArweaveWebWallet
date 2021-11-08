@@ -8,7 +8,7 @@
 				</div>
 			</div>
 			<button v-if="row.deletable" class="remove" @click="removeRow(index)" type="button">
-				<Icon :icon="iconX" />
+				<Icon :icon="IconX" />
 			</button>
 		</div>
 	</div>
@@ -20,7 +20,7 @@
 import Icon from '@/components/atomic/Icon.vue'
 import { ref } from 'vue'
 
-import iconX from '@/assets/icons/x.svg'
+import IconX from '@/assets/icons/x.svg?component'
 
 export default {
 	components: { Icon },
@@ -28,7 +28,7 @@ export default {
 	setup (props) {
 		const focus = ref(0)
 		const removeRow = (index) => props.schema.splice(index, 1)
-		return { focus, removeRow, iconX }
+		return { focus, removeRow, IconX }
 	}
 }
 </script>

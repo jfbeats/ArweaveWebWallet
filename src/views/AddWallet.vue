@@ -8,7 +8,7 @@
 			<div class="flex-column">
 				<InputData v-model="passphraseInput" @files="importFile" :disabled="isCreatingWallet" placeholder="Import passphrase or key file" />
 				<div />
-				<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create()" :disabled="passphraseInput.length && !isPassphrase" :icon="logoArweave">Create new wallet</Button>
+				<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create()" :disabled="passphraseInput.length && !isPassphrase" :icon="LogoArweave">Create new wallet</Button>
 				<Button v-else-if="isCreatingWallet" :disabled="!createdWallet" @click="goToCreatedWallet" :icon="!createdWallet ? 'loader' : ''">{{ !createdWallet ? 'Generating, write down the passphrase' : 'Passphrase saved? Click here to proceed' }}</Button>
 				<Button v-else :disabled="!isPassphrase || isGeneratingWallet" @click="confirmPassphrase">Import passphrase</Button>
 			</div>
@@ -26,8 +26,8 @@
 		</div>
 		<div class="card">
 			<h2>Hardware</h2>
-			<Button v-if="supportsWebUSB()" @click="importLedger()" :icon="logoLedger">Ledger</Button>
-			<Button v-else disabled :icon="logoLedger">Ledger not supported for this browser</Button>
+			<Button v-if="supportsWebUSB()" @click="importLedger()" :icon="LogoLedger">Ledger</Button>
+			<Button v-else disabled :icon="LogoLedger">Ledger not supported for this browser</Button>
 		</div>
 	</div>
 </template>
@@ -44,8 +44,8 @@ import { addWallet, watchWallet, generateMnemonic, validateMnemonic, addMnemonic
 import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-import logoArweave from '@/assets/logos/arweave.svg'
-import logoLedger from '@/assets/logos/ledger.svg'
+import LogoArweave from '@/assets/logos/arweave.svg?component'
+import LogoLedger from '@/assets/logos/ledger.svg?component'
 
 export default {
 	components: { InputData, Button, Icon },
@@ -97,7 +97,7 @@ export default {
 		const supportsWebUSB = () => {
 			return !!window.navigator.usb
 		}
-		return { passphraseInput, popup, isPassphrase, create, importLedger, supportsWebUSB, isCreatingWallet, isGeneratingWallet, createdWallet, goToCreatedWallet, importPassphrase, confirmPassphrase, importFile, logoArweave, logoLedger }
+		return { passphraseInput, popup, isPassphrase, create, importLedger, supportsWebUSB, isCreatingWallet, isGeneratingWallet, createdWallet, goToCreatedWallet, importPassphrase, confirmPassphrase, importFile, LogoArweave, LogoLedger }
 	},
 }
 </script>

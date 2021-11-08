@@ -6,7 +6,7 @@
 					<div class="user-info flex-column" :key="wallet.key">
 						<Balance :wallet="wallet" />
 						<div class="actions">
-							<Action v-for="action in actions" :key="action.name" :to="{ name: action.name, query: { ...$route.query } }" :img="action.img" replace>{{ action.text }}</Action>
+							<Action v-for="action in actions" :key="action.name" :to="{ name: action.name, query: { ...$route.query } }" :icon="action.icon" replace>{{ action.text }}</Action>
 						</div>
 					</div>
 				</transition>
@@ -33,9 +33,9 @@ import Action from '@/components/atomic/Action.vue'
 import ArweaveStore, { setCurrentWallet } from '@/store/ArweaveStore'
 import { emitter } from '@/store/InterfaceStore'
 
-import iconNorthEast from '@/assets/icons/north_east.svg'
-import iconSwap from '@/assets/icons/swap.svg'
-import iconCircle from '@/assets/icons/cloud_circle.svg'
+import IconNorthEast from '@/assets/icons/north_east.svg?component'
+import IconSwap from '@/assets/icons/swap.svg?component'
+import IconCircle from '@/assets/icons/cloud_circle.svg?component'
 
 export default {
 	name: 'Wallet',
@@ -43,9 +43,9 @@ export default {
 	props: ['wallet'],
 	setup () {
 		const actions = [
-			{ name: 'Send', img: iconNorthEast, text: 'Send' },
-			{ name: 'TxList', img: iconSwap, text: 'Transactions' },
-			// { name: 'Tokens', img: iconCircle, text: 'Tokens' },
+			{ name: 'Send', icon: IconNorthEast, text: 'Send' },
+			{ name: 'TxList', icon: IconSwap, text: 'Transactions' },
+			// { name: 'Tokens', icon: IconCircle, text: 'Tokens' },
 		]
 		return { actions, emitter }
 	},

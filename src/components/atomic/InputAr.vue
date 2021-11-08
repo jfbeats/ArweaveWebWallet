@@ -1,7 +1,7 @@
 <template>
 	<div class="input-ar input-box" :class="{ focus }">
 		<div class="input">
-			<Icon :icon="logoArweave" />
+			<Icon :icon="LogoArweave"></Icon>
 			<input v-model="model" inputmode="numeric" class="text" placeholder="AR" @focus="focus = 1" @blur="focus = 0" :disabled="disabled" :id="id" />
 		</div>
 		<div v-if="currentPrice" class="spacer"></div>
@@ -19,7 +19,7 @@ import Icon from '@/components/atomic/Icon.vue'
 import ArweaveStore from '@/store/ArweaveStore'
 import { computed, ref, toRef, watch } from 'vue'
 
-import logoArweave from '@/assets/logos/arweave.svg'
+import LogoArweave from '@/assets/logos/arweave.svg?component'
 
 export default {
 	components: { Icon },
@@ -61,7 +61,7 @@ export default {
 		watch(() => model2.value, (newVal, oldVal) => {
 			if (focus.value === 2 && !newVal.match(/^(?:\d*\.?\d*)?$/)) { model2.value = oldVal }
 		})
-		return { model, model2, currentPrice, currency, currencySymbol, focus, logoArweave }
+		return { model, model2, currentPrice, currency, currencySymbol, focus, LogoArweave }
 	}
 }
 </script>

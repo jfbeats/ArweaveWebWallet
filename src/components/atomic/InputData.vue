@@ -4,23 +4,23 @@
 		<transition name="fade">
 			<div v-if="!model && !dragOverlay" class="overlay passthrough">
 				<div class="big-icon-container">
-					<img class="img" src="@/assets/icons/text.svg" />
+					<IconText class="img" />
 				</div>
 				<div class="spacer" />
 				<div class="big-icon-container not-passthrough">
 					<label for="file-picker" class="file-picker-label">
-						<img class="img" src="@/assets/icons/drop.svg" />
+						<IconDrop class="img" />
 					</label>
 					<input type="file" id="file-picker" class="file-input" @change="handleFiles" :disabled="disabled" />
 				</div>
 			</div>
 			<div v-else-if="isFile" class="overlay">
 				<div class="big-icon-container focus">
-					<img class="img" src="@/assets/icons/cloud.svg" />
+					<IconCloud class="img" />
 				</div>
 				<button class="clear" @click="clearFiles" type="button">
 					<div class="icon-container">
-						<img class="icon no-select" src="@/assets/icons/x.svg" draggable="false" />
+						<IconX class="icon no-select" draggable="false" />
 					</div>
 				</button>
 			</div>
@@ -36,8 +36,13 @@ import DragOverlay from '@/components/atomic/DragOverlay.vue'
 import InterfaceStore from '@/store/InterfaceStore'
 import { computed, ref, toRef } from 'vue'
 
+import IconText from '@/assets/icons/text.svg?component'
+import IconDrop from '@/assets/icons/drop.svg?component'
+import IconCloud from '@/assets/icons/cloud.svg?component'
+import IconX from '@/assets/icons/x.svg?component'
+
 export default {
-	components: { DragOverlay },
+	components: { DragOverlay, IconText, IconDrop, IconCloud, IconX },
 	props: ['modelValue', 'disabled', 'id', 'placeholder'],
 	setup (props, { emit, attrs }) {
 		const model = computed({

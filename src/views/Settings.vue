@@ -10,7 +10,7 @@
 			<div class="group">
 				<p>Gateway</p>
 				<div class="flex-row">
-					<Input v-model="gateway" :placeholder="ArweaveStore.gatewayURL" :icon="logoArweave" style="flex:1 1 0;" @keyup.enter="gateway && setGateway()" />
+					<Input v-model="gateway" :placeholder="ArweaveStore.gatewayURL" :icon="LogoArweave" style="flex:1 1 0;" @keyup.enter="gateway && setGateway()" />
 					<Button @click="setGateway()">{{ gateway ? 'Submit' : 'Reset' }}</Button>
 				</div>
 			</div>
@@ -39,7 +39,7 @@ import ArweaveStore, { updateArweave } from '@/store/ArweaveStore'
 import axios from 'axios'
 import { reactive, ref, computed } from 'vue'
 
-import logoArweave from '@/assets/logos/arweave.svg'
+import LogoArweave from '@/assets/logos/arweave.svg?component'
 
 export default {
 	components: { WalletOptions, Input, InputAr, Select, Button, Icon },
@@ -65,7 +65,7 @@ export default {
 
 		const amount = ref('')
 
-		return { ArweaveStore, gateway, setGateway, options, amount, currencySymbol, logoArweave }
+		return { ArweaveStore, gateway, setGateway, options, amount, currencySymbol, LogoArweave }
 	},
 }
 </script>

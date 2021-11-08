@@ -2,12 +2,12 @@
 	<div class="connection-card flex-column">
 		<div class="flex-row">
 			<button type="button" class="info flex-row" @click="navigateBack" :disabled="!navigateBackAvailable(state.origin, state.session)">
-				<IconBackground :img="state.appInfo?.logo" :icon="iconConnection" />
+				<IconBackground :img="state.appInfo?.logo" :icon="IconConnection" />
 				<div style="min-width: 0;">
 					<div class="ellipsis">{{ state.appInfo?.name || 'Connector' }}</div>
 					<div class="secondary-text ellipsis">{{ state.origin }}</div>
 				</div>
-				<Icon v-if="navigateBackAvailable(state.origin, state.session)" :icon="iconLauch" />
+				<Icon v-if="navigateBackAvailable(state.origin, state.session)" :icon="IconLauch" />
 			</button>
 			<WalletSelector v-model="state.wallet" :default="defaultAddress" :exit="true" :active="!isSelectingWallet" @selectWallet="selectWallet" @exit="disconnect" />
 		</div>
@@ -22,7 +22,7 @@
 								<div v-if="currentAddress === state.wallet" class="status fade-list-item" key="0">Connected</div>
 								<Notification v-else :data="connectData" class="fade-list-item" key="1">{{ connectData.content }}</Notification>
 								<div v-if="test" style="padding: var(--spacing);" key="2" class="fade-list-item">
-									<TxCard :tx="test"  />
+									<TxCard :tx="test" />
 								</div>
 							</transition-group>
 						</div>
@@ -54,10 +54,10 @@ import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import { navigateBack, navigateBackAvailable } from '@/functions/Connect'
 import { computed, ref, toRef, watch } from 'vue'
 
-import iconConnection from '@/assets/icons/connection.svg'
-import iconY from '@/assets/icons/y.svg'
-import iconX from '@/assets/icons/x.svg'
-import iconLauch from '@/assets/icons/launch.svg'
+import IconConnection from '@/assets/icons/connection.svg?component'
+import IconY from '@/assets/icons/y.svg?component'
+import IconX from '@/assets/icons/x.svg?component'
+import IconLauch from '@/assets/icons/launch.svg?component'
 
 export default {
 	components: { WalletSelector, WalletTabs, Tabs, IconBackground, Icon, Notification, TxCard },
@@ -102,8 +102,8 @@ export default {
 				title: props.state.wallet ? 'Switch' : 'Connect',
 				timestamp: Date.now(), // todo
 				actions: [
-					{ name: 'Connect', img: iconY, run: connect },
-					{ name: !props.state.wallet ? 'Switch' : 'Cancel', img: iconX, run: !props.state.wallet ? selectWallet : goBack },
+					{ name: 'Connect', icon: IconY, run: connect },
+					{ name: !props.state.wallet ? 'Switch' : 'Cancel', icon: IconX, run: !props.state.wallet ? selectWallet : goBack },
 				],
 				expanded: true,
 				content,
@@ -122,7 +122,7 @@ export default {
 		const testing = async () => test.value = await arweave.createTransaction({ data: 'hello', quantity: '100000000000', target: '32s5eCodNO16YMtSkmKNipQMtjpWz_SORUKwkGvrcrg' })
 		testing().then(() => console.log(test.value))
 
-		return { test, defaultAddress, addresses, currentAddress, tabs, currentTab, isSelectingWallet, selectWallet, connectData, verticalLayout, transitionName, disconnect, navigateBack, navigateBackAvailable, iconConnection, iconLauch }
+		return { test, defaultAddress, addresses, currentAddress, tabs, currentTab, isSelectingWallet, selectWallet, connectData, verticalLayout, transitionName, disconnect, navigateBack, navigateBackAvailable, IconConnection, IconLauch }
 	}
 }
 </script>

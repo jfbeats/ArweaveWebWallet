@@ -1,7 +1,8 @@
 <template>
 	<div class="icon">
 		<transition name="fade-fast" mode="out-in">
-			<svg v-if="icon == 'loader'" class="loader" height="100" width="100" viewBox="0 0 100 100" :class="{ spin: progress == null }">
+			<component v-if="component" :is="component" />
+			<svg v-else-if="icon == 'loader'" class="loader" height="100" width="100" viewBox="0 0 100 100" :class="{ spin: progress == null }">
 				<circle stroke="#ffffff22" :stroke-width="thickness" fill="transparent" :r="normalizedRadius" :cx="50" :cy="50" />
 				<circle stroke="currentColor" :stroke-dasharray="circumference + ' ' + circumference" :style="{ strokeDashoffset }" :stroke-width="thickness" stroke-linecap="round" fill="transparent" :r="normalizedRadius" :cx="50" :cy="50" @animationiteration="finishAnimation = false" :class="{ spin: progress == null || finishAnimation }" />
 			</svg>
@@ -19,6 +20,7 @@ import { computed, ref, watch } from 'vue'
 export default {
 	props: ['icon', 'progress'],
 	setup (props) {
+		const component = computed(() => typeof props.icon === 'object' ? props.icon : null)
 		const isSymbol = computed(() => typeof props.icon === 'string' && props.icon.length <= 2)
 		const thickness = 5
 		const normalizedRadius = 50 - thickness / 2
@@ -28,8 +30,8 @@ export default {
 		watch(() => props.progress, (value, oldValue) => {
 			if (value != null && oldValue == null) { finishAnimation.value = true }
 		})
-		return { isSymbol, thickness, normalizedRadius, circumference, strokeDashoffset, finishAnimation }
-	},
+		return { component, isSymbol, thickness, normalizedRadius, circumference, strokeDashoffset, finishAnimation }
+	}
 }
 </script>
 

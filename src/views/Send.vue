@@ -4,12 +4,12 @@
 			<!-- TODO Autocomplete local addrs -->
 			<label for="target">
 				<h2 class="heading flex-row">
-					<img class="img" src="@/assets/icons/north_east.svg" />
+					<IconNorthEast class="img" />
 					<span>Send</span>
 				</h2>
 			</label>
 			<div class="row flex-row">
-				<Input v-model.trim="model.target" :icon="iconPerson" placeholder="Address" :mask="maskAddress" id="target" />
+				<Input v-model.trim="model.target" :icon="IconPerson" placeholder="Address" :mask="maskAddress" id="target" />
 				<AddressIcon class="address-icon" :address="model.target" />
 			</div>
 			<div class="row bottom flex-row">
@@ -71,7 +71,7 @@
 
 			<div class="row flex-row" style="align-items:flex-end; margin-top:3em;">
 				<SendFee :size="txSize" :target="model.target" @update="fee => txFee = fee" />
-				<Button @click="postTx" :style="submitStyle" :disabled="loading || !txFee" :icon="iconNorthEast">Submit</Button>
+				<Button @click="postTx" :style="submitStyle" :disabled="loading || !txFee" :icon="IconNorthEast">Submit</Button>
 			</div>
 			<div>
 				<transition name="slide-up">
@@ -101,14 +101,14 @@ import { buildTransaction, manageUpload } from '@/functions/Transactions'
 import Ledger from '@/functions/Ledger'
 import BigNumber from 'bignumber.js'
 import { addressToHash, addressHashToColor, awaitEffect } from '@/functions/Utils'
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, watch, markRaw } from 'vue'
 
-import iconPerson from '@/assets/icons/person.svg'
-import iconNorthEast from '@/assets/icons/north_east.svg'
-import iconLabel from '@/assets/icons/label.svg'
+import IconNorthEast from '@/assets/icons/north_east.svg?component'
+import IconPerson from '@/assets/icons/person.svg?component'
+import IconLabel from '@/assets/icons/label.svg?component'
 
 export default {
-	components: { Input, InputAr, InputData, InputGrid, AddressIcon, SendFee, Button, Icon },
+	components: { Input, InputAr, InputData, InputGrid, AddressIcon, SendFee, Button, Icon, IconNorthEast },
 	props: ['wallet', 'model'],
 	setup (props) {
 
@@ -137,7 +137,7 @@ export default {
 
 		const tagSchema = (name, value) => ({
 			items: [
-				{ name: 'Tag', value: name || '', icon: iconLabel },
+				{ name: 'Tag', value: name || '', icon: markRaw(IconLabel) },
 				{ name: 'Value', value: value || '' }
 			], deletable: true, key: Math.random()
 		})
@@ -235,7 +235,7 @@ export default {
 			rgba(${addressHashColor.value},0.3))`
 		}))
 
-		return { maskAddress, setMax, filesAdded, addTag, txSize, txFee, postTx, submitStyle, loading, validation, iconPerson, iconNorthEast }
+		return { maskAddress, setMax, filesAdded, addTag, txSize, txFee, postTx, submitStyle, loading, validation, IconNorthEast, IconPerson }
 	}
 }
 </script>
