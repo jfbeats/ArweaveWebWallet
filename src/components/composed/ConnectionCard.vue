@@ -18,18 +18,18 @@
 					<div :key="(currentAddress || '') + currentTab" class="content">
 						<div v-if="currentTab === 'Requests'">
 							<transition-group name="fade-list">
-								<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="fade-list-item" key="0" />
-								<div v-if="currentAddress === state.wallet" class="status fade-list-item" key="0">Connected</div>
-								<Notification v-else :data="connectData" class="fade-list-item" key="1">{{ connectData.content }}</Notification>
-								<div v-if="test" style="padding: var(--spacing);" key="2" class="fade-list-item">
+								<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="box fade-list-item" key="0" />
+								<div v-if="currentAddress === state.wallet" class="box status fade-list-item" key="0">Connected</div>
+								<Notification v-else :data="connectData" class="box fade-list-item" key="1">{{ connectData.content }}</Notification>
+								<div v-if="test" style="padding: var(--spacing);" key="2" class="box fade-list-item">
 									<TxCard :tx="test" />
 								</div>
 							</transition-group>
 						</div>
 						<div v-else-if="currentTab === 'Permissions'">
 							<transition-group name="fade-list">
-								<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="fade-list-item" key="0" />
-								<div class="status fade-list-item" key="0">WIP</div>
+								<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="box fade-list-item" key="0" />
+								<div class="box status fade-list-item" key="0">WIP</div>
 							</transition-group>
 						</div>
 					</div>
@@ -149,8 +149,6 @@ export default {
 	padding: var(--spacing);
 	justify-content: center;
 	width: 100%;
-	border-bottom: 0.5px solid var(--border);
-	margin-bottom: var(--spacing);
 }
 
 .container {
@@ -178,7 +176,11 @@ export default {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	opacity: 0.4;
+	color: #444;
+}
+
+.content > * > * {
+	background: var(--background);
 }
 
 .notification {
