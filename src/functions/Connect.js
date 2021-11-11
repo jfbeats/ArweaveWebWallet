@@ -1,15 +1,16 @@
 import Arweave from 'arweave'
 import { state, states, filterChannels, initConnectorChannel, hasStorageAccess, awaitStorageAccess } from '@/functions/Channels'
+import JsonRpc from '@/functions/JsonRpc'
 import { awaitEffect } from '@/functions/Utils'
 import { watch, watchEffect, computed } from 'vue'
 
 let windowRef
-const messageQueue = []
 const { origin, session } = state
 
 
 
 if (window.opener) {
+	localStorage.setItem('global', '1')
 	state.type = 'popup'
 	windowRef = window.opener
 	initConnector()
@@ -18,10 +19,11 @@ if (window.opener) {
 	windowRef = window.parent
 	initConnector()
 } else {
-	state.type = 'client'
 	localStorage.setItem('global', '1')
+	state.type = 'client'
+	// if sharedState.link was active for a connection and iframe is unloaded, disconnect
+	// only show connections when popup or iframe is active
 }
-
 
 
 async function initConnector () {
@@ -43,15 +45,35 @@ async function initConnector () {
 		if (linkedState) { sharedState.link = true }
 		else if (state.type == 'iframe' && sharedState.link && !sharedState.wallet) { disconnect() }
 	})
-	window.addEventListener('message', messageListener)
+
+	const procedures = {
+		signTransaction: {
+			guard: (params) => {
+				return typeof params !== 'object' 
+				|| params.format !== 2 
+				|| params.owner && params.owner !== sharedState.wallet
+				|| true
+			}, // todo finish guard
+			procedure: (params) => ''
+		},
+	}
+
+	const jsonRpc = new JsonRpc(procedures)
+
+	window.addEventListener('message', (e) => {
+		if (e.source !== windowRef || e.origin !== origin) { return }
+		console.info(`${location.hostname}:${state.type}:`, e.data)
+		jsonRpc.pushMessage(e.data, postMessage)
+	})
 	if (state.type === 'iframe') { window.addEventListener('beforeunload', () => disconnect()) }
+
 	postMessage({ method: 'ready' })
 }
 
 
 
 function postMessage (message) {
-	windowRef.postMessage({ ...message }, origin)
+	windowRef.postMessage({ ...message, jsonrpc: '2.0' }, origin)
 }
 
 export function navigateBack () {
@@ -65,58 +87,6 @@ export function navigateBack () {
 export function navigateBackAvailable (origin, session) {
 	return window.opener && state.origin === origin && state.session === session
 }
-
-
-
-async function messageListener (e) {
-	const { method, id } = e.data
-	if (e.source !== windowRef || e.origin !== origin) { return }
-	console.info(`${location.hostname}:${state.type}:`, e.data)
-	if (typeof method !== 'string') { return }
-	if (typeof id !== 'number') { return }
-	if (!Object.keys(procedures).includes(method)) {
-		return postMessage({ error: 'Unsupported method', id })
-	}
-	messageQueue.push(e.data)
-	// await storage
-	// skip completed messages
-	processMessage()
-}
-
-async function processMessage () {
-	if (!messageQueue.length || state.processing) { return }
-	state.processing = true
-	const { method, params, id } = messageQueue[0]
-	const response = { id }
-	try {
-		let action = 'rejected' // todo check if message can be processed right away
-		if (action === 'accepted') {
-			response.result = await procedures[method](params)
-		} else {
-			response.error = 'rejected'
-		}
-	} catch (e) {
-		response.error = e.message
-	}
-	postMessage(response)
-	messageQueue.splice(0, 1)
-	state.processing = false
-	// update current id, watch linked component id somewhere
-	processMessage()
-}
-
-const procedures = {
-	async signTransaction (params) {
-		if (typeof message.params !== 'string')
-			if (params.format !== 2) { throw 'unsupported format' }
-		if (params.owner && params.owner !== state.wallet) { throw 'Wrong owner' }
-		console.log('tx would be signed here', params)
-		return '😁'
-	},
-}
-
-
-
 
 
 
