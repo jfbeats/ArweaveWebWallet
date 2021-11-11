@@ -77,7 +77,7 @@ export default {
 
 <style scoped>
 .tx-card {
-	overflow-x: auto;
+	overflow: auto hidden;
 	display: inline;
 }
 

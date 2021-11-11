@@ -6,8 +6,8 @@
 			<Button @click="connect(currentWallet.key)">Connect</Button>
 		</div>-->
 		<Carousel v-model="currentConnectorIndex" class="connectors">
-			<div v-for="connector in connectors" :key="connector.session" class="box fade-list-item">
-				<ConnectionCard :state="connector" />
+			<div v-for="connector in connectors" :key="connector.session" class="connection-card-container  fade-list-item">
+				<ConnectionCard :state="connector" class="box" />
 			</div>
 		</Carousel>
 		<div class="bottom-info secondary-text" style="opacity: 0.0; pointer-events: none;">
@@ -62,7 +62,7 @@ export default {
 	min-height: var(--current-vh);
 }
 
-.box {
+.connection-card-container {
 	height: var(--current-vh);
 	width: var(--current-vw);
 	max-width: var(--column-width-small);

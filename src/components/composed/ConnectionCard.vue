@@ -1,5 +1,5 @@
 <template>
-	<div class="connection-card flex-column">
+	<div class="connection-card flex-column no-scrollbar">
 		<div class="flex-row">
 			<button type="button" class="info flex-row" @click="navigateBack" :disabled="!navigateBackAvailable(state.origin, state.session)">
 				<IconBackground :img="state.appInfo?.logo" :icon="IconConnection" />
@@ -14,26 +14,29 @@
 		<div class="flex-column" style="flex: 1 1 0;">
 			<Tabs :tabs="tabs" v-model="currentTab" :disabled="!currentAddress" />
 			<div class="container">
-				<transition :name="transitionName" mode="out-in">
-					<div :key="(currentAddress || '') + currentTab" class="content">
-						<div v-if="currentTab === 'Requests'">
-							<transition-group name="fade-list">
-								<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="box fade-list-item" key="0" />
-								<div v-if="currentAddress === state.wallet" class="box status fade-list-item" key="0">Connected</div>
-								<Notification v-else :data="connectData" class="box fade-list-item" key="1">{{ connectData.content }}</Notification>
-								<div v-if="test" style="padding: var(--spacing);" key="2" class="box fade-list-item">
-									<TxCard :tx="test" />
-								</div>
-							</transition-group>
+				<div class="container-scroll">
+					<transition :name="transitionName" mode="out-in">
+						<div :key="(currentAddress || '') + currentTab" class="content">
+							<div v-if="currentTab === 'Requests'">
+								<transition-group name="fade-list">
+									<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="box fade-list-item" key="0" />
+									<div v-if="currentAddress === state.wallet" class="box status fade-list-item" key="0">Connected</div>
+									<Notification v-else :data="connectData" class="box fade-list-item" key="1">{{ connectData.content }}</Notification>
+									<div v-if="test" style="padding: var(--spacing);" key="2" class="box flex-column fade-list-item">
+										<TxCard :tx="test" />
+										<TxCardExtension :tx="test" />
+									</div>
+								</transition-group>
+							</div>
+							<div v-else-if="currentTab === 'Permissions'">
+								<transition-group name="fade-list">
+									<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="box fade-list-item" key="0" />
+									<div class="box status fade-list-item" key="0">WIP</div>
+								</transition-group>
+							</div>
 						</div>
-						<div v-else-if="currentTab === 'Permissions'">
-							<transition-group name="fade-list">
-								<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="box fade-list-item" key="0" />
-								<div class="box status fade-list-item" key="0">WIP</div>
-							</transition-group>
-						</div>
-					</div>
-				</transition>
+					</transition>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -49,6 +52,7 @@ import IconBackground from '@/components/atomic/IconBackground.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import Notification from '@/components/composed/Notification.vue'
 import TxCard from '@/components/composed/TxCard.vue'
+import TxCardExtension from '@/components/composed/TxCardExtension.vue'
 import ArweaveStore, { arweave } from '@/store/ArweaveStore'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import { navigateBack, navigateBackAvailable } from '@/functions/Connect'
@@ -60,7 +64,7 @@ import IconX from '@/assets/icons/x.svg?component'
 import IconLauch from '@/assets/icons/launch.svg?component'
 
 export default {
-	components: { WalletSelector, WalletTabs, Tabs, IconBackground, Icon, Notification, TxCard },
+	components: { WalletSelector, WalletTabs, Tabs, IconBackground, Icon, Notification, TxCard, TxCardExtension },
 	props: ['state'],
 	setup (props) {
 		const defaultAddress = ArweaveStore.wallets[0]?.key
@@ -130,6 +134,10 @@ export default {
 
 
 <style scoped>
+.connection-card {
+	overflow-y: auto;
+}
+
 .flex-row {
 	align-items: center;
 }
@@ -153,14 +161,19 @@ export default {
 
 .container {
 	flex: 1 1 0;
-	min-height: 200px;
 	/* max-height: 60vh; */
 	background: var(--background);
 	border-radius: var(--border-radius) var(--border-radius) 0 0;
 	align-items: center;
 	justify-content: flex-start;
-	overflow: hidden auto;
+	overflow: hidden;
 	position: relative;
+	min-height: min(300px, calc(var(--current-vh) - calc(var(--spacing) + 5px)));
+}
+
+.container-scroll {
+	overflow: hidden auto;
+	height: 100%;
 }
 
 .content {
