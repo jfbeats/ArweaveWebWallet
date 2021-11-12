@@ -15,10 +15,11 @@ const getError = (error, data) => ({ error: { ...errors[error], data } })
 
 export default class JsonRpc {
 	procedures = {}
-	messageQueue = reactive([])
+	messageQueue
 	watchStop
 
-	constructor(procedures) {
+	constructor(procedures, reactiveArray) {
+		this.messageQueue = reactiveArray || reactive([])
 		for (const method in procedures) {
 			const { guard, procedure } = procedures[method]
 			this.setProcedure(method, guard, procedure)
@@ -78,4 +79,26 @@ export default class JsonRpc {
 	}
 
 	destructor () { this.watchStop() }
+}
+
+
+
+export const getProcedures = (extendedGuards) => {
+	const procedures = {
+		signTransaction: {
+			guard: (params) => {
+				console.log(params)
+				return typeof params !== 'object' 
+				|| typeof params.tx !== 'object'
+				|| params.tx.format !== 2 
+				|| params.tx.owner && typeof params.tx.owner !== 'string'
+			}, // todo finish guard
+			procedure: (params) => ''
+		},
+	}
+	for (const key in extendedGuards) {
+		const baseGuard = procedures[key].guard
+		procedures[key].guard = (params) => baseGuard(params) || extendedGuards[key](params)
+	}
+	return procedures
 }

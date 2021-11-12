@@ -1,13 +1,22 @@
 import Arweave from 'arweave'
 import { state, states, filterChannels, initConnectorChannel, hasStorageAccess, awaitStorageAccess } from '@/functions/Channels'
-import JsonRpc from '@/functions/JsonRpc'
+import JsonRpc, { getProcedures } from '@/functions/JsonRpc'
 import { awaitEffect } from '@/functions/Utils'
-import { watch, watchEffect, computed } from 'vue'
+import { watch, watchEffect, computed, reactive } from 'vue'
 
 let windowRef
 const { origin, session } = state
+const connectorState = reactive({})
+
+watch(() => connectorState, () => console.log(connectorState), { immediate: true, deep: true })
 
 
+
+const ConnectorFeed = reactive([])
+export default ConnectorFeed
+
+// feedItem { component, message }
+// items only includes unfulfilled messages
 
 if (window.opener) {
 	localStorage.setItem('global', '1')
@@ -25,48 +34,37 @@ if (window.opener) {
 	// only show connections when popup or iframe is active
 }
 
+export { state }
+
+
 
 async function initConnector () {
 	await awaitStorageAccess()
-	const connectorChannel = initConnectorChannel()
+	const connectorChannel = initConnectorChannel(connectorState)
 	connectorChannel.initChannel()
-	const sharedState = connectorChannel.state
 	const connect = () => {
 		// todo reject the whole queue
-		postMessage({ method: 'connect', params: sharedState.wallet })
+		postMessage({ method: 'connect', params: connectorState.wallet })
 	}
 	const disconnect = () => { connectorChannel.deleteChannel(); postMessage({ method: 'disconnect' }) }
 	watchEffect(() => {
-		if (sharedState.wallet === false) { disconnect() }
-		else if (sharedState.wallet) { connect(sharedState.wallet) }
+		if (connectorState.wallet === false) { disconnect() }
+		else if (connectorState.wallet) { connect(connectorState.wallet) }
 	})
 	watchEffect(() => {
 		const linkedState = Object.entries(filterChannels({ origin, session, type: state.type == 'popup' ? 'iframe' : 'popup' }))[0]?.[1]
-		if (linkedState) { sharedState.link = true }
-		else if (state.type == 'iframe' && sharedState.link && !sharedState.wallet) { disconnect() }
+		if (linkedState) { connectorState.link = true }
+		else if (state.type == 'iframe' && connectorState.link && !connectorState.wallet) { disconnect() }
 	})
-
-	const procedures = {
-		signTransaction: {
-			guard: (params) => {
-				return typeof params !== 'object' 
-				|| params.format !== 2 
-				|| params.owner && params.owner !== sharedState.wallet
-				|| true
-			}, // todo finish guard
-			procedure: (params) => ''
-		},
-	}
-
-	const jsonRpc = new JsonRpc(procedures)
-
+	const procedures = getProcedures(extendedGuards)
+	connectorState.messageQueue = []
+	const jsonRpc = new JsonRpc(procedures, connectorState.messageQueue)
 	window.addEventListener('message', (e) => {
 		if (e.source !== windowRef || e.origin !== origin) { return }
 		console.info(`${location.hostname}:${state.type}:`, e.data)
 		jsonRpc.pushMessage(e.data, postMessage)
 	})
 	if (state.type === 'iframe') { window.addEventListener('beforeunload', () => disconnect()) }
-
 	postMessage({ method: 'ready' })
 }
 
@@ -90,4 +88,6 @@ export function navigateBackAvailable (origin, session) {
 
 
 
-export { state }
+const extendedGuards = {
+	signTransaction: (params) => params.tx.owner && params.tx.owner !== connectorState.wallet
+}
