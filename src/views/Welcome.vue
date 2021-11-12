@@ -1,5 +1,5 @@
 <template>
-	<div class="welcome">
+	<div class="welcome flex-column">
 		<transition name="slide-down" appear>
 			<div class="column">
 				<div class="logo-background">
@@ -12,9 +12,11 @@
 				<div>
 					<h1>{{ title }}</h1>
 					<p>{{ description }}</p>
+					<p>Alpha</p>
 				</div>
 			</div>
 		</transition>
+		<div class="spacer" />
 		<TravellingBlocks />
 	</div>
 </template>
@@ -36,9 +38,12 @@ export default {
 
 <style scoped>
 .welcome {
+	--fixed-spacing: min(92px, 50vw);
+	--spacing: min(var(--fixed-spacing), min(16vw, 7vh));
 	width: 100%;
 	min-height: var(--current-vh);
-	padding: 92px;
+	padding: var(--fixed-spacing);
+	padding-top: var(--spacing);
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -50,8 +55,7 @@ export default {
 .column {
 	width: 100%;
 	max-width: 35vh;
-	min-width: 256px;
-	margin-bottom: 92px;
+	min-width: 320px;
 }
 
 .logo-background {
@@ -70,6 +74,8 @@ export default {
 	display: flex;
 	justify-content: center;
 	text-align: center;
+	min-width: min(320px, 100vw);
+	max-width: min(35vh, 100vw);
 }
 
 .travelling-blocks {
@@ -77,5 +83,10 @@ export default {
 	width: 100%;
 	height: 100%;
 	opacity: 0.8;
+	margin: 0;
+}
+
+h1 {
+	margin-top: 0;
 }
 </style>
