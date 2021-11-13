@@ -22,10 +22,7 @@
 									<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="box fade-list-item" key="0" />
 									<div v-if="connectionFeed.length === 0 && state.wallet && state.wallet === currentAddress" class="box status fade-list-item" key="0">Connected</div>
 									<Notification v-if="currentAddress !== state.wallet" :data="connectData" class="box fade-list-item" key="1">{{ connectData.content }}</Notification>
-									<div v-for="messageEntry in connectionFeed" :key="messageEntry.timestamp" style="padding: var(--spacing);" class="box flex-column fade-list-item">
-										<TxCard :tx="messageEntry.message.params.tx" />
-										<TxCardExtension :tx="messageEntry.message.params.tx" />
-									</div>
+									<PermissionCard v-for="messageEntry in connectionFeed" :key="messageEntry.timestamp" :messageEntry="messageEntry" style="padding: var(--spacing);" class="box flex-column fade-list-item" />
 								</transition-group>
 							</div>
 							<div v-else-if="currentTab === 'Permissions'">
@@ -51,8 +48,7 @@ import Tabs from '@/components/atomic/Tabs.vue'
 import IconBackground from '@/components/atomic/IconBackground.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import Notification from '@/components/composed/Notification.vue'
-import TxCard from '@/components/composed/TxCard.vue'
-import TxCardExtension from '@/components/composed/TxCardExtension.vue'
+import PermissionCard from "@/components/composed/PermissionCard.vue";
 import ArweaveStore, { arweave } from '@/store/ArweaveStore'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import { navigateBack, navigateBackAvailable } from '@/functions/Connect'
@@ -64,7 +60,7 @@ import IconX from '@/assets/icons/x.svg?component'
 import IconLauch from '@/assets/icons/launch.svg?component'
 
 export default {
-	components: { WalletSelector, WalletTabs, Tabs, IconBackground, Icon, Notification, TxCard, TxCardExtension },
+	components: {PermissionCard, WalletSelector, WalletTabs, Tabs, IconBackground, Icon, Notification },
 	props: ['state'],
 	setup (props) {
 		const defaultAddress = ArweaveStore.wallets[0]?.key

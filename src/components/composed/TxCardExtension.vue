@@ -1,6 +1,6 @@
 <template>
 	<div class="tx-card-extension">
-		Extension
+		{{ tags }}
 	</div>
 </template>
 
@@ -25,7 +25,7 @@ export default {
 		
 		const verticalElement = computed(() => InterfaceStore.breakpoints.verticalLayout)
 
-		return { verticalElement }
+		return { verticalElement, tags }
 	}
 }
 </script>
