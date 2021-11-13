@@ -20,8 +20,8 @@
 							<div v-if="currentTab === 'Requests'">
 								<transition-group name="fade-list">
 									<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="box fade-list-item" key="0" />
-									<div v-if="currentAddress === state.wallet" class="box status fade-list-item" key="0">Connected</div>
-									<Notification v-else :data="connectData" class="box fade-list-item" key="1">{{ connectData.content }}</Notification>
+									<div v-if="connectionFeed.length === 0 && state.wallet && state.wallet === currentAddress" class="box status fade-list-item" key="0">Connected</div>
+									<Notification v-if="currentAddress !== state.wallet" :data="connectData" class="box fade-list-item" key="1">{{ connectData.content }}</Notification>
 									<div v-for="messageEntry in connectionFeed" :key="messageEntry.timestamp" style="padding: var(--spacing);" class="box flex-column fade-list-item">
 										<TxCard :tx="messageEntry.message.params.tx" />
 										<TxCardExtension :tx="messageEntry.message.params.tx" />
@@ -197,6 +197,7 @@ export default {
 
 .content > * > * {
 	background: var(--background);
+	width: 100%;
 }
 
 .notification {
