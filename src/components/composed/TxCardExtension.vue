@@ -1,6 +1,10 @@
 <template>
 	<div class="tx-card-extension">
-		{{ tags }}
+		<div class="secondary-text">
+			<div v-for="tag in tx.tags">
+				{{ tag.name + ': ' + tag.value }}
+			</div>
+		</div>
 	</div>
 </template>
 
@@ -20,12 +24,10 @@ export default {
 		// data_size
 		// data
 		// reward
-
-		const tags = computed(() => unpackTags(props.tx.tags))
 		
 		const verticalElement = computed(() => InterfaceStore.breakpoints.verticalLayout)
 
-		return { verticalElement, tags }
+		return { verticalElement }
 	}
 }
 </script>

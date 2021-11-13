@@ -33,6 +33,7 @@ export default {
 
 <style scoped>
 .wallet-selector {
+	--spacing: var(--toolbar-spacing);
 	display: flex;
 }
 
