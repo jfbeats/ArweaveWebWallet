@@ -15,11 +15,13 @@ const getError = (error, data) => ({ error: { ...errors[error], data } })
 
 export default class JsonRpc {
 	procedures = {}
+	callbacks
 	messageQueue
 	watchStop
 
-	constructor(procedures, reactiveArray) {
+	constructor(procedures, callbacks, reactiveArray) {
 		this.messageQueue = reactiveArray || reactive([])
+		this.callbacks = callbacks
 		for (const method in procedures) {
 			const { guard, procedure } = procedures[method]
 			this.setProcedure(method, guard, procedure)
@@ -30,10 +32,11 @@ export default class JsonRpc {
 				if (messageEntry.status === 'accepted') { this.runMessage(messageEntry) }
 				if (messageEntry.status === 'rejected') {
 					messageEntry.fulfilled = true
-					messageEntry.callback(getError('rejected'))
+					const id = messageEntry.message.id
+					this.callbacks({ ...getError('rejected'), id })
 				}
 			}
-		})
+		}, { deep: true })
 	}
 
 	setProcedure (method, guard, procedure) {
@@ -43,38 +46,39 @@ export default class JsonRpc {
 		this.procedures[method] = { guard, procedure }
 	}
 
-	pushMessage (message, resultCallback) {
+	pushMessage (message) {
+		// verify id does not exist already
+		// message should be duplicated in shared state, find out why it's not
 		const id = message.id
-		const callback = (id != null) ? (msg) => resultCallback({ ...msg, id }) : (() => { })
-		const messageEntry = { message, callback, status: null, fulfilled: false }
+		const messageEntry = { message, timestamp: Date.now(), status: null, fulfilled: false }
 		if (!this.verifyMessage(messageEntry)) { return }
 		this.messageQueue.push(messageEntry)
 		return true
 	}
 
 	runMessage (messageEntry) {
-		const { message, callback, status } = messageEntry
+		const { message, status } = messageEntry
+		const id = messageEntry.message.id
 		if (status !== 'accepted') { return }
-		if (!this.verifyMessage(message, callback)) { messageEntry.status = 'error'; messageEntry.fulfilled = true; return }
+		if (!this.verifyMessage(messageEntry)) { messageEntry.status = 'error'; messageEntry.fulfilled = true; return }
 		try {
 			const result = this.procedures[message.method](message.params)
-			callback({ result })
+			this.callbacks({ result, id })
 			messageEntry.fulfilled = true
 		} catch (e) {
 			messageEntry.fulfilled = true
 			messageEntry.status = 'error'
 			console.error(e)
-			callback(getError('internal'))
+			this.callbacks({ ...getError('internal'), id })
 		}
 	}
 
 	verifyMessage (messageEntry) {
 		const { method, params, id } = messageEntry.message
-		const callback = messageEntry.callback
-		if (typeof method !== 'string') { callback(getError('request')); return }
-		if (id != null && typeof id !== 'number' && typeof id !== 'string') { callback(getError('request')); return }
-		if (!Object.keys(this.procedures).includes(method)) { callback(getError('method')); return }
-		if (this.procedures[method].guard(params)) { callback(getError('params')); return }
+		if (typeof method !== 'string') { this.callbacks({ ...getError('request'), id }); return }
+		if (id != null && typeof id !== 'number' && typeof id !== 'string') { this.callbacks({ ...getError('request'), id }); return }
+		if (!Object.keys(this.procedures).includes(method)) { this.callbacks({ ...getError('method'), id }); return }
+		if (this.procedures[method].guard(params)) { this.callbacks({ ...getError('params'), id }); return }
 		return true
 	}
 

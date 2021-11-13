@@ -22,7 +22,7 @@
 									<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="box fade-list-item" key="0" />
 									<div v-if="currentAddress === state.wallet" class="box status fade-list-item" key="0">Connected</div>
 									<Notification v-else :data="connectData" class="box fade-list-item" key="1">{{ connectData.content }}</Notification>
-									<div v-if="test" style="padding: var(--spacing);" key="2" class="box flex-column fade-list-item">
+									<div v-for="message in connectionFeed" :key="message.timestamp" style="padding: var(--spacing);" class="box flex-column fade-list-item">
 										<TxCard :tx="test" />
 										<TxCardExtension :tx="test" />
 									</div>
@@ -115,6 +115,9 @@ export default {
 		})
 
 
+		const connectionFeed = computed(() => props.state.messageQueue.filter((m) => !m.fulfilled))
+
+
 
 		const verticalLayout = toRef(InterfaceStore.breakpoints, 'verticalLayout')
 		const transitionName = ref(null)
@@ -126,7 +129,7 @@ export default {
 		const testing = async () => test.value = await arweave.createTransaction({ data: 'hello', quantity: '100000000000', target: '32s5eCodNO16YMtSkmKNipQMtjpWz_SORUKwkGvrcrg' })
 		testing().then(() => console.log(test.value))
 
-		return { test, defaultAddress, addresses, currentAddress, tabs, currentTab, isSelectingWallet, selectWallet, connectData, verticalLayout, transitionName, disconnect, navigateBack, navigateBackAvailable, IconConnection, IconLauch }
+		return { test, defaultAddress, addresses, currentAddress, tabs, currentTab, isSelectingWallet, selectWallet, connectData, connectionFeed, verticalLayout, transitionName, disconnect, navigateBack, navigateBackAvailable, IconConnection, IconLauch }
 	}
 }
 </script>

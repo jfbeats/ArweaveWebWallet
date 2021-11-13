@@ -12,12 +12,10 @@ const stateChannel = chPrefix + instance
 const { state, initChannel, closeChannel } = getChannel(instance, chPrefix)
 const { states, initChannels, closeChannels } = getChannels(chPrefix)
 const connectorChannels = getChannels(sharedPrefix)
-const connectors = computed(() => Object.entries(connectorChannels.states)
-	.map(([key, val]) => val).filter(c => c.wallet !== false).sort((a, b) => a.timestamp - b.timestamp))
 
-export const initConnectorChannel = (reactiveObject) => {
+export function initConnectorChannel () {
 	if (!origin || !session) { return }
-	const channel = getChannel(origin + session, sharedPrefix, reactiveObject)
+	const channel = getChannel(origin + session, sharedPrefix)
 	if (!channel.state.origin) { Object.assign(channel.state, { origin, session, appInfo, wallet: null, timestamp: Date.now() }) }
 	channel.deleteChannel = () => {
 		channel.closeChannel()
@@ -26,7 +24,7 @@ export const initConnectorChannel = (reactiveObject) => {
 	return channel
 }
 
-export { state, states, connectors }
+export { state, states, connectorChannels }
 
 
 
@@ -69,10 +67,10 @@ function getChannels (prefix) {
 	return { states, initChannels, closeChannels }
 }
 
-export function getChannel (instanceName, prefix, reactiveObject) {
+export function getChannel (instanceName, prefix) {
 	const stateChannel = prefix + instanceName
 	const mustWrite = instanceName === instance && prefix === chPrefix
-	const state = reactiveObject || reactive(mustWrite ? { origin, session } : {})
+	const state = reactive(mustWrite ? { origin, session } : {})
 	const writeState = () => {
 		const stateString = JSON.stringify(state)
 		if (stateString === localStorage.getItem(stateChannel)) { return }

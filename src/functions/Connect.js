@@ -1,22 +1,21 @@
 import Arweave from 'arweave'
-import { state, states, filterChannels, initConnectorChannel, hasStorageAccess, awaitStorageAccess } from '@/functions/Channels'
+import { state, states, connectorChannels, filterChannels, initConnectorChannel, hasStorageAccess, awaitStorageAccess } from '@/functions/Channels'
 import JsonRpc, { getProcedures } from '@/functions/JsonRpc'
 import { awaitEffect } from '@/functions/Utils'
-import { watch, watchEffect, computed, reactive } from 'vue'
+import { watch, watchEffect, computed, reactive, ref } from 'vue'
 
 let windowRef
 const { origin, session } = state
-const connectorState = reactive({})
+const sharedState = ref(null)
+export const connectors = computed(() => {
+	const allConnectors = Object.entries(connectorChannels.states)
+		.filter(([key, val]) => key !== (origin + session) && val.wallet !== false)
+		.map(([key, val]) => val)
+	if (sharedState.value) { allConnectors.push(sharedState.value) }
+	return allConnectors.sort((a, b) => a.timestamp - b.timestamp)
+})
 
-watch(() => connectorState, () => console.log(connectorState), { immediate: true, deep: true })
 
-
-
-const ConnectorFeed = reactive([])
-export default ConnectorFeed
-
-// feedItem { component, message }
-// items only includes unfulfilled messages
 
 if (window.opener) {
 	localStorage.setItem('global', '1')
@@ -26,7 +25,7 @@ if (window.opener) {
 } else if (window.parent && window.parent !== window) {
 	state.type = 'iframe'
 	windowRef = window.parent
-	initConnector()
+	// initConnector()
 } else {
 	localStorage.setItem('global', '1')
 	state.type = 'client'
@@ -40,29 +39,30 @@ export { state }
 
 async function initConnector () {
 	await awaitStorageAccess()
-	const connectorChannel = initConnectorChannel(connectorState)
-	connectorChannel.initChannel()
+	const { state: connectorState, initChannel, deleteChannel } = initConnectorChannel()
+	sharedState.value = connectorState
+	initChannel()
 	const connect = () => {
 		// todo reject the whole queue
 		postMessage({ method: 'connect', params: connectorState.wallet })
 	}
-	const disconnect = () => { connectorChannel.deleteChannel(); postMessage({ method: 'disconnect' }) }
+	const disconnect = () => { deleteChannel(); postMessage({ method: 'disconnect' }) }
+	watch(() => connectorState.wallet, (wallet) => wallet === false ? disconnect() : connect(wallet))
 	watchEffect(() => {
-		if (connectorState.wallet === false) { disconnect() }
-		else if (connectorState.wallet) { connect(connectorState.wallet) }
-	})
-	watchEffect(() => {
-		const linkedState = Object.entries(filterChannels({ origin, session, type: state.type == 'popup' ? 'iframe' : 'popup' }))[0]?.[1]
+		const linkedState = Object.entries(filterChannels({ origin, session, type: state.type === 'popup' ? 'iframe' : 'popup' }))[0]?.[1]
 		if (linkedState) { connectorState.link = true }
-		else if (state.type == 'iframe' && connectorState.link && !connectorState.wallet) { disconnect() }
+		else if (state.type === 'iframe' && connectorState.link && !connectorState.wallet) { disconnect() }
 	})
+	const extendedGuards = {
+		signTransaction: (params) => params.tx.owner && params.tx.owner !== connectorState.wallet
+	}
 	const procedures = getProcedures(extendedGuards)
 	connectorState.messageQueue = []
-	const jsonRpc = new JsonRpc(procedures, connectorState.messageQueue)
+	const jsonRpc = new JsonRpc(procedures, postMessage, connectorState.messageQueue)
 	window.addEventListener('message', (e) => {
 		if (e.source !== windowRef || e.origin !== origin) { return }
 		console.info(`${location.hostname}:${state.type}:`, e.data)
-		jsonRpc.pushMessage(e.data, postMessage)
+		jsonRpc.pushMessage(e.data)
 	})
 	if (state.type === 'iframe') { window.addEventListener('beforeunload', () => disconnect()) }
 	postMessage({ method: 'ready' })
@@ -84,10 +84,4 @@ export function navigateBack () {
 
 export function navigateBackAvailable (origin, session) {
 	return window.opener && state.origin === origin && state.session === session
-}
-
-
-
-const extendedGuards = {
-	signTransaction: (params) => params.tx.owner && params.tx.owner !== connectorState.wallet
 }
