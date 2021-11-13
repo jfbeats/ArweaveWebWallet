@@ -43,19 +43,19 @@
 <script>
 import Icon from '@/components/atomic/Icon.vue'
 import ArweaveStore from '@/store/ArweaveStore'
+import {computed} from "vue";
 
 export default {
 	components: { Icon },
 	props: ['tx', 'direction'],
-	computed: {
-		isData () { return this.tx.data.size != 0 },
-		isValue () { return this.tx.quantity.winston != 0 },
-		isPending () { return !this.tx.block },
-		uploadProgress () { return ArweaveStore.uploads[this.tx.id]?.upload },
-		styleObject () {
-			return { 'color': this.isData && !this.isValue ? 'var(--orange)' : this.direction === 'in' ? 'var(--green)' : 'var(--red)' }
-		},
-	},
+	setup (props) {
+		const isData = computed(() => (props.tx.data?.size || props.tx.data_size) > 0)
+		const isValue = computed(() => (props.tx.quantity?.winston || props.tx.quantity) > 0)
+		const isPending = computed(() => !props.tx.id || !props.tx.block)
+		const uploadProgress = computed(() => ArweaveStore.uploads[props.tx.id]?.upload)
+		const styleObject = computed(() => ({ 'color': isData.value && !isValue.value ? 'var(--orange)' : props.direction === 'in' ? 'var(--green)' : 'var(--red)' }))
+		return { isData, isValue, isPending, uploadProgress, styleObject }
+	}
 }
 </script>
 

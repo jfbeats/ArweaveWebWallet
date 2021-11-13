@@ -22,9 +22,9 @@
 									<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="box fade-list-item" key="0" />
 									<div v-if="currentAddress === state.wallet" class="box status fade-list-item" key="0">Connected</div>
 									<Notification v-else :data="connectData" class="box fade-list-item" key="1">{{ connectData.content }}</Notification>
-									<div v-for="message in connectionFeed" :key="message.timestamp" style="padding: var(--spacing);" class="box flex-column fade-list-item">
-										<TxCard :tx="test" />
-										<TxCardExtension :tx="test" />
+									<div v-for="messageEntry in connectionFeed" :key="messageEntry.timestamp" style="padding: var(--spacing);" class="box flex-column fade-list-item">
+										<TxCard :tx="messageEntry.message.params.tx" />
+										<TxCardExtension :tx="messageEntry.message.params.tx" />
 									</div>
 								</transition-group>
 							</div>

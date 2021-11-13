@@ -25,7 +25,7 @@ if (window.opener) {
 } else if (window.parent && window.parent !== window) {
 	state.type = 'iframe'
 	windowRef = window.parent
-	// initConnector()
+	initConnector()
 } else {
 	localStorage.setItem('global', '1')
 	state.type = 'client'
@@ -51,14 +51,14 @@ async function initConnector () {
 	watchEffect(() => {
 		const linkedState = Object.entries(filterChannels({ origin, session, type: state.type === 'popup' ? 'iframe' : 'popup' }))[0]?.[1]
 		if (linkedState) { connectorState.link = true }
-		else if (state.type === 'iframe' && connectorState.link && !connectorState.wallet) { disconnect() }
+		const disconnectCondition = () => !linkedState && state.type === 'iframe' && connectorState.link && !connectorState.wallet
+		if (disconnectCondition()) { setTimeout(() => disconnectCondition() && disconnect(), 500) }
 	})
 	const extendedGuards = {
 		signTransaction: (params) => params.tx.owner && params.tx.owner !== connectorState.wallet
 	}
 	const procedures = getProcedures(extendedGuards)
-	connectorState.messageQueue = []
-	const jsonRpc = new JsonRpc(procedures, postMessage, connectorState.messageQueue)
+	const jsonRpc = new JsonRpc(procedures, postMessage, connectorState)
 	window.addEventListener('message', (e) => {
 		if (e.source !== windowRef || e.origin !== origin) { return }
 		console.info(`${location.hostname}:${state.type}:`, e.data)
