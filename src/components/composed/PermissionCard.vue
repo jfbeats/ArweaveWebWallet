@@ -29,8 +29,8 @@ export default {
 			tx.value = { ...receivedTx, tags }
 		}
 		const actions = [
-			{ name: 'Accept', icon: IconY, run: () => {} },
-			{ name: 'Reject', icon: IconX, run: () => {} },
+			{ name: 'Accept', icon: IconY, run: () => props.messageEntry.status = 'accepted' },
+			{ name: 'Reject', icon: IconX, run: () => props.messageEntry.status = 'rejected' },
 		]
 		return { tx, actions }
 	}

@@ -1,16 +1,18 @@
 <template>
 	<div class="tx-card-extension">
-		<div class="flex-row" style="justify-content:space-between;">
-			<div>Tags:</div>
-			<div>Data: {{ humanFileSize(tx.data_size) }}</div>
+		<div v-if="tx.tags.length || tx.data_size" class="flex-row" style="justify-content:space-between;">
+			<div v-if="tx.tags.length">Tags:</div>
+			<div v-if="tx.data_size">Data: {{ humanFileSize(tx.data_size) }}</div>
 		</div>
-		<ul class="tags secondary-text">
+		<ul v-if="tx.tags.length" class="tags secondary-text">
 			<li v-for="tag in tx.tags">
 				{{ tag.name + ' | ' + tag.value }}
 			</li>
 		</ul>
 	</div>
 </template>
+
+
 
 <script>
 import Address from '@/components/atomic/Address.vue'
@@ -39,6 +41,8 @@ export default {
 	}
 }
 </script>
+
+
 
 <style scoped>
 .tags {
