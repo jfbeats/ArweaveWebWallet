@@ -8,10 +8,7 @@
 					<span>Send</span>
 				</h2>
 			</label>
-			<div class="row flex-row">
-				<Input v-model.trim="model.target" :icon="IconPerson" placeholder="Address" :mask="maskAddress" id="target" />
-				<AddressIcon class="address-icon" :address="model.target" />
-			</div>
+			<InputAddress v-model="model.target" id="target" />
 			<div class="row bottom flex-row">
 				<div>
 					<transition name="slide-up">
@@ -88,32 +85,27 @@
 
 
 <script>
-import Input from '@/components/atomic/Input.vue'
+import InputAddress from '@/components/atomic/InputAddress.vue';
 import InputAr from '@/components/atomic/InputAr.vue'
 import InputData from '@/components/atomic/InputData.vue'
 import InputGrid from '@/components/atomic/InputGrid.vue'
-import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import SendFee from '@/components/composed/SendFee.vue'
 import Button from '@/components/atomic/Button.vue'
-import Icon from '@/components/atomic/Icon.vue'
-import { arweave } from '@/store/ArweaveStore'
-import { buildTransaction, manageUpload } from '@/functions/Transactions'
+import {arweave} from '@/store/ArweaveStore'
+import {buildTransaction, manageUpload} from '@/functions/Transactions'
 import Ledger from '@/functions/Ledger'
 import BigNumber from 'bignumber.js'
-import { addressToHash, addressHashToColor, awaitEffect } from '@/functions/Utils'
-import { computed, reactive, ref, watch, markRaw } from 'vue'
+import {addressHashToColor, addressToHash, awaitEffect} from '@/functions/Utils'
+import {computed, markRaw, reactive, ref, watch} from 'vue'
 
 import IconNorthEast from '@/assets/icons/north_east.svg?component'
-import IconPerson from '@/assets/icons/person.svg?component'
+
 import IconLabel from '@/assets/icons/label.svg?component'
 
 export default {
-	components: { Input, InputAr, InputData, InputGrid, AddressIcon, SendFee, Button, Icon, IconNorthEast },
+	components: { InputAddress, InputAr, InputData, InputGrid, SendFee, Button, IconNorthEast },
 	props: ['wallet', 'model'],
 	setup (props) {
-
-		const maskAddress = (address) => { return address.match(/^[a-z0-9_-]{0,43}$/i) }
-
 		const setMax = async () => {
 			const balance = new BigNumber(props.wallet.balance)
 			await awaitEffect(() => txFee.value)
@@ -235,7 +227,7 @@ export default {
 			rgba(${addressHashColor.value},0.3))`
 		}))
 
-		return { maskAddress, setMax, filesAdded, addTag, txSize, txFee, postTx, submitStyle, loading, validation, IconNorthEast, IconPerson }
+		return { setMax, filesAdded, addTag, txSize, txFee, postTx, submitStyle, loading, validation, IconNorthEast }
 	}
 }
 </script>
@@ -246,18 +238,6 @@ export default {
 .send {
 	display: flex;
 	flex-direction: column;
-}
-
-.input {
-	flex: 1 1 0;
-}
-
-.address-icon {
-	flex: 0 0 auto;
-	width: 3.5em;
-	height: 3.5em;
-	padding: 0;
-	border-radius: var(--border-radius);
 }
 
 .heading {

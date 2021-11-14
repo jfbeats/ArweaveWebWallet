@@ -2,7 +2,9 @@
 	<div class="input input-box" :class="{ focus }">
 		<Icon v-if="icon" :icon="icon" />
 		<input class="text" v-model="model" :placeholder="placeholder" @focus="focus = true" @blur="focus = false" :disabled="disabled" :id="id" />
-		<Icon v-for="action in actions" :key="action.icon" :icon="action.icon" @click="action.function" />
+		<button v-for="action in actions" class="action" :key="action.icon" @click="action.run">
+			<Icon :icon="action.icon" />
+		</button>
 	</div>
 </template>
 
@@ -60,5 +62,9 @@ export default {
 	background-color: transparent;
 	color: var(--element-secondary);
 	width: 100%;
+}
+
+.action {
+	height: 100%;
 }
 </style>
