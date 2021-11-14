@@ -1,7 +1,8 @@
 <template>
-	<div v-if="messageEntry.message.method === 'signTransaction'">
+	<div v-if="messageEntry.message.method === 'signTransaction'" class="permission-card">
 		<TxCard :tx="tx" />
 		<TxCardExtension :tx="tx" />
+		<ActionList :actions="actions" />
 	</div>
 </template>
 
@@ -10,10 +11,14 @@
 <script>
 import TxCard from '@/components/composed/TxCard.vue'
 import TxCardExtension from '@/components/composed/TxCardExtension.vue'
+import ActionList from '@/components/composed/ActionsList.vue'
 import { ref } from 'vue'
 
+import IconY from '@/assets/icons/y.svg?component'
+import IconX from '@/assets/icons/x.svg?component'
+
 export default {
-	components: { TxCard, TxCardExtension },
+	components: { TxCard, TxCardExtension, ActionList },
 	props: ['messageEntry'],
 	setup (props) {
 		const tx = ref(null)
@@ -23,7 +28,19 @@ export default {
 			const tags = receivedTx.tags.map(({name, value}) => ({ name: window.atob(name), value: window.atob(value) }))
 			tx.value = { ...receivedTx, tags }
 		}
-		return { tx }
+		const actions = [
+			{ name: 'Accept', icon: IconY, run: () => {} },
+			{ name: 'Reject', icon: IconX, run: () => {} },
+		]
+		return { tx, actions }
 	}
 }
 </script>
+
+
+
+<style scoped>
+.actions-list {
+	justify-content: space-around;
+}
+</style>

@@ -9,12 +9,7 @@
 					<div class="secondary-text">
 						<slot />
 					</div>
-					<div v-if="data.expanded" class="actions flex-row">
-						<button v-for="action in data.actions" :key="action.name" @click="action.run" type="button" class="action flex-row">
-							<Icon :icon="action.icon" />
-							<div>{{ action.name }}</div>
-						</button>
-					</div>
+					<ActionsList v-if="data.expanded" :actions="data.actions"/>
 				</div>
 			</div>
 			<Expand v-model="data.expanded" />
@@ -26,15 +21,14 @@
 
 <script>
 import IconBackground from '@/components/atomic/IconBackground.vue'
-import Icon from '@/components/atomic/Icon.vue'
 import Date from '@/components/atomic/Date.vue'
 import Expand from '@/components/atomic/Expand.vue'
-import { ref } from 'vue'
+import ActionsList from '@/components/composed/ActionsList.vue';
 
 import IconNotification from '@/assets/icons/notification.svg?component'
 
 export default {
-	components: { IconBackground, Icon, Date, Expand },
+	components: {ActionsList, IconBackground, Date, Expand },
 	props: ['data'],
 	setup (props) {
 		return { IconNotification }
@@ -70,20 +64,6 @@ export default {
 	text-overflow: ellipsis;
 	overflow: hidden;
 	white-space: nowrap;
-}
-
-.actions {
-	padding-top: 0.5em;
-	font-size: 0.9em;
-}
-
-.action {
-	--spacing: var(--spacing-default);
-	align-items: center;
-}
-
-.action > * {
-	--spacing: var(--spacing-notification);
 }
 
 .expand {

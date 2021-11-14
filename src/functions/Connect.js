@@ -43,7 +43,7 @@ async function initConnector () {
 	sharedState.value = connectorState
 	initChannel()
 	const connect = () => {
-		// todo reject the whole queue
+		// todo reject transactions that are designated to current address
 		postMessage({ method: 'connect', params: connectorState.wallet })
 	}
 	const disconnect = () => { deleteChannel(); postMessage({ method: 'disconnect' }) }
