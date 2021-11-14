@@ -5,7 +5,7 @@
 			<IconCloud v-else class="identicon cloud" draggable="false" @dragstart.prevent />
 		</transition>
 		<transition name="fade-fast">
-			<img class="image" v-if="isValid && arweaveId?.Image" :src="ArweaveStore.gatewayURL + arweaveId?.Image" alt="wallet profile picture" draggable="false" @dragstart.prevent />
+			<img class="image" v-if="isValid && arweaveId?.Image" v-show="loaded" @load="loaded = true" :src="ArweaveStore.gatewayURL + arweaveId?.Image" alt="wallet profile picture" draggable="false" @dragstart.prevent />
 		</transition>
 	</div>
 </template>
@@ -16,7 +16,7 @@
 import ArweaveStore from '@/store/ArweaveStore'
 import Identicon from '@/components/atomic/Identicon.vue'
 import ProfileStore, { getArweaveId } from '@/store/ProfileStore'
-import { computed, watch } from 'vue'
+import { computed, watch, ref } from 'vue'
 
 import IconCloud from '@/assets/icons/cloud.svg?component'
 
@@ -26,11 +26,13 @@ export default {
 	setup (props) {
 		const isValid = computed(() => props.address?.match(/^[a-z0-9_-]{43}$/i))
 		const arweaveId = computed(() => ProfileStore.arweaveId[props.address])
+		const loaded = ref(false)
 		watch(() => props.address, async () => {
+			loaded.value = false
 			getArweaveId(props.address)
 		}, { immediate: true })
 
-		return { ArweaveStore, isValid, arweaveId }
+		return { ArweaveStore, isValid, arweaveId, loaded }
 	}
 }
 </script>

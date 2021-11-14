@@ -7,7 +7,7 @@
 				<circle stroke="currentColor" :stroke-dasharray="circumference + ' ' + circumference" :style="{ strokeDashoffset }" :stroke-width="thickness" stroke-linecap="round" fill="transparent" :r="normalizedRadius" :cx="50" :cy="50" @animationiteration="finishAnimation = false" :class="{ spin: progress == null || finishAnimation }" />
 			</svg>
 			<span v-else-if="isSymbol" :key="'s' + icon" class="symbol no-select">{{ icon }}</span>
-			<img v-else class="img no-select" :key="icon" :src="icon" draggable="false" />
+			<img v-else v-show="loaded" @load="loaded = true" class="img no-select" :key="icon" :src="icon" draggable="false" />
 		</transition>
 	</div>
 </template>
@@ -22,6 +22,8 @@ export default {
 	setup (props) {
 		const component = computed(() => typeof props.icon === 'object' ? props.icon : null)
 		const isSymbol = computed(() => typeof props.icon === 'string' && props.icon.length <= 2)
+		const loaded = ref(false)
+		watch(() => props.icon, () => loaded.value = false)
 		const thickness = 5
 		const normalizedRadius = 50 - thickness / 2
 		const circumference = normalizedRadius * 2 * Math.PI
@@ -30,7 +32,7 @@ export default {
 		watch(() => props.progress, (value, oldValue) => {
 			if (value != null && oldValue == null) { finishAnimation.value = true }
 		})
-		return { component, isSymbol, thickness, normalizedRadius, circumference, strokeDashoffset, finishAnimation }
+		return { component, isSymbol, loaded, thickness, normalizedRadius, circumference, strokeDashoffset, finishAnimation }
 	}
 }
 </script>
