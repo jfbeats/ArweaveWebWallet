@@ -25,8 +25,8 @@ export default class JsonRpc {
 
 		this.callbacks = callbacks
 		for (const method in procedures) {
-			const { guard, procedure } = procedures[method]
-			this.setProcedure(method, guard, procedure)
+			const { guard, run } = procedures[method]
+			this.setProcedure(method, guard, run)
 		}
 		this.watchStop = watch(() => this.state.messageQueue, () => {
 			for (const messageEntry of this.state.messageQueue) {
@@ -41,11 +41,11 @@ export default class JsonRpc {
 		}, { deep: true })
 	}
 
-	setProcedure (method, guard, procedure) {
+	setProcedure (method, guard, run) {
 		if (typeof method !== 'string') { throw 'method name must be a string' }
 		if (typeof guard !== 'function') { throw 'guard must be a function' }
-		if (typeof procedure !== 'function') { throw 'procedure must be a function' }
-		this.procedures[method] = { guard, procedure }
+		if (typeof run !== 'function') { throw 'procedure must be a function' }
+		this.procedures[method] = { guard, run }
 	}
 
 	pushMessage (message) {
@@ -63,7 +63,7 @@ export default class JsonRpc {
 		if (status !== 'accepted') { return }
 		if (!this.verifyMessage(messageEntry)) { messageEntry.status = 'error'; messageEntry.fulfilled = true; return }
 		try {
-			const result = this.procedures[message.method](message.params)
+			const result = this.procedures[message.method].run(message.params)
 			if (id != null) { this.callbacks({ result, id }) }
 			messageEntry.fulfilled = true
 		} catch (e) {
@@ -97,7 +97,7 @@ export const getProcedures = (extendedGuards) => {
 				|| params.tx.format !== 2 
 				|| params.tx.owner && typeof params.tx.owner !== 'string'
 			}, // todo finish guard
-			procedure: (params) => ''
+			run: (params) => ''
 		},
 	}
 	for (const key in extendedGuards) {
