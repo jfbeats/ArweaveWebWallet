@@ -4,7 +4,7 @@
 			<Identicon class="identicon" v-if="isValid && address" :address="address" alt="wallet logo" draggable="false" @dragstart.prevent />
 			<IconCloud v-else class="identicon cloud" draggable="false" @dragstart.prevent />
 		</transition>
-		<transition name="fade-fast">
+		<transition :name="hasTransition ? 'fade-fast' : null">
 			<img class="image" v-if="isValid && arweaveId?.Image" v-show="loaded" @load="loaded = true" :src="ArweaveStore.gatewayURL + arweaveId?.Image" alt="wallet profile picture" draggable="false" @dragstart.prevent />
 		</transition>
 	</div>
@@ -26,13 +26,18 @@ export default {
 	setup (props) {
 		const isValid = computed(() => props.address?.match(/^[a-z0-9_-]{43}$/i))
 		const arweaveId = computed(() => ProfileStore.arweaveId[props.address])
+		const hasTransition = ref(!arweaveId.value)
+		watch(arweaveId, () => {
+			hasTransition.value = false
+			setTimeout(() => hasTransition.value = true, 200)
+		})
 		const loaded = ref(false)
 		watch(() => props.address, async () => {
 			loaded.value = false
 			getArweaveId(props.address)
 		}, { immediate: true })
 
-		return { ArweaveStore, isValid, arweaveId, loaded }
+		return { ArweaveStore, isValid, arweaveId, hasTransition, loaded }
 	}
 }
 </script>
