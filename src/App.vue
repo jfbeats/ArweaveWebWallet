@@ -20,7 +20,7 @@
 
 <script>
 import Toolbar from '@/components/composed/Toolbar.vue'
-import UpdateAvailable from '@/components/composed/UpdateAvailable.vue'
+import UpdateAvailable from '@/components/function/UpdateAvailable.vue'
 import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import { addWallet } from '@/functions/Wallets'
