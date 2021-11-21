@@ -12,7 +12,7 @@ export default ({ mode }) => {
 
 	return defineConfig({
 		plugins: [
-			vue(),
+			vue({ refTransform: true }),
 			processHtml({ inject: { data: { ...env } }, minify: true }),
 			svgLoader({ svgoConfig: { multipass: true } }),
 			VitePWA(pwaOptions(env)),
