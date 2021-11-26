@@ -55,3 +55,12 @@
 .fade-list-leave-active {
 	position: absolute !important;
 }
+
+.fade-list-rise-enter-from, .fade-list-rise-leave-to {
+	opacity: 0 !important;
+	transform: translateY(10px);
+}
+
+.fade-list-rise-leave-active {
+	position: absolute !important;
+}

@@ -16,9 +16,8 @@
 import Address from '@/components/atomic/Address.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import ProfileStore, { getArweaveId } from '@/store/ProfileStore'
-import { computed, watch } from '@vue/runtime-core'
+import { computed, watch } from 'vue'
 
-import LogoLedger from '@/assets/logos/ledger.svg?component'
 import LogoArweave from '@/assets/logos/arweave.svg?component'
 
 export default {
@@ -26,10 +25,7 @@ export default {
 	props: ['wallet'],
 	setup (props) {
 		const arweaveId = computed(() => ProfileStore.arweaveId[props.wallet.key])
-		const walletInfo = computed(() => {
-			if (props.wallet.metaData?.provider === 'Ledger') { return { icon: LogoLedger, name: 'Ledger' } }
-			return { icon: LogoArweave, name: 'Arweave wallet' }
-		})
+		const walletInfo = computed(() => props.wallet.metaData || { icon: LogoArweave, name: 'Arweave wallet' })
 		watch(() => props.wallet.key, () => {
 			getArweaveId(props.wallet.key)
 		})

@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory, createWebHashHistory, START_LOCATION } from 'vue-router'
-import ArweaveStore, { getWalletById, loadDemo } from '@/store/ArweaveStore'
+import { loadDemo } from '@/store/ArweaveStore'
+import { Wallets, getWalletById } from '@/functions/Wallets'
+// import arwallet class
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import { state } from '@/functions/Connect'
 import Wallet from '@/views/Wallet.vue'
@@ -14,9 +16,9 @@ const routes = [
 		component: Wallet,
 		props: (route) => ({ wallet: getWalletById(route.params.walletId) }),
 		beforeEnter: (to) => {
-			if (!ArweaveStore.wallets[0]) { return { name: 'Welcome' } }
+			if (!Wallets.value[0]) { return { name: 'Welcome' } }
 			if (!to.params.walletId || !getWalletById(to.params.walletId)) {
-				return { name: 'TxList', params: { walletId: ArweaveStore.wallets[0].id } }
+				return { name: 'TxList', params: { walletId: Wallets.value[0].id } }
 			}
 		},
 		children: [
@@ -107,8 +109,8 @@ const routes = [
 		redirect: () => {
 			if (state.type === 'iframe') { InterfaceStore.toolbar.enabled = false; return { name: 'Connector' } }
 			if (state.type === 'popup') { return { name: 'Connect' } }
-			return ArweaveStore.wallets[0]
-				? { name: 'TxList', params: { walletId: ArweaveStore.wallets[0].id } }
+			return Wallets.value[0]
+				? { name: 'TxList', params: { walletId: Wallets.value[0].id } }
 				: { name: 'Welcome' }
 		}
 	},

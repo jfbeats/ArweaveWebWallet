@@ -12,5 +12,6 @@
 		"noEmit": true,
 		"strict": true,
 		"allowJs": true,
+		"jsx": "preserve",
 	}
 }

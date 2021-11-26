@@ -19,7 +19,7 @@ export default class JsonRpc {
 	state
 	watchStop
 
-	constructor(procedures, callbacks, state) {
+	constructor (procedures, callbacks, state) {
 		this.state = state || reactive({})
 		this.state.messageQueue ??= []
 
@@ -94,7 +94,7 @@ export const getProcedures = (extendedGuards) => {
 			guard: (params) => {
 				return typeof params !== 'object'
 				|| typeof params.tx !== 'object'
-				|| params.tx.format !== 2 
+				|| params.tx.format !== 2
 				|| params.tx.owner && typeof params.tx.owner !== 'string'
 			}, // todo finish guard
 			run: (params) => ''

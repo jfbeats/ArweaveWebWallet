@@ -1,8 +1,36 @@
-import ArweaveStore, { arweave, pushWallet } from '@/store/ArweaveStore'
+import { ArweaveWallet, arweave } from '@/store/ArweaveStore'
+import { getChannel } from '@/functions/Channels'
+import { passwordEncrypt, passwordDecrypt } from '@/functions/Crypto'
 import { download } from '@/functions/Utils'
 import { getKeyPairFromMnemonic } from 'human-crypto-keys'
 import { generateMnemonic as generateM, validateMnemonic as validateM } from 'bip39-web-crypto'
 import wordlist from 'bip39-web-crypto/src/wordlists/english.json'
+import { computed, reactive } from 'vue'
+
+
+
+// wallet: { id, key, jwk: jwk | jwk[], provider: jwk | ledger, protocols: ['arweave'] } metadata, functions, settings
+const WalletsChannel = getChannel('wallets', undefined, [])
+export const Wallets = computed({
+	get () { return WalletsChannel.state },
+	set (value) { WalletsChannel.set(value) }
+})
+
+const wallets = {}
+export class Wallet {
+	constructor (wallet) {
+		wallets.arweave = reactive(new ArweaveWallet(wallet))
+	}
+	
+}
+
+export function getWalletById (walletId) {
+	const wallet = Wallets.value.find(wallet => wallet.id == walletId)
+	wallets[wallet.key] ??= new ArweaveWallet(wallet)
+	return wallets[wallet.key]
+}
+
+
 
 export async function generateMnemonic () {
 	return generateM(undefined, undefined, wordlist)
@@ -13,18 +41,18 @@ export async function validateMnemonic (mnemonic) {
 }
 
 export async function addMnemonic (mnemonic) {
-	let keyPair = await getKeyPairFromMnemonic(mnemonic, { id: "rsa", modulusLength: 4096 }, { privateKeyFormat: "pkcs8-der" })
+	let keyPair = await getKeyPairFromMnemonic(mnemonic, { id: 'rsa', modulusLength: 4096 }, { privateKeyFormat: 'pkcs8-der' })
 	const imported = await window.crypto.subtle.importKey(
-		"pkcs8",
+		'pkcs8',
 		keyPair.privateKey,
 		{
-			name: "RSA-PSS",
+			name: 'RSA-PSS',
 			modulusLength: 4096,
 			publicExponent: new Uint8Array([1, 0, 1]),
-			hash: "SHA-256",
+			hash: 'SHA-256',
 		},
 		true,
-		["sign"]
+		['sign']
 	)
 	let jwk = await window.crypto.subtle.exportKey('jwk', imported)
 	delete jwk.alg
@@ -37,26 +65,22 @@ export async function addWallet (jwkObj) {
 	const jwk = jwkObj || await arweave.wallets.generate()
 	const key = await arweave.wallets.jwkToAddress(jwk)
 	if (!jwkObj) { download(key, JSON.stringify(jwk)) }
-	const wallet = { key, jwk, metaData: { provider: 'jwk' } }
-	const walletId = await pushWallet(wallet)
-	saveWallets(ArweaveStore.wallets)
-	return walletId
+	const wallet = { id: getNewId(), key, jwk }
+	Wallets.value.push(wallet)
+	return wallet.id
 }
 
 export async function watchWallet (arweaveWallet) {
-	let key
-	key ??= arweaveWallet.key
-	key ??= arweaveWallet.getActiveAddress ? await arweaveWallet.getActiveAddress() : undefined
+	const key = arweaveWallet.key
+		|| arweaveWallet.getActiveAddress ? await arweaveWallet.getActiveAddress() : undefined
 	if (!key) { return }
-	const wallet = { key, metaData: arweaveWallet.metaData }
-	const walletId = await pushWallet(wallet)
-	saveWallets(ArweaveStore.wallets)
-	return walletId
+	const wallet = { id: getNewId(), key, provider: arweaveWallet.provider }
+	Wallets.value.push(wallet)
+	return wallet.id
 }
 
 export function deleteWallet (wallet) {
-	ArweaveStore.wallets.splice(ArweaveStore.wallets.indexOf(wallet), 1)
-	saveWallets(ArweaveStore.wallets)
+	Wallets.value.splice(Wallets.value.indexOf(wallet), 1)
 }
 
 export async function downloadWallet (wallet) {
@@ -66,51 +90,8 @@ export async function downloadWallet (wallet) {
 	download(key, JSON.stringify(jwk))
 }
 
-export function loadWallets () {
-	let wallets = []
-	try { wallets = JSON.parse(localStorage.getItem('wallets')) }
-	catch (e) { localStorage.removeItem('wallets') } // TODO critical error
-	orderWallets(wallets)
-	return wallets
-}
-
-function orderWallets (wallets) {
-	try {
-		const order = JSON.parse(localStorage.getItem('walletsOrder'))
-		return wallets.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id))
-	} catch (e) { localStorage.removeItem('walletsOrder') }
-}
-
-export function saveWallets (wallets) {
-	if (!wallets) { return }
-	const walletsData = []
-	for (const wallet of wallets) {
-		walletsData.push((({ id, key, jwk, metaData }) => ({ id, key, jwk, metaData }))(wallet))
+export function getNewId () {
+	for (let i = 0; i <= Wallets.value.length; i++) {
+		if (Wallets.value.map(e => e.id).indexOf(i) === -1) { return i }
 	}
-	localStorage.setItem('wallets', JSON.stringify(walletsData))
 }
-
-export function saveWalletsOrder (wallets) {
-	if (!wallets) { return }
-	const walletsIds = []
-	for (const wallet of wallets) {
-		walletsIds.push(wallet.id)
-	}
-	localStorage.setItem('walletsOrder', JSON.stringify(walletsIds))
-}
-
-
-
-
-function init () {
-	const wallets = loadWallets()
-	if (!wallets) { return }
-	for (const wallet of wallets) { pushWallet(wallet) }
-}
-init()
-
-window.addEventListener('storage', (e) => {
-	if (e.newValue === e.oldValue) { return }
-	else if (e.key === 'wallets') { ArweaveStore.wallets = []; init() }
-	else if (e.key == 'walletsOrder') { orderWallets(ArweaveStore.wallets) }
-})

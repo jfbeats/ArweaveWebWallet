@@ -75,8 +75,10 @@ async function sign (transaction) {
 	return transaction
 }
 
+import LogoLedger from '@/assets/logos/ledger.svg?component'
 const Ledger = {
-	metaData: { provider: 'Ledger' },
+	provider: 'ledger',
+	metaData: { name: 'Ledger', icon: LogoLedger },
 	getVersion,
 	getAppInfo,
 	getActiveAddress: async () => (await getAddress()).address,

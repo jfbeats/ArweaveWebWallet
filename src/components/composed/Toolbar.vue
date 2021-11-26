@@ -1,7 +1,7 @@
 <template>
 	<nav class="toolbar" id="nav">
-		<SlickList class="wallets" :axis="axis" :lockAxis="axis" v-model:list="wallets" :pressDelay="150" helperClass="dragging" dir="ltr">
-			<SlickItem v-for="(wallet, i) in wallets" :index="i" :key="wallet.key" draggable="false" class="drag-container">
+		<SlickList class="wallets" :axis="axis" :lockAxis="axis" v-model:list="orderedWallets" :pressDelay="150" helperClass="dragging" dir="ltr">
+			<SlickItem v-for="(wallet, i) in orderedWallets" :index="i" :key="wallet.key" draggable="false" class="drag-container">
 				<router-link :to="{ name: navTo, params: { walletId: wallet.id }, query: { ...$route.query } }" custom v-slot="{ href, navigate }">
 					<button type="button" class="icon wallet" :href="href" @click="select(wallet, navigate)" :class="{ active: wallet.id == selected && links, accent: !links, verticalLayout }" draggable="false" @dragstart.prevent>
 						<AddressIcon class="profile" :address="wallet.key" />
@@ -37,7 +37,7 @@ import { SlickList, SlickItem } from 'vue-slicksort'
 import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import { connectors } from '@/functions/Connect'
-import { saveWalletsOrder } from '@/functions/Wallets'
+import { Wallets } from '@/functions/Wallets'
 import { computed, toRef } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -46,7 +46,6 @@ import IconAddBox from '@/assets/icons/add_box.svg?component'
 import IconSettings from '@/assets/icons/settings.svg?component'
 
 export default {
-	name: 'Toolbar',
 	components: { AddressIcon, DragOverlay, SlickList, SlickItem, IconConnection, IconAddBox, IconSettings },
 	setup () {
 		const route = useRoute()
@@ -62,17 +61,8 @@ export default {
 		const verticalLayout = toRef(InterfaceStore.breakpoints, 'verticalLayout')
 		const axis = computed(() => verticalLayout.value ? 'x' : 'y')
 		const links = toRef(InterfaceStore.toolbar, 'links')
-		const wallets = computed({
-			get () {
-				saveWalletsOrder(ArweaveStore.wallets)
-				return ArweaveStore.wallets
-			},
-			set (value) {
-				saveWalletsOrder(value)
-				ArweaveStore.wallets = value
-			}
-		})
-		return { navTo, select, selected, wallets, verticalLayout, axis, links, connectors }
+		
+		return { navTo, select, selected, orderedWallets: Wallets, verticalLayout, axis, links, connectors }
 	},
 }
 </script>

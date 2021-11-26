@@ -43,7 +43,7 @@ import { computed } from 'vue'
 
 export default {
 	components: { Address, TxIcon, AddressIcon, Date },
-	props: ['tx'],
+	props: ['tx', 'currentAddress'],
 	setup (props) {
 		const tags = computed(() => unpackTags(props.tx.tags))
 		const timestamp = computed(() => props.tx.block?.timestamp * 1000)
@@ -52,7 +52,7 @@ export default {
 			if (!props.tx.id) { return 'Awaiting approval' }
 			if (!props.tx.block) { return 'Pending' }
 		})
-		const direction = computed(() => props.tx.recipient && props.tx.recipient === ArweaveStore.currentWallet?.key ? 'in' : 'out')
+		const direction = computed(() => props.tx.recipient && props.tx.recipient === props.currentAddress ? 'in' : 'out')
 		const relativeAddress = computed(() => direction.value === 'in' ? props.tx.owner.address : props.tx.recipient || props.tx.target)
 		const value = computed(() => props.tx.quantity?.ar || arweave.ar.winstonToAr(props.tx.quantity))
 		const isValue = computed(() => value.value > 0)

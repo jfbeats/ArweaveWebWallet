@@ -8,26 +8,26 @@
 		</div>
 		<div class="content">
 			<div class="bottom">
-				<div v-if="wallet.jwk" @click="downloadWallet(wallet)">Download</div>
-				<div @click="deleteWallet(wallet)">Delete</div>
+				<div><button v-if="wallet.jwk" @click="downloadWallet(wallet)">Download</button></div>
+				<div><button @click="deleteWallet(wallet)">Delete</button></div>
 			</div>
 		</div>
 	</div>
 </template>
 
-<script>
+
+
+<script setup>
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import WalletInfo from '@/components/composed/WalletInfo.vue'
 import { deleteWallet, downloadWallet } from '@/functions/Wallets'
 
-export default {
-	components: { AddressIcon, WalletInfo },
-	props: ['wallet'],
-	setup () {
-		return { deleteWallet, downloadWallet }
-	},
-}
+const props = defineProps({
+	wallet: Object
+})
 </script>
+
+
 
 <style scoped>
 .wallet-options {

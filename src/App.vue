@@ -21,7 +21,7 @@
 <script>
 import Toolbar from '@/components/composed/Toolbar.vue'
 import UpdateAvailable from '@/components/function/UpdateAvailable.vue'
-import ArweaveStore from '@/store/ArweaveStore'
+import { Wallets } from '@/functions/Wallets'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import { addWallet } from '@/functions/Wallets'
 import { useRoute, useRouter } from 'vue-router'
@@ -68,8 +68,8 @@ export default {
 			to.meta.transition.name = param.to.position < param.from.position ? 'slide-down' : 'slide-up'
 			to.meta.transition.nameLayout = convertTransitionName(to.meta.transition.name)
 			if (to.params.walletId && from.params.walletId && to.params.walletId !== from.params.walletId) {
-				const toWallet = ArweaveStore.wallets.findIndex(el => el.id == to.params.walletId)
-				const fromWallet = ArweaveStore.wallets.findIndex(el => el.id == from.params.walletId)
+				const toWallet = Wallets.value.findIndex(el => el.id == to.params.walletId)
+				const fromWallet = Wallets.value.findIndex(el => el.id == from.params.walletId)
 				const transition = toWallet < fromWallet ? 'slide-down' : 'slide-up'
 				to.meta.transition.nameWallet = convertTransitionName(transition)
 			}

@@ -1,4 +1,4 @@
-import { reactive, watch, computed } from 'vue'
+import { reactive, watch } from 'vue'
 
 const hash = new URLSearchParams(window.location.hash.slice(1))
 const origin = hash.get('origin')
@@ -9,14 +9,14 @@ const chPrefix = 'connectorState:'
 const sharedPrefix = 'sharedState:'
 const heartbeatPrefix = 'heartbeat:'
 const stateChannel = chPrefix + instance
-const { state, initChannel, closeChannel } = getChannel(instance, chPrefix)
+const { state, initChannel, closeChannel } = getChannel(chPrefix, instance, { origin, session })
 const { states, initChannels, closeChannels } = getChannels(chPrefix)
 const connectorChannels = getChannels(sharedPrefix)
 
 export function initConnectorChannel () {
 	if (!origin || !session) { return }
-	const channel = getChannel(origin + session, sharedPrefix)
-	if (!channel.state.origin) { Object.assign(channel.state, { origin, session, appInfo, wallet: null, timestamp: Date.now() }) }
+	const channel = getChannel(sharedPrefix, origin + session)
+	if (!channel.state.origin) { Object.assign(channel.state, { origin, session, appInfo, wallet: null, timestamp: Date.now(), messageQueue: [] }) }
 	channel.deleteChannel = () => {
 		channel.closeChannel()
 		localStorage.removeItem(sharedPrefix + origin + session)
@@ -34,11 +34,11 @@ function getChannels (prefix) {
 	const getInstanceNames = () => Object.entries(localStorage)
 		.filter(([key, value]) => key.slice(0, prefix.length) === prefix)
 		.map(([key, value]) => key.slice(prefix.length))
-	const instanciate = async (name) => {
+	const instantiate = async (name) => {
 		channels[name] = null
 		if (prefix === chPrefix && !(await heartbeat(name))) { close(name); return null }
 		if (!Object.keys(channels).includes(name)) { return null }
-		channels[name] = getChannel(name, prefix)
+		channels[name] = getChannel(prefix, name)
 		channels[name].initChannel()
 		states[name] = channels[name].state
 	}
@@ -52,7 +52,7 @@ function getChannels (prefix) {
 		const storageChannels = getInstanceNames()
 		for (const channel of [...runningChannels, ...storageChannels]) {
 			if (runningChannels.includes(channel) && storageChannels.includes(channel)) { continue }
-			else if (storageChannels.includes(channel) && channel !== instance) { instanciate(channel) }
+			else if (storageChannels.includes(channel) && channel !== instance) { instantiate(channel) }
 			else if (runningChannels.includes(channel)) { close(channel) }
 		}
 	}
@@ -67,10 +67,9 @@ function getChannels (prefix) {
 	return { states, initChannels, closeChannels }
 }
 
-export function getChannel (instanceName, prefix) {
+export function getChannel (prefix, instanceName = '', init = {}) {
 	const stateChannel = prefix + instanceName
-	const mustWrite = instanceName === instance && prefix === chPrefix
-	const state = reactive(mustWrite ? { origin, session } : {})
+	const state = reactive(init)
 	const writeState = () => {
 		const stateString = JSON.stringify(state)
 		if (stateString === localStorage.getItem(stateChannel)) { return }
@@ -80,23 +79,29 @@ export function getChannel (instanceName, prefix) {
 	const startWrite = () => stopWrite = watch(() => state, writeState, { deep: true })
 	const update = (val) => {
 		if (stopWrite) { stopWrite() }
-		try { Object.assign(state, JSON.parse(val)) } catch (e) { console.error(e) }
+		set(JSON.parse(val))
 		startWrite()
 	}
 	const storageListener = (e) => {
 		if (e.key !== stateChannel || e.newValue === e.oldValue) { return }
 		update(e.newValue)
 	}
-	const initChannel = () => {
-		window.addEventListener('storage', storageListener)
-		if (mustWrite) { writeState() }
-		update(localStorage.getItem(stateChannel))
+	const initChannel = () => {} // todo remove
+	const set = (newState) => {
+		if (Array.isArray(state)) { state.splice(0, state.length, ...newState) }
+		else {
+			for (const key in state) { !(key in newState) && delete state[key] }
+			Object.assign(state, newState)
+		}
 	}
 	const closeChannel = () => {
 		window.removeEventListener('storage', storageListener)
 		if (stopWrite) { stopWrite() }
 	}
-	return { state, initChannel, closeChannel }
+	window.addEventListener('storage', storageListener)
+	if (!localStorage.getItem(stateChannel) && Object.keys(state).length) { writeState() }
+	update(localStorage.getItem(stateChannel))
+	return { state, initChannel, closeChannel, set }
 }
 
 async function heartbeat (instanceName, timeout) {

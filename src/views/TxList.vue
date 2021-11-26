@@ -3,8 +3,8 @@
 		<Tabs queryName="view" :tabs="tabs" />
 		<transition :name="transitionName" mode="out-in">
 			<div class="flex-column" :key="selectedQuery">
-				<transition-group name="fade-list">
-					<TxCard class="card fade-list-item" v-for="tx in txs" :key="tx.node.id" :tx="tx.node" />
+				<transition-group name="fade-list-rise">
+					<TxCard class="card fade-list-item" v-for="tx in txs" :key="tx.node.id" :tx="tx.node" :currentAddress="wallet.key" />
 				</transition-group>
 				<div v-if="!completedQuery" class="loader-container">
 					<Icon icon="loader" />

@@ -1,16 +1,15 @@
-import Arweave from 'arweave'
+import Arweave from 'arweave/web'
 import ArDB from 'ardb'
 import { awaitEffect } from '@/functions/Utils'
 import axios from 'axios'
-import { reactive, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import InterfaceStore, { sleepUntilVisible } from '@/store/InterfaceStore'
 
 
 
 const ArweaveStore = reactive({
 	gatewayURL: null,
-	currentWallet: null,
-	wallets: [],
+	wallets: {},
 	txs: {},
 	conversion: {
 		currentPrice: null,
@@ -27,8 +26,8 @@ export let arDB
 
 
 const gatewayDefault = {
-	host: 'arweave.net', 
-	port: 443, 
+	host: 'arweave.net',
+	port: 443,
 	protocol: 'https'
 }
 
@@ -62,33 +61,6 @@ export function updateArweave (gateway) {
 	ArweaveStore.gatewayURL = settingsToUrl(arweave.getConfig().api)
 }
 
-export async function pushWallet (wallet) {
-	Object.assign(wallet, { balance: null, queries: {}, queriesStatus: {} })
-	if (!wallet.key && wallet.jwk) { wallet.key = await arweave.wallets.jwkToAddress(wallet.jwk) }
-	const existingWallet = getWalletByKey(wallet.key)
-	if (existingWallet) {
-		Object.assign(existingWallet, wallet)
-		return existingWallet
-	}
-	if (!wallet.id) { wallet.id = getNewId() }
-	ArweaveStore.wallets.push(wallet)
-	return wallet
-}
-
-export function getNewId () {
-	for (let i = 0; i <= ArweaveStore.wallets.length; i++) {
-		if (ArweaveStore.wallets.map(e => e.id).indexOf(i) === -1) { return i }
-	}
-}
-
-export function getWalletById (walletId) {
-	return ArweaveStore.wallets.find(wallet => wallet.id == walletId)
-}
-
-export function getWalletByKey (walletKey) {
-	return ArweaveStore.wallets.find(wallet => wallet.key == walletKey)
-}
-
 export async function getTxById (txId) {
 	if (ArweaveStore.txs[txId]?.block) { return }
 	await sleepUntilVisible()
@@ -97,28 +69,42 @@ export async function getTxById (txId) {
 	Object.assign(ArweaveStore.txs[result.node.id] ??= {}, result.node)
 }
 
-export function setCurrentWallet (wallet) {
-	ArweaveStore.currentWallet = wallet
-	updateWalletBalance(wallet)
-	console.log('Current wallet set to ', wallet)
+
+
+const wallets = {}
+
+export class ArweaveWallet {
+	protocol = 'arweave'
+	balance = ref(null)
+	queries = reactive({})
+	queriesStatus = reactive({})
+	isUserWallet = computed(() => true)
+	constructor (wallet) { this.key = wallet.key }
+	updateBalance = () => updateBalance(this)
+	fetchTransactions = (query) => fetchTransactions(this, query)
+	updateTransactions = (query) => updateTransactions(this, query)
+	// add a send tx function that only takes a data object as tx param
 }
 
-export async function updateWalletBalance (wallet) {
+
+
+export async function updateBalance (wallet) {
+	// wallet = initWallet(wallet)
 	const balance = await arweave.wallets.getBalance(wallet.key)
-	wallet.balance = arweave.ar.winstonToAr(balance)
+	wallet.balance.value = arweave.ar.winstonToAr(balance)
 	console.log('Wallet balance ', wallet.balance)
 	return wallet.balance
 }
 
 export async function fetchTransactions (wallet, query) {
-	if (!wallet || wallet.queriesStatus[query]?.completed) { return }
+	// wallet = initWallet(wallet)
+	if (wallet.queriesStatus[query]?.completed) { return }
 	await awaitEffect(() => !wallet.queriesStatus[query]?.fetchTransactions)
 	wallet.queriesStatus[query] ??= {}
 	wallet.queriesStatus[query].fetchTransactions = true
 	if (query === 'all') {
-		try {
-			await fetchTransactionsAll(wallet)
-		} catch (e) { console.error(e) }
+		try { await fetchTransactionsAll(wallet) }
+		catch (e) { console.error(e) }
 		wallet.queriesStatus[query].fetchTransactions = false
 		return
 	}
@@ -193,8 +179,9 @@ async function fetchTransactionsAll (wallet) {
 }
 
 export async function updateTransactions (wallet, query) {
+	// wallet = initWallet(wallet)
 	if (!wallet.queries[query] || wallet.queries[query].length === 0) { return fetchTransactions(wallet, query) }
-	if (!wallet || wallet.queriesStatus[query]?.fetchTransactions) { return }
+	if (wallet.queriesStatus[query]?.fetchTransactions) { return }
 	await awaitEffect(() => !wallet.queriesStatus[query]?.updateTransactions)
 	wallet.queriesStatus[query].updateTransactions = true
 	await sleepUntilVisible()
@@ -297,17 +284,25 @@ function sortByBlocks (wallet, query) {
 	const sort = (a, b) => (b.node.block?.height ?? Number.MAX_SAFE_INTEGER)
 		- (a.node.block?.height ?? Number.MAX_SAFE_INTEGER)
 	if (wallet && wallet.queries[query]) {
-		updateWalletBalance(wallet)
+		wallet.updateBalance(wallet)
 		wallet.queries[query].sort(sort)
 	} else {
-		for (const wallet of ArweaveStore.wallets) {
-			updateWalletBalance(wallet)
-			for (const query in wallet.queries) {
-				wallet.queries[query].sort(sort)
-			}
-		}
+		// for (const wallet of ArweaveStore.wallets) {
+		// 	wallet.updateBalance(wallet)
+		// 	for (const query in wallet.queries) {
+		// 		wallet.queries[query].sort(sort)
+		// 	}
+		// }
 	}
 }
+
+
+
+
+
+
+
+
 
 export async function updateConversionRate () {
 	if (ArweaveStore.conversion.isUpdating) { return }
@@ -362,13 +357,11 @@ watch(() => ArweaveStore.conversion.settings, (settings) => {
 
 
 export function loadDemo () {
-	if (!ArweaveStore.wallets.length || import.meta.env.DEV) {
-		console.log('loading test wallets')
-		pushWallet({ key: 'TId0Wix2KFl1gArtAT6Do1CbWU_0wneGvS5X9BfW5PE' })
-		pushWallet({ key: 'Bf3pWqxD1qwwF2fcE9bPNyQp_5TSlAYPJ3JNMgJSj4c' })
-		pushWallet({ key: 'vLRHFqCw1uHu75xqB4fCDW-QxpkpJxBtFD9g4QYUbfw' })
-		pushWallet({ key: 'zYqPZuALSPa_f5Agvf8g2JHv94cqMn9aBtnH7GFHbuA' })
-	}
+	console.log('loading test wallets')
+	// pushWallet({ key: 'TId0Wix2KFl1gArtAT6Do1CbWU_0wneGvS5X9BfW5PE' })
+	// pushWallet({ key: 'Bf3pWqxD1qwwF2fcE9bPNyQp_5TSlAYPJ3JNMgJSj4c' })
+	// pushWallet({ key: 'vLRHFqCw1uHu75xqB4fCDW-QxpkpJxBtFD9g4QYUbfw' })
+	// pushWallet({ key: 'zYqPZuALSPa_f5Agvf8g2JHv94cqMn9aBtnH7GFHbuA' })
 }
 
 

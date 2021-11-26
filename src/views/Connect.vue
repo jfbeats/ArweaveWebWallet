@@ -1,10 +1,5 @@
 <template>
 	<div class="connect flex-column">
-		<!-- <div class="wallet" v-if="currentWallet">
-			<AddressIcon :address="currentWallet.key" />
-			<Address class="secondary-text" :address="currentWallet.key" />
-			<Button @click="connect(currentWallet.key)">Connect</Button>
-		</div>-->
 		<Carousel v-model="currentConnectorIndex" class="connectors">
 			<div v-for="connector in connectors" :key="connector.session" class="connection-card-container  fade-list-item">
 				<ConnectionCard :state="connector" class="box" />
@@ -44,9 +39,9 @@ export default {
 		// const connectorsComp = computed(() => test.value ? [connectors.value[0], connectors.value[2]] : connectors.value)
 		// InterfaceStore.toolbar.links = false
 		// onBeforeUnmount(() => InterfaceStore.toolbar.links = true)
-		const currentWallet = computed(() => ArweaveStore.currentWallet)
+		
 
-		return { currentConnectorIndex, currentWallet, connectors, state, states }
+		return { currentConnectorIndex, connectors, state, states }
 	}
 }
 </script>

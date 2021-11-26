@@ -5,31 +5,28 @@
 	</div>
 </template>
 
-<script>
-import WalletOptions from '@/components/composed/WalletOptions.vue'
-import { getWalletById } from '@/store/ArweaveStore'
 
-export default {
-	components: { WalletOptions },
-	// TODO go to first wallet
-	computed: {
-		wallets () {
-			const editWallet = this.$route.query.wallet
-			const editWalletArray = Array.isArray(editWallet) ? editWallet : [editWallet]
-			const result = []
-			for (const wallet of editWalletArray) {
-				const walletObject = getWalletById(wallet)
-				if (walletObject) { result.push(walletObject) }
-			}
-			return result
-		},
-	},
-}
+
+<script setup>
+import WalletOptions from '@/components/composed/WalletOptions.vue'
+import { computed } from 'vue'
+import { Wallets } from '@/functions/Wallets'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+const wallets = computed(() => {
+	const editWallet = route.query.wallet
+	const editWalletArray = Array.isArray(editWallet) ? editWallet : [editWallet]
+	console.log(editWalletArray)
+	return Wallets.value.filter(wallet => editWalletArray.includes(wallet.id + ''))
+})
 </script>
+
+
 
 <style scoped>
 .edit-wallet {
-	padding: 32px;
+	padding: var(--spacing);
 	width: 100%;
 }
 </style>

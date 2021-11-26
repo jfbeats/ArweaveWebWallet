@@ -26,39 +26,25 @@
 
 
 
-<script>
+<script setup>
 import FoldingLayout from '@/components/layout/FoldingLayout.vue'
 import Balance from '@/components/composed/Balance.vue'
 import Action from '@/components/atomic/Action.vue'
-import ArweaveStore, { setCurrentWallet } from '@/store/ArweaveStore'
+import { Wallets } from '@/functions/Wallets'
 import { emitter } from '@/store/InterfaceStore'
+import { watch } from 'vue'
 
 import IconNorthEast from '@/assets/icons/north_east.svg?component'
 import IconSwap from '@/assets/icons/swap.svg?component'
 import IconCircle from '@/assets/icons/cloud_circle.svg?component'
 
-export default {
-	name: 'Wallet',
-	components: { Balance, Action, FoldingLayout },
-	props: ['wallet'],
-	setup () {
-		const actions = [
-			{ name: 'Send', icon: IconNorthEast, text: 'Send' },
-			{ name: 'TxList', icon: IconSwap, text: 'Transactions' },
-			// { name: 'Tokens', icon: IconCircle, text: 'Tokens' },
-		]
-		return { actions, emitter }
-	},
-	watch: {
-		wallet: {
-			handler: function (wallet) {
-				if (!wallet) { setCurrentWallet(ArweaveStore.wallets[0]) }
-				else { setCurrentWallet(wallet) }
-			},
-			immediate: true
-		},
-	},
-}
+const props = defineProps({ wallet: Object })
+const actions = [
+	{ name: 'Send', icon: IconNorthEast, text: 'Send' },
+	{ name: 'TxList', icon: IconSwap, text: 'Transactions' },
+	// { name: 'Tokens', icon: IconCircle, text: 'Tokens' },
+]
+watch(() => props.wallet, (wallet) => wallet.updateBalance?.(), { immediate: true }) // update balance instead
 </script>
 
 

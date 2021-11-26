@@ -9,7 +9,7 @@
 				<InputData v-model="passphraseInput" @files="importFile" :disabled="isCreatingWallet" placeholder="Import passphrase or key file" />
 				<div />
 				<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create()" :disabled="passphraseInput.length && !isPassphrase" :icon="LogoArweave">Create new wallet</Button>
-				<Button v-else-if="isCreatingWallet" :disabled="!createdWallet" @click="goToCreatedWallet" :icon="!createdWallet ? 'loader' : ''">{{ !createdWallet ? 'Generating, write down the passphrase' : 'Passphrase saved? Click here to proceed' }}</Button>
+				<Button v-else-if="isCreatingWallet" :disabled="createdWallet == null" @click="goToCreatedWallet" :icon="createdWallet == null ? 'loader' : ''">{{ createdWallet == null ? 'Generating, write down the passphrase' : 'Passphrase saved? Click here to proceed' }}</Button>
 				<Button v-else :disabled="!isPassphrase || isGeneratingWallet" @click="confirmPassphrase">Import passphrase</Button>
 			</div>
 			<transition name="fade-fast" mode="in-out">
@@ -72,7 +72,7 @@ export default {
 			setTimeout(async () => createdWallet.value = await wallet, 10000)
 		}
 		const goToCreatedWallet = () => {
-			router.push({ name: 'EditWallet', query: { wallet: createdWallet.value.id } })
+			router.push({ name: 'EditWallet', query: { wallet: createdWallet.value } })
 		}
 		const importPassphrase = async () => {
 			isGeneratingWallet.value = true
@@ -81,7 +81,7 @@ export default {
 			popup.icon = 'loader'
 			popup.message = 'Importing'
 			popup.actions = []
-			router.push({ name: 'EditWallet', query: { wallet: (await wallet).id } })
+			router.push({ name: 'EditWallet', query: { wallet: (await wallet) } })
 		}
 		const confirmPassphrase = async () => {
 			if (await validateMnemonic(passphraseInput.value)) { return importPassphrase() }

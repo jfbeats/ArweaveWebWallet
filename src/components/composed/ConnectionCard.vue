@@ -20,7 +20,7 @@
 							<div v-if="currentTab === 'Requests'">
 								<transition-group name="fade-list">
 									<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="box fade-list-item" key="0" />
-									<div v-if="connectionFeed.length === 0 && state.wallet && state.wallet === currentAddress" class="box status fade-list-item" key="0">Connected</div>
+									<div v-if="connectionFeed?.length === 0 && state.wallet && state.wallet === currentAddress" class="box status fade-list-item" key="0">Connected</div>
 									<Notification v-if="currentAddress !== state.wallet" :data="connectData" class="box fade-list-item" key="1">{{ connectData.content }}</Notification>
 									<PermissionCard v-for="messageEntry in connectionFeed" :key="messageEntry.timestamp" :messageEntry="messageEntry" style="padding: var(--spacing);" class="box flex-column fade-list-item" />
 								</transition-group>
@@ -48,7 +48,8 @@ import Tabs from '@/components/atomic/Tabs.vue'
 import IconBackground from '@/components/atomic/IconBackground.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import Notification from '@/components/composed/Notification.vue'
-import PermissionCard from "@/components/composed/PermissionCard.vue";
+import PermissionCard from '@/components/composed/PermissionCard.vue'
+import { Wallets } from '@/functions/Wallets'
 import ArweaveStore, { arweave } from '@/store/ArweaveStore'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import { navigateBack, navigateBackAvailable } from '@/functions/Connect'
@@ -60,11 +61,11 @@ import IconX from '@/assets/icons/x.svg?component'
 import IconLauch from '@/assets/icons/launch.svg?component'
 
 export default {
-	components: {PermissionCard, WalletSelector, WalletTabs, Tabs, IconBackground, Icon, Notification },
+	components: { PermissionCard, WalletSelector, WalletTabs, Tabs, IconBackground, Icon, Notification },
 	props: ['state'],
 	setup (props) {
-		const defaultAddress = ArweaveStore.wallets[0]?.key
-		const addresses = computed(() => ArweaveStore.wallets.map(wallet => wallet.key))
+		const defaultAddress = Wallets.value[0]?.key
+		const addresses = computed(() => Wallets.value.map(wallet => wallet.key))
 		const currentAddress = ref(props.state.wallet || defaultAddress)
 		const tabs = [
 			{ name: 'Requests', color: 'var(--orange)' },
@@ -90,7 +91,7 @@ export default {
 		const isSelectingWallet = ref(!props.state.wallet)
 		const selectWallet = () => {
 			if (!isSelectingWallet.value) { isSelectingWallet.value = true; return }
-			currentAddress.value = props.state.wallet || ArweaveStore.wallets[0]?.key
+			currentAddress.value = props.state.wallet || Wallets.value[0]?.key
 			isSelectingWallet.value = false
 		}
 
@@ -111,7 +112,7 @@ export default {
 		})
 
 
-		const connectionFeed = computed(() => props.state.messageQueue.filter((m) => !m.fulfilled))
+		const connectionFeed = computed(() => props.state.messageQueue?.filter((m) => !m.fulfilled))
 
 
 
@@ -119,13 +120,9 @@ export default {
 		const transitionName = ref(null)
 		const selectTransitionName = (val, oldVal) => val > oldVal ? transitionName.value = 'slide-left' : transitionName.value = 'slide-right'
 		watch(() => tabs.findIndex(tab => tab.name === currentTab.value), selectTransitionName)
-		watch(() => ArweaveStore.wallets.findIndex(wallet => wallet.key === currentAddress.value), selectTransitionName)
-
-		const test = ref(null)
-		const testing = async () => test.value = await arweave.createTransaction({ data: 'hello', quantity: '100000000000', target: '32s5eCodNO16YMtSkmKNipQMtjpWz_SORUKwkGvrcrg' })
-		testing().then(() => console.log(test.value))
-
-		return { test, defaultAddress, addresses, currentAddress, tabs, currentTab, isSelectingWallet, selectWallet, connectData, connectionFeed, verticalLayout, transitionName, disconnect, navigateBack, navigateBackAvailable, IconConnection, IconLauch }
+		watch(() => Wallets.value.findIndex(wallet => wallet.key === currentAddress.value), selectTransitionName)
+		
+		return { defaultAddress, addresses, currentAddress, tabs, currentTab, isSelectingWallet, selectWallet, connectData, connectionFeed, verticalLayout, transitionName, disconnect, navigateBack, navigateBackAvailable, IconConnection, IconLauch }
 	}
 }
 </script>

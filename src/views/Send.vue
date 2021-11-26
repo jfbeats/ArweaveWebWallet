@@ -205,7 +205,7 @@ export default {
 					txFee.value
 				)
 				if (props.wallet.jwk) { await arweave.transactions.sign(tx, props.wallet.jwk) }
-				else if (props.wallet.metaData.provider === 'Ledger') {
+				else if (props.wallet.provider === 'ledger') {
 					if (props.wallet.key !== await Ledger.getActiveAddress()) { alert('Wrong account'); return }
 					await Ledger.sign(tx)
 				}
