@@ -12,16 +12,17 @@
 	</div>
 </template>
 
-<script>
+
+
+<script setup>
 import Ar from '@/components/atomic/Ar.vue'
 import LocaleCurrency from '@/components/atomic/LocaleCurrency.vue'
 import WalletInfo from '@/components/composed/WalletInfo.vue'
 
-export default {
-	components: { Ar, LocaleCurrency, WalletInfo },
-	props: ['wallet'],
-}
+const props = defineProps(['wallet'])
 </script>
+
+
 
 <style scoped>
 .balance {

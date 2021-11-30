@@ -5,14 +5,18 @@ import axios from 'axios'
 import { computed, reactive, ref, watch } from 'vue'
 import InterfaceStore, { sleepUntilVisible } from '@/store/InterfaceStore'
 
+import { ApiConfig } from 'arweave/web/lib/api'
+import { GQLEdgeTransactionInterface, GQLTransactionInterface } from 'ardb/lib/faces/gql'
+import { WalletInterface } from '@/functions/Wallets'
+
 
 
 const ArweaveStore = reactive({
-	gatewayURL: null,
-	wallets: {},
-	txs: {},
+	gatewayURL: null as null | string,
+	wallets: {} as { [key: string]: ArweaveWallet },
+	txs: {} as { [key: string]: Partial<GQLTransactionInterface> },
 	conversion: {
-		currentPrice: null,
+		currentPrice: null as null | number,
 		isUpdating: false,
 		settings: { currency: 'USD', provider: 'redstone' },
 	},
@@ -20,8 +24,8 @@ const ArweaveStore = reactive({
 })
 
 export default ArweaveStore
-export let arweave
-export let arDB
+export let arweave: Arweave
+export let arDB: { search: InstanceType<typeof ArDB>['search'] }
 
 
 
@@ -31,7 +35,7 @@ const gatewayDefault = {
 	protocol: 'https'
 }
 
-export function urlToSettings (url) {
+export function urlToSettings (url: string) {
 	if (!url.includes('://')) { url = 'https://' + url }
 	const obj = new URL(url)
 	const protocol = obj.protocol.replace(':', '')
@@ -40,11 +44,11 @@ export function urlToSettings (url) {
 	return { protocol, host, port }
 }
 
-export function settingsToUrl (settings) {
+export function settingsToUrl (settings: URL | ApiConfig) {
 	return `${settings.protocol}://${settings.host}:${settings.port}/`
 }
 
-export async function testGateway (gateway) {
+export async function testGateway (gateway: string | URL | ApiConfig) {
 	const settings = typeof gateway === 'string' ? urlToSettings(gateway) : gateway
 	const arweaveTest = Arweave.init(settings)
 	try {
@@ -54,49 +58,65 @@ export async function testGateway (gateway) {
 	return false
 }
 
-export function updateArweave (gateway) {
+export function updateArweave (gateway: string | URL | ApiConfig) {
 	const settings = typeof gateway === 'string' ? urlToSettings(gateway) : gateway
 	arweave = settings ? Arweave.init(settings) : Arweave.init(gatewayDefault)
 	arDB = { search: (...args) => new ArDB(arweave).search(...args) }
 	ArweaveStore.gatewayURL = settingsToUrl(arweave.getConfig().api)
 }
 
-export async function getTxById (txId) {
+export async function getTxById (txId: string) {
 	if (ArweaveStore.txs[txId]?.block) { return }
 	await sleepUntilVisible()
-	const result = (await arDB.search().id(txId).find())[0]
+	const result = (await arDB.search().id(txId).find() as GQLEdgeTransactionInterface[])[0]
 	if (!result) { return }
 	Object.assign(ArweaveStore.txs[result.node.id] ??= {}, result.node)
 }
 
 
 
-const wallets = {}
+
+
+
+
+type Query = 'received' | 'sent' | 'all'
+type QueryStatusInterface = {
+	completed?: boolean
+	fetchTransactions?: boolean
+	updateTransactions?: boolean
+} & {
+	[key in Query]?: GQLEdgeTransactionInterface
+}
+
+
 
 export class ArweaveWallet {
+	key: string
 	protocol = 'arweave'
-	balance = ref(null)
-	queries = reactive({})
-	queriesStatus = reactive({})
+	state = reactive({ balance: null as null | string })
+	get balance () { return this.state.balance }
+	set balance (value) { this.state.balance = value }
+	queries = reactive({} as { [key: string]: GQLEdgeTransactionInterface[] })
+	queriesStatus = reactive({} as { [key: string]: QueryStatusInterface })
 	isUserWallet = computed(() => true)
-	constructor (wallet) { this.key = wallet.key }
+	constructor (wallet: WalletInterface) { this.key = wallet.key }
 	updateBalance = () => updateBalance(this)
-	fetchTransactions = (query) => fetchTransactions(this, query)
-	updateTransactions = (query) => updateTransactions(this, query)
+	fetchTransactions = (query: Query) => fetchTransactions(this, query)
+	updateTransactions = (query: Query) => updateTransactions(this, query)
 	// add a send tx function that only takes a data object as tx param
 }
 
 
 
-export async function updateBalance (wallet) {
+export async function updateBalance (wallet: ArweaveWallet) {
 	// wallet = initWallet(wallet)
 	const balance = await arweave.wallets.getBalance(wallet.key)
-	wallet.balance.value = arweave.ar.winstonToAr(balance)
+	wallet.balance = arweave.ar.winstonToAr(balance)
 	console.log('Wallet balance ', wallet.balance)
 	return wallet.balance
 }
 
-export async function fetchTransactions (wallet, query) {
+export async function fetchTransactions (wallet: ArweaveWallet, query: Query) {
 	// wallet = initWallet(wallet)
 	if (wallet.queriesStatus[query]?.completed) { return }
 	await awaitEffect(() => !wallet.queriesStatus[query]?.fetchTransactions)
@@ -109,7 +129,7 @@ export async function fetchTransactions (wallet, query) {
 		return
 	}
 	let fulfilled = false
-	let results
+	let results: GQLEdgeTransactionInterface[]
 	const queries = {
 		received: () => arDB.search().to(wallet.key),
 		sent: () => arDB.search().from(wallet.key),
@@ -117,11 +137,11 @@ export async function fetchTransactions (wallet, query) {
 	try {
 		for (let i = 0; !fulfilled; i++) {
 			if (!wallet.queries[query]) {
-				results = await queries[query]().find()
+				results = await queries[query]().find() as any
 			} else {
 				const lastTxIndex = wallet.queries[query].length - 1
 				const cursor = wallet.queries[query][lastTxIndex].cursor
-				results = await queries[query]().cursor(cursor).find()
+				results = await queries[query]().cursor(cursor).find() as any
 			}
 			for (const result of results) {
 				result.node = Object.assign(ArweaveStore.txs[result.node.id] ??= {}, result.node)
@@ -139,19 +159,20 @@ export async function fetchTransactions (wallet, query) {
 	finally { wallet.queriesStatus[query].fetchTransactions = false }
 }
 
-async function fetchTransactionsAll (wallet) {
+async function fetchTransactionsAll (wallet: ArweaveWallet) {
 	wallet.queries.all ??= []
 	const stopCondition = () => {
 		return (wallet.queriesStatus.received?.completed || wallet.queriesStatus.all.received?.node.block)
 			&& (wallet.queriesStatus.sent?.completed || wallet.queriesStatus.all.sent?.node.block)
 	}
 	for (let i = 0; i < 10 || !stopCondition(); i++) {
-		const nextTx = {}
+		const queries: Query[] = ['received', 'sent']
+		const nextTx = {} as { [key in Query]: GQLEdgeTransactionInterface }
 		const fetchPromises = []
-		for (const query of ['received', 'sent']) {
+		for (const query of queries) {
 			const fetch = async () => {
 				if (!wallet.queries[query]) { await fetchTransactions(wallet, query) }
-				const index = wallet.queries[query].indexOf(wallet.queriesStatus.all[query])
+				const index = wallet.queries[query].indexOf(wallet.queriesStatus.all[query]!)
 				if (wallet.queries[query].length - index < 3) { await fetchTransactions(wallet, query) }
 				nextTx[query] = wallet.queries[query][index + 1]
 			}
@@ -175,10 +196,10 @@ async function fetchTransactionsAll (wallet) {
 		wallet.queriesStatus.all.completed = wallet.queriesStatus.received.completed && wallet.queriesStatus.sent.completed
 			&& wallet.queries.all.length === wallet.queries.received.length + wallet.queries.sent.length
 	}
-	await new Promise(resolve => setTimeout(() => resolve(), 10))
+	return new Promise<void>(resolve => setTimeout(() => resolve(), 10))
 }
 
-export async function updateTransactions (wallet, query) {
+export async function updateTransactions (wallet: ArweaveWallet, query: Query) {
 	// wallet = initWallet(wallet)
 	if (!wallet.queries[query] || wallet.queries[query].length === 0) { return fetchTransactions(wallet, query) }
 	if (wallet.queriesStatus[query]?.fetchTransactions) { return }
@@ -192,20 +213,19 @@ export async function updateTransactions (wallet, query) {
 	}
 	let requireSort = false
 	let fulfilled = false
-	let results
+	let results: GQLEdgeTransactionInterface[]
 	const queries = {
 		received: () => arDB.search().to(wallet.key),
 		sent: () => arDB.search().from(wallet.key),
 	}
 	const resultsFiltered = []
 	try {
+		results = await queries[query]().find() as GQLEdgeTransactionInterface[] // Todo - Use the number of pending txs as minimum
 		for (let i = 0; !fulfilled; i++) {
-			if (i === 0) {
-				results = await queries[query]().find() // Todo - Use the number of pending txs as minimum
-			} else {
+			if (i !== 0) {
 				const lastTxIndex = results.length - 1
 				const cursor = results[lastTxIndex].cursor
-				results = await queries[query]().cursor(cursor).find()
+				results = await queries[query]().cursor(cursor).find() as GQLEdgeTransactionInterface[]
 			}
 			if (results.length < 10) {
 				wallet.queriesStatus[query].completed = true
@@ -231,15 +251,16 @@ export async function updateTransactions (wallet, query) {
 	finally { wallet.queriesStatus[query].updateTransactions = false }
 }
 
-async function updateTransactionsAll (wallet) {
+async function updateTransactionsAll (wallet: ArweaveWallet) {
 	const fetchPromises = []
-	const newTxs = []
-	for (const query of ['received', 'sent']) {
+	const newTxs = [] as GQLEdgeTransactionInterface[]
+	const queries: Query[] = ['received', 'sent']
+	for (const query of queries) {
 		const fetch = async () => {
 			await updateTransactions(wallet, query)
 			for (const [index, tx] of wallet.queries[query].entries()) {
 				if (
-					index < wallet.queries[query].indexOf(wallet.queriesStatus.all[query])
+					index < wallet.queries[query].indexOf(wallet.queriesStatus.all[query]!)
 					&& !wallet.queries.all.find((el) => el.node.id === tx.node.id)
 				) { newTxs.push(tx) }
 			}
@@ -265,7 +286,7 @@ async function refreshTx () {
 		}
 	}
 	if (ids.length === 0) { return }
-	const results = await arDB.search().ids(ids).findAll()
+	const results = await arDB.search().ids(ids).findAll() as GQLEdgeTransactionInterface[]
 	console.log('updating:', results)
 	for (const tx of txs) {
 		const updatedTx = results.find((el) => el?.node?.id === tx.id)?.node
@@ -280,19 +301,20 @@ async function refreshTx () {
 	return
 }
 
-function sortByBlocks (wallet, query) {
-	const sort = (a, b) => (b.node.block?.height ?? Number.MAX_SAFE_INTEGER)
+function sortByBlocks (wallet?: ArweaveWallet, query?: Query) {
+	const sort = (a: GQLEdgeTransactionInterface, b: GQLEdgeTransactionInterface) => (b.node.block?.height ?? Number.MAX_SAFE_INTEGER)
 		- (a.node.block?.height ?? Number.MAX_SAFE_INTEGER)
-	if (wallet && wallet.queries[query]) {
-		wallet.updateBalance(wallet)
-		wallet.queries[query].sort(sort)
+	if (wallet && wallet.queries[query!]) {
+		wallet.updateBalance()
+		wallet.queries[query!].sort(sort)
 	} else {
-		// for (const wallet of ArweaveStore.wallets) {
-		// 	wallet.updateBalance(wallet)
-		// 	for (const query in wallet.queries) {
-		// 		wallet.queries[query].sort(sort)
-		// 	}
-		// }
+		// TODO only update balance when necessary
+		for (const key in ArweaveStore.wallets) {
+			ArweaveStore.wallets[key].updateBalance()
+			for (const query in ArweaveStore.wallets[key].queries) {
+				ArweaveStore.wallets[key].queries[query].sort(sort)
+			}
+		}
 	}
 }
 

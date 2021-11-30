@@ -45,7 +45,7 @@ import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import Ledger from '@/functions/Ledger.js'
 import { arweave } from '@/store/ArweaveStore'
-import { addWallet, watchWallet, generateMnemonic, validateMnemonic, addMnemonic } from '@/functions/Wallets.js'
+import { addWallet, watchWallet, generateMnemonic, validateMnemonic, addMnemonic } from '@/functions/Wallets.ts'
 import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 

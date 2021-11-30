@@ -7,26 +7,34 @@ import { generateMnemonic as generateM, validateMnemonic as validateM } from 'bi
 import wordlist from 'bip39-web-crypto/src/wordlists/english.json'
 import { computed, reactive } from 'vue'
 
+export type WalletInterface = {
+	id: number
+	key: string
+	provider: string
+	jwk?: JsonWebKey | JsonWebKey[]
+}
+// metadata, functions, settings
 
 
-// wallet: { id, key, jwk: jwk | jwk[], provider: jwk | ledger, protocols: ['arweave'] } metadata, functions, settings
 const WalletsChannel = getChannel('wallets', undefined, [])
-export const Wallets = computed({
-	get () { return WalletsChannel.state },
+export const Wallets = computed<WalletInterface[]>({
+	get () { return WalletsChannel.state as any },
 	set (value) { WalletsChannel.set(value) }
 })
 
+
+
 const wallets = {}
 export class Wallet {
-	constructor (wallet) {
-		wallets.arweave = reactive(new ArweaveWallet(wallet))
+	constructor (wallet: WalletInterface) {
+		wallets.arweave = new ArweaveWallet(wallet)
 	}
-	
 }
 
-export function getWalletById (walletId) {
+export function getWalletById (walletId: number | string) {
 	const wallet = Wallets.value.find(wallet => wallet.id == walletId)
 	wallets[wallet.key] ??= new ArweaveWallet(wallet)
+	window.wallet = wallets[wallet.key]
 	return wallets[wallet.key]
 }
 
@@ -36,19 +44,19 @@ export async function generateMnemonic () {
 	return generateM(undefined, undefined, wordlist)
 }
 
-export async function validateMnemonic (mnemonic) {
+export async function validateMnemonic (mnemonic: string) {
 	return validateM(mnemonic, wordlist)
 }
 
-export async function addMnemonic (mnemonic) {
+export async function addMnemonic (mnemonic: string) {
 	let keyPair = await getKeyPairFromMnemonic(mnemonic, { id: 'rsa', modulusLength: 4096 }, { privateKeyFormat: 'pkcs8-der' })
 	const imported = await window.crypto.subtle.importKey(
 		'pkcs8',
 		keyPair.privateKey,
 		{
 			name: 'RSA-PSS',
-			modulusLength: 4096,
-			publicExponent: new Uint8Array([1, 0, 1]),
+			// modulusLength: 4096,
+			// publicExponent: new Uint8Array([1, 0, 1]),
 			hash: 'SHA-256',
 		},
 		true,
@@ -61,16 +69,16 @@ export async function addMnemonic (mnemonic) {
 	return addWallet(jwk)
 }
 
-export async function addWallet (jwkObj) {
+export async function addWallet (jwkObj: JsonWebKey) {
 	const jwk = jwkObj || await arweave.wallets.generate()
-	const key = await arweave.wallets.jwkToAddress(jwk)
+	const key = await arweave.wallets.jwkToAddress(jwk) as string
 	if (!jwkObj) { download(key, JSON.stringify(jwk)) }
-	const wallet = { id: getNewId(), key, jwk }
+	const wallet = { id: getNewId(), key, jwk, provider: 'jwk' }
 	Wallets.value.push(wallet)
 	return wallet.id
 }
 
-export async function watchWallet (arweaveWallet) {
+export async function watchWallet (arweaveWallet: any) {
 	const key = arweaveWallet.key
 		|| arweaveWallet.getActiveAddress ? await arweaveWallet.getActiveAddress() : undefined
 	if (!key) { return }
@@ -79,11 +87,11 @@ export async function watchWallet (arweaveWallet) {
 	return wallet.id
 }
 
-export function deleteWallet (wallet) {
+export function deleteWallet (wallet: WalletInterface) {
 	Wallets.value.splice(Wallets.value.indexOf(wallet), 1)
 }
 
-export async function downloadWallet (wallet) {
+export async function downloadWallet (wallet: WalletInterface) {
 	if (!wallet.jwk) { return }
 	const jwk = wallet.jwk
 	const key = wallet.key ? wallet.key : await arweave.wallets.jwkToAddress(wallet.jwk)
@@ -94,4 +102,5 @@ export function getNewId () {
 	for (let i = 0; i <= Wallets.value.length; i++) {
 		if (Wallets.value.map(e => e.id).indexOf(i) === -1) { return i }
 	}
+	return 0
 }

@@ -14,5 +14,8 @@ module.exports = {
 		'keyword-spacing': ['error', { before: true, after: true }],
 		'space-before-function-paren': ['error', 'always'],
 		'no-trailing-spaces': ['error', { skipBlankLines: true }],
-	}
+	},
+	overrides: [
+		{ files: ['**/*.{ts,tsx}'], parser: '@typescript-eslint/parser' }
+	]
 }

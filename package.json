@@ -21,16 +21,17 @@
 		"mitt": "^3.0.0",
 		"smartweave": "^0.4.45",
 		"stream-browserify": "^3.0.0",
-		"typescript": "^4.5.2",
 		"vue": "^3.2.16",
 		"vue-router": "^4.0.11",
 		"vue-slicksort": "^2.0.0-alpha.5"
 	},
 	"devDependencies": {
 		"@rollup/plugin-inject": "^4.0.2",
+		"@typescript-eslint/parser": "^5.5.0",
 		"@vitejs/plugin-vue": "^1.9.3",
 		"eslint": "^8.2.0",
 		"eslint-plugin-vue": "^8.1.1",
+		"typescript": "^4.5.2",
 		"vite": "^2.6.4",
 		"vite-plugin-html": "^2.1.1",
 		"vite-plugin-pwa": "^0.11.3",

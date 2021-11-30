@@ -62,7 +62,6 @@ export default {
 				to: findRecursiveHelper(to.name, routes),
 				from: findRecursiveHelper(from.name, routes)
 			}
-			console.log(param)
 			to.meta.transition = {}
 			to.meta.transition.param = param
 			to.meta.transition.name = param.to.position < param.from.position ? 'slide-down' : 'slide-up'
