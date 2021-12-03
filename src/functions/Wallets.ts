@@ -1,4 +1,4 @@
-import { ArweaveWallet, arweave } from '@/store/ArweaveStore'
+import { ArweaveAccount, arweave } from '@/store/ArweaveStore'
 import { getChannel } from '@/functions/Channels'
 import { passwordEncrypt, passwordDecrypt } from '@/functions/Crypto'
 import { download } from '@/functions/Utils'
@@ -7,38 +7,64 @@ import { generateMnemonic as generateM, validateMnemonic as validateM } from 'bi
 import wordlist from 'bip39-web-crypto/src/wordlists/english.json'
 import { computed, reactive } from 'vue'
 
-export type WalletInterface = {
+// wallet - user owned data
+// proxy - metadata, composition
+// account - public id, txs
+// provider - sign and decrypt data, decrypt and persist keyfiles
+
+export type WalletDataInterface = {
 	id: number
-	key: string
-	provider: string
-	jwk?: JsonWebKey | JsonWebKey[]
+	key?: string
+	provider?: string
+	providerData?: object // protocol, etc
+	jwk?: JsonWebKey
 }
-// metadata, functions, settings
-
-
 const WalletsChannel = getChannel('wallets', undefined, [])
-export const Wallets = computed<WalletInterface[]>({
+export const WalletsData = computed<WalletDataInterface[]>({
 	get () { return WalletsChannel.state as any },
 	set (value) { WalletsChannel.set(value) }
 })
 
 
 
-const wallets = {}
-export class Wallet {
-	constructor (wallet: WalletInterface) {
-		wallets.arweave = new ArweaveWallet(wallet)
+class WalletProxy extends ArweaveAccount {
+	#wallet: WalletDataInterface
+	constructor (wallet: WalletDataInterface) {
+		super(wallet)
+		this.#wallet = wallet
 	}
+	get id () { return this.#wallet.id }
+	get provider () { return this.#wallet.provider }
+	get jwk () { return this.#wallet.jwk }
 }
+
+
+
+const WalletsStore: { [key: string]: WalletProxy } = {}
+export const Wallets = computed<WalletProxy[]>({
+	get () {
+		const runningWallets = Object.keys(WalletsStore)
+		const storageWallets = WalletsData.value.map(w => w.id + '')
+		for (const id of [...runningWallets, ...storageWallets]) {
+			if (runningWallets.includes(id) && !storageWallets.includes(id)) { delete WalletsStore[id] }
+			if (!runningWallets.includes(id) && storageWallets.includes(id)) {
+				const wallet = WalletsData.value.find(w => w.id == +id)
+				WalletsStore[id] = new WalletProxy(wallet!)
+			}
+		}
+		return Object.values(WalletsStore).sort((a, b) => WalletsData.value.findIndex(w => w.id == a.id) - WalletsData.value.findIndex(w => w.id == b.id))
+	},
+	set (value) {
+		WalletsData.value = WalletsData.value.filter(w => value.find(v => v.id == w.id))
+			.sort((a, b) => value.findIndex(w => w.id == a.id) - value.findIndex(w => w.id == b.id))
+	}
+})
+
+
 
 export function getWalletById (walletId: number | string) {
-	const wallet = Wallets.value.find(wallet => wallet.id == walletId)
-	wallets[wallet.key] ??= new ArweaveWallet(wallet)
-	window.wallet = wallets[wallet.key]
-	return wallets[wallet.key]
+	return Wallets.value.find(wallet => wallet.id == walletId)
 }
-
-
 
 export async function generateMnemonic () {
 	return generateM(undefined, undefined, wordlist)
@@ -74,7 +100,7 @@ export async function addWallet (jwkObj: JsonWebKey) {
 	const key = await arweave.wallets.jwkToAddress(jwk) as string
 	if (!jwkObj) { download(key, JSON.stringify(jwk)) }
 	const wallet = { id: getNewId(), key, jwk, provider: 'jwk' }
-	Wallets.value.push(wallet)
+	WalletsData.value.push(wallet)
 	return wallet.id
 }
 
@@ -83,15 +109,15 @@ export async function watchWallet (arweaveWallet: any) {
 		|| arweaveWallet.getActiveAddress ? await arweaveWallet.getActiveAddress() : undefined
 	if (!key) { return }
 	const wallet = { id: getNewId(), key, provider: arweaveWallet.provider }
-	Wallets.value.push(wallet)
+	WalletsData.value.push(wallet)
 	return wallet.id
 }
 
-export function deleteWallet (wallet: WalletInterface) {
-	Wallets.value.splice(Wallets.value.indexOf(wallet), 1)
+export function deleteWallet (wallet: WalletDataInterface) {
+	WalletsData.value.splice(WalletsData.value.indexOf(wallet), 1)
 }
 
-export async function downloadWallet (wallet: WalletInterface) {
+export async function downloadWallet (wallet: WalletDataInterface) {
 	if (!wallet.jwk) { return }
 	const jwk = wallet.jwk
 	const key = wallet.key ? wallet.key : await arweave.wallets.jwkToAddress(wallet.jwk)
@@ -99,8 +125,8 @@ export async function downloadWallet (wallet: WalletInterface) {
 }
 
 export function getNewId () {
-	for (let i = 0; i <= Wallets.value.length; i++) {
-		if (Wallets.value.map(e => e.id).indexOf(i) === -1) { return i }
+	for (let i = 0; i <= WalletsData.value.length; i++) {
+		if (WalletsData.value.map(e => e.id).indexOf(i) === -1) { return i }
 	}
 	return 0
 }

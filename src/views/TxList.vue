@@ -20,7 +20,6 @@ import TxCard from '@/components/composed/TxCard.vue'
 import Tabs from '@/components/atomic/Tabs.vue'
 import Observer from '@/components/function/Observer.vue'
 import Icon from '@/components/atomic/Icon.vue'
-import { fetchTransactions, updateTransactions } from '@/store/ArweaveStore'
 import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -28,17 +27,17 @@ export default {
 	components: { TxCard, Tabs, Observer, Icon },
 	props: ['wallet'],
 	setup (props) {
-		const fetchLoading = computed(() => props.wallet?.queriesStatus?.[selectedQuery.value]?.fetchTransactions)
+		const fetchLoading = computed(() => props.wallet?.queriesStatus?.[selectedQuery.value]?.fetch)
 		let liveUpdate
 		const route = useRoute()
 		const selectedQuery = computed(() => route.query.view || 'all')
 		const txs = computed(() => props.wallet?.queries?.[selectedQuery.value] || [])
 		const completedQuery = computed(() => props.wallet?.queriesStatus?.[selectedQuery.value]?.completed)
-		const updateContent = () => updateTransactions(props.wallet, selectedQuery.value)
+		const updateContent = () => props.wallet.updateTransactions(selectedQuery.value)
 		const fetchQuery = async () => {
 			if (fetchLoading.value) { return }
 			console.log('Queried', selectedQuery.value)
-			await fetchTransactions(props.wallet, selectedQuery.value)
+			await props.wallet.fetchTransactions(selectedQuery.value)
 		}
 		onMounted(() => {
 			liveUpdate = setInterval(updateContent, 10000)
