@@ -1,4 +1,4 @@
-import { ArweaveAccount, arweave } from '@/store/ArweaveStore'
+import { ArweaveProvider, arweave } from '@/store/ArweaveStore'
 import { getChannel } from '@/functions/Channels'
 import { passwordEncrypt, passwordDecrypt } from '@/functions/Crypto'
 import { download } from '@/functions/Utils'
@@ -7,18 +7,8 @@ import { generateMnemonic as generateM, validateMnemonic as validateM } from 'bi
 import wordlist from 'bip39-web-crypto/src/wordlists/english.json'
 import { computed, reactive } from 'vue'
 
-// wallet - user owned data
-// proxy - metadata, composition
-// account - public id, txs
-// provider - sign and decrypt data, decrypt and persist keyfiles
 
-export type WalletDataInterface = {
-	id: number
-	key?: string
-	provider?: string
-	providerData?: object // protocol, etc
-	jwk?: JsonWebKey
-}
+
 const WalletsChannel = getChannel('wallets', undefined, [])
 export const WalletsData = computed<WalletDataInterface[]>({
 	get () { return WalletsChannel.state as any },
@@ -27,15 +17,13 @@ export const WalletsData = computed<WalletDataInterface[]>({
 
 
 
-class WalletProxy extends ArweaveAccount {
+class WalletProxy extends ArweaveProvider {
 	#wallet: WalletDataInterface
 	constructor (wallet: WalletDataInterface) {
 		super(wallet)
 		this.#wallet = wallet
 	}
 	get id () { return this.#wallet.id }
-	get provider () { return this.#wallet.provider }
-	get jwk () { return this.#wallet.jwk }
 }
 
 
@@ -99,7 +87,7 @@ export async function addWallet (jwkObj: JsonWebKey) {
 	const jwk = jwkObj || await arweave.wallets.generate()
 	const key = await arweave.wallets.jwkToAddress(jwk) as string
 	if (!jwkObj) { download(key, JSON.stringify(jwk)) }
-	const wallet = { id: getNewId(), key, jwk, provider: 'jwk' }
+	const wallet = { id: getNewId(), key, jwk }
 	WalletsData.value.push(wallet)
 	return wallet.id
 }
@@ -108,20 +96,13 @@ export async function watchWallet (arweaveWallet: any) {
 	const key = arweaveWallet.key
 		|| arweaveWallet.getActiveAddress ? await arweaveWallet.getActiveAddress() : undefined
 	if (!key) { return }
-	const wallet = { id: getNewId(), key, provider: arweaveWallet.provider }
+	const wallet = { id: getNewId(), key }
 	WalletsData.value.push(wallet)
 	return wallet.id
 }
 
 export function deleteWallet (wallet: WalletDataInterface) {
 	WalletsData.value.splice(WalletsData.value.indexOf(wallet), 1)
-}
-
-export async function downloadWallet (wallet: WalletDataInterface) {
-	if (!wallet.jwk) { return }
-	const jwk = wallet.jwk
-	const key = wallet.key ? wallet.key : await arweave.wallets.jwkToAddress(wallet.jwk)
-	download(key, JSON.stringify(jwk))
 }
 
 export function getNewId () {

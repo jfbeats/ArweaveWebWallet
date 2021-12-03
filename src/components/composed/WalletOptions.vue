@@ -8,7 +8,7 @@
 		</div>
 		<div class="content">
 			<div class="bottom">
-				<div><button v-if="wallet.jwk" @click="downloadWallet(wallet)">Download</button></div>
+				<div><button v-if="wallet.download" @click="wallet.download">Download</button></div>
 				<div><button @click="deleteWallet(wallet)">Delete</button></div>
 			</div>
 		</div>
@@ -20,7 +20,7 @@
 <script setup>
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import WalletInfo from '@/components/composed/WalletInfo.vue'
-import { deleteWallet, downloadWallet } from '@/functions/Wallets'
+import { deleteWallet } from '@/functions/Wallets'
 
 const props = defineProps({
 	wallet: Object

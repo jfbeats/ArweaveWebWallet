@@ -1,12 +1,14 @@
 import Arweave from 'arweave/web'
 import ArDB from 'ardb'
-import { awaitEffect } from '@/functions/Utils'
+import { awaitEffect, download } from '@/functions/Utils'
 import axios from 'axios'
 import { computed, reactive, ref, watch } from 'vue'
 import InterfaceStore, { sleepUntilVisible } from '@/store/InterfaceStore'
 
 import { ApiConfig } from 'arweave/web/lib/api'
 import { GQLEdgeTransactionInterface, GQLTransactionInterface } from 'ardb/lib/faces/gql'
+import Transaction from 'arweave/web/lib/transaction'
+import { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
 
 
 
@@ -76,24 +78,11 @@ export async function getTxById (txId: string) {
 
 
 
-
-
-type Query = 'received' | 'sent' | 'all'
-type QueryStatusInterface = {
-	completed?: boolean
-	fetch?: boolean
-	update?: boolean
-	cursor?: string // TODO
-	promise?: Promise<GQLEdgeTransactionInterface[]> // TODO
-} & {
-	[key in Query]?: GQLEdgeTransactionInterface // TODO make it a tx id?
-}
-
 // TODO function fetchQuery and fetchQueries to stitch txs
 
 
 
-export class ArweaveAccount {
+export class ArweaveAccount implements Account {
 	state = reactive({
 		key: null as null | string,
 		balance: null as null | string
@@ -101,11 +90,10 @@ export class ArweaveAccount {
 	queries = reactive({} as { [key: string]: GQLEdgeTransactionInterface[] })
 	queriesStatus = reactive({} as { [key: string]: QueryStatusInterface })
 	
-	constructor (account: any) {
-		if (typeof account === 'string') { this.state.key = account }
-		else if (typeof account === 'object' && account?.key) { this.state.key = account?.key }
-		else if (typeof account === 'object' && account?.jwk) {
-			arweave.wallets.jwkToAddress(account.jwk).then((address) => this.state.key = address)
+	constructor (init: string | WalletDataInterface) {
+		if (typeof init === 'string') { this.state.key = init }
+		else if (typeof init === 'object' && init.jwk) {
+			arweave.wallets.jwkToAddress(init.jwk).then((address) => this.state.key = address)
 		}
 	}
 	
@@ -123,13 +111,31 @@ export class ArweaveAccount {
 		} catch (e) { console.error(e) }
 		finally { this.queriesStatus.balance.fetch = false }
 	}
-	fetchTransactions = (query: Query) => fetchTransactions(this, query)
-	updateTransactions = (query: Query) => updateTransactions(this, query)
+	fetchTransactions = async (query: Query) => fetchTransactions(this, query)
+	updateTransactions = async (query: Query) => updateTransactions(this, query)
 }
 
 
 
-
+export class ArweaveProvider extends ArweaveAccount implements Provider {
+	#wallet: WalletDataInterface
+	
+	constructor (init: WalletDataInterface) {
+		super(init)
+		this.#wallet = init
+	}
+	
+	get jwk () { return this.#wallet.jwk }
+	
+	async signTransaction (tx: Transaction, options?: SignatureOptions) {
+		return arweave.transactions.sign(tx, this.#wallet.jwk, options)
+	}
+	async download () {
+		const jwk = this.#wallet.jwk
+		const key = this.key ? this.key : await arweave.wallets.jwkToAddress(this.#wallet.jwk)
+		download(key, JSON.stringify(jwk))
+	}
+}
 
 
 

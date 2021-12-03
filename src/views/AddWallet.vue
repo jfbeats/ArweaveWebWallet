@@ -43,7 +43,7 @@ import InputData from '@/components/atomic/InputData.vue'
 import InputAddress from '@/components/atomic/InputAddress.vue';
 import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
-import Ledger from '@/functions/Ledger.js'
+import Ledger from '@/providers/Ledger.js'
 import { arweave } from '@/store/ArweaveStore'
 import { addWallet, watchWallet, generateMnemonic, validateMnemonic, addMnemonic } from '@/functions/Wallets.ts'
 import { computed, reactive, ref } from 'vue'

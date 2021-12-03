@@ -93,7 +93,7 @@ import SendFee from '@/components/composed/SendFee.vue'
 import Button from '@/components/atomic/Button.vue'
 import {arweave} from '@/store/ArweaveStore'
 import {buildTransaction, manageUpload} from '@/functions/Transactions'
-import Ledger from '@/functions/Ledger'
+import Ledger from '@/providers/Ledger'
 import BigNumber from 'bignumber.js'
 import {addressHashToColor, addressToHash, awaitEffect} from '@/functions/Utils'
 import {computed, markRaw, reactive, ref, watch} from 'vue'
@@ -204,11 +204,12 @@ export default {
 					props.model.data,
 					txFee.value
 				)
-				if (props.wallet.jwk) { await arweave.transactions.sign(tx, props.wallet.jwk) }
-				else if (props.wallet.provider === 'ledger') {
-					if (props.wallet.key !== await Ledger.getActiveAddress()) { alert('Wrong account'); return }
-					await Ledger.sign(tx)
-				}
+				// if (props.wallet.jwk) { await arweave.transactions.sign(tx, props.wallet.jwk) }
+				// else if (props.wallet.provider === 'ledger') {
+				// 	if (props.wallet.key !== await Ledger.getActiveAddress()) { alert('Wrong account'); return }
+				// 	await Ledger.sign(tx)
+				// }
+				await props.wallet.signTransaction(tx)
 				manageUpload(tx)
 				resetForm()
 			} catch (e) {
