@@ -26,8 +26,11 @@
 		</div>
 		<div class="card">
 			<h2>Hardware</h2>
-			<Button v-if="supportsWebUSB()" @click="importLedger()" :icon="LogoLedger">Ledger</Button>
-			<Button v-else disabled :icon="LogoLedger">Ledger not supported for this browser</Button>
+			<template v-for="provider in hardwareProviders" :key="provider.name">
+				<Button :disabled="!provider.isSupported" @click="importProvider(provider)" :icon="provider.icon">
+					{{ provider.name }} {{ !provider.isSupported ? ' not supported for this browser' : '' }}
+				</Button>
+			</template>
 		</div>
 <!--		<div class="card">-->
 <!--			<h2>Address Only</h2>-->
@@ -38,78 +41,71 @@
 
 
 
-<script>
+<script setup>
 import InputData from '@/components/atomic/InputData.vue'
 import InputAddress from '@/components/atomic/InputAddress.vue';
 import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
-import Ledger from '@/providers/Ledger.js'
+import { LedgerProviderData } from '@/providers/Ledger.ts'
 import { arweave } from '@/store/ArweaveStore'
-import { addWallet, watchWallet, generateMnemonic, validateMnemonic, addMnemonic } from '@/functions/Wallets.ts'
+import { addWallet, watchWallet, generateMnemonic, validateMnemonic, addMnemonic, addProvider } from '@/functions/Wallets.ts'
 import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import LogoArweave from '@/assets/logos/arweave.svg?component'
-import LogoLedger from '@/assets/logos/ledger.svg?component'
 import IconAddBox from '@/assets/icons/add_box.svg?component'
 
-export default {
-	components: { InputAddress, InputData, Button, Icon },
-	setup () {
-		const router = useRouter()
-		const passphraseInput = ref('')
-		const targetInput = ref('')
-		const maskAddress = (address) => { return address.match(/^[a-z0-9_-]{0,43}$/i) }
-		const popup = reactive({})
-		const isPassphrase = computed(() => passphraseInput.value.trim().split(/\s+/g).length >= 12)
-		const isCreatingWallet = ref(false)
-		const isGeneratingWallet = ref(false)
-		const createdWallet = ref(null)
-		const create = async () => {
-			isCreatingWallet.value = true
-			passphraseInput.value = await generateMnemonic()
-			const wallet = addMnemonic(passphraseInput.value)
-			setTimeout(async () => createdWallet.value = await wallet, 10000)
-		}
-		const goToCreatedWallet = () => {
-			router.push({ name: 'EditWallet', query: { wallet: createdWallet.value } })
-		}
-		const importPassphrase = async () => {
-			isGeneratingWallet.value = true
-			const wallet = addMnemonic(passphraseInput.value)
-			popup.enabled = true
-			popup.icon = 'loader'
-			popup.message = 'Importing'
-			popup.actions = []
-			router.push({ name: 'EditWallet', query: { wallet: (await wallet) } })
-		}
-		const confirmPassphrase = async () => {
-			if (await validateMnemonic(passphraseInput.value)) { return importPassphrase() }
-			popup.enabled = true
-			popup.icon = ''
-			popup.message = 'This passphrase is not valid, do you want to import it anyway?'
-			popup.actions = [
-				{ name: 'Back', action: () => popup.enabled = false },
-				{ name: 'Import Passphrase', action: () => importPassphrase() }
-			]
-		}
-		const importFile = async (file) => {
-			if (!file) { return }
-			const wallet = await addWallet(JSON.parse(await file[0].text()))
-			router.push({ name: 'EditWallet', query: { wallet: wallet.id } })
-		}
-		const importLedger = async () => {
-			const wallet = await watchWallet(Ledger)
-			router.push({ name: 'EditWallet', query: { wallet: wallet.id } })
-		}
-		const supportsWebUSB = () => {
-			return !!window.navigator.usb
-		}
-		const importAddressOnlyAction = { icon: IconAddBox, run: () => {} }
-		return { passphraseInput, targetInput, maskAddress, popup, isPassphrase, create, importLedger, supportsWebUSB, importAddressOnlyAction, isCreatingWallet, isGeneratingWallet, createdWallet, goToCreatedWallet, importPassphrase, confirmPassphrase, importFile, LogoArweave, LogoLedger }
-	},
+const router = useRouter()
+const passphraseInput = ref('')
+const targetInput = ref('')
+const maskAddress = (address) => { return address.match(/^[a-z0-9_-]{0,43}$/i) }
+const popup = reactive({})
+const isPassphrase = computed(() => passphraseInput.value.trim().split(/\s+/g).length >= 12)
+const isCreatingWallet = ref(false)
+const isGeneratingWallet = ref(false)
+const createdWallet = ref(null)
+const create = async () => {
+	isCreatingWallet.value = true
+	passphraseInput.value = await generateMnemonic()
+	const wallet = addMnemonic(passphraseInput.value)
+	setTimeout(async () => createdWallet.value = await wallet, 10000)
 }
+const goToCreatedWallet = () => {
+	router.push({ name: 'EditWallet', query: { wallet: createdWallet.value } })
+}
+const importPassphrase = async () => {
+	isGeneratingWallet.value = true
+	const wallet = addMnemonic(passphraseInput.value)
+	popup.enabled = true
+	popup.icon = 'loader'
+	popup.message = 'Importing'
+	popup.actions = []
+	router.push({ name: 'EditWallet', query: { wallet: (await wallet) } })
+}
+const confirmPassphrase = async () => {
+	if (await validateMnemonic(passphraseInput.value)) { return importPassphrase() }
+	popup.enabled = true
+	popup.icon = ''
+	popup.message = 'This passphrase is not valid, do you want to import it anyway?'
+	popup.actions = [
+		{ name: 'Back', action: () => popup.enabled = false },
+		{ name: 'Import Passphrase', action: () => importPassphrase() }
+	]
+}
+const importFile = async (file) => {
+	if (!file) { return }
+	const wallet = await addWallet(JSON.parse(await file[0].text()))
+	router.push({ name: 'EditWallet', query: { wallet: wallet.id } })
+}
+const importProvider = async (provider) => {
+	const id = await addProvider(provider)
+	router.push({ name: 'EditWallet', query: { wallet: id } })
+}
+const hardwareProviders = [LedgerProviderData]
+const importAddressOnlyAction = { icon: IconAddBox, run: () => {} }
 </script>
+
+
 
 <style scoped>
 .add-wallet {

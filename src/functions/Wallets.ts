@@ -1,4 +1,5 @@
 import { ArweaveProvider, arweave } from '@/store/ArweaveStore'
+import { LedgerProvider } from '@/providers/Ledger'
 import { getChannel } from '@/functions/Channels'
 import { passwordEncrypt, passwordDecrypt } from '@/functions/Crypto'
 import { download } from '@/functions/Utils'
@@ -17,14 +18,40 @@ export const WalletsData = computed<WalletDataInterface[]>({
 
 
 
-class WalletProxy extends ArweaveProvider {
-	#wallet: WalletDataInterface
-	constructor (wallet: WalletDataInterface) {
-		super(wallet)
-		this.#wallet = wallet
-	}
-	get id () { return this.#wallet.id }
+export const ProviderRegistry = {
+	arweave: ArweaveProvider,
+	ledger: LedgerProvider
 }
+
+function selectProvider (wallet: WalletDataInterface) {
+	if (wallet.provider) {
+		return ProviderRegistry[wallet.provider]
+	}
+	for (const provider of Object.values(ProviderRegistry)) {
+		if (provider.isProviderFor?.(wallet)) { return provider }
+	}
+}
+
+type GConstructor<T = {}> = new (...args: any[]) => T
+function setProvider<TBase extends GConstructor<Provider>> (Base: TBase) {
+	return class WalletProxy extends Base {
+		#wallet: WalletDataInterface
+		constructor (...args: any[]) {
+			super(...args)
+			this.#wallet = args[0]
+		}
+		get id () { return this.#wallet.id }
+	}
+}
+
+// class WalletProxy extends ArweaveProvider {
+// 	#wallet: WalletDataInterface
+// 	constructor (wallet: WalletDataInterface) {
+// 		super(wallet)
+// 		this.#wallet = wallet
+// 	}
+// 	get id () { return this.#wallet.id }
+// }
 
 
 
@@ -36,8 +63,11 @@ export const Wallets = computed<WalletProxy[]>({
 		for (const id of [...runningWallets, ...storageWallets]) {
 			if (runningWallets.includes(id) && !storageWallets.includes(id)) { delete WalletsStore[id] }
 			if (!runningWallets.includes(id) && storageWallets.includes(id)) {
-				const wallet = WalletsData.value.find(w => w.id == +id)
-				WalletsStore[id] = new WalletProxy(wallet!)
+				const wallet = WalletsData.value.find(w => w.id == +id)!
+				// WalletsStore[id] = new WalletProxy(wallet)
+				const selectedProvider = selectProvider(wallet)!
+				const dynamicClass = setProvider(selectedProvider)
+				WalletsStore[id] = new dynamicClass(wallet)
 			}
 		}
 		return Object.values(WalletsStore).sort((a, b) => WalletsData.value.findIndex(w => w.id == a.id) - WalletsData.value.findIndex(w => w.id == b.id))
@@ -97,6 +127,13 @@ export async function watchWallet (arweaveWallet: any) {
 		|| arweaveWallet.getActiveAddress ? await arweaveWallet.getActiveAddress() : undefined
 	if (!key) { return }
 	const wallet = { id: getNewId(), key }
+	WalletsData.value.push(wallet)
+	return wallet.id
+}
+
+export async function addProvider (provider: ProviderData) {
+	const importData = await provider.getImportData()
+	const wallet = { id: getNewId(), ...importData }
 	WalletsData.value.push(wallet)
 	return wallet.id
 }

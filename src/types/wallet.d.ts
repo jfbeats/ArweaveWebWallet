@@ -5,11 +5,13 @@
 
 
 
-interface WalletDataInterface {
+type ProviderName = keyof typeof import('@/functions/Wallets').ProviderRegistry
+type WalletDataInterface = {
 	id: number
 	jwk?: JsonWebKey
-	account?: { [protocol: string]: object }
-	provider?: { [protocol: string]: object }
+	provider?: ProviderName
+} & {
+	[key in ProviderName]?: { [key: string]: any }
 }
 
 type Query = 'received' | 'sent' | 'all'
@@ -21,6 +23,14 @@ type QueryStatusInterface = {
 	promise?: Promise<import('ardb/lib/faces/gql').GQLEdgeTransactionInterface[]> // TODO
 } & {
 	[key in Query]?: import('ardb/lib/faces/gql').GQLEdgeTransactionInterface // TODO make it a tx id?
+}
+type Metadata = {
+	name: string
+	icon: import('vue').Component
+	isSupported: boolean
+}
+interface ProviderData extends Metadata {
+	getImportData: () => Promise<Omit<WalletDataInterface, 'id'>>
 }
 
 interface Account {
@@ -39,4 +49,9 @@ interface Provider {
 	sign?: (...args: any) => Promise<any>
 	decrypt?: (...args: any) => Promise<any>
 	download?: () => Promise<any>
+	metadata: Metadata
+}
+
+interface WalletProxy extends Provider, Account {
+	id: number
 }

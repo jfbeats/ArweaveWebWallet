@@ -4,7 +4,7 @@ import { awaitEffect, download } from '@/functions/Utils'
 import axios from 'axios'
 import { computed, reactive, ref, watch } from 'vue'
 import InterfaceStore, { sleepUntilVisible } from '@/store/InterfaceStore'
-
+import LogoArweave from '@/assets/logos/arweave.svg?component'
 import { ApiConfig } from 'arweave/web/lib/api'
 import { GQLEdgeTransactionInterface, GQLTransactionInterface } from 'ardb/lib/faces/gql'
 import Transaction from 'arweave/web/lib/transaction'
@@ -92,8 +92,13 @@ export class ArweaveAccount implements Account {
 	
 	constructor (init: string | WalletDataInterface) {
 		if (typeof init === 'string') { this.state.key = init }
-		else if (typeof init === 'object' && init.jwk) {
-			arweave.wallets.jwkToAddress(init.jwk).then((address) => this.state.key = address)
+		else if (typeof init === 'object') {
+			if (init.arweave?.key) { this.state.key = init.arweave.key }
+			else if (init.jwk) { arweave.wallets.jwkToAddress(init.jwk).then((address) => {
+				this.state.key = address
+				init.arweave ??= {}
+				init.arweave.key = address
+			})}
 		}
 	}
 	
@@ -117,16 +122,21 @@ export class ArweaveAccount implements Account {
 
 
 
+export const metadata: Metadata = {
+	isSupported: true,
+	name: 'ArweaveWallet',
+	icon: LogoArweave,
+}
+
 export class ArweaveProvider extends ArweaveAccount implements Provider {
 	#wallet: WalletDataInterface
-	
+	static isProviderFor (wallet: WalletDataInterface) { return !!wallet.jwk }
 	constructor (init: WalletDataInterface) {
 		super(init)
 		this.#wallet = init
 	}
-	
+	get metadata () { return metadata }
 	get jwk () { return this.#wallet.jwk }
-	
 	async signTransaction (tx: Transaction, options?: SignatureOptions) {
 		return arweave.transactions.sign(tx, this.#wallet.jwk, options)
 	}
