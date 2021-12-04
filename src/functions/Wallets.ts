@@ -31,7 +31,6 @@ function selectProvider (wallet: WalletDataInterface) {
 
 type GConstructor<T = {}> = new (...args: any[]) => T
 function setProvider<TBase extends GConstructor<Provider>> (Base: TBase) {
-	console.log(Base)
 	return class WalletProxy extends Base {
 		#wallet: WalletDataInterface
 		constructor (...args: any[]) {

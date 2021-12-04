@@ -25,7 +25,7 @@ export default {
 	props: ['wallet'],
 	setup (props) {
 		const arweaveId = computed(() => ProfileStore.arweaveId[props.wallet.key])
-		const walletInfo = computed(() => props.wallet.metaData || { icon: LogoArweave, name: 'Arweave wallet' })
+		const walletInfo = computed(() => props.wallet.metadata || { icon: LogoArweave, name: 'Arweave wallet' })
 		watch(() => props.wallet.key, () => {
 			getArweaveId(props.wallet.key)
 		})
