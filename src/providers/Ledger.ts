@@ -107,7 +107,7 @@ export class LedgerProvider extends ArweaveAccount implements Provider {
 	get metadata () { return metadata }
 	
 	async signTransaction (tx: Transaction) {
-		if (this.key !== await getInfo()) { throw new Error('Wrong account') }
+		if (this.key !== await getAddress()) { throw new Error('Wrong account') }
 		return sign(tx)
 	}
 }

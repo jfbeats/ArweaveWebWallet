@@ -24,16 +24,14 @@ export const ProviderRegistry = {
 }
 
 function selectProvider (wallet: WalletDataInterface) {
-	if (wallet.provider) {
-		return ProviderRegistry[wallet.provider]
-	}
-	for (const provider of Object.values(ProviderRegistry)) {
-		if (provider.isProviderFor?.(wallet)) { return provider }
-	}
+	if (wallet.provider && ProviderRegistry[wallet.provider]) { return ProviderRegistry[wallet.provider] }
+	for (const provider of Object.values(ProviderRegistry)) { if (provider.isProviderFor?.(wallet)) { return provider } }
+	return ProviderRegistry['arweave']
 }
 
 type GConstructor<T = {}> = new (...args: any[]) => T
 function setProvider<TBase extends GConstructor<Provider>> (Base: TBase) {
+	console.log(Base)
 	return class WalletProxy extends Base {
 		#wallet: WalletDataInterface
 		constructor (...args: any[]) {
