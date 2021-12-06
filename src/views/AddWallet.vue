@@ -48,7 +48,7 @@ import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import { LedgerProviderData } from '@/providers/Ledger.ts'
 import { arweave } from '@/store/ArweaveStore'
-import { addWallet, watchWallet, generateMnemonic, validateMnemonic, addMnemonic, addProvider } from '@/functions/Wallets.ts'
+import { addWallet, generateMnemonic, validateMnemonic, addMnemonic, addProvider } from '@/functions/Wallets.ts'
 import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -67,20 +67,20 @@ const createdWallet = ref(null)
 const create = async () => {
 	isCreatingWallet.value = true
 	passphraseInput.value = await generateMnemonic()
-	const wallet = addMnemonic(passphraseInput.value)
-	setTimeout(async () => createdWallet.value = await wallet, 10000)
+	const id = addMnemonic(passphraseInput.value)
+	setTimeout(async () => createdWallet.value = await id, 10000)
 }
 const goToCreatedWallet = () => {
 	router.push({ name: 'EditWallet', query: { wallet: createdWallet.value } })
 }
 const importPassphrase = async () => {
 	isGeneratingWallet.value = true
-	const wallet = addMnemonic(passphraseInput.value)
+	const id = addMnemonic(passphraseInput.value)
 	popup.enabled = true
 	popup.icon = 'loader'
 	popup.message = 'Importing'
 	popup.actions = []
-	router.push({ name: 'EditWallet', query: { wallet: (await wallet) } })
+	router.push({ name: 'EditWallet', query: { wallet: await id } })
 }
 const confirmPassphrase = async () => {
 	if (await validateMnemonic(passphraseInput.value)) { return importPassphrase() }
@@ -94,8 +94,8 @@ const confirmPassphrase = async () => {
 }
 const importFile = async (file) => {
 	if (!file) { return }
-	const wallet = await addWallet(JSON.parse(await file[0].text()))
-	router.push({ name: 'EditWallet', query: { wallet: wallet.id } })
+	const id = await addWallet(JSON.parse(await file[0].text()))
+	router.push({ name: 'EditWallet', query: { wallet: id } })
 }
 const importProvider = async (provider) => {
 	const id = await addProvider(provider)

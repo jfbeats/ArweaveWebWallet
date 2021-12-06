@@ -10,10 +10,10 @@
 	},
 	"dependencies": {
 		"@ledgerhq/hw-transport-webusb": "^6.7.0",
-		"@zondax/ledger-arweave": "^0.2.0",
+		"@zondax/ledger-arweave": "^1.0.0",
 		"ardb": "1.0.8",
 		"arverify": "^0.0.11",
-		"arweave": "^1.10.17",
+		"arweave": "^1.10.18",
 		"bignumber.js": "^9.0.1",
 		"bip39-web-crypto": "^4.0.1",
 		"buffer": "^6.0.3",
@@ -21,8 +21,8 @@
 		"mitt": "^3.0.0",
 		"smartweave": "^0.4.45",
 		"stream-browserify": "^3.0.0",
-		"vue": "^3.2.16",
-		"vue-router": "^4.0.11",
+		"vue": "^3.2.24",
+		"vue-router": "^4.0.12",
 		"vue-slicksort": "^2.0.0-alpha.5"
 	},
 	"devDependencies": {

@@ -112,8 +112,11 @@ export async function addMnemonic (mnemonic: string) {
 
 export async function addWallet (jwkObj: JsonWebKey) {
 	const jwk = jwkObj || await arweave.wallets.generate()
+	const jwkString = JSON.stringify(jwk)
+	const existing = WalletsData.value.find(w => JSON.stringify(w.jwk) === jwkString)
+	if (existing) { return existing.id }
 	const key = await arweave.wallets.jwkToAddress(jwk) as string
-	if (!jwkObj) { download(key, JSON.stringify(jwk)) }
+	if (!jwkObj) { download(key, jwkString) }
 	const wallet = { id: getNewId(), key, jwk }
 	WalletsData.value.push(wallet)
 	return wallet.id
@@ -136,12 +139,11 @@ export async function addProvider (provider: ProviderData) {
 }
 
 export function deleteWallet (wallet: WalletDataInterface) {
-	WalletsData.value.splice(WalletsData.value.indexOf(wallet), 1)
+	Wallets.value = Wallets.value.filter(w => w.id !== wallet.id)
 }
 
-export function getNewId () {
-	for (let i = 0; i <= WalletsData.value.length; i++) {
-		if (WalletsData.value.map(e => e.id).indexOf(i) === -1) { return i }
-	}
-	return 0
+function getNewId () {
+	let i = 0
+	while (WalletsData.value.find(w => w.id === i)) { i++ }
+	return i
 }

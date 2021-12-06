@@ -17,7 +17,6 @@ const route = useRoute()
 const wallets = computed(() => {
 	const editWallet = route.query.wallet
 	const editWalletArray = Array.isArray(editWallet) ? editWallet : [editWallet]
-	console.log(editWalletArray)
 	return Wallets.value.filter(wallet => editWalletArray.includes(wallet.id + ''))
 })
 </script>
