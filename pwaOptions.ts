@@ -1,4 +1,6 @@
-export default (env) => ({
+import { VitePWAOptions } from 'vite-plugin-pwa'
+
+export default (env: any): Partial<VitePWAOptions> => ({
 	manifest: {
 		name: env.VITE_TITLE,
 		short_name: env.VITE_TITLE,

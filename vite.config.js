@@ -5,7 +5,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import processHtml from 'vite-plugin-html'
 import inject from '@rollup/plugin-inject'
 import svgLoader from 'vite-svg-loader'
-import pwaOptions from './src/pwaOptions'
+import pwaOptions from './pwaOptions.ts'
 
 export default ({ mode }) => {
 	const env = { ...process.env, ...loadEnv(mode, process.cwd()) }
