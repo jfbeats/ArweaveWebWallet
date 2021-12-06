@@ -95,24 +95,6 @@ const links = toRef(InterfaceStore.toolbar, 'links')
 	opacity: var(--element-disabled-opacity);
 }
 
-.dragging .icon > * {
-	opacity: 1;
-	transform: translateX(calc(100% + var(--toolbar-spacing) * 2));
-	box-shadow: 0 0 12px 1px #00000044;
-}
-
-[dir="rtl"] .dragging .icon > * {
-	transform: translateX(calc(-100% - var(--toolbar-spacing) * 2));
-}
-
-.dragging .icon.verticalLayout > * {
-	transform: translateY(calc(100% + var(--toolbar-spacing) * 2));
-}
-
-.wallet:hover {
-	opacity: 1;
-}
-
 .controls {
 	display: flex;
 	flex-direction: inherit;
@@ -130,10 +112,6 @@ const links = toRef(InterfaceStore.toolbar, 'links')
 	height: unset;
 }
 
-.control:hover {
-	opacity: 1;
-}
-
 .profile {
 	background: var(--background3);
 	width: 100%;
@@ -148,10 +126,28 @@ const links = toRef(InterfaceStore.toolbar, 'links')
 	height: 24px;
 }
 
+.icon:hover {
+	opacity: 1;
+}
+
 .icon.active,
 .icon.accent,
 .icon.router-link-active {
 	opacity: 1;
+}
+
+.dragging .icon > * {
+	opacity: 1;
+	transform: translateX(calc(100% + var(--toolbar-spacing) * 2));
+	box-shadow: 0 0 12px 1px #00000044;
+}
+
+[dir="rtl"] .dragging .icon > * {
+	transform: translateX(calc(-100% - var(--toolbar-spacing) * 2));
+}
+
+.dragging .icon.verticalLayout > * {
+	transform: translateY(calc(100% + var(--toolbar-spacing) * 2));
 }
 
 .icon::before {
