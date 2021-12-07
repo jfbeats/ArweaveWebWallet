@@ -7,28 +7,29 @@
 	</div>
 </template>
 
-<script>
+
+
+<script setup>
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 
-export default {
-	props: ['queryName', 'tabs', 'modelValue', 'disabled'],
-	setup (props, { emit }) {
-		const model = computed({
-			get () { return props.modelValue },
-			set (value) { emit('update:modelValue', value) }
-		})
-		const route = useRoute()
-		const isActive = (tab) => {
-			const currentQuery = route.query[props.queryName]
-			return currentQuery
-				? currentQuery === tab.name.toLowerCase()
-				: props.tabs.indexOf(tab) === 0
-		}
-		return { model, isActive }
-	},
+const props = defineProps(['queryName', 'tabs', 'modelValue', 'disabled'])
+const emit = defineEmits(['update:modelValue'])
+
+const model = computed({
+	get () { return props.modelValue },
+	set (value) { emit('update:modelValue', value) }
+})
+const route = useRoute()
+const isActive = (tab) => {
+	const currentQuery = route.query[props.queryName]
+	return currentQuery
+		? currentQuery === tab.name.toLowerCase()
+		: props.tabs.indexOf(tab) === 0
 }
 </script>
+
+
 
 <style scoped>
 .tabs {

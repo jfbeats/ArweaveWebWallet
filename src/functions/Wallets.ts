@@ -117,16 +117,17 @@ export async function addWallet (jwkObj: JsonWebKey) {
 	if (existing) { return existing.id }
 	const key = await arweave.wallets.jwkToAddress(jwk) as string
 	if (!jwkObj) { download(key, jwkString) }
-	const wallet = { id: getNewId(), key, jwk }
+	const wallet = { id: getNewId(), jwk }
 	WalletsData.value.push(wallet)
 	return wallet.id
 }
 
-export async function watchWallet (arweaveWallet: any) {
-	const key = arweaveWallet.key
-		|| arweaveWallet.getActiveAddress ? await arweaveWallet.getActiveAddress() : undefined
+export async function addAddress (addressSource: any) {
+	let key = typeof addressSource === 'string' && addressSource
+	key ||= addressSource.key
+	key ||= await addressSource.getActiveAddress?.()
 	if (!key) { return }
-	const wallet = { id: getNewId(), key }
+	const wallet = { id: getNewId(), arweave: { key } }
 	WalletsData.value.push(wallet)
 	return wallet.id
 }

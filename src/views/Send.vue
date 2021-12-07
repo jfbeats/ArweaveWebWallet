@@ -68,7 +68,7 @@
 
 			<div class="row flex-row" style="align-items:flex-end; margin-top:3em;">
 				<SendFee :size="txSize" :target="model.target" @update="fee => txFee = fee" />
-				<Button @click="postTx" :style="submitStyle" :disabled="loading || !txFee" :icon="IconNorthEast">Submit</Button>
+				<Button @click="postTx" :style="submitStyle" :disabled="loading || !txFee || !wallet.signTransaction" :icon="IconNorthEast">Submit</Button>
 			</div>
 			<div>
 				<transition name="slide-up">

@@ -45,7 +45,7 @@ interface Account {
 
 interface Provider {
 	jwk?: JsonWebKey
-	signTransaction: (...args: any) => Promise<any>
+	signTransaction?: (...args: any) => Promise<any>
 	sign?: (...args: any) => Promise<any>
 	decrypt?: (...args: any) => Promise<any>
 	download?: () => Promise<any>

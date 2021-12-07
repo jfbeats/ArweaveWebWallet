@@ -122,25 +122,27 @@ export class ArweaveAccount implements Account {
 
 
 
-export const metadata: Metadata = {
-	isSupported: true,
-	name: 'ArweaveWallet',
-	icon: LogoArweave,
-}
-
 export class ArweaveProvider extends ArweaveAccount implements Provider {
 	#wallet: WalletDataInterface
 	static isProviderFor (wallet: WalletDataInterface) { return !!wallet.jwk }
 	constructor (init: WalletDataInterface) {
 		super(init)
 		this.#wallet = init
+		if (!init.jwk) {
+			this.download = undefined
+			this.signTransaction = undefined
+		}
 	}
-	get metadata () { return metadata }
+	get metadata () { return {
+		isSupported: true,
+		name: this.#wallet.jwk ? 'Arweave Wallet' : 'Arweave Address',
+		icon: LogoArweave,
+	}}
 	get jwk () { return this.#wallet.jwk }
-	async signTransaction (tx: Transaction, options?: SignatureOptions) {
+	async signTransaction? (tx: Transaction, options?: SignatureOptions) {
 		return arweave.transactions.sign(tx, this.#wallet.jwk, options)
 	}
-	async download () {
+	async download? () {
 		const jwk = this.#wallet.jwk
 		const key = this.key ? this.key : await arweave.wallets.jwkToAddress(this.#wallet.jwk)
 		download(key, JSON.stringify(jwk))
@@ -413,13 +415,7 @@ watch(() => ArweaveStore.conversion.settings, (settings) => {
 
 
 
-export function loadDemo () {
-	console.log('loading test wallets')
-	// pushWallet({ key: 'TId0Wix2KFl1gArtAT6Do1CbWU_0wneGvS5X9BfW5PE' })
-	// pushWallet({ key: 'Bf3pWqxD1qwwF2fcE9bPNyQp_5TSlAYPJ3JNMgJSj4c' })
-	// pushWallet({ key: 'vLRHFqCw1uHu75xqB4fCDW-QxpkpJxBtFD9g4QYUbfw' })
-	// pushWallet({ key: 'zYqPZuALSPa_f5Agvf8g2JHv94cqMn9aBtnH7GFHbuA' })
-}
+export function loadDemo () {}
 
 
 

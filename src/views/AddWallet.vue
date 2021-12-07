@@ -32,10 +32,10 @@
 				</Button>
 			</template>
 		</div>
-<!--		<div class="card">-->
-<!--			<h2>Address Only</h2>-->
-<!--			<InputAddress v-model="targetInput" :actions="[importAddressOnlyAction]" />-->
-<!--		</div>-->
+		<div class="card">
+			<h2>Address Only</h2>
+			<InputAddress v-model="targetInput" :actions="[importAddressOnlyAction]" @keydown.enter="importAddressOnlyAction.run()" />
+		</div>
 	</div>
 </template>
 
@@ -48,7 +48,7 @@ import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import { LedgerProviderData } from '@/providers/Ledger.ts'
 import { arweave } from '@/store/ArweaveStore'
-import { addWallet, generateMnemonic, validateMnemonic, addMnemonic, addProvider } from '@/functions/Wallets.ts'
+import { addWallet, addAddress, generateMnemonic, validateMnemonic, addMnemonic, addProvider } from '@/functions/Wallets.ts'
 import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -102,7 +102,10 @@ const importProvider = async (provider) => {
 	router.push({ name: 'EditWallet', query: { wallet: id } })
 }
 const hardwareProviders = [LedgerProviderData]
-const importAddressOnlyAction = { icon: IconAddBox, run: () => {} }
+const importAddressOnlyAction = { icon: IconAddBox, run: async () => {
+	const id = await addAddress(targetInput.value)
+	router.push({ name: 'EditWallet', query: { wallet: id } })
+}}
 </script>
 
 
