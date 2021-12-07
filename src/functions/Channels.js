@@ -88,7 +88,7 @@ export function getChannel (prefix, instanceName = '', init = {}) {
 	}
 	const initChannel = () => {} // todo remove
 	const set = (newState) => {
-		if (Array.isArray(state)) { state.splice(0, state.length, ...newState) }
+		if (Array.isArray(state)) { state.splice(0, state.length, ...(newState || [])) }
 		else {
 			for (const key in state) { !(key in newState) && delete state[key] }
 			Object.assign(state, newState)
