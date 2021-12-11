@@ -24,10 +24,11 @@ type InstanceState = {
 }
 
 type ConnectorState = {
-	origin?: string
+	origin: string
 	session?: string
-	messageQueue?: MessageEntry[]
+	messageQueue: MessageEntry[]
+	timestamp: number
+	appInfo?: { name?: string, logo?: string}
 	wallet?: string | false
-	timestamp?: number
 	link?: boolean
 }

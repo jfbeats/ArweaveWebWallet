@@ -41,15 +41,6 @@ function setProvider<TBase extends GConstructor<Provider>> (Base: TBase) {
 	}
 }
 
-// class WalletProxy extends ArweaveProvider {
-// 	#wallet: WalletDataInterface
-// 	constructor (wallet: WalletDataInterface) {
-// 		super(wallet)
-// 		this.#wallet = wallet
-// 	}
-// 	get id () { return this.#wallet.id }
-// }
-
 
 
 const WalletsStore: { [key: string]: WalletProxy } = {}

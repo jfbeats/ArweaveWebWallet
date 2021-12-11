@@ -40,7 +40,6 @@ export { state }
 async function initConnector () {
 	await awaitStorageAccess()
 	const { state: connectorState, deleteChannel } = initConnectorChannel()
-	console.log(connectorState)
 	sharedState.value = connectorState
 	const connect = () => {
 		// todo reject transactions that are designated to current address
@@ -71,6 +70,7 @@ async function initConnector () {
 
 
 function postMessage (message: Message) {
+	if (!origin) { return }
 	windowRef.postMessage({ ...message, jsonrpc: '2.0' }, origin)
 }
 

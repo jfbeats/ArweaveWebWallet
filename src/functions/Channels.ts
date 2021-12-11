@@ -11,7 +11,7 @@ export class Channel <T extends keyof PrefixTable> {
 	private readonly stateChannel
 	private stopWrite?: WatchStopHandle
 	
-	constructor (prefix: T, instanceName = '', init: PrefixTable[T]) {
+	constructor (prefix: T, instanceName = '', init: Partial<PrefixTable[T]>) {
 		this.state = reactive(init)
 		this.stateChannel = prefix + instanceName
 		window.addEventListener('storage', this.storageListener)
@@ -56,7 +56,7 @@ export class Channel <T extends keyof PrefixTable> {
 const hash = new URLSearchParams(window.location.hash.slice(1))
 const origin = hash.get('origin') || undefined
 const session = hash.get('session') || undefined
-const appInfo = { name: hash.get('name'), logo: hash.get('logo') }
+const appInfo = { name: hash.get('name') || undefined, logo: hash.get('logo') || undefined }
 const instance = origin + Math.random().toString().slice(2)
 const chPrefix = 'connectorState:'
 const sharedPrefix = 'sharedState:'
@@ -69,8 +69,8 @@ const connectorChannels = getChannels(sharedPrefix)
 export function initConnectorChannel () {
 	if (!origin) { throw 'Missing origin' }
 	const channel = new Channel(sharedPrefix, origin + session, {})
-	if (!channel.state.origin) { Object.assign(channel.state, { origin, session, appInfo, wallet: null, timestamp: Date.now(), messageQueue: [] }) }
-	return channel
+	if (!channel.state.origin) { channel.set({ origin, session, appInfo, timestamp: Date.now(), messageQueue: [] }) }
+	return channel as Override<typeof channel, { state: ConnectorState }>
 }
 
 export { state, states, connectorChannels }
@@ -82,7 +82,7 @@ export { state, states, connectorChannels }
 
 function getChannels <T extends 'connectorState:' | 'sharedState:'> (prefix: T) {
 	const channels: { [key: string]: Channel<T> | undefined } = {}
-	const states: { [key: string]: PrefixTable[T] } = reactive({})
+	const states: { [key: string]: Channel<T>['state'] } = reactive({})
 	const getInstanceNames = () => Object.entries(localStorage)
 		.filter(([key, value]) => key.slice(0, prefix.length) === prefix)
 		.map(([key, value]) => key.slice(prefix.length))
@@ -149,7 +149,7 @@ function cleanHeartbeats () {
 	}
 }
 
-export function filterChannels (filter: (params: any) => boolean | { [key: string]: any }, object = states) {
+export function filterChannels (filter: object, object = states) {
 	const filterFunction = ([key, state]) => typeof filter === 'function' ? filter(state)
 		: !Object.entries(filter || {}).find(([key, value]) => state[key] !== value)
 	return Object.fromEntries(Object.entries(object).filter(filterFunction))
