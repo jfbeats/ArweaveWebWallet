@@ -4,12 +4,12 @@ const errors = {
 	rejected: { code: 0, message: 'Rejected' },
 	// JsonRpc spec
 	parse: { code: -32700, message: 'Parse error' },
-	request: { code: -32600, message: 'Invalid Request' },
+	request: { code: -32600, message: 'Invalid request' },
 	method: { code: -32601, message: 'Method not found' },
 	params: { code: -32602, message: 'Invalid params' },
 	internal: { code: -32603, message: 'Internal error' },
 }
-const getError = (error, data) => ({ error: { ...errors[error], data } })
+const getError = (error: keyof typeof errors, data?: any) => ({ error: { ...errors[error], data } })
 
 
 
@@ -19,15 +19,12 @@ export default class JsonRpc {
 	state
 	watchStop
 
-	constructor (procedures, callbacks, state) {
+	constructor (procedures: Procedures, callbacks: (message: any) => void, state: ConnectorState) {
 		this.state = state || reactive({})
 		this.state.messageQueue ??= []
 
 		this.callbacks = callbacks
-		for (const method in procedures) {
-			const { guard, run } = procedures[method]
-			this.setProcedure(method, guard, run)
-		}
+		this.procedures = procedures
 		this.watchStop = watch(() => this.state.messageQueue, () => {
 			for (const messageEntry of this.state.messageQueue) {
 				if (!messageEntry || messageEntry.fulfilled) { continue }
@@ -41,23 +38,16 @@ export default class JsonRpc {
 		}, { deep: true })
 	}
 
-	setProcedure (method, guard, run) {
-		if (typeof method !== 'string') { throw 'method name must be a string' }
-		if (typeof guard !== 'function') { throw 'guard must be a function' }
-		if (typeof run !== 'function') { throw 'procedure must be a function' }
-		this.procedures[method] = { guard, run }
-	}
-
-	pushMessage (message) {
+	pushMessage (message: Message) {
 		const id = message.id
-		const messageEntry = { message, timestamp: Date.now(), status: null, fulfilled: false }
+		const messageEntry = { message, timestamp: Date.now(), fulfilled: false }
 		if (!this.verifyMessage(messageEntry)) { return }
 		for (const m of this.state.messageQueue) { if (m.message.id === id) { return true } }
 		this.state.messageQueue.push(messageEntry)
 		return true
 	}
 
-	runMessage (messageEntry) {
+	runMessage (messageEntry: MessageEntry) {
 		const { message, status } = messageEntry
 		const id = messageEntry.message.id
 		if (status !== 'accepted') { return }
@@ -74,7 +64,7 @@ export default class JsonRpc {
 		}
 	}
 
-	verifyMessage (messageEntry) {
+	verifyMessage (messageEntry: MessageEntry) {
 		const { method, params, id } = messageEntry.message
 		if (id != null && typeof id !== 'number' && typeof id !== 'string') { return }
 		if (typeof method !== 'string') { id != null && this.callbacks({ ...getError('request'), id }); return }
@@ -87,8 +77,8 @@ export default class JsonRpc {
 }
 
 
-
-export const getProcedures = (extendedGuards) => {
+// install typescript is and remove this
+export const getProcedures = (extendedGuards: Procedures) => {
 	const procedures = {
 		signTransaction: {
 			guard: (params) => {

@@ -10,26 +10,21 @@
 
 
 
-<script>
+<script setup>
 import Icon from '@/components/atomic/Icon.vue'
 import { computed, ref, watch } from 'vue'
 
-export default {
-	components: { Icon },
-	props: ['modelValue', 'icon', 'placeholder', 'actions', 'autocomplete', 'mask', 'disabled', 'id'],
-	setup (props, { emit }) {
-		const model = computed({
-			get () { return props.modelValue },
-			set (value) { emit('update:modelValue', value) }
-		})
-		const focus = ref(false)
-		watch(() => model.value, (newVal, oldVal) => {
-			if (!props.mask) { return }
-			if (!props.mask(newVal)) { model.value = oldVal }
-		})
-		return { model, focus }
-	}
-}
+const props = defineProps(['modelValue', 'icon', 'placeholder', 'actions', 'autocomplete', 'mask', 'disabled', 'id'])
+const emit = defineEmits(['update:modelValue'])
+const model = computed({
+	get () { return props.modelValue },
+	set (value) { emit('update:modelValue', value) }
+})
+const focus = ref(false)
+watch(() => model.value, (newVal, oldVal) => {
+	if (!props.mask) { return }
+	if (!props.mask(newVal)) { model.value = oldVal }
+})
 </script>
 
 

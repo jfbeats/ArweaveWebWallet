@@ -1,6 +1,6 @@
 import { ArweaveProvider, arweave } from '@/store/ArweaveStore'
 import { LedgerProvider } from '@/providers/Ledger'
-import { getChannel } from '@/functions/Channels'
+import { Channel } from '@/functions/Channels'
 import { passwordEncrypt, passwordDecrypt } from '@/functions/Crypto'
 import { download } from '@/functions/Utils'
 import { getKeyPairFromMnemonic } from 'human-crypto-keys'
@@ -10,7 +10,7 @@ import { computed, reactive } from 'vue'
 
 
 
-const WalletsChannel = getChannel('wallets', undefined, [])
+const WalletsChannel = new Channel('wallets', undefined, [])
 export const WalletsData = computed<WalletDataInterface[]>({
 	get () { return WalletsChannel.state as any },
 	set (value) { WalletsChannel.set(value) }

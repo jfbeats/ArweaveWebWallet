@@ -2,11 +2,11 @@ import Arweave from 'arweave'
 import { state, states, connectorChannels, filterChannels, initConnectorChannel, hasStorageAccess, awaitStorageAccess } from '@/functions/Channels'
 import JsonRpc, { getProcedures } from '@/functions/JsonRpc'
 import { awaitEffect } from '@/functions/Utils'
-import { watch, watchEffect, computed, reactive, ref } from 'vue'
+import { watch, watchEffect, computed, reactive, ref, Ref } from 'vue'
 
-let windowRef
+let windowRef: Window
 const { origin, session } = state
-const sharedState = ref(null)
+const sharedState: Ref<ConnectorState | null> = ref(null)
 export const connectors = computed(() => {
 	const allConnectors = Object.entries(connectorChannels.states)
 		.filter(([key, val]) => key !== (origin + session) && val.wallet !== false)
@@ -39,15 +39,15 @@ export { state }
 
 async function initConnector () {
 	await awaitStorageAccess()
-	const { state: connectorState, initChannel, deleteChannel } = initConnectorChannel()
+	const { state: connectorState, deleteChannel } = initConnectorChannel()
+	console.log(connectorState)
 	sharedState.value = connectorState
-	initChannel()
 	const connect = () => {
 		// todo reject transactions that are designated to current address
 		postMessage({ method: 'connect', params: connectorState.wallet })
 	}
 	const disconnect = () => { deleteChannel(); postMessage({ method: 'disconnect' }) }
-	watch(() => connectorState.wallet, (wallet) => wallet === false ? disconnect() : connect(wallet))
+	watch(() => connectorState.wallet, (wallet) => wallet === false ? disconnect() : connect())
 	watchEffect(() => {
 		const linkedState = Object.entries(filterChannels({ origin, session, type: state.type === 'popup' ? 'iframe' : 'popup' }))[0]?.[1]
 		if (linkedState) { connectorState.link = true }
@@ -70,7 +70,7 @@ async function initConnector () {
 
 
 
-function postMessage (message) {
+function postMessage (message: Message) {
 	windowRef.postMessage({ ...message, jsonrpc: '2.0' }, origin)
 }
 

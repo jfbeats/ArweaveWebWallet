@@ -136,8 +136,11 @@ const links = toRef(InterfaceStore.toolbar, 'links')
 	opacity: 1;
 }
 
-.dragging .icon > * {
+.dragging .icon {
 	opacity: 1;
+}
+
+.dragging .icon > * {
 	transform: translateX(calc(100% + var(--toolbar-spacing) * 2));
 	box-shadow: 0 0 12px 1px #00000044;
 }

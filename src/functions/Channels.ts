@@ -1,26 +1,75 @@
-import { reactive, watch } from 'vue'
+import { reactive, watch, WatchStopHandle } from 'vue'
+
+type PrefixTable = {
+	'connectorState:': InstanceState
+	'sharedState:': ConnectorState
+	'wallets': WalletDataInterface[]
+}
+
+export class Channel <T extends keyof PrefixTable> {
+	state
+	private readonly stateChannel
+	private stopWrite?: WatchStopHandle
+	
+	constructor (prefix: T, instanceName = '', init: PrefixTable[T]) {
+		this.state = reactive(init)
+		this.stateChannel = prefix + instanceName
+		window.addEventListener('storage', this.storageListener)
+		if (!localStorage.getItem(this.stateChannel) && Object.keys(this.state).length) { this.writeState() }
+		this.update(localStorage.getItem(this.stateChannel))
+	}
+	
+	private writeState = () => {
+		const stateString = JSON.stringify(this.state)
+		if (stateString === localStorage.getItem(this.stateChannel)) { return }
+		localStorage.setItem(this.stateChannel, stateString)
+	}
+	private startWrite = () => this.stopWrite = watch(() => this.state, this.writeState, { deep: true })
+	private update = (val: string | null) => {
+		if (this.stopWrite) { this.stopWrite() }
+		if (val) { this.set(JSON.parse(val)) }
+		this.startWrite()
+	}
+	private storageListener = (e: StorageEvent) => {
+		if (e.key !== this.stateChannel || e.newValue === e.oldValue || !e.newValue) { return }
+		this.update(e.newValue)
+	}
+	set = (newState: PrefixTable[T]) => {
+		if (!newState) { return }
+		if (Array.isArray(this.state) && Array.isArray(newState)) { this.state.splice(0, this.state.length, ...newState) }
+		else if (typeof this.state === 'object' && typeof newState === 'object') {
+			for (const key in this.state) { !(key in newState) && delete this.state[key] }
+			Object.assign(this.state, newState)
+		}
+	}
+	closeChannel = () => {
+		window.removeEventListener('storage', this.storageListener)
+		if (this.stopWrite) { this.stopWrite() }
+	}
+	deleteChannel = () => {
+		this.closeChannel()
+		localStorage.removeItem(this.stateChannel)
+	}
+}
+
 
 const hash = new URLSearchParams(window.location.hash.slice(1))
-const origin = hash.get('origin')
-const session = hash.get('session')
+const origin = hash.get('origin') || undefined
+const session = hash.get('session') || undefined
 const appInfo = { name: hash.get('name'), logo: hash.get('logo') }
 const instance = origin + Math.random().toString().slice(2)
 const chPrefix = 'connectorState:'
 const sharedPrefix = 'sharedState:'
 const heartbeatPrefix = 'heartbeat:'
 const stateChannel = chPrefix + instance
-const { state, initChannel, closeChannel } = getChannel(chPrefix, instance, { origin, session })
-const { states, initChannels, closeChannels } = getChannels(chPrefix)
+const { state, closeChannel } = new Channel(chPrefix, instance, { origin, session })
+const { states, closeChannels } = getChannels(chPrefix)
 const connectorChannels = getChannels(sharedPrefix)
 
 export function initConnectorChannel () {
-	if (!origin || !session) { return }
-	const channel = getChannel(sharedPrefix, origin + session)
+	if (!origin) { throw 'Missing origin' }
+	const channel = new Channel(sharedPrefix, origin + session, {})
 	if (!channel.state.origin) { Object.assign(channel.state, { origin, session, appInfo, wallet: null, timestamp: Date.now(), messageQueue: [] }) }
-	channel.deleteChannel = () => {
-		channel.closeChannel()
-		localStorage.removeItem(sharedPrefix + origin + session)
-	}
 	return channel
 }
 
@@ -28,21 +77,23 @@ export { state, states, connectorChannels }
 
 
 
-function getChannels (prefix) {
-	const channels = {}
-	const states = reactive({})
+
+
+
+function getChannels <T extends 'connectorState:' | 'sharedState:'> (prefix: T) {
+	const channels: { [key: string]: Channel<T> | undefined } = {}
+	const states: { [key: string]: PrefixTable[T] } = reactive({})
 	const getInstanceNames = () => Object.entries(localStorage)
 		.filter(([key, value]) => key.slice(0, prefix.length) === prefix)
 		.map(([key, value]) => key.slice(prefix.length))
-	const instantiate = async (name) => {
-		channels[name] = null
+	const instantiate = async (name: string) => {
+		channels[name] = undefined
 		if (prefix === chPrefix && !(await heartbeat(name))) { close(name); return null }
 		if (!Object.keys(channels).includes(name)) { return null }
-		channels[name] = getChannel(prefix, name)
-		channels[name].initChannel()
-		states[name] = channels[name].state
+		channels[name] = new Channel(prefix, name, {})
+		states[name] = channels[name]!.state
 	}
-	const close = (name) => {
+	const close = (name: string) => {
 		channels[name]?.closeChannel()
 		delete channels[name]
 		delete states[name]
@@ -56,63 +107,25 @@ function getChannels (prefix) {
 			else if (runningChannels.includes(channel)) { close(channel) }
 		}
 	}
-	const initChannels = () => {
-		window.addEventListener('storage', storageListener)
-		storageListener()
-	}
 	const closeChannels = () => {
 		window.removeEventListener('storage', storageListener)
 		for (const channel in channels) { close(channel) }
 	}
-	return { states, initChannels, closeChannels }
-}
-
-export function getChannel (prefix, instanceName = '', init = {}) {
-	const stateChannel = prefix + instanceName
-	const state = reactive(init)
-	const writeState = () => {
-		const stateString = JSON.stringify(state)
-		if (stateString === localStorage.getItem(stateChannel)) { return }
-		localStorage.setItem(stateChannel, stateString)
-	}
-	let stopWrite
-	const startWrite = () => stopWrite = watch(() => state, writeState, { deep: true })
-	const update = (val) => {
-		if (stopWrite) { stopWrite() }
-		set(JSON.parse(val))
-		startWrite()
-	}
-	const storageListener = (e) => {
-		if (e.key !== stateChannel || e.newValue === e.oldValue) { return }
-		update(e.newValue)
-	}
-	const initChannel = () => {} // todo remove
-	const set = (newState) => {
-		if (!newState) { return }
-		if (Array.isArray(state)) { state.splice(0, state.length, ...newState) }
-		else {
-			for (const key in state) { !(key in newState) && delete state[key] }
-			Object.assign(state, newState)
-		}
-	}
-	const closeChannel = () => {
-		window.removeEventListener('storage', storageListener)
-		if (stopWrite) { stopWrite() }
-	}
 	window.addEventListener('storage', storageListener)
-	if (!localStorage.getItem(stateChannel) && Object.keys(state).length) { writeState() }
-	update(localStorage.getItem(stateChannel))
-	return { state, initChannel, closeChannel, set }
+	storageListener()
+	return { states, closeChannels }
 }
 
-async function heartbeat (instanceName, timeout) {
+
+
+async function heartbeat (instanceName: string, timeout?: number) {
 	if (instanceName === instance) { return true }
 	const fullKey = heartbeatPrefix + instanceName + instance
 	const promise = new Promise(resolve => {
-		const heartbeatListener = async (e) => {
+		const heartbeatListener = async (e: StorageEvent) => {
 			if (e.key === fullKey && e.newValue) { heartbeatReturn(true) }
 		}
-		const heartbeatReturn = (result) => {
+		const heartbeatReturn = (result: boolean) => {
 			if (result) { clearTimeout(cleanupTimeout) }
 			setTimeout(() => localStorage.removeItem(fullKey), 1000)
 			if (!result) { localStorage.removeItem(chPrefix + instanceName) }
@@ -136,15 +149,15 @@ function cleanHeartbeats () {
 	}
 }
 
-export function filterChannels (filter, object = states) {
+export function filterChannels (filter: (params: any) => boolean | { [key: string]: any }, object = states) {
 	const filterFunction = ([key, state]) => typeof filter === 'function' ? filter(state)
 		: !Object.entries(filter || {}).find(([key, value]) => state[key] !== value)
 	return Object.fromEntries(Object.entries(object).filter(filterFunction))
 }
 
-function globalStorageListener (e) {
+function globalStorageListener (e: StorageEvent) {
 	const partialKey = heartbeatPrefix + instance
-	if (e.key.slice(0, partialKey.length) === partialKey && e.newValue === '') {
+	if (e.key?.slice(0, partialKey.length) === partialKey && e.newValue === '') {
 		localStorage.setItem(e.key, 'ok')
 	}
 }
@@ -161,9 +174,6 @@ export async function awaitStorageAccess () {
 async function init () {
 	await awaitStorageAccess()
 	window.addEventListener('storage', globalStorageListener)
-	initChannel()
-	initChannels()
-	connectorChannels.initChannels()
 }
 
 function close () {
