@@ -12,7 +12,9 @@
 	</div>
 </template>
 
-<script>
+
+
+<script setup lang="ts">
 import Carousel from '@/components/layout/Carousel.vue'
 import ConnectionCard from '@/components/composed/ConnectionCard.vue'
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
@@ -24,11 +26,8 @@ import { state, states } from '@/functions/Channels'
 import { connectors } from '@/functions/Connect'
 import { computed, onBeforeUnmount, ref } from 'vue'
 
-export default {
-	components: { Carousel, ConnectionCard, AddressIcon, Address, Button },
-	setup () {
-		const currentConnectorIndex = ref(connectors.value.findIndex(value =>
-			value.origin === state.origin && value.session === state.session))
+const currentConnectorIndex = ref(connectors.value.findIndex(value =>
+	value.origin === state.origin && value.session === state.session))
 
 		// const test = ref(false)
 		// const testing = () => {
@@ -39,12 +38,9 @@ export default {
 		// const connectorsComp = computed(() => test.value ? [connectors.value[0], connectors.value[2]] : connectors.value)
 		// InterfaceStore.toolbar.links = false
 		// onBeforeUnmount(() => InterfaceStore.toolbar.links = true)
-		
-
-		return { currentConnectorIndex, connectors, state, states }
-	}
-}
 </script>
+
+
 
 <style scoped>
 .connect {

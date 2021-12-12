@@ -7,27 +7,27 @@
 					<div class="ellipsis">{{ state.appInfo?.name || 'Connector' }}</div>
 					<div class="secondary-text ellipsis">{{ state.origin }}</div>
 				</div>
-				<Icon v-if="navigateBackAvailable(state.origin, state.session)" :icon="IconLauch" />
+				<Icon v-if="navigateBackAvailable(state.origin, state.session)" :icon="IconLaunch" />
 			</button>
-			<WalletSelector v-model="state.wallet" :default="defaultAddress" :exit="true" :active="!isSelectingWallet" @selectWallet="selectWallet" @exit="disconnect" />
+			<WalletSelector v-model="state.walletId" :default="defaultId" :exit="true" :active="!isSelectingWallet" @selectWallet="selectWallet" @exit="disconnect" />
 		</div>
 		<div class="flex-column" style="flex: 1 1 0;">
-			<Tabs :tabs="tabs" v-model="currentTab" :disabled="!currentAddress" />
+			<Tabs :tabs="tabs" v-model="currentTab" :disabled="!currentId" />
 			<div class="container">
 				<div class="container-scroll">
 					<transition :name="transitionName" mode="out-in">
-						<div :key="(currentAddress || '') + currentTab" class="content">
+						<div :key="(currentId || '') + currentTab" class="content">
 							<div v-if="currentTab === 'Requests'">
 								<transition-group name="fade-list">
-									<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="box fade-list-item" key="0" />
-									<div v-if="connectionFeed?.length === 0 && state.wallet && state.wallet === currentAddress" class="box status fade-list-item" key="0">Connected</div>
-									<Notification v-if="currentAddress !== state.wallet" :data="connectData" class="box fade-list-item" key="1">{{ connectData.content }}</Notification>
+									<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentId" class="box fade-list-item" key="0" />
+									<div v-if="connectionFeed?.length === 0 && state.walletId && state.walletId === currentId" class="box status fade-list-item" key="0">Connected</div>
+									<Notification v-if="currentId !== state.walletId" :data="connectData" class="box fade-list-item" key="1">{{ connectData.content }}</Notification>
 									<PermissionCard v-for="messageEntry in connectionFeed" :key="messageEntry.timestamp" :messageEntry="messageEntry" style="padding: var(--spacing);" class="box flex-column fade-list-item" />
 								</transition-group>
 							</div>
 							<div v-else-if="currentTab === 'Permissions'">
 								<transition-group name="fade-list">
-									<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentAddress" class="box fade-list-item" key="0" />
+									<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentId" class="box fade-list-item" key="0" />
 									<div class="box status fade-list-item" key="0">WIP</div>
 								</transition-group>
 							</div>
@@ -41,7 +41,7 @@
 
 
 
-<script>
+<script setup lang="ts">
 import WalletSelector from '@/components/composed/WalletSelector.vue'
 import WalletTabs from '@/components/composed/WalletTabs.vue'
 import Tabs from '@/components/atomic/Tabs.vue'
@@ -49,82 +49,78 @@ import IconBackground from '@/components/atomic/IconBackground.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import Notification from '@/components/composed/Notification.vue'
 import PermissionCard from '@/components/composed/PermissionCard.vue'
-import { Wallets } from '@/functions/Wallets'
-import ArweaveStore, { arweave } from '@/store/ArweaveStore'
-import InterfaceStore, { emitter } from '@/store/InterfaceStore'
+import { getWalletById, Wallets } from '@/functions/Wallets'
+import InterfaceStore from '@/store/InterfaceStore'
 import { navigateBack, navigateBackAvailable } from '@/functions/Connect'
 import { computed, ref, toRef, watch } from 'vue'
 
 import IconConnection from '@/assets/icons/connection.svg?component'
 import IconY from '@/assets/icons/y.svg?component'
 import IconX from '@/assets/icons/x.svg?component'
-import IconLauch from '@/assets/icons/launch.svg?component'
+import IconLaunch from '@/assets/icons/launch.svg?component'
 
-export default {
-	components: { PermissionCard, WalletSelector, WalletTabs, Tabs, IconBackground, Icon, Notification },
-	props: ['state'],
-	setup (props) {
-		const defaultAddress = Wallets.value[0]?.key
-		const addresses = computed(() => Wallets.value.map(wallet => wallet.key))
-		const currentAddress = ref(props.state.wallet || defaultAddress)
-		const tabs = [
-			{ name: 'Requests', color: 'var(--orange)' },
-			{ name: 'Permissions', color: 'var(--green)' },
-		]
-		const currentTab = ref(currentAddress.value ? tabs[0].name : null)
-		watch(() => props.state.wallet, (wallet) => {
-			isSelectingWallet.value = false
-			currentAddress.value = wallet
-			currentTab.value = tabs[0].name
-		})
+const props = defineProps<{ state: ConnectorState }>()
 
-		const disconnect = () => props.state.wallet = false
-		const connect = () => {
-			isSelectingWallet.value = false
-			props.state.wallet = currentAddress.value
-		}
-		const goBack = () => {
-			isSelectingWallet.value = false
-			currentAddress.value = props.state.wallet
-		}
+const defaultId = Wallets.value[0]?.id
+const addresses = computed(() => Wallets.value.map(wallet => wallet.key))
+const currentId = ref(props.state.walletId || defaultId)
+const defaultWallet = computed(() => getWalletById(defaultId))
+const tabs = [
+	{ name: 'Requests', color: 'var(--orange)' },
+	{ name: 'Permissions', color: 'var(--green)' },
+]
+const currentTab = ref(currentId.value ? tabs[0].name : null)
+watch(() => props.state.walletId, (walletId) => {
+	if (!walletId) { return }
+	isSelectingWallet.value = false
+	currentId.value = walletId
+	currentTab.value = tabs[0].name
+})
 
-		const isSelectingWallet = ref(!props.state.wallet)
-		const selectWallet = () => {
-			if (!isSelectingWallet.value) { isSelectingWallet.value = true; return }
-			currentAddress.value = props.state.wallet || Wallets.value[0]?.key
-			isSelectingWallet.value = false
-		}
-
-		const connectData = computed(() => {
-			const content = !props.state.wallet ?
-				`Connect to ${props.state.appInfo?.name || props.state.origin} from the account ${currentAddress.value}`
-				: `Switch to ${currentAddress.value}`
-			return {
-				title: props.state.wallet ? 'Switch' : 'Connect',
-				timestamp: Date.now(), // todo
-				actions: [
-					{ name: 'Connect', icon: IconY, run: connect },
-					{ name: !props.state.wallet ? 'Switch' : 'Cancel', icon: IconX, run: !props.state.wallet ? selectWallet : goBack },
-				],
-				expanded: true,
-				content,
-			}
-		})
-
-
-		const connectionFeed = computed(() => props.state.messageQueue?.filter((m) => !m.fulfilled))
-
-
-
-		const verticalLayout = toRef(InterfaceStore.breakpoints, 'verticalLayout')
-		const transitionName = ref(null)
-		const selectTransitionName = (val, oldVal) => val > oldVal ? transitionName.value = 'slide-left' : transitionName.value = 'slide-right'
-		watch(() => tabs.findIndex(tab => tab.name === currentTab.value), selectTransitionName)
-		watch(() => Wallets.value.findIndex(wallet => wallet.key === currentAddress.value), selectTransitionName)
-		
-		return { defaultAddress, addresses, currentAddress, tabs, currentTab, isSelectingWallet, selectWallet, connectData, connectionFeed, verticalLayout, transitionName, disconnect, navigateBack, navigateBackAvailable, IconConnection, IconLauch }
-	}
+const disconnect = () => props.state.walletId = false
+const connect = () => {
+	isSelectingWallet.value = false
+	props.state.walletId = currentId.value + ''
 }
+const goBack = () => {
+	if (!props.state.walletId) { return }
+	isSelectingWallet.value = false
+	currentId.value = props.state.walletId
+}
+
+const isSelectingWallet = ref(!props.state.walletId)
+const selectWallet = () => {
+	if (!isSelectingWallet.value) { isSelectingWallet.value = true; return }
+	currentId.value = props.state.walletId || Wallets.value[0]?.id
+	isSelectingWallet.value = false
+}
+
+const connectData = computed(() => {
+	const content = !props.state.walletId ?
+		`Connect to ${props.state.appInfo?.name || props.state.origin} from the account ${currentId.value}`
+		: `Switch to ${currentId.value}`
+	return {
+		title: props.state.walletId ? 'Switch' : 'Connect',
+		timestamp: Date.now(), // todo
+		actions: [
+			{ name: 'Connect', icon: IconY, run: connect },
+			{ name: !props.state.walletId ? 'Switch' : 'Cancel', icon: IconX, run: !props.state.walletId ? selectWallet : goBack },
+		],
+		expanded: true,
+		content,
+	}
+})
+
+
+const connectionFeed = computed(() => props.state.messageQueue?.filter((m) => !m.fulfilled))
+
+
+
+const verticalLayout = toRef(InterfaceStore.breakpoints, 'verticalLayout')
+const transitionName = ref(null)
+const selectTransitionName = (val, oldVal) => val > oldVal ? transitionName.value = 'slide-left' : transitionName.value = 'slide-right'
+watch(() => tabs.findIndex(tab => tab.name === currentTab.value), selectTransitionName)
+watch(() => Wallets.value.findIndex(wallet => wallet.id === currentId.value), selectTransitionName)
 </script>
 
 

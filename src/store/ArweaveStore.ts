@@ -138,14 +138,12 @@ export class ArweaveProvider extends ArweaveAccount implements Provider {
 		name: this.#wallet.jwk ? 'Arweave Wallet' : 'Arweave Address',
 		icon: LogoArweave,
 	}}
-	get jwk () { return this.#wallet.jwk }
 	async signTransaction? (tx: Transaction, options?: SignatureOptions) {
 		return arweave.transactions.sign(tx, this.#wallet.jwk, options)
 	}
 	async download? () {
-		const jwk = this.#wallet.jwk
 		const key = this.key ? this.key : await arweave.wallets.jwkToAddress(this.#wallet.jwk)
-		download(key, JSON.stringify(jwk))
+		download(key, JSON.stringify(this.#wallet.jwk))
 	}
 }
 

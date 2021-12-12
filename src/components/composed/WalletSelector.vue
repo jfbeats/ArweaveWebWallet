@@ -1,7 +1,7 @@
 <template>
 	<div class="wallet-selector">
 		<button v-if="model" type="button" @click="$emit('selectWallet')" class="tab" :class="{ active }">
-			<AddressIcon :address="model" />
+			<AddressIcon :address="address" />
 		</button>
 		<button v-if="exit" class="exit" type="button" @click="$emit('exit')">
 			<div class="exit-background" />
@@ -13,23 +13,25 @@
 	</div>
 </template>
 
-<script>
-import AddressIcon from '@/components/atomic/AddressIcon.vue'
-import InterfaceStore from '@/store/InterfaceStore'
-import { computed } from 'vue'
 
-export default {
-	components: { AddressIcon },
-	props: ['modelValue', 'default', 'exit', 'active'],
-	setup (props, { emit }) {
-		const model = computed({
-			get () { return props.modelValue || props.default },
-			set (value) { emit('update:modelValue', value) }
-		})
-		return { model, InterfaceStore }
-	}
-}
+
+<script setup lang="ts">
+import AddressIcon from '@/components/atomic/AddressIcon.vue'
+import { computed } from 'vue'
+import { getWalletById } from '@/functions/Wallets'
+
+const props = defineProps({ modelValue: String, default: String, exit: Boolean, active: Boolean })
+const emit = defineEmits(['update:modelValue', 'selectWallet', 'exit'])
+
+const model = computed<string | undefined>({
+	get () { return props.modelValue || props.default },
+	set (value) { emit('update:modelValue', value) }
+})
+
+const address = computed(() => getWalletById(model.value)?.key)
 </script>
+
+
 
 <style scoped>
 .wallet-selector {

@@ -8,7 +8,7 @@
 type ProviderName = keyof typeof import('@/functions/Wallets').ProviderRegistry
 type WalletDataInterface = {
 	id: number
-	jwk?: JsonWebKey
+	jwk?: import('arweave/web/lib/wallet').JWKInterface
 	provider?: ProviderName
 } & {
 	[key in ProviderName]?: { [key: string]: any }
@@ -44,7 +44,6 @@ interface Account {
 }
 
 interface Provider {
-	jwk?: JsonWebKey
 	signTransaction?: (...args: any) => Promise<any>
 	sign?: (...args: any) => Promise<any>
 	decrypt?: (...args: any) => Promise<any>
@@ -53,5 +52,5 @@ interface Provider {
 }
 
 interface WalletProxy extends Provider, Account {
-	id: number
+	id: string
 }

@@ -3,15 +3,16 @@ import { state, states, connectorChannels, filterChannels, initConnectorChannel,
 import JsonRpc, { getProcedures } from '@/functions/JsonRpc'
 import { awaitEffect } from '@/functions/Utils'
 import { watch, watchEffect, computed, reactive, ref, Ref } from 'vue'
+import { getWalletById } from '@/functions/Wallets'
 
 let windowRef: Window
 const { origin, session } = state
 const sharedState: Ref<ConnectorState | null> = ref(null)
 export const connectors = computed(() => {
 	const allConnectors = Object.entries(connectorChannels.states)
-		.filter(([key, val]) => key !== (origin + session) && val.wallet !== false)
+		.filter(([key, val]) => key !== (origin + session) && val.walletId !== false)
 		.map(([key, val]) => val)
-	if (sharedState.value) { allConnectors.push(sharedState.value) }
+	if (sharedState.value && sharedState.value?.walletId !== false) { allConnectors.push(sharedState.value) }
 	return allConnectors.sort((a, b) => a.timestamp - b.timestamp)
 })
 
@@ -43,18 +44,21 @@ async function initConnector () {
 	sharedState.value = connectorState
 	const connect = () => {
 		// todo reject transactions that are designated to current address
-		postMessage({ method: 'connect', params: connectorState.wallet })
+		if (!connectorState.walletId) { return }
+		const wallet = getWalletById(connectorState.walletId)
+		if (!wallet) { return }
+		postMessage({ method: 'connect', params: wallet.key })
 	}
 	const disconnect = () => { deleteChannel(); postMessage({ method: 'disconnect' }) }
-	watch(() => connectorState.wallet, (wallet) => wallet === false ? disconnect() : connect())
+	watch(() => connectorState.walletId, (id) => id === false ? disconnect() : connect())
 	watchEffect(() => {
 		const linkedState = Object.entries(filterChannels({ origin, session, type: state.type === 'popup' ? 'iframe' : 'popup' }))[0]?.[1]
 		if (linkedState) { connectorState.link = true }
-		const disconnectCondition = () => !linkedState && state.type === 'iframe' && connectorState.link && !connectorState.wallet
+		const disconnectCondition = () => !linkedState && state.type === 'iframe' && connectorState.link && (connectorState.walletId == null || connectorState.walletId === false)
 		if (disconnectCondition()) { setTimeout(() => disconnectCondition() && disconnect(), 500) }
 	})
 	const extendedGuards = {
-		signTransaction: (params) => params.tx.owner && params.tx.owner !== connectorState.wallet
+		signTransaction: (params) => params.tx.owner && params.tx.owner !== connectorState.walletId
 	}
 	const procedures = getProcedures(extendedGuards)
 	const jsonRpc = new JsonRpc(procedures, postMessage, connectorState)

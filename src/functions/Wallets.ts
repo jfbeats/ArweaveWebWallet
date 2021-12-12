@@ -37,7 +37,7 @@ function setProvider<TBase extends GConstructor<Provider>> (Base: TBase) {
 			super(...args)
 			this.#wallet = args[0]
 		}
-		get id () { return this.#wallet.id }
+		get id () { return this.#wallet.id + '' }
 	}
 }
 
@@ -68,7 +68,7 @@ export const Wallets = computed<WalletProxy[]>({
 
 
 
-export function getWalletById (walletId: number | string) {
+export function getWalletById (walletId?: number | string) {
 	return Wallets.value.find(wallet => wallet.id == walletId)
 }
 

@@ -15,6 +15,7 @@ type MessageEntry = {
 	message: Message
 	status?: 'accepted' | 'rejected' | 'error' | undefined
 	fulfilled: boolean
+	timestamp: number
 }
 
 type InstanceState = {
@@ -29,6 +30,6 @@ type ConnectorState = {
 	messageQueue: MessageEntry[]
 	timestamp: number
 	appInfo?: { name?: string, logo?: string}
-	wallet?: string | false
+	walletId?: string | false
 	link?: boolean
 }
