@@ -7,8 +7,9 @@ import InterfaceStore, { sleepUntilVisible } from '@/store/InterfaceStore'
 import LogoArweave from '@/assets/logos/arweave.svg?component'
 import { ApiConfig } from 'arweave/web/lib/api'
 import { GQLEdgeTransactionInterface, GQLTransactionInterface } from 'ardb/lib/faces/gql'
-import Transaction from 'arweave/web/lib/transaction'
+import Transaction, { TransactionInterface } from 'arweave/web/lib/transaction'
 import { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
+import { ArweaveProviderAPI } from 'arweave-wallet-connector/lib/ArweaveWebWallet'
 
 
 
@@ -144,6 +145,34 @@ export class ArweaveProvider extends ArweaveAccount implements Provider {
 	async download? () {
 		const key = this.key ? this.key : await arweave.wallets.jwkToAddress(this.#wallet.jwk)
 		download(key, JSON.stringify(this.#wallet.jwk))
+	}
+}
+
+
+
+export class ArweaveConnector implements ArweaveProviderAPI {
+	#wallet: WalletProxy
+	#run: boolean
+	
+	constructor (wallet: WalletProxy, run: boolean = false) {
+		this.#wallet = wallet
+		this.#run = run
+	}
+	
+	signTransaction (tx: TransactionInterface, options?: object) {
+		throw new Error('Method not implemented.')
+	}
+	getPublicKey () {
+		throw new Error('Method not implemented.')
+	}
+	getArweaveConfig () {
+		throw new Error('Method not implemented.')
+	}
+	sign (message: string, options?: object) {
+		throw new Error('Method not implemented.')
+	}
+	decrypt (message: string, options?: object) {
+		throw new Error('Method not implemented.')
 	}
 }
 
