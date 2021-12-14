@@ -1,6 +1,6 @@
 import Arweave from 'arweave'
 import { state, states, connectorChannels, filterChannels, initConnectorChannel, hasStorageAccess, awaitStorageAccess } from '@/functions/Channels'
-import JsonRpc, { getProcedures } from '@/functions/JsonRpc'
+import JsonRpc from '@/functions/JsonRpc'
 import { awaitEffect } from '@/functions/Utils'
 import { watch, watchEffect, computed, reactive, ref, Ref } from 'vue'
 import { getWalletById } from '@/functions/Wallets'
@@ -57,11 +57,7 @@ async function initConnector () {
 		const disconnectCondition = () => !linkedState && state.type === 'iframe' && connectorState.link && (connectorState.walletId == null || connectorState.walletId === false)
 		if (disconnectCondition()) { setTimeout(() => disconnectCondition() && disconnect(), 500) }
 	})
-	const extendedGuards = {
-		signTransaction: (params) => params.tx.owner && params.tx.owner !== connectorState.walletId
-	}
-	const procedures = getProcedures(extendedGuards)
-	const jsonRpc = new JsonRpc(procedures, postMessage, connectorState)
+	const jsonRpc = new JsonRpc(postMessage, connectorState)
 	window.addEventListener('message', (e) => {
 		if (e.source !== windowRef || e.origin !== origin) { return }
 		console.info(`${location.hostname}:${state.type}:`, e.data)

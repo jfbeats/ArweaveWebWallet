@@ -1,4 +1,5 @@
-import { reactive, watch } from 'vue'
+import { computed, reactive, watch } from 'vue'
+import { Wallets } from '@/functions/Wallets'
 
 const errors = {
 	rejected: { code: 0, message: 'Rejected' },
@@ -14,17 +15,16 @@ const getError = (error: keyof typeof errors, data?: any) => ({ error: { ...erro
 
 
 export default class JsonRpc {
-	procedures = {}
 	callbacks
 	state
+	stateWallet
 	watchStop
 
-	constructor (procedures: Procedures, callbacks: (message: any) => void, state: ConnectorState) {
+	constructor (callbacks: (message: any) => void, state: ConnectorState) {
+		this.callbacks = callbacks
 		this.state = state || reactive({})
 		this.state.messageQueue ??= []
-
-		this.callbacks = callbacks
-		this.procedures = procedures
+		this.stateWallet = computed(() => Wallets.value.find(w => w.id === this.state.walletId))
 		this.watchStop = watch(() => this.state.messageQueue, () => {
 			for (const messageEntry of this.state.messageQueue) {
 				if (!messageEntry || messageEntry.fulfilled) { continue }
@@ -38,11 +38,10 @@ export default class JsonRpc {
 		}, { deep: true })
 	}
 
-	pushMessage (message: Message) {
-		const id = message.id
+	pushMessage (message: unknown) {
+		if (!this.isMessage(message)) { return }
+		for (const m of this.state.messageQueue) { if (m.message.id === message.id) { return true } }
 		const messageEntry = { message, timestamp: Date.now(), fulfilled: false }
-		if (!this.verifyMessage(messageEntry)) { return }
-		for (const m of this.state.messageQueue) { if (m.message.id === id) { return true } }
 		this.state.messageQueue.push(messageEntry)
 		return true
 	}
@@ -51,9 +50,8 @@ export default class JsonRpc {
 		const { message, status } = messageEntry
 		const id = messageEntry.message.id
 		if (status !== 'accepted') { return }
-		if (!this.verifyMessage(messageEntry)) { messageEntry.status = 'error'; messageEntry.fulfilled = true; return }
 		try {
-			const result = this.procedures[message.method].run(message.params)
+			const result = this.stateWallet.value?.run(message)
 			if (id != null) { this.callbacks({ result, id }) }
 			messageEntry.fulfilled = true
 		} catch (e) {
@@ -64,35 +62,16 @@ export default class JsonRpc {
 		}
 	}
 
-	verifyMessage (messageEntry: MessageEntry) {
-		const { method, params, id } = messageEntry.message
-		if (id != null && typeof id !== 'number' && typeof id !== 'string') { return }
-		if (typeof method !== 'string') { id != null && this.callbacks({ ...getError('request'), id }); return }
-		if (!Object.keys(this.procedures).includes(method)) { id != null && this.callbacks({ ...getError('method'), id }); return }
-		if (this.procedures[method].guard(params)) { id != null && this.callbacks({ ...getError('params'), id }); return }
+	isMessage (message: any) : message is Message {
+		if (typeof message !== 'object') { return false }
+		const { method, params, id } = message
+		if (id != null && typeof id !== 'number' && typeof id !== 'string') { return false}
+		if (typeof method !== 'string') { id != null && this.callbacks({ ...getError('request'), id }); return false }
+		if (!this.stateWallet.value?.verify(method)) { id != null && this.callbacks({ ...getError('method'), id }); return false }
+		if (!Array.isArray(params)) { id != null && this.callbacks({ ...getError('params'), id }); return false }
+		if (!this.stateWallet.value?.verify(message)) { id != null && this.callbacks({ ...getError('params'), id }); return false }
 		return true
 	}
 
 	destructor () { this.watchStop() }
-}
-
-
-// install typescript is and remove this
-export const getProcedures = (extendedGuards: Procedures) => {
-	const procedures = {
-		signTransaction: {
-			guard: (params) => {
-				return typeof params !== 'object'
-				|| typeof params.tx !== 'object'
-				|| params.tx.format !== 2
-				|| params.tx.owner && typeof params.tx.owner !== 'string'
-			}, // todo finish guard
-			run: (params) => ''
-		},
-	}
-	for (const key in extendedGuards) {
-		const baseGuard = procedures[key].guard
-		procedures[key].guard = (params) => baseGuard(params) || extendedGuards[key](params)
-	}
-	return procedures
 }

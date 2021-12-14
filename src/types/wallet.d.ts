@@ -49,6 +49,8 @@ interface Provider {
 	decrypt?: (...args: any) => Promise<any>
 	download?: () => Promise<any>
 	metadata: Metadata
+	verify: (message: Message | string) => boolean
+	run: (message: Message) => Promise<any>
 }
 
 interface WalletProxy extends Provider, Account {

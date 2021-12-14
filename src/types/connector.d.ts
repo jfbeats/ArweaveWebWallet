@@ -1,15 +1,8 @@
-type Procedure = {
-	guard: (params: unknown) => boolean
-	run: (params: unknown) => unknown
-}
-
-type Procedures = { [key: string]: Procedure }
-
 type Message = {
 	id?: number
 	method?: string
-	params?: unknown
-} // todo verify type
+	params?: unknown[]
+}
 
 type MessageEntry = {
 	message: Message

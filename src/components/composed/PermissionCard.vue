@@ -23,8 +23,7 @@ export default {
 	setup (props) {
 		const tx = ref(null)
 		if (props.messageEntry.message.method === 'signTransaction') {
-			console.log(props.messageEntry.message.params.tx)
-			const receivedTx = props.messageEntry.message.params.tx
+			const receivedTx = props.messageEntry.message.params[0]
 			const tags = receivedTx.tags.map(({name, value}) => ({ name: window.atob(name), value: window.atob(value) }))
 			tx.value = { ...receivedTx, tags }
 		}
