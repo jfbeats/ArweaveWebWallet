@@ -1,4 +1,4 @@
-import Arweave from 'arweave/web'
+import Arweave from 'arweave'
 import ArDB from 'ardb'
 import { awaitEffect, download } from '@/functions/Utils'
 import axios from 'axios'
@@ -10,6 +10,7 @@ import { GQLEdgeTransactionInterface, GQLTransactionInterface } from 'ardb/lib/f
 import Transaction, { TransactionInterface } from 'arweave/web/lib/transaction'
 import { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
 import { ArweaveVerifier, ArweaveProviderInterface } from 'arweave-wallet-connector/lib/ArweaveWebWallet'
+import { decode, encode, getDecryptionKey, getSigningKey } from '@/functions/Crypto'
 
 
 
@@ -143,21 +144,28 @@ export class ArweaveProvider extends ArweaveAccount implements Provider {
 		if (tx.owner && tx.owner !== this.getPublicKey()) { throw 'error' }
 		return arweave.transactions.sign(tx, this.#wallet.jwk, options)
 	}
+	async sign (data: string, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
+		const signed = await window.crypto.subtle.sign(options, await getSigningKey(this.#wallet.jwk as JsonWebKey), encode(data))
+		return decode(signed)
+	}
+	async decrypt (data: string, options: Parameters<ArweaveProviderInterface['decrypt']>[1]) {
+		const decrypted = await window.crypto.subtle.decrypt(options, await getDecryptionKey(this.#wallet.jwk as JsonWebKey), encode(data))
+		return decode(decrypted)
+	}
 	async download? () {
 		const key = this.key ? this.key : await arweave.wallets.jwkToAddress(this.#wallet.jwk)
 		download(key, JSON.stringify(this.#wallet.jwk))
 	}
-	verify (message: Message | string) {
+	verifyMessage (message: Message | string) {
 		// @ts-ignore
 		if (typeof message === 'string') { return !!(new ArweaveVerifier())[message] }
-		console.log(message.params)
 		if (!message.params) { return false }
 		const verifier = new ArweaveVerifier()
 		// @ts-ignore
 		return verifier[message.method]?.(...message.params) || false
 	}
-	async run (message: Message) {
-		if (!this.verify(message)) { return }
+	async runMessage (message: Message) {
+		if (!this.verifyMessage(message)) { throw 'error' }
 		const runner = new ArweaveAPI(this)
 		// @ts-ignore
 		return runner[message.method](...message.params)
@@ -175,14 +183,14 @@ export class ArweaveAPI implements ArweaveProviderInterface {
 	
 	async signTransaction (tx: TransactionInterface, options?: object) {
 		if (!this.#wallet.signTransaction) { throw 'error' }
-		const txObject = await arweave.createTransaction(tx)
-		await this.#wallet.signTransaction(txObject, options)
+		const txObject = new Transaction(tx)
+		await this.#wallet.signTransaction(txObject)
 		return {
 			id: txObject.id,
 			owner: txObject.owner,
 			tags: txObject.tags,
 			signature: txObject.signature,
-			fee: txObject.fee
+			reward: txObject.reward
 		}
 	}
 	async getPublicKey () {
@@ -191,11 +199,11 @@ export class ArweaveAPI implements ArweaveProviderInterface {
 		return publicKey
 	}
 	async getArweaveConfig () { return arweave.getConfig().api }
-	async sign (message: string, options?: object) {
-		throw new Error('Method not implemented.')
+	async sign (message: string, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
+		return this.#wallet.sign(message, options)
 	}
-	async decrypt (message: string, options?: object) {
-		throw new Error('Method not implemented.')
+	async decrypt (message: string, options: Parameters<ArweaveProviderInterface['decrypt']>[1]) {
+		return this.#wallet.decrypt(message, options)
 	}
 }
 

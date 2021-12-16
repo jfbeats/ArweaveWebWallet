@@ -1,7 +1,7 @@
 import { ArweaveProvider, arweave } from '@/store/ArweaveStore'
 import { LedgerProvider } from '@/providers/Ledger'
 import { Channel } from '@/functions/Channels'
-import { passwordEncrypt, passwordDecrypt } from '@/functions/Crypto'
+import { passwordEncrypt, passwordDecrypt, pkcs8ToJwk } from '@/functions/Crypto'
 import { download } from '@/functions/Utils'
 import { getKeyPairFromMnemonic } from 'human-crypto-keys'
 import { generateMnemonic as generateM, validateMnemonic as validateM } from 'bip39-web-crypto'
@@ -82,21 +82,7 @@ export async function validateMnemonic (mnemonic: string) {
 
 export async function addMnemonic (mnemonic: string) {
 	let keyPair = await getKeyPairFromMnemonic(mnemonic, { id: 'rsa', modulusLength: 4096 }, { privateKeyFormat: 'pkcs8-der' })
-	const imported = await window.crypto.subtle.importKey(
-		'pkcs8',
-		keyPair.privateKey,
-		{
-			name: 'RSA-PSS',
-			// modulusLength: 4096,
-			// publicExponent: new Uint8Array([1, 0, 1]),
-			hash: 'SHA-256',
-		},
-		true,
-		['sign']
-	)
-	let jwk = await window.crypto.subtle.exportKey('jwk', imported)
-	delete jwk.alg
-	delete jwk.key_ops
+	const jwk = await pkcs8ToJwk(keyPair.privateKey)
 	console.info('generated wallet')
 	return addWallet(jwk)
 }

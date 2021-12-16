@@ -44,13 +44,13 @@ interface Account {
 }
 
 interface Provider {
-	signTransaction?: (...args: any) => Promise<any>
-	sign?: (...args: any) => Promise<any>
-	decrypt?: (...args: any) => Promise<any>
-	download?: () => Promise<any>
 	metadata: Metadata
-	verify: (message: Message | string) => boolean
-	run: (message: Message) => Promise<any>
+	signTransaction?: (...args: any) => Promise<any>
+	sign?: (data: string, options: any) => Promise<string>
+	decrypt?: (data: string, options: any) => Promise<string>
+	download?: () => Promise<any>
+	verifyMessage: (message: Message | string) => boolean
+	runMessage: (message: Message) => Promise<any>
 }
 
 interface WalletProxy extends Provider, Account {

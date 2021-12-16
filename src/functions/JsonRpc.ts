@@ -1,4 +1,4 @@
-import { computed, reactive, watch } from 'vue'
+import { computed, isReactive, reactive, toRaw, watch } from 'vue'
 import { Wallets } from '@/functions/Wallets'
 
 const errors = {
@@ -46,12 +46,13 @@ export default class JsonRpc {
 		return true
 	}
 
-	runMessage (messageEntry: MessageEntry) {
+	async runMessage (messageEntry: MessageEntry) {
+		if (isReactive(messageEntry)) { messageEntry = toRaw(messageEntry) }
 		const { message, status } = messageEntry
 		const id = messageEntry.message.id
 		if (status !== 'accepted') { return }
 		try {
-			const result = this.stateWallet.value?.run(message)
+			const result = await this.stateWallet.value?.runMessage(message)
 			if (id != null) { this.callbacks({ result, id }) }
 			messageEntry.fulfilled = true
 		} catch (e) {
@@ -67,9 +68,9 @@ export default class JsonRpc {
 		const { method, params, id } = message
 		if (id != null && typeof id !== 'number' && typeof id !== 'string') { return false}
 		if (typeof method !== 'string') { id != null && this.callbacks({ ...getError('request'), id }); return false }
-		if (!this.stateWallet.value?.verify(method)) { id != null && this.callbacks({ ...getError('method'), id }); return false }
+		if (!this.stateWallet.value?.verifyMessage(method)) { id != null && this.callbacks({ ...getError('method'), id }); return false }
 		if (!Array.isArray(params)) { id != null && this.callbacks({ ...getError('params'), id }); return false }
-		if (!this.stateWallet.value?.verify(message)) { id != null && this.callbacks({ ...getError('params'), id }); return false }
+		if (!this.stateWallet.value?.verifyMessage(message)) { id != null && this.callbacks({ ...getError('params'), id }); return false }
 		return true
 	}
 
