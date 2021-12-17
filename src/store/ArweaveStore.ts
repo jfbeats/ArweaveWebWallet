@@ -197,7 +197,10 @@ export class ArweaveAPI implements ArweaveProviderInterface {
 		if (!publicKey) { throw 'error' }
 		return publicKey
 	}
-	async getArweaveConfig () { return arweave.getConfig().api }
+	async getArweaveConfig () {
+		const config = arweave.getConfig().api
+		return { protocol: config.protocol, host: config.host, port: config.port }
+	}
 	async sign (message: string, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
 		return this.#wallet.sign(message, options)
 	}
