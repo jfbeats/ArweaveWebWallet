@@ -1,4 +1,4 @@
-import { computed, isReactive, reactive, toRaw, watch } from 'vue'
+import { computed, reactive, watch } from 'vue'
 import { Wallets } from '@/functions/Wallets'
 
 const errors = {
@@ -47,14 +47,13 @@ export default class JsonRpc {
 	}
 
 	async runMessage (messageEntry: MessageEntry) {
-		if (isReactive(messageEntry)) { messageEntry = toRaw(messageEntry) }
 		const { message, status } = messageEntry
 		const id = messageEntry.message.id
 		if (status !== 'accepted') { return }
 		try {
 			const result = await this.stateWallet.value?.runMessage(message)
-			if (id != null) { this.callbacks({ result, id }) }
 			messageEntry.fulfilled = true
+			if (id != null) { this.callbacks({ result, id }) }
 		} catch (e) {
 			messageEntry.fulfilled = true
 			messageEntry.status = 'error'
