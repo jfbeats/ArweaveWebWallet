@@ -68,7 +68,7 @@ export default class JsonRpc {
 		if (id != null && typeof id !== 'number' && typeof id !== 'string') { return false}
 		if (typeof method !== 'string') { id != null && this.callbacks({ ...getError('request'), id }); return false }
 		if (!this.stateWallet.value?.verifyMessage(method)) { id != null && this.callbacks({ ...getError('method'), id }); return false }
-		if (!Array.isArray(params)) { id != null && this.callbacks({ ...getError('params'), id }); return false }
+		if (params != null && !Array.isArray(params)) { id != null && this.callbacks({ ...getError('params'), id }); return false }
 		if (!this.stateWallet.value?.verifyMessage(message)) { id != null && this.callbacks({ ...getError('params'), id }); return false }
 		return true
 	}

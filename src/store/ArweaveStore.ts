@@ -146,10 +146,10 @@ export class ArweaveProvider extends ArweaveAccount implements Provider {
 	}
 	async sign (data: string, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
 		const signed = await window.crypto.subtle.sign(options, await getSigningKey(this.#wallet.jwk as JsonWebKey), encode(data))
-		return decode(signed)
+		return arweave.utils.bufferTob64Url(new Uint8Array(signed))
 	}
 	async decrypt (data: string, options: Parameters<ArweaveProviderInterface['decrypt']>[1]) {
-		const decrypted = await window.crypto.subtle.decrypt(options, await getDecryptionKey(this.#wallet.jwk as JsonWebKey), encode(data))
+		const decrypted = await window.crypto.subtle.decrypt(options, await getDecryptionKey(this.#wallet.jwk as JsonWebKey), await arweave.utils.b64UrlToBuffer(data))
 		return decode(decrypted)
 	}
 	async download? () {
@@ -157,18 +157,17 @@ export class ArweaveProvider extends ArweaveAccount implements Provider {
 		download(key, JSON.stringify(this.#wallet.jwk))
 	}
 	verifyMessage (message: Message | string) {
-		// @ts-ignore
-		if (typeof message === 'string') { return !!(new ArweaveVerifier())[message] }
-		if (!message.params) { return false }
 		const verifier = new ArweaveVerifier()
 		// @ts-ignore
-		return verifier[message.method]?.(...message.params) || false
+		if (typeof message === 'string') { return !!verifier[message] }
+		// @ts-ignore
+		return verifier[message.method]?.(...(message.params || [])) || false
 	}
 	async runMessage (message: Message) {
 		if (!this.verifyMessage(message)) { throw 'error' }
 		const runner = new ArweaveAPI(this)
 		// @ts-ignore
-		return runner[message.method](...message.params)
+		return runner[message.method]?.(...(message.params || []))
 	}
 	
 	getPublicKey () { return this.#wallet.jwk?.n }
