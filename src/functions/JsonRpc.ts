@@ -51,6 +51,7 @@ export default class JsonRpc {
 		const storedMessage: StoredMessage = {
 			uuid,
 			origin: this.state.origin,
+			sessionId: '' + message.id + this.state.origin + this.state.session,
 			timestamp: Date.now(),
 			status: undefined,
 			fulfilled: false,
@@ -63,7 +64,7 @@ export default class JsonRpc {
 			status: undefined,
 			fulfilled: false,
 		}
-		await this.storeMessage(storedMessage)
+		if (!await this.storeMessage(storedMessage)) { return true }
 		this.state.messageQueue.push(messageEntry)
 		return true
 	}
@@ -97,11 +98,20 @@ export default class JsonRpc {
 	}
 	
 	private async storeMessage (storedMessage: StoredMessage) {
-		const db = await getDB()
-		const dbTx = db.transaction('messages', 'readwrite')
-		const store = dbTx.objectStore('messages')
-		store.add(storedMessage)
-		return new Promise<void>(resolve => dbTx.oncomplete = () => resolve())
+		return new Promise(async (resolve, reject) => {
+			const db = await getDB()
+			const dbTx = db.transaction('messages', 'readwrite')
+			dbTx.onerror = (e) => reject(e.target)
+			dbTx.oncomplete = () => resolve(true)
+			const store = dbTx.objectStore('messages')
+			const index = store.index('sessionId')
+			const indexRequest = index.get(storedMessage.sessionId)
+			indexRequest.onsuccess = () => {
+				const message = indexRequest.result
+				if (message) { resolve(false); return }
+				store.add(storedMessage)
+			}
+		})
 	}
 	
 	private async updateMessage (messageEntry: MessageEntry) {

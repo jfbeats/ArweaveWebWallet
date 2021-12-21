@@ -22,7 +22,7 @@
 									<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentId" class="box fade-list-item" key="0" />
 									<div v-if="connectionFeed?.length === 0 && state.walletId && state.walletId === currentId" class="box status fade-list-item" key="0">Connected</div>
 									<Notification v-if="currentId !== state.walletId" :data="connectData" class="box fade-list-item" key="1">{{ connectData.content }}</Notification>
-									<PermissionCard v-for="messageEntry in connectionFeed" :key="messageEntry.timestamp" :messageEntry="messageEntry" style="padding: var(--spacing);" class="box flex-column fade-list-item" />
+									<PermissionCard v-for="messageEntry in connectionFeed" :key="messageEntry.uuid" :messageEntry="messageEntry" style="padding: var(--spacing);" class="box flex-column fade-list-item" />
 								</transition-group>
 							</div>
 							<div v-else-if="currentTab === 'Permissions'">

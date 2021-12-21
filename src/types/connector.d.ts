@@ -9,6 +9,7 @@ type Message = {
 type StoredMessage = Omit<Message, 'id'> & {
 	uuid: string
 	origin: string
+	sessionId: string
 	timestamp: number
 	status: Status
 	fulfilled: boolean
