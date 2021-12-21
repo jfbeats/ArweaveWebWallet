@@ -1,34 +1,14 @@
 import { reactive } from 'vue'
-
-let db
-
-async function getDB () {
-	return new Promise((resolve, reject) => {
-		if (db) { return resolve(db) }
-		const req = indexedDB.open('notifications', 1)
-		req.onupgradeneeded = () => {
-			db = req.result
-			if (!db.objectStoreNames.contains('notifications')) {
-				const notifications = db.createObjectStore('notifications', { keypath: 'id', autoIncrement: true })
-				notifications.createIndex('origin', 'origin', { unique: false })
-			}
-		}
-		req.onsuccess = () => {
-			db = req.result
-			resolve(db)
-		}
-		req.onerror = () => reject(req.error)
-	})
-}
+import { getDB } from '@/store/IndexedDB'
 
 async function push (notification) {
-	await getDB()
+	const db = await getDB()
 	notification.timestamp ??= Date.now()
 	return new Promise(resolve => {
-		const tx = db.transaction('notifications', 'readwrite')
-		const store = tx.objectStore('notifications')
+		const dbTx = db.transaction('notifications', 'readwrite')
+		const store = dbTx.objectStore('notifications')
 		store.put(notification)
-		tx.oncomplete = () => resolve()
+		dbTx.oncomplete = () => resolve()
 	})
 }
 
@@ -38,10 +18,10 @@ function getManager (origin) {
 		completed: false,
 		async fetch () {
 			if (this.completed) { return }
-			await getDB()
-			const tx = db.transaction('notifications', 'readonly')
-			const dbNotifications = tx.objectStore('notifications')
-			const index = dbNotifications.index('origin')
+			const db = await getDB()
+			const dbTx = db.transaction('notifications', 'readonly')
+			const store = dbTx.objectStore('notifications')
+			const index = store.index('origin')
 			let i = 0
 			index.openCursor(origin, 'prev').onsuccess = (e) => {
 				const cursor = e.target.result

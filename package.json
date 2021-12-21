@@ -14,7 +14,7 @@
 		"ardb": "1.0.8",
 		"arverify": "^0.0.11",
 		"arweave": "^1.10.18",
-		"arweave-wallet-connector": "^0.0.14",
+		"arweave-wallet-connector": "^0.0.16",
 		"bignumber.js": "^9.0.1",
 		"bip39-web-crypto": "^4.0.1",
 		"buffer": "^6.0.3",
@@ -23,6 +23,7 @@
 		"smartweave": "^0.4.45",
 		"stream-browserify": "^3.0.0",
 		"typescript-is": "^0.19.0",
+		"uuid": "^8.3.2",
 		"vue": "^3.2.24",
 		"vue-router": "^4.0.12",
 		"vue-slicksort": "^2.0.0-alpha.5"

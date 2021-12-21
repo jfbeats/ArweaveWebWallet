@@ -1,5 +1,9 @@
-import { computed, reactive, watch } from 'vue'
+import { getDB } from '@/store/IndexedDB'
 import { Wallets } from '@/functions/Wallets'
+import { awaitEffect } from '@/functions/Utils'
+// @ts-ignore
+import { v4 as uuidv4 } from 'uuid'
+import { computed, reactive, watch } from 'vue'
 
 const errors = {
 	rejected: { code: 0, message: 'Rejected' },
@@ -25,39 +29,58 @@ export default class JsonRpc {
 		this.state = state || reactive({})
 		this.state.messageQueue ??= []
 		this.stateWallet = computed(() => Wallets.value.find(w => w.id === this.state.walletId))
-		this.watchStop = watch(() => this.state.messageQueue, () => {
+		this.watchStop = watch(() => this.state.messageQueue, async () => {
 			for (const messageEntry of this.state.messageQueue) {
 				if (!messageEntry || messageEntry.fulfilled) { continue }
 				if (messageEntry.status === 'accepted') { this.runMessage(messageEntry) }
 				if (messageEntry.status === 'rejected') {
 					messageEntry.fulfilled = true
-					const id = messageEntry.message.id
+					const id = messageEntry.id
+					await this.updateMessage(messageEntry)
 					if (id != null) { this.callbacks({ ...getError('rejected'), id }) }
 				}
 			}
 		}, { deep: true })
 	}
 
-	pushMessage (message: unknown) {
+	async pushMessage (message: unknown) {
+		await awaitEffect(() => this.stateWallet.value)
 		if (!this.isMessage(message)) { return }
-		for (const m of this.state.messageQueue) { if (m.message.id === message.id) { return true } }
-		const messageEntry = { message, timestamp: Date.now(), fulfilled: false }
+		if (this.state.messageQueue.find(m => m.id === message.id)) { return true }
+		const uuid = uuidv4() as string
+		const storedMessage: StoredMessage = {
+			uuid,
+			origin: this.state.origin,
+			timestamp: Date.now(),
+			status: undefined,
+			fulfilled: false,
+			method: message.method,
+			params: message.params,
+		}
+		const messageEntry: MessageEntry = {
+			uuid,
+			id: message.id,
+			status: undefined,
+			fulfilled: false,
+		}
+		await this.storeMessage(storedMessage)
 		this.state.messageQueue.push(messageEntry)
 		return true
 	}
 
 	async runMessage (messageEntry: MessageEntry) {
-		const { message, status } = messageEntry
-		const id = messageEntry.message.id
-		if (status !== 'accepted') { return }
+		const id = messageEntry.id
+		if (messageEntry.status !== 'accepted' || messageEntry.fulfilled) { return }
 		try {
-			const result = await this.stateWallet.value?.runMessage(message)
+			const result = await this.stateWallet.value?.runMessage(await getMessage(messageEntry))
 			messageEntry.fulfilled = true
+			await this.updateMessage(messageEntry)
 			if (id != null) { this.callbacks({ result, id }) }
 		} catch (e) {
 			messageEntry.fulfilled = true
 			messageEntry.status = 'error'
 			console.error(e)
+			await this.updateMessage(messageEntry)
 			if (id != null) { this.callbacks({ ...getError('internal'), id }) }
 		}
 	}
@@ -65,13 +88,49 @@ export default class JsonRpc {
 	isMessage (message: any) : message is Message {
 		if (typeof message !== 'object') { return false }
 		const { method, params, id } = message
-		if (id != null && typeof id !== 'number' && typeof id !== 'string') { return false}
+		if (id != null && typeof id !== 'number' && typeof id !== 'string') { return false }
 		if (typeof method !== 'string') { id != null && this.callbacks({ ...getError('request'), id }); return false }
-		if (!this.stateWallet.value?.verifyMessage(method)) { id != null && this.callbacks({ ...getError('method'), id }); return false }
-		if (params != null && !Array.isArray(params)) { id != null && this.callbacks({ ...getError('params'), id }); return false }
-		if (!this.stateWallet.value?.verifyMessage(message)) { id != null && this.callbacks({ ...getError('params'), id }); return false }
+		if (!this.stateWallet.value?.verifyMessage(method)) { id != null && this.callbacks({ ...getError('method', method), id }); return false }
+		if (params != null && !Array.isArray(params)) { id != null && this.callbacks({ ...getError('params', { type: 'Params must be sent as an array', method, params }), id }); return false }
+		if (!this.stateWallet.value?.verifyMessage(message)) { id != null && this.callbacks({ ...getError('params', { type: 'Type error', method, params }), id }); return false }
 		return true
+	}
+	
+	private async storeMessage (storedMessage: StoredMessage) {
+		const db = await getDB()
+		const dbTx = db.transaction('messages', 'readwrite')
+		const store = dbTx.objectStore('messages')
+		store.add(storedMessage)
+		return new Promise<void>(resolve => dbTx.oncomplete = () => resolve())
+	}
+	
+	private async updateMessage (messageEntry: MessageEntry) {
+		return new Promise<void>(async (resolve, reject) => {
+			const db = await getDB()
+			const dbTx = db.transaction('messages', 'readwrite')
+			dbTx.onerror = (e) => reject(e.target)
+			dbTx.oncomplete = () => resolve()
+			const store = dbTx.objectStore('messages')
+			const storeRequest = store.get(messageEntry.uuid)
+			storeRequest.onsuccess = () => {
+				const message = storeRequest.result
+				if (!message) { reject(new Error('message not found')); return }
+				message.status = messageEntry.status
+				message.fulfilled = messageEntry.fulfilled
+				store.put(message)
+			}
+		})
 	}
 
 	destructor () { this.watchStop() }
+}
+
+
+
+export async function getMessage (messageEntry: MessageEntry): Promise<StoredMessage> {
+	const db = await getDB()
+	const dbTx = db.transaction('messages', 'readonly')
+	const store = dbTx.objectStore('messages')
+	const storeRequest = store.get(messageEntry.uuid)
+	return new Promise(resolve => storeRequest.onsuccess = () => resolve(storeRequest.result))
 }

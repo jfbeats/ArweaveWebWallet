@@ -46,8 +46,8 @@ interface Account {
 interface Provider {
 	metadata: Metadata
 	signTransaction?: (...args: any) => Promise<any>
-	sign?: (data: string, options: any) => Promise<string>
-	decrypt?: (data: string, options: any) => Promise<string>
+	sign?: (data: ArrayBufferView, options: any) => Promise<ArrayBufferView>
+	decrypt?: (data: ArrayBufferView, options: any) => Promise<ArrayBufferView>
 	download?: () => Promise<any>
 	verifyMessage: (message: Message | string) => boolean
 	runMessage: (message: Message) => Promise<any>

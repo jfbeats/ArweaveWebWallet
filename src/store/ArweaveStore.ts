@@ -144,13 +144,13 @@ export class ArweaveProvider extends ArweaveAccount implements Provider {
 		if (tx.owner && tx.owner !== this.getPublicKey()) { throw 'error' }
 		return arweave.transactions.sign(tx, this.#wallet.jwk, options)
 	}
-	async sign (data: string, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
-		const signed = await window.crypto.subtle.sign(options, await getSigningKey(this.#wallet.jwk as JsonWebKey), encode(data))
-		return arweave.utils.bufferTob64Url(new Uint8Array(signed))
+	async sign (data: ArrayBufferView, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
+		const signed = await window.crypto.subtle.sign(options, await getSigningKey(this.#wallet.jwk as JsonWebKey), data)
+		return new Uint8Array(signed)
 	}
-	async decrypt (data: string, options: Parameters<ArweaveProviderInterface['decrypt']>[1]) {
-		const decrypted = await window.crypto.subtle.decrypt(options, await getDecryptionKey(this.#wallet.jwk as JsonWebKey), await arweave.utils.b64UrlToBuffer(data))
-		return decode(decrypted)
+	async decrypt (data: ArrayBufferView, options: Parameters<ArweaveProviderInterface['decrypt']>[1]) {
+		const decrypted = await window.crypto.subtle.decrypt(options, await getDecryptionKey(this.#wallet.jwk as JsonWebKey), data)
+		return new Uint8Array(decrypted)
 	}
 	async download? () {
 		const key = this.key ? this.key : await arweave.wallets.jwkToAddress(this.#wallet.jwk)
@@ -164,7 +164,7 @@ export class ArweaveProvider extends ArweaveAccount implements Provider {
 		return verifier[message.method]?.(...(message.params || [])) || false
 	}
 	async runMessage (message: Message) {
-		if (!this.verifyMessage(message)) { throw 'error' }
+		if (!this.verifyMessage(message)) { throw 'params changed and are not valid anymore' }
 		const runner = new ArweaveAPI(this)
 		// @ts-ignore
 		return runner[message.method]?.(...(message.params || []))
@@ -201,10 +201,10 @@ export class ArweaveAPI implements ArweaveProviderInterface {
 		const config = arweave.getConfig().api
 		return { protocol: config.protocol, host: config.host, port: config.port }
 	}
-	async sign (message: string, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
+	async sign (message: ArrayBufferView, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
 		return this.#wallet.sign(message, options)
 	}
-	async decrypt (message: string, options: Parameters<ArweaveProviderInterface['decrypt']>[1]) {
+	async decrypt (message: ArrayBufferView, options: Parameters<ArweaveProviderInterface['decrypt']>[1]) {
 		return this.#wallet.decrypt(message, options)
 	}
 }

@@ -3,8 +3,10 @@ import { LedgerProvider } from '@/providers/Ledger'
 import { Channel } from '@/functions/Channels'
 import { passwordEncrypt, passwordDecrypt, pkcs8ToJwk } from '@/functions/Crypto'
 import { download } from '@/functions/Utils'
-import { getKeyPairFromMnemonic } from 'human-crypto-keys'
 import { generateMnemonic as generateM, validateMnemonic as validateM } from 'bip39-web-crypto'
+// @ts-ignore
+import { getKeyPairFromMnemonic } from 'human-crypto-keys'
+// @ts-ignore
 import wordlist from 'bip39-web-crypto/src/wordlists/english.json'
 import { computed, reactive } from 'vue'
 

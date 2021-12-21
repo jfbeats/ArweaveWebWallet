@@ -1,14 +1,24 @@
+type Status = 'accepted' | 'rejected' | 'error' | undefined
+
 type Message = {
 	id?: number
 	method?: string
 	params?: unknown[]
 }
 
-type MessageEntry = {
-	message: Message
-	status?: 'accepted' | 'rejected' | 'error' | undefined
-	fulfilled: boolean
+type StoredMessage = Omit<Message, 'id'> & {
+	uuid: string
+	origin: string
 	timestamp: number
+	status: Status
+	fulfilled: boolean
+}
+
+type MessageEntry = {
+	uuid: string
+	id?: number
+	status: Status
+	fulfilled: boolean
 }
 
 type InstanceState = {
