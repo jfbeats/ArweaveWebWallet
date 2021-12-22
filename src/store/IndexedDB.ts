@@ -5,10 +5,7 @@ export async function getDB () {
 		if (db) { return resolve(db) }
 		const req = indexedDB.open('app', 3)
 		req.onupgradeneeded = upgrade
-		req.onsuccess = () => {
-			db = req.result
-			resolve(db)
-		}
+		req.onsuccess = () => { db = req.result; resolve(db) }
 		req.onerror = () => reject(req.error)
 	})
 }
@@ -18,18 +15,11 @@ export async function getDB () {
 function upgrade (this: IDBOpenDBRequest, e: IDBVersionChangeEvent) {
 	db = this.result
 	const upgradeTransaction = this.transaction
-	
-	if (!db.objectStoreNames.contains('notifications')) {
-		const notifications = db.createObjectStore('notifications', { keyPath: 'id', autoIncrement: true })
-		notifications.createIndex('origin', 'origin', { unique: false })
+	const notifications = setStore(upgradeTransaction, 'notifications', { keyPath: 'id', autoIncrement: true })
+	if (notifications) {
+		setIndex(notifications, 'origin', { unique: false })
 	}
-	
-	let messages: IDBObjectStore | undefined
-	if (!db.objectStoreNames.contains('messages')) {
-		messages = db.createObjectStore('messages', { keyPath: 'uuid' })
-	} else {
-		messages = upgradeTransaction?.objectStore('messages')
-	}
+	const messages = setStore(upgradeTransaction, 'messages', { keyPath: 'uuid' })
 	if (messages) {
 		setIndex(messages, 'origin', { unique: false })
 		setIndex(messages, 'sessionId', { unique: false })
@@ -37,7 +27,9 @@ function upgrade (this: IDBOpenDBRequest, e: IDBVersionChangeEvent) {
 	}
 }
 
-
+const setStore = (upgradeTransaction: IDBTransaction | null, name: string, options: IDBObjectStoreParameters) => {
+	return db.objectStoreNames.contains(name) ? upgradeTransaction?.objectStore(name) : db.createObjectStore(name, options)
+}
 
 const setIndex = (store: IDBObjectStore, name: string, options: IDBIndexParameters) => {
 	const index = store.indexNames.contains(name) ? store.index(name) : undefined
