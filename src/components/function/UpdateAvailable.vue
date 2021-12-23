@@ -12,20 +12,21 @@
 
 
 <script setup>
-import { states } from '@/functions/Channels'
+import { state, states } from '@/functions/Channels'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
 import { ref, watch } from 'vue'
 
 const { needRefresh, updateServiceWorker } = useRegisterSW()
-let autoUpdateActive = true
-setTimeout(() => autoUpdateActive = false, 6000)
+let autoUpdateActive = state.type !== 'popup'
+setTimeout(() => autoUpdateActive = false, 10000)
 const updating = ref(false)
 const update = () => {
 	updating.value = true
 	updateServiceWorker()
 }
 watch(() => needRefresh.value, (needed) => {
-	if (!needed || !autoUpdateActive || Object.keys(states).length) { return }
+	const otherInstance = Object.values(states).find(s => s.type !== 'popup')
+	if (!needed || !autoUpdateActive || otherInstance) { return }
 	update()
 }, { immediate: true })
 const close = () => { needRefresh.value = false }

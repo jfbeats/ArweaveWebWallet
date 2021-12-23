@@ -19,7 +19,7 @@
 						<div :key="(currentId || '') + currentTab" class="content">
 							<div v-if="currentTab === 'Requests'">
 								<transition-group name="fade-list">
-									<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentId" class="box fade-list-item" key="0" />
+									<WalletTabs v-if="isSelectingWallet" v-model="currentId" class="box fade-list-item" key="0" />
 									<div v-if="connectionFeed?.length === 0 && state.walletId && state.walletId === currentId" class="box status fade-list-item" key="0">Connected</div>
 									<Notification v-if="currentId !== state.walletId" :data="connectData" class="box fade-list-item" key="1">{{ connectData.content }}</Notification>
 									<PermissionCard v-for="messageEntry in connectionFeed" :key="messageEntry.uuid" :messageEntry="messageEntry" style="padding: var(--spacing);" class="box flex-column fade-list-item" />
@@ -27,7 +27,7 @@
 							</div>
 							<div v-else-if="currentTab === 'Permissions'">
 								<transition-group name="fade-list">
-									<WalletTabs v-if="isSelectingWallet" :addresses="addresses" v-model="currentId" class="box fade-list-item" key="0" />
+									<WalletTabs v-if="isSelectingWallet" v-model="currentId" class="box fade-list-item" key="0" />
 									<div class="box status fade-list-item" key="0">WIP</div>
 								</transition-group>
 							</div>
@@ -112,13 +112,14 @@ const connectData = computed(() => {
 })
 
 
-const connectionFeed = computed(() => props.state.messageQueue?.filter((m) => !m.fulfilled))
+const connectionFeed = computed(() => currentId.value === props.state.walletId
+	? props.state.messageQueue?.filter((m) => !m.fulfilled) : [])
 
 
 
 const verticalLayout = toRef(InterfaceStore.breakpoints, 'verticalLayout')
-const transitionName = ref(null)
-const selectTransitionName = (val, oldVal) => val > oldVal ? transitionName.value = 'slide-left' : transitionName.value = 'slide-right'
+const transitionName = ref(null as null | string)
+const selectTransitionName = (val: number, oldVal: number) => val > oldVal ? transitionName.value = 'slide-left' : transitionName.value = 'slide-right'
 watch(() => tabs.findIndex(tab => tab.name === currentTab.value), selectTransitionName)
 watch(() => Wallets.value.findIndex(wallet => wallet.id === currentId.value), selectTransitionName)
 </script>
@@ -146,7 +147,7 @@ watch(() => Wallets.value.findIndex(wallet => wallet.id === currentId.value), se
 }
 
 .wallet-tabs {
-	padding: var(--spacing);
+	padding: var(--spacing) 0;
 	justify-content: center;
 	width: 100%;
 }
