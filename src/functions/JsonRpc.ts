@@ -74,6 +74,7 @@ export default class JsonRpc {
 		if (messageEntry.status !== 'accepted' || messageEntry.fulfilled) { return }
 		try {
 			const result = await this.stateWallet.value?.runMessage(await getMessage(messageEntry))
+			if (result === undefined) { return }
 			messageEntry.fulfilled = true
 			await this.updateMessage(messageEntry)
 			if (id != null) { this.callbacks({ result, id }) }

@@ -30,9 +30,10 @@
 						<div v-if="isData"><a :href="ArweaveStore.gatewayURL + tx.id" target="_blank">Link</a></div>
 						<div v-if="tx.data?.type === 'application/x.arweave-manifest+json'"><a :href="ArweaveStore.gatewayURL + 'tx/' + tx.id + '/data.json'" target="_blank">Manifest</a></div>
 					</div>
-
+					
 					<div v-if="isPending">
 						<h3>Pending</h3>
+						<div v-if="status">Status: {{ status }}</div>
 					</div>
 					<div v-else>
 						<h3>Block</h3>
@@ -71,58 +72,57 @@
 	</FoldingLayout>
 </template>
 
-<script>
+
+
+<script setup lang="ts">
 import Selector from '@/components/handlers/Selector.vue'
 import FoldingLayout from '@/components/layout/FoldingLayout.vue'
 import Address from '@/components/atomic/Address.vue'
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import InputGrid from '@/components/atomic/InputGrid.vue'
-import ArweaveStore, { getTxById } from '@/store/ArweaveStore'
+import ArweaveStore, { arweave, getTxById } from '@/store/ArweaveStore'
 import BlockStore, { getCurrentHeight } from '@/store/BlockStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { humanFileSize } from '@/functions/Utils'
 import { watch, computed, ref, toRef } from 'vue'
 
-export default {
-	components: { Selector, FoldingLayout, Address, AddressIcon, InputGrid },
-	props: {
-		txId: String,
-	},
-	setup (props) {
-		const tx = computed(() => ArweaveStore.txs[props.txId])
-		const isData = computed(() => tx.value.data?.size !== '0')
-		const isPending = computed(() => !tx.value.block)
-		const date = computed(() => {
-			if (isPending.value) { return '' }
-			const dateObj = new Date(tx.value.block.timestamp * 1000)
-			return dateObj.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
-				+ ' ' + dateObj.toLocaleTimeString()
+const props = defineProps<{
+	txId: string
+}>()
+
+const tx = computed(() => ArweaveStore.txs[props.txId])
+const isData = computed(() => tx.value.data?.size != '0')
+const isPending = computed(() => !tx.value.block)
+const date = computed(() => {
+	if (!tx.value.block) { return '' }
+	const dateObj = new Date(tx.value.block.timestamp * 1000)
+	return dateObj.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+		+ ' ' + dateObj.toLocaleTimeString()
+})
+const status = ref(null as any)
+const currentBlock = toRef(BlockStore, 'currentHeight')
+const tagsSchema = computed(() => {
+	if (!tx.value.tags) { return }
+	const result = []
+	for (const tag of tx.value.tags) {
+		result.push({
+			items: [
+				{ name: '', value: tag.name, attrs: { disabled: true } },
+				{ name: '', value: tag.value, attrs: { disabled: true } }
+			]
 		})
-		const currentBlock = toRef(BlockStore, 'currentHeight')
-		const tagsSchema = computed(() => {
-			const result = []
-			for (const tag of tx.value.tags) {
-				result.push({
-					items: [
-						{ name: '', value: tag.name, attrs: { disabled: true } },
-						{ name: '', value: tag.value, attrs: { disabled: true } }
-					]
-				})
-			}
-			return result
-		})
-
-		watch(() => props.txId, async () => {
-			getTxById(props.txId)
-			getCurrentHeight()
-		}, { immediate: true })
-
-		const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
-
-		return { ArweaveStore, tx, currentBlock, isData, isPending, date, tagsSchema, verticalContent, humanFileSize }
-	},
-}
+	}
+	return result
+})
+watch(() => props.txId, async () => {
+	getTxById(props.txId)
+	getCurrentHeight()
+	arweave.transactions.getStatus(props.txId).then(s => status.value = s.status).catch(() => status.value = 'Not Found')
+}, { immediate: true })
+const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
 </script>
+
+
 
 <style scoped>
 .meta {

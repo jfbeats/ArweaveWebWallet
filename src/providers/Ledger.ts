@@ -1,8 +1,11 @@
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import ArweaveApp from "@zondax/ledger-arweave"
-import { arweave, ArweaveAccount } from '@/store/ArweaveStore'
+import { arweave, ArweaveAccount, ArweaveAPI, ArweaveProvider } from '@/store/ArweaveStore'
 import LogoLedger from '@/assets/logos/ledger.svg?component'
 import Transaction from 'arweave/web/lib/transaction'
+import { ArweaveVerifier } from 'arweave-wallet-connector/lib/ArweaveWebWallet'
+import { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
+import { state } from '@/functions/Connect'
 
 
 async function getTransport () {
@@ -58,7 +61,7 @@ async function getInfo (request = false) {
 	return response
 }
 
-const getAddress = async () => (await getInfo()).address
+const getAddress = async (request = false) => (await getInfo(request)).address
 const getPublicKey = async () => (await getInfo()).owner
 
 async function sign (tx: Transaction) {
@@ -103,26 +106,25 @@ export class LedgerProvider extends ArweaveAccount implements Provider {
 	constructor (wallet: WalletDataInterface) {
 		super(wallet.arweave?.key)
 	}
-	
 	get metadata () { return metadata }
-	
-	async signTransaction (tx: Transaction) {
+	async signTransaction (tx: Transaction, options: SignatureOptions) {
 		if (this.key !== await getAddress()) { throw new Error('Wrong account') }
+		if (tx.owner && tx.owner !== await this.getPublicKey()) { throw 'error' }
 		return sign(tx)
 	}
-}
-
-
-
-
-
-
-// Testing
-
-if (import.meta.env.DEV) {
-	window.testTx = async () => {
-		const tx = await arweave.createTransaction({ data: '😁', })
-		const signedTx = await arweave.transactions.sign(tx)
-		console.log(await arweave.transactions.post(signedTx))
+	async getPublicKey () { return getPublicKey() }
+	verifyMessage (message: Message | string) {
+		const verifier = new ArweaveVerifier()
+		// @ts-ignore
+		if (typeof message === 'string') { return !!verifier[message] }
+		// @ts-ignore
+		return verifier[message.method]?.(...(message.params || [])) || false
+	}
+	async runMessage (message: Message) {
+		if (state.type === 'iframe') { return }
+		if (!this.verifyMessage(message)) { throw 'params changed and are not valid anymore' }
+		const runner = new ArweaveAPI(this as any)
+		// @ts-ignore
+		return runner[message.method]?.(...(message.params || []))
 	}
 }

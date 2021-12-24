@@ -16,7 +16,10 @@
 		<template v-else-if="message?.method === 'decrypt'" class="permission-card">
 			Decrypt data
 		</template>
-		<ActionList :actions="actions" />
+		<transition name="fade" mode="out-in">
+			<ActionList v-if="!messageEntry.status" :actions="actions" />
+			<ActionList v-else :actions="actionsPending" />
+		</transition>
 	</div>
 </template>
 
@@ -32,8 +35,9 @@ import { computed, ref, watch } from 'vue'
 
 import IconY from '@/assets/icons/y.svg?component'
 import IconX from '@/assets/icons/x.svg?component'
+import IconConnection from '@/assets/icons/connection.svg?component'
 
-const props = defineProps(['messageEntry'])
+const props = defineProps<{ messageEntry: MessageEntry }>()
 
 const message = ref(null as null | StoredMessage)
 
@@ -52,6 +56,7 @@ const actions = [
 	{ name: 'Accept', icon: IconY, run: () => props.messageEntry.status = 'accepted' },
 	{ name: 'Reject', icon: IconX, run: () => props.messageEntry.status = 'rejected' },
 ]
+const actionsPending = [{ name: 'Pending', icon: IconConnection, run: () => {} }]
 </script>
 
 

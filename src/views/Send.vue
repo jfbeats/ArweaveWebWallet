@@ -196,18 +196,13 @@ export default {
 			if (loading.value || !isValid()) { return }
 			loading.value = true
 			try {
-				const tx = await buildTransaction(
-					props.model.target,
-					props.model.quantity,
-					getTagsFromSchema(props.model.tags),
-					props.model.data,
-					txFee.value
-				)
-				// if (props.wallet.jwk) { await arweave.transactions.sign(tx, props.wallet.jwk) }
-				// else if (props.wallet.provider === 'ledger') {
-				// 	if (props.wallet.key !== await Ledger.getActiveAddress()) { alert('Wrong account'); return }
-				// 	await Ledger.sign(tx)
-				// }
+				const tx = await buildTransaction({
+					target: props.model.target,
+					ar: props.model.quantity,
+					arReward: txFee.value,
+					tags: getTagsFromSchema(props.model.tags),
+					data: props.model.data,
+				})
 				await props.wallet.signTransaction(tx)
 				manageUpload(tx)
 				resetForm()

@@ -11,6 +11,7 @@ import Transaction, { TransactionInterface } from 'arweave/web/lib/transaction'
 import { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
 import { ArweaveVerifier, ArweaveProviderInterface } from 'arweave-wallet-connector/lib/ArweaveWebWallet'
 import { decode, encode, getDecryptionKey, getSigningKey } from '@/functions/Crypto'
+import { getFeeRange } from '@/functions/Transactions'
 
 
 
@@ -23,7 +24,7 @@ const ArweaveStore = reactive({
 		isUpdating: false,
 		settings: { currency: 'USD', provider: 'redstone' },
 	},
-	uploads: {},
+	uploads: {} as { [key: string]: { upload?: number } },
 })
 
 export default ArweaveStore
@@ -141,8 +142,9 @@ export class ArweaveProvider extends ArweaveAccount implements Provider {
 		icon: LogoArweave,
 	}}
 	async signTransaction? (tx: Transaction, options?: SignatureOptions) {
-		if (tx.owner && tx.owner !== this.getPublicKey()) { throw 'error' }
-		return arweave.transactions.sign(tx, this.#wallet.jwk, options)
+		if (tx.owner && tx.owner !== await this.getPublicKey()) { throw 'error' }
+		await arweave.transactions.sign(tx, this.#wallet.jwk, options)
+		return tx
 	}
 	async sign (data: ArrayBufferView, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
 		const signed = await window.crypto.subtle.sign(options, await getSigningKey(this.#wallet.jwk as JsonWebKey), data)
@@ -152,6 +154,7 @@ export class ArweaveProvider extends ArweaveAccount implements Provider {
 		const decrypted = await window.crypto.subtle.decrypt(options, await getDecryptionKey(this.#wallet.jwk as JsonWebKey), data)
 		return new Uint8Array(decrypted)
 	}
+	async getPublicKey () { return this.#wallet.jwk?.n }
 	async download? () {
 		const key = this.key ? this.key : await arweave.wallets.jwkToAddress(this.#wallet.jwk)
 		download(key, JSON.stringify(this.#wallet.jwk))
@@ -169,8 +172,6 @@ export class ArweaveProvider extends ArweaveAccount implements Provider {
 		// @ts-ignore
 		return runner[message.method]?.(...(message.params || []))
 	}
-	
-	getPublicKey () { return this.#wallet.jwk?.n }
 }
 
 
@@ -183,6 +184,8 @@ export class ArweaveAPI implements ArweaveProviderInterface {
 	async signTransaction (tx: TransactionInterface, options?: object) {
 		if (!this.#wallet.signTransaction) { throw 'error' }
 		const txObject = new Transaction(tx)
+		// const fee = await getFeeRange()
+		// if (fee.default?.gt(txObject.reward)) { txObject.reward = fee.default.toString() }
 		await this.#wallet.signTransaction(txObject)
 		return {
 			id: txObject.id,
@@ -193,7 +196,7 @@ export class ArweaveAPI implements ArweaveProviderInterface {
 		}
 	}
 	async getPublicKey () {
-		const publicKey = this.#wallet.getPublicKey()
+		const publicKey = await this.#wallet.getPublicKey()
 		if (!publicKey) { throw 'error' }
 		return publicKey
 	}
@@ -472,15 +475,3 @@ watch(() => ArweaveStore.conversion.settings, (settings) => {
 	localStorage.setItem('currency', JSON.stringify(settings))
 	updateConversionRate()
 }, { deep: true })
-
-
-
-export function loadDemo () {}
-
-
-
-if (import.meta.env.DEV) {
-	window.ArweaveStore = ArweaveStore
-	window.arweave = arweave
-	window.arDB = arDB
-}
