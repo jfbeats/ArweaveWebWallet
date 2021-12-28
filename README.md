@@ -19,4 +19,4 @@ https://arweave.app/demo
 - Create or import wallets by passphrase or key file
 - Send and receive AR tokens
 - View transactions and data
-- Ledger support (awaiting hardware wallet app release)
+- Ledger support (awaiting release on Ledger app store)

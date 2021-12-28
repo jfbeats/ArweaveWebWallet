@@ -44,7 +44,6 @@ const actions = [
 	{ name: 'TxList', icon: IconSwap, text: 'Transactions' },
 	// { name: 'Tokens', icon: IconCircle, text: 'Tokens' },
 ]
-watch(() => props.wallet, (wallet) => wallet.updateBalance?.(), { immediate: true }) // update balance instead
 </script>
 
 

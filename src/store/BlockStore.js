@@ -1,8 +1,8 @@
 import ArweaveStore, { arweave, arDB } from '@/store/ArweaveStore'
-import { sleepUntilVisible } from '@/store/InterfaceStore'
-import { awaitEffect } from '@/functions/Utils'
+import InterfaceStore from '@/store/InterfaceStore'
 import { reactive, watch } from 'vue'
 import axios from 'axios'
+import { awaitEffect } from '@/functions/AsyncData'
 
 
 
@@ -22,7 +22,7 @@ export default BlockStore
 export async function getCurrentHeight () {
 	if (BlockStore.currentHeightStatus.loading) { return currentHeightPromise() }
 	BlockStore.currentHeightStatus.loading = true
-	await sleepUntilVisible()
+	await awaitEffect(() => InterfaceStore.windowVisible)
 
 	try {
 		BlockStore.currentHeight = (await arweave.network.getInfo())?.height
@@ -33,7 +33,7 @@ export async function getCurrentHeight () {
 }
 
 export async function getBlocks (min, max) {
-	await sleepUntilVisible()
+	await awaitEffect(() => InterfaceStore.windowVisible)
 	const newQueries = []
 	for (let n = min; n <= max; n++) {
 		BlockStore.blocks[n] ??= []

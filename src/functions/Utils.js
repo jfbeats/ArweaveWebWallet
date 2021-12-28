@@ -1,7 +1,3 @@
-import { watchEffect } from 'vue'
-
-
-
 export function debounce (fun, timeout = 500) {
 	let timer
 	return (...args) => {
@@ -44,16 +40,4 @@ export function download (filename, text, contentType = 'application/json') {
 	document.body.appendChild(element)
 	element.click()
 	document.body.removeChild(element)
-}
-
-export async function awaitEffect (effect) {
-	let watchStop
-	const promise = new Promise(resolve => {
-		watchStop = watchEffect(() => {
-			if (effect()) { resolve() }
-		})
-	})
-	await promise
-	watchStop()
-	return promise
 }

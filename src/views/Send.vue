@@ -91,14 +91,13 @@ import InputData from '@/components/atomic/InputData.vue'
 import InputGrid from '@/components/atomic/InputGrid.vue'
 import SendFee from '@/components/composed/SendFee.vue'
 import Button from '@/components/atomic/Button.vue'
-import {arweave} from '@/store/ArweaveStore'
-import {buildTransaction, manageUpload} from '@/functions/Transactions'
+import { buildTransaction, manageUpload } from '@/functions/Transactions'
+import { awaitEffect } from '@/functions/AsyncData'
+import { addressHashToColor, addressToHash } from '@/functions/Utils'
 import BigNumber from 'bignumber.js'
-import {addressHashToColor, addressToHash, awaitEffect} from '@/functions/Utils'
-import {computed, markRaw, reactive, ref, watch} from 'vue'
+import { computed, markRaw, reactive, ref, watch } from 'vue'
 
 import IconNorthEast from '@/assets/icons/north_east.svg?component'
-
 import IconLabel from '@/assets/icons/label.svg?component'
 
 export default {

@@ -90,7 +90,7 @@ const props = defineProps<{
 	txId: string
 }>()
 
-const tx = computed(() => ArweaveStore.txs[props.txId])
+const tx = computed(() => getTxById(props.txId))
 const isData = computed(() => tx.value.data?.size != '0')
 const isPending = computed(() => !tx.value.block)
 const date = computed(() => {
@@ -115,7 +115,6 @@ const tagsSchema = computed(() => {
 	return result
 })
 watch(() => props.txId, async () => {
-	getTxById(props.txId)
 	getCurrentHeight()
 	arweave.transactions.getStatus(props.txId).then(s => status.value = s.status).catch(() => status.value = 'Not Found')
 }, { immediate: true })

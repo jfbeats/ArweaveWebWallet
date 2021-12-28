@@ -34,11 +34,10 @@ interface ProviderData extends Metadata {
 }
 
 interface Account {
-	key: string | null
-	balance: string | null
+	key?: string
+	balance?: string
 	queries: { [key: string]: any[] }
 	queriesStatus: { [key: string]: QueryStatusInterface }
-	updateBalance: () => Promise<any>
 	fetchTransactions: (query: Query) => Promise<any>
 	updateTransactions: (query: Query) => Promise<any>
 }

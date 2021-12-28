@@ -1,9 +1,9 @@
 import Arweave from 'arweave'
 import ArDB from 'ardb'
-import { awaitEffect, download } from '@/functions/Utils'
+import { download } from '@/functions/Utils'
 import axios from 'axios'
-import { computed, reactive, ref, watch } from 'vue'
-import InterfaceStore, { sleepUntilVisible } from '@/store/InterfaceStore'
+import { reactive, toRef, watch } from 'vue'
+import InterfaceStore from '@/store/InterfaceStore'
 import LogoArweave from '@/assets/logos/arweave.svg?component'
 import { ApiConfig } from 'arweave/web/lib/api'
 import { GQLEdgeTransactionInterface, GQLTransactionInterface } from 'ardb/lib/faces/gql'
@@ -12,6 +12,8 @@ import { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
 import { ArweaveVerifier, ArweaveProviderInterface } from 'arweave-wallet-connector/lib/ArweaveWebWallet'
 import { decode, encode, getDecryptionKey, getSigningKey } from '@/functions/Crypto'
 import { getFeeRange } from '@/functions/Transactions'
+import { awaitEffect, getAsyncData } from '@/functions/AsyncData'
+import { Channel } from '@/functions/Channels'
 
 
 
@@ -19,11 +21,7 @@ const ArweaveStore = reactive({
 	gatewayURL: null as null | string,
 	wallets: {} as { [key: string]: ArweaveAccount },
 	txs: {} as { [key: string]: Partial<GQLTransactionInterface> },
-	conversion: {
-		currentPrice: null as null | number,
-		isUpdating: false,
-		settings: { currency: 'USD', provider: 'redstone' },
-	},
+	conversion: getConversion(),
 	uploads: {} as { [key: string]: { upload?: number } },
 })
 
@@ -69,12 +67,19 @@ export function updateArweave (gateway: string | URL | ApiConfig) {
 	ArweaveStore.gatewayURL = settingsToUrl(arweave.getConfig().api)
 }
 
-export async function getTxById (txId: string) {
-	if (ArweaveStore.txs[txId]?.block) { return }
-	await sleepUntilVisible()
-	const result = (await arDB.search().id(txId).find() as GQLEdgeTransactionInterface[])[0]
-	if (!result) { return }
-	Object.assign(ArweaveStore.txs[result.node.id] ??= {}, result.node)
+export function getTxById (txId: string) {
+	return getAsyncData({
+		existingState: ArweaveStore.txs[txId],
+		query: async () => (await arDB.search().id(txId).find() as GQLEdgeTransactionInterface[])[0].node,
+		completed: () => ArweaveStore.txs[txId]?.block,
+		processResult: res => Object.assign(ArweaveStore.txs[txId] ??= {}, res),
+		seconds: 10,
+	}).state.value
+}
+
+export async function fetchPublicKey (address: string) {
+	const tx = await arDB.search('transactions').from(address).findOne() as GQLEdgeTransactionInterface[]
+	return tx?.[0]?.node.owner.key
 }
 
 
@@ -87,8 +92,12 @@ export async function getTxById (txId: string) {
 
 export class ArweaveAccount implements Account {
 	state = reactive({
-		key: null as null | string,
-		balance: null as null | string
+		key: undefined as undefined | string,
+	})
+	#balance = getAsyncData({
+		query: async () => arweave.ar.winstonToAr(await arweave.wallets.getBalance(this.key!)),
+		awaitEffect: () => this.key,
+		seconds: 600,
 	})
 	queries = reactive({} as { [key: string]: GQLEdgeTransactionInterface[] })
 	queriesStatus = reactive({} as { [key: string]: QueryStatusInterface })
@@ -105,20 +114,9 @@ export class ArweaveAccount implements Account {
 		}
 	}
 	
-	get balance () { return this.state.balance }
 	get key () { return this.state.key }
+	get balance () { return this.#balance.state.value }
 	
-	async updateBalance () {
-		if ((this.queriesStatus.balance ??= {}).fetch) { return }
-		this.queriesStatus.balance.fetch = true
-		await awaitEffect(() => this.key)
-		try {
-			const balance = await arweave.wallets.getBalance(this.key!)
-			this.state.balance = arweave.ar.winstonToAr(balance)
-			console.log('Wallet balance ', this.balance)
-		} catch (e) { console.error(e) }
-		finally { this.queriesStatus.balance.fetch = false }
-	}
 	fetchTransactions = async (query: Query) => fetchTransactions(this, query)
 	updateTransactions = async (query: Query) => updateTransactions(this, query)
 }
@@ -132,8 +130,8 @@ export class ArweaveProvider extends ArweaveAccount implements Provider {
 		super(init)
 		this.#wallet = init
 		if (!init.jwk) {
-			this.download = undefined
-			this.signTransaction = undefined
+			const disabled = ['download', 'signTransaction', 'sign', 'decrypt'] as const
+			disabled.forEach(method => this[method] = undefined)
 		}
 	}
 	get metadata () { return {
@@ -146,23 +144,29 @@ export class ArweaveProvider extends ArweaveAccount implements Provider {
 		await arweave.transactions.sign(tx, this.#wallet.jwk, options)
 		return tx
 	}
-	async sign (data: ArrayBufferView, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
+	async sign? (data: ArrayBufferView, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
 		const signed = await window.crypto.subtle.sign(options, await getSigningKey(this.#wallet.jwk as JsonWebKey), data)
 		return new Uint8Array(signed)
 	}
-	async decrypt (data: ArrayBufferView, options: Parameters<ArweaveProviderInterface['decrypt']>[1]) {
+	async decrypt? (data: ArrayBufferView, options: Parameters<ArweaveProviderInterface['decrypt']>[1]) {
 		const decrypted = await window.crypto.subtle.decrypt(options, await getDecryptionKey(this.#wallet.jwk as JsonWebKey), data)
 		return new Uint8Array(decrypted)
 	}
-	async getPublicKey () { return this.#wallet.jwk?.n }
+	async getPublicKey () { return this.#wallet.jwk?.n || await awaitEffect(() => this.key) && fetchPublicKey(this.key!) || undefined }
 	async download? () {
 		const key = this.key ? this.key : await arweave.wallets.jwkToAddress(this.#wallet.jwk)
 		download(key, JSON.stringify(this.#wallet.jwk))
 	}
 	verifyMessage (message: Message | string) {
 		const verifier = new ArweaveVerifier()
+		const apiToObject: { [key in keyof ArweaveAPI]?: keyof ArweaveProvider } = {
+			signTransaction: 'signTransaction',
+			getPublicKey: 'getPublicKey',
+			sign: 'sign',
+			decrypt: 'decrypt',
+		}
 		// @ts-ignore
-		if (typeof message === 'string') { return !!verifier[message] }
+		if (typeof message === 'string') { return !!verifier[message] && (apiToObject[message] ? this[apiToObject[message]] : true) }
 		// @ts-ignore
 		return verifier[message.method]?.(...(message.params || [])) || false
 	}
@@ -200,15 +204,15 @@ export class ArweaveAPI implements ArweaveProviderInterface {
 		if (!publicKey) { throw 'error' }
 		return publicKey
 	}
+	async sign (message: ArrayBufferView, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
+		return this.#wallet.sign!(message, options)
+	}
+	async decrypt (message: ArrayBufferView, options: Parameters<ArweaveProviderInterface['decrypt']>[1]) {
+		return this.#wallet.decrypt!(message, options)
+	}
 	async getArweaveConfig () {
 		const config = arweave.getConfig().api
 		return { protocol: config.protocol, host: config.host, port: config.port }
-	}
-	async sign (message: ArrayBufferView, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
-		return this.#wallet.sign(message, options)
-	}
-	async decrypt (message: ArrayBufferView, options: Parameters<ArweaveProviderInterface['decrypt']>[1]) {
-		return this.#wallet.decrypt(message, options)
 	}
 }
 
@@ -300,7 +304,7 @@ async function updateTransactions (wallet: ArweaveAccount, query: Query) {
 	if (wallet.queriesStatus[query]?.fetch) { return }
 	await awaitEffect(() => wallet.key && !wallet.queriesStatus[query]?.update)
 	wallet.queriesStatus[query].update = true
-	await sleepUntilVisible()
+	await awaitEffect(() => InterfaceStore.windowVisible)
 	if (query === 'all') {
 		await updateTransactionsAll(wallet)
 		wallet.queriesStatus[query].update = false
@@ -400,12 +404,9 @@ function sortByBlocks (wallet?: ArweaveAccount, query?: Query) {
 	const sort = (a: GQLEdgeTransactionInterface, b: GQLEdgeTransactionInterface) => (b.node.block?.height ?? Number.MAX_SAFE_INTEGER)
 		- (a.node.block?.height ?? Number.MAX_SAFE_INTEGER)
 	if (wallet && wallet.queries[query!]) {
-		wallet.updateBalance()
 		wallet.queries[query!].sort(sort)
 	} else {
-		// TODO only update balance when necessary
 		for (const key in ArweaveStore.wallets) {
-			ArweaveStore.wallets[key].updateBalance()
 			for (const query in ArweaveStore.wallets[key].queries) {
 				ArweaveStore.wallets[key].queries[query].sort(sort)
 			}
@@ -414,6 +415,7 @@ function sortByBlocks (wallet?: ArweaveAccount, query?: Query) {
 }
 
 function processUpdatedTxs () {
+	// TODO
 	// take tx array from update function that were not already known
 	// check if wallets with cached balance are involved
 }
@@ -421,38 +423,34 @@ function processUpdatedTxs () {
 
 
 
-
-
-
-
-
-export async function updateConversionRate () {
-	if (ArweaveStore.conversion.isUpdating) { return }
-	ArweaveStore.conversion.isUpdating = true
-	await sleepUntilVisible()
-	const currency = ArweaveStore.conversion.settings.currency
-	const provider = ArweaveStore.conversion.settings.provider
-	let result
-	try {
-		if (provider === 'redstone') {
-			if (currency === 'USD') {
-				result = await axios.get('https://api.redstone.finance/prices/?symbols=AR&provider=redstone')
-				ArweaveStore.conversion.currentPrice = result.data['AR'].value
-			} else {
-				result = await axios.get('https://api.redstone.finance/prices/?symbols=AR,' + currency + '&provider=redstone')
-				ArweaveStore.conversion.currentPrice = result.data['AR'].value / result.data[currency].value
+function getConversion () {
+	const settings = new Channel('currency', undefined, { currency: 'USD', provider: 'redstone' }).state
+	const currentPrice = getAsyncData({
+		existingState: toRef(settings, 'rate'),
+		timestamp: toRef(settings, 'timestamp'),
+		query: async () => {
+			const currency = settings.currency
+			const provider = settings.provider
+			if (provider === 'redstone') {
+				if (currency === 'USD') {
+					const result = await axios.get('https://api.redstone.finance/prices/?symbols=AR&provider=redstone')
+					return result.data['AR'].value
+				} else {
+					const result = await axios.get('https://api.redstone.finance/prices/?symbols=AR,' + currency + '&provider=redstone')
+					return result.data['AR'].value / result.data[currency!].value
+				}
 			}
-		}
-	} catch (e) { console.error(e) }
-	ArweaveStore.conversion.isUpdating = false
-	return ArweaveStore.conversion.currentPrice
+		},
+		seconds: 600,
+	}).state
+	watch(() => [settings.currency, settings.provider], () => settings.rate = undefined)
+	return { currentPrice, settings }
 }
 
-function loadCurrencySettings () {
-	let currencySettings
-	try { currencySettings = JSON.parse(localStorage.getItem('currency')!) } catch { }
-	ArweaveStore.conversion.settings = currencySettings || { currency: 'USD', provider: 'redstone' }
-}
+
+
+
+
 
 function loadGatewaySettings () {
 	updateArweave(localStorage.getItem('gateway') || gatewayDefault)
@@ -461,17 +459,8 @@ function loadGatewaySettings () {
 
 
 loadGatewaySettings()
-loadCurrencySettings()
-updateConversionRate()
-setInterval(updateConversionRate, 600000)
 
 window.addEventListener('storage', (e) => {
 	if (e.newValue === e.oldValue) { return }
 	else if (e.key === 'gateway') { loadGatewaySettings() }
-	else if (e.key === 'currency') { loadCurrencySettings() }
 })
-
-watch(() => ArweaveStore.conversion.settings, (settings) => {
-	localStorage.setItem('currency', JSON.stringify(settings))
-	updateConversionRate()
-}, { deep: true })

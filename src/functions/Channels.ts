@@ -3,7 +3,8 @@ import { reactive, watch, WatchStopHandle } from 'vue'
 type PrefixTable = {
 	'connectorState:': InstanceState
 	'sharedState:': ConnectorState
-	'wallets': WalletDataInterface[]
+	wallets: WalletDataInterface[]
+	currency: { rate?: string, currency: string, provider: string, timestamp?: number }
 }
 
 export class Channel <T extends keyof PrefixTable> {

@@ -1,9 +1,9 @@
 import Arweave from 'arweave'
 import { state, states, connectorChannels, filterChannels, initConnectorChannel, hasStorageAccess, awaitStorageAccess } from '@/functions/Channels'
 import JsonRpc from '@/functions/JsonRpc'
-import { awaitEffect } from '@/functions/Utils'
 import { watch, watchEffect, computed, reactive, ref, Ref } from 'vue'
 import { getWalletById } from '@/functions/Wallets'
+import { awaitEffect } from '@/functions/AsyncData'
 
 let windowRef: Window
 const { origin, session } = state

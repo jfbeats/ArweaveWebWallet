@@ -14,7 +14,7 @@
 		"ardb": "1.0.8",
 		"arverify": "^0.0.11",
 		"arweave": "^1.10.19",
-		"arweave-wallet-connector": "^0.0.16",
+		"arweave-wallet-connector": "^0.0.17",
 		"bignumber.js": "^9.0.1",
 		"bip39-web-crypto": "^4.0.1",
 		"buffer": "^6.0.3",

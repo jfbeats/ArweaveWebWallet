@@ -1,8 +1,9 @@
 import { reactive } from 'vue'
 import { arDB } from '@/store/ArweaveStore'
-import { sleepUntilVisible } from '@/store/InterfaceStore'
+import InterfaceStore from '@/store/InterfaceStore'
 import { unpackTags } from '@/functions/Transactions'
 import { getVerification } from 'arverify'
+import { awaitEffect } from '@/functions/AsyncData'
 
 
 
@@ -21,7 +22,7 @@ export async function getArweaveId (address) {
 	if (!address || (ProfileStore.arweaveIdStatus[address] ??= {}).loading) { return }
 	if (!address.match(/^[a-z0-9_-]{43}$/i)) { return }
 	ProfileStore.arweaveIdStatus[address].loading = true
-	await sleepUntilVisible()
+	await awaitEffect(() => InterfaceStore.windowVisible)
 
 	try {
 		const arweaveIdTx = (await arDB.search().from(address).tag('App-Name', 'arweave-id').findOne())[0]?.node
@@ -39,7 +40,7 @@ export async function getArverify (address) {
 	if (!address || (ProfileStore.arverifyStatus[address] ??= {}).loading) { return }
 	if (!address.match(/^[a-z0-9_-]{43}$/i)) { return }
 	ProfileStore.arverifyStatus[address].loading = true
-	await sleepUntilVisible()
+	await awaitEffect(() => InterfaceStore.windowVisible)
 
 	try {
 		ProfileStore.arverify[address] = await getVerification(address)

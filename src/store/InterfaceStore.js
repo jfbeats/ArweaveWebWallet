@@ -39,11 +39,7 @@ emitter.once = (eventName, handler) => {
 	})
 }
 
-export async function sleepUntilVisible () {
-	return new Promise(resolve => {
-		watch(() => InterfaceStore.windowVisible, (value) => { if (value) { resolve(true) } }, { immediate: true })
-	})
-}
+
 
 const updateWindowSize = () => {
 	InterfaceStore.windowWidth = window.innerWidth

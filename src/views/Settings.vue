@@ -16,7 +16,7 @@
 			</div>
 			<div class="group">
 				<p>Currency</p>
-				<Select v-model="ArweaveStore.conversion.settings" :options="options" :icon="currencySymbol" />
+				<Select v-model="currentSetting" :options="options" :icon="currencySymbol" />
 			</div>
 			<!-- <div class="group">
 				<p>Fund the project</p>
@@ -47,6 +47,14 @@ const setGateway = () => {
 	localStorage.setItem('gateway', gateway.value)
 	gateway.value = ''
 }
+
+const currentSetting = computed({
+	get () { return { currency: ArweaveStore.conversion.settings.currency, provider: ArweaveStore.conversion.settings.provider } },
+	set (value) {
+		ArweaveStore.conversion.settings.currency = value.currency
+		ArweaveStore.conversion.settings.provider = value.provider
+	}
+})
 
 let options = reactive([])
 axios.get('https://api.redstone.finance/configs/tokens').then(response => {

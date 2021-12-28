@@ -1,9 +1,9 @@
 import { getDB } from '@/store/IndexedDB'
 import { Wallets } from '@/functions/Wallets'
-import { awaitEffect } from '@/functions/Utils'
 // @ts-ignore
 import { v4 as uuidv4 } from 'uuid'
 import { computed, reactive, watch } from 'vue'
+import { awaitEffect } from '@/functions/AsyncData'
 
 const errors = {
 	rejected: { code: 0, message: 'Rejected' },
