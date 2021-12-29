@@ -452,15 +452,13 @@ function getConversion () {
 export const { state: redstoneOptions } = getAsyncData({
 	query: async () => {
 		type currencyOptions = { value: { currency: string, provider: string }, text: string }[]
-		const options = reactive([] as currencyOptions)
-		axios.get('https://api.redstone.finance/configs/tokens').then(response => {
-			const results = response.data
-			const message = ' Redstone Finance'
-			options.push({ value: { currency: 'USD', provider: 'redstone' }, text: 'USD' + message })
-			for (const key in results) {
-				if (results[key].tags?.includes('currencies')) { options.push({ value: { currency: key, provider: 'redstone' }, text: key + message }) }
-			}
-		})
+		const options = [] as currencyOptions
+		const res = (await axios.get('https://api.redstone.finance/configs/tokens')).data
+		const message = ' Redstone Finance'
+		options.push({ value: { currency: 'USD', provider: 'redstone' }, text: 'USD' + message })
+		for (const key in res) {
+			if (res[key].tags?.includes('currencies')) { options.push({ value: { currency: key, provider: 'redstone' }, text: key + message }) }
+		}
 		return options
 	},
 	seconds: 86400,
