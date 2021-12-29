@@ -7,15 +7,15 @@
 
 
 <script setup>
-import ArweaveStore from '@/store/ArweaveStore'
+import { currency } from '@/store/ArweaveStore'
 import { computed } from 'vue'
 
 const props = defineProps(['ar'])
-const currency = computed(() => ArweaveStore.conversion.settings.currency)
+const currencyType = computed(() => currency.settings.currency)
 const converted = computed(() => {
-	if (props.ar == null || !ArweaveStore.conversion.currentPrice) { return }
-	const num = ArweaveStore.conversion.currentPrice * props.ar
-	return new Intl.NumberFormat(navigator.languages, { style: 'currency', currency: currency.value }).format(num)
+	if (props.ar == null || !currency.currentPrice.value) { return }
+	const num = currency.currentPrice.value * props.ar
+	return new Intl.NumberFormat(navigator.languages, { style: 'currency', currency: currencyType.value }).format(num)
 })
 </script>
 

@@ -7,11 +7,13 @@
 
 type ProviderName = keyof typeof import('@/functions/Wallets').ProviderRegistry
 type WalletDataInterface = {
-	id: number
+	id: string
 	jwk?: import('arweave/web/lib/wallet').JWKInterface
 	provider?: ProviderName
 } & {
-	[key in ProviderName]?: { [key: string]: any }
+	[name in ProviderName]?: {
+		key?: string
+	}
 }
 
 type Query = 'received' | 'sent' | 'all'

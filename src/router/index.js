@@ -67,6 +67,12 @@ const routes = [
 		meta: {},
 	},
 	{
+		path: '/explore',
+		name: 'Explore',
+		component: () => import('@/views/Explore.vue'),
+		meta: {},
+	},
+	{
 		path: '/connect',
 		name: 'Connect',
 		component: () => import('@/views/Connect.vue'),

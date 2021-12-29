@@ -16,7 +16,7 @@
 			</div>
 			<div class="group">
 				<p>Currency</p>
-				<Select v-model="currentSetting" :options="options" :icon="currencySymbol" />
+				<Select v-model="currentSetting" :options="redstoneOptions" :icon="currency.symbol" />
 			</div>
 			<!-- <div class="group">
 				<p>Fund the project</p>
@@ -34,9 +34,8 @@ import Input from '@/components/atomic/Input.vue'
 import Select from '@/components/atomic/Select.vue'
 import Button from '@/components/atomic/Button.vue'
 import { Wallets } from '@/functions/Wallets'
-import ArweaveStore, { updateArweave } from '@/store/ArweaveStore'
-import axios from 'axios'
-import { reactive, ref, computed } from 'vue'
+import ArweaveStore, { updateArweave, currency, redstoneOptions } from '@/store/ArweaveStore'
+import { ref, computed } from 'vue'
 
 import LogoArweave from '@/assets/logos/arweave.svg?component'
 
@@ -49,23 +48,14 @@ const setGateway = () => {
 }
 
 const currentSetting = computed({
-	get () { return { currency: ArweaveStore.conversion.settings.currency, provider: ArweaveStore.conversion.settings.provider } },
+	get () { return { currency: currency.settings.currency, provider: currency.settings.provider } },
 	set (value) {
-		ArweaveStore.conversion.settings.currency = value.currency
-		ArweaveStore.conversion.settings.provider = value.provider
+		currency.settings.currency = value.currency
+		currency.settings.provider = value.provider
 	}
 })
 
-let options = reactive([])
-axios.get('https://api.redstone.finance/configs/tokens').then(response => {
-	const results = response.data
-	const message = ' Redstone Finance'
-	options.push({ value: { currency: 'USD', provider: 'redstone' }, text: 'USD' + message })
-	for (const key in results) {
-		if (results[key].tags?.includes('currencies')) { options.push({ value: { currency: key, provider: 'redstone' }, text: key + message }) }
-	}
-})
-const currencySymbol = computed(() => new Intl.NumberFormat(navigator.languages, { style: 'currency', currency: ArweaveStore.conversion.settings.currency }).format(0).replace(/[\w\d\.\,\s]/g, '') || '$')
+const currencySymbol = computed(() => new Intl.NumberFormat(navigator.languages, { style: 'currency', currency: currency.settings.currency }).format(0).replace(/[\w\d\.\,\s]/g, '') || '$')
 
 const amount = ref('')
 </script>

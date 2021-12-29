@@ -151,7 +151,7 @@ function cleanHeartbeats () {
 }
 
 export function filterChannels (filter: object, object = states) {
-	const filterFunction = ([key, state]) => typeof filter === 'function' ? filter(state)
+	const filterFunction = ([key, state]: [string, any]) => typeof filter === 'function' ? filter(state)
 		: !Object.entries(filter || {}).find(([key, value]) => state[key] !== value)
 	return Object.fromEntries(Object.entries(object).filter(filterFunction))
 }

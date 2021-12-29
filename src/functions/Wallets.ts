@@ -9,6 +9,7 @@ import { getKeyPairFromMnemonic } from 'human-crypto-keys'
 // @ts-ignore
 import wordlist from 'bip39-web-crypto/src/wordlists/english.json'
 import { computed, reactive } from 'vue'
+import type { JWKInterface } from 'arweave/web/lib/wallet'
 
 
 
@@ -40,12 +41,15 @@ function setProvider<TBase extends GConstructor<Provider>> (Base: TBase) {
 			this.#wallet = args[0]
 		}
 		get id () { return this.#wallet.id + '' }
+		async getPrivateKey () {
+		
+		}
 	}
 }
 
 
 
-const WalletsStore: { [key: string]: WalletProxy } = {}
+const WalletsStore: { [id: string]: WalletProxy } = {}
 export const Wallets = computed<WalletProxy[]>({
 	get () {
 		const runningWallets = Object.keys(WalletsStore)
@@ -53,8 +57,7 @@ export const Wallets = computed<WalletProxy[]>({
 		for (const id of [...runningWallets, ...storageWallets]) {
 			if (runningWallets.includes(id) && !storageWallets.includes(id)) { delete WalletsStore[id] }
 			if (!runningWallets.includes(id) && storageWallets.includes(id)) {
-				const wallet = WalletsData.value.find(w => w.id == +id)!
-				// WalletsStore[id] = new WalletProxy(wallet)
+				const wallet = WalletsData.value.find(w => w.id == id)!
 				const selectedProvider = selectProvider(wallet)!
 				const dynamicClass = setProvider(selectedProvider)
 				WalletsStore[id] = new dynamicClass(wallet)
@@ -86,10 +89,10 @@ export async function addMnemonic (mnemonic: string) {
 	let keyPair = await getKeyPairFromMnemonic(mnemonic, { id: 'rsa', modulusLength: 4096 }, { privateKeyFormat: 'pkcs8-der' })
 	const jwk = await pkcs8ToJwk(keyPair.privateKey)
 	console.info('generated wallet')
-	return addWallet(jwk)
+	return addWallet(jwk as JWKInterface)
 }
 
-export async function addWallet (jwkObj: JsonWebKey) {
+export async function addWallet (jwkObj: JWKInterface) {
 	const jwk = jwkObj || await arweave.wallets.generate()
 	const jwkString = JSON.stringify(jwk)
 	const existing = WalletsData.value.find(w => JSON.stringify(w.jwk) === jwkString)
@@ -124,6 +127,6 @@ export function deleteWallet (wallet: WalletDataInterface) {
 
 function getNewId () {
 	let i = 0
-	while (WalletsData.value.find(w => w.id === i)) { i++ }
-	return i
+	while (WalletsData.value.find(w => +w.id === i)) { i++ }
+	return i + ''
 }

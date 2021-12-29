@@ -6,7 +6,7 @@
 		</div>
 		<div v-if="currentPrice" class="spacer"></div>
 		<div v-if="currentPrice" class="input">
-			<input v-model="model2" inputmode="numeric" class="text right" :placeholder="currency" @focus="focus = 2" @blur="focus = 0" :disabled="disabled" />
+			<input v-model="model2" inputmode="numeric" class="text right" :placeholder="currencyType" @focus="focus = 2" @blur="focus = 0" :disabled="disabled" />
 			<Icon :icon="currencySymbol" />
 		</div>
 	</div>
@@ -16,7 +16,7 @@
 
 <script>
 import Icon from '@/components/atomic/Icon.vue'
-import ArweaveStore from '@/store/ArweaveStore'
+import { currency } from '@/store/ArweaveStore'
 import { computed, ref, toRef, watch } from 'vue'
 
 import LogoArweave from '@/assets/logos/arweave.svg?component'
@@ -50,9 +50,9 @@ export default {
 				}
 			}
 		})
-		const currentPrice = toRef(ArweaveStore.conversion, 'currentPrice')
-		const currency = computed(() => ArweaveStore.conversion.settings.currency)
-		const currencySymbol = computed(() => new Intl.NumberFormat(navigator.languages, { style: 'currency', currency: currency.value }).format(0).replace(/[\w\d\.\,\s]/g, '') || '$')
+		const currentPrice = currency.currentPrice
+		const currencyType = computed(() => currency.settings.currency)
+		const currencySymbol = computed(() => new Intl.NumberFormat(navigator.languages, { style: 'currency', currency: currencyType.value }).format(0).replace(/[\w\d\.\,\s]/g, '') || '$')
 		const focus = ref(0)
 		watch(() => model.value, (newVal, oldVal) => {
 			if (newVal < 0) { return model.value = '' }
@@ -61,7 +61,7 @@ export default {
 		watch(() => model2.value, (newVal, oldVal) => {
 			if (focus.value === 2 && !newVal.match(/^(?:\d*\.?\d*)?$/)) { model2.value = oldVal }
 		})
-		return { model, model2, currentPrice, currency, currencySymbol, focus, LogoArweave }
+		return { model, model2, currentPrice, currencyType, currencySymbol, focus, LogoArweave }
 	}
 }
 </script>

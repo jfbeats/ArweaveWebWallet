@@ -2,7 +2,7 @@ import Arweave from 'arweave'
 import ArDB from 'ardb'
 import { download } from '@/functions/Utils'
 import axios from 'axios'
-import { reactive, toRef, watch } from 'vue'
+import { computed, reactive, toRef, watch } from 'vue'
 import InterfaceStore from '@/store/InterfaceStore'
 import LogoArweave from '@/assets/logos/arweave.svg?component'
 import { ApiConfig } from 'arweave/web/lib/api'
@@ -21,7 +21,6 @@ const ArweaveStore = reactive({
 	gatewayURL: null as null | string,
 	wallets: {} as { [key: string]: ArweaveAccount },
 	txs: {} as { [key: string]: Partial<GQLTransactionInterface> },
-	conversion: getConversion(),
 	uploads: {} as { [key: string]: { upload?: number } },
 })
 
@@ -78,7 +77,7 @@ export function getTxById (txId: string) {
 }
 
 export async function fetchPublicKey (address: string) {
-	const tx = await arDB.search('transactions').from(address).findOne() as GQLEdgeTransactionInterface[]
+	const tx = await arDB.search().from(address).find() as GQLEdgeTransactionInterface[]
 	return tx?.[0]?.node.owner.key
 }
 
@@ -423,6 +422,8 @@ function processUpdatedTxs () {
 
 
 
+export const currency = getConversion()
+
 function getConversion () {
 	const settings = new Channel('currency', undefined, { currency: 'USD', provider: 'redstone' }).state
 	const currentPrice = getAsyncData({
@@ -444,9 +445,35 @@ function getConversion () {
 		seconds: 600,
 	}).state
 	watch(() => [settings.currency, settings.provider], () => settings.rate = undefined)
-	return { currentPrice, settings }
+	const symbol = computed(() => new Intl.NumberFormat([...navigator.languages], { style: 'currency', currency: settings.currency }).format(0).replace(/[\w\d\.\,\s]/g, '') || '$')
+	return { currentPrice, settings, symbol }
 }
 
+export const { state: redstoneOptions } = getAsyncData({
+	query: async () => {
+		type currencyOptions = { value: { currency: string, provider: string }, text: string }[]
+		const options = reactive([] as currencyOptions)
+		axios.get('https://api.redstone.finance/configs/tokens').then(response => {
+			const results = response.data
+			const message = ' Redstone Finance'
+			options.push({ value: { currency: 'USD', provider: 'redstone' }, text: 'USD' + message })
+			for (const key in results) {
+				if (results[key].tags?.includes('currencies')) { options.push({ value: { currency: key, provider: 'redstone' }, text: key + message }) }
+			}
+		})
+		return options
+	},
+	seconds: 86400,
+})
+
+
+
+
+export const { state: networkInfo, getState: getNetworkInfo } = getAsyncData({
+	query: () => arweave.network.getInfo(),
+	seconds: 10,
+})
+watch(() => ArweaveStore.gatewayURL, () => networkInfo.value = undefined)
 
 
 
