@@ -9,8 +9,8 @@ type AsyncDataOptions<T> = {
 	seconds: number
 	awaitEffect?: () => any
 	completed?: () => any
-	timestamp?: number | Ref<number | undefined>
-	existingState?: T | Ref<T | undefined>
+	timestamp?: Ref<number | undefined>
+	existingState?: Ref<T | undefined>
 	processResult?: (params: T, options: AsyncDataOptions<T>) => void
 }
 

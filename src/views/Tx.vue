@@ -84,13 +84,16 @@ import ArweaveStore, { arweave, getTxById } from '@/store/ArweaveStore'
 import BlockStore, { getCurrentHeight } from '@/store/BlockStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { humanFileSize } from '@/functions/Utils'
-import { watch, computed, ref, toRef } from 'vue'
+import { watch, computed, ref, toRef, reactive } from 'vue'
 
 const props = defineProps<{
 	txId: string
 }>()
 
-const tx = computed(() => getTxById(props.txId))
+let data = reactive({})
+const tx = computed(() => data.value)
+watch(() => props.txId, () => data.value = getTxById(props.txId), { immediate: true })
+
 const isData = computed(() => tx.value.data?.size != '0')
 const isPending = computed(() => !tx.value.block)
 const date = computed(() => {

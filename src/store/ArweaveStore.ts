@@ -68,12 +68,12 @@ export function updateArweave (gateway: string | URL | ApiConfig) {
 
 export function getTxById (txId: string) {
 	return getAsyncData({
-		existingState: ArweaveStore.txs[txId],
+		existingState: toRef(ArweaveStore.txs, txId),
 		query: async () => (await arDB.search().id(txId).find() as GQLEdgeTransactionInterface[])[0].node,
-		completed: () => ArweaveStore.txs[txId],
+		completed: () => ArweaveStore.txs[txId]?.block,
 		processResult: res => Object.assign(ArweaveStore.txs[txId] ??= {}, res),
 		seconds: 10,
-	}).state.value
+	}).state
 }
 
 export async function fetchPublicKey (address: string) {
