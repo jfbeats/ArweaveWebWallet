@@ -70,7 +70,7 @@ export function getTxById (txId: string) {
 	return getAsyncData({
 		existingState: ArweaveStore.txs[txId],
 		query: async () => (await arDB.search().id(txId).find() as GQLEdgeTransactionInterface[])[0].node,
-		completed: () => ArweaveStore.txs[txId]?.block,
+		completed: () => ArweaveStore.txs[txId],
 		processResult: res => Object.assign(ArweaveStore.txs[txId] ??= {}, res),
 		seconds: 10,
 	}).state.value
