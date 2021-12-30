@@ -127,6 +127,8 @@ export default {
 }
 
 .remove {
+	display: flex;
+	align-items: center;
 	opacity: 0.5;
 	transition: 0.1s ease;
 }

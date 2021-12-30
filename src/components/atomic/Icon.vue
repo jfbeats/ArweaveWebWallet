@@ -1,5 +1,5 @@
 <template>
-	<div class="icon">
+	<span class="icon">
 		<transition name="fade-fast" mode="out-in">
 			<component v-if="component" :is="component" />
 			<svg v-else-if="iconData == 'loader'" class="loader" height="100" width="100" viewBox="0 0 100 100" :class="{ spin: progress == null }">
@@ -9,7 +9,7 @@
 			<span v-else-if="isSymbol" :key="'s' + iconData" class="symbol no-select">{{ iconData }}</span>
 			<img v-else v-show="loaded" @load="loaded = true" class="img no-select" :key="iconData" :src="iconData" draggable="false" />
 		</transition>
-	</div>
+	</span>
 </template>
 
 
@@ -42,7 +42,7 @@ watch(() => props.progress, (value, oldValue) => {
 	height: 1em;
 	width: 1em;
 	border-radius: inherit;
-	display: flex;
+	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	transition: 0.3s ease;

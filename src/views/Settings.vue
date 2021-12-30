@@ -18,6 +18,12 @@
 				<p>Currency</p>
 				<Select v-model="currentSetting" :options="redstoneOptions" :icon="currency.symbol" />
 			</div>
+			<h2>Links</h2>
+			<div class="group">
+				<p v-if="isUser"><a href="https://discord.gg/W6VybRqwBP"><Icon :icon="LogoDiscord" style="vertical-align: text-top;" /> Discord</a> - Send feedback, questions or talk about anything</p>
+				<p><a href="https://github.com/jfbeats/ArweaveWebWallet"><Icon :icon="LogoGithub" style="vertical-align: text-top;" /> ArweaveWebWallet</a> - Source code</p>
+				<p><a href="https://jfbeats.github.io/ArweaveWalletConnector"><Icon :icon="LogoGithub" style="vertical-align: text-top;" /> ArweaveWalletConnector</a> - Integrate the universal connector to use web wallets like arweave.app inside your own applications</p>
+			</div>
 			<!-- <div class="group">
 				<p>Fund the project</p>
 				<InputAr v-model="amount" />
@@ -38,6 +44,9 @@ import ArweaveStore, { updateArweave, currency, redstoneOptions } from '@/store/
 import { ref, computed } from 'vue'
 
 import LogoArweave from '@/assets/logos/arweave.svg?component'
+import LogoGithub from '@/assets/logos/socials/github.svg?component'
+import LogoDiscord from '@/assets/logos/socials/discord.svg?component'
+import Icon from '@/components/atomic/Icon.vue'
 
 const gateway = ref('')
 const setGateway = () => {
@@ -55,7 +64,7 @@ const currentSetting = computed({
 	}
 })
 
-const currencySymbol = computed(() => new Intl.NumberFormat(navigator.languages, { style: 'currency', currency: currency.settings.currency }).format(0).replace(/[\w\d\.\,\s]/g, '') || '$')
+const isUser = computed(() => Wallets.value.length)
 
 const amount = ref('')
 </script>
@@ -83,5 +92,9 @@ const amount = ref('')
 
 .wallet-options {
 	border-radius: var(--border-radius);
+}
+
+a {
+	text-decoration: none;
 }
 </style>
