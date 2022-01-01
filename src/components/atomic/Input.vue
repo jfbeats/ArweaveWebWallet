@@ -61,5 +61,7 @@ watch(() => model.value, (newVal, oldVal) => {
 
 .action {
 	height: 100%;
+	display: flex;
+	align-items: center;
 }
 </style>

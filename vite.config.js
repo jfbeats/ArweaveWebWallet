@@ -12,7 +12,7 @@ export default ({ mode }) => {
 
 	return defineConfig({
 		plugins: [
-			vue({ refTransform: true }),
+			vue(),
 			processHtml({ inject: { data: { ...env } }, minify: true }),
 			svgLoader({ svgoConfig: { multipass: true } }),
 			VitePWA(pwaOptions(env)),
@@ -24,12 +24,13 @@ export default ({ mode }) => {
 			}
 		},
 		build: {
+			sourcemap: true,
 			rollupOptions: {
 				plugins: [
 					inject({
 						include: ['node_modules/@ledgerhq/**'],
 						modules: { Buffer: ['buffer', 'Buffer'], }
-					})
+					}),
 				],
 			},
 		},

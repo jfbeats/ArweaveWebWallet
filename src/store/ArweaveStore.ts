@@ -2,7 +2,7 @@ import Arweave from 'arweave'
 import ArDB from 'ardb'
 import { download } from '@/functions/Utils'
 import axios from 'axios'
-import { computed, reactive, toRef, watch } from 'vue'
+import { computed, reactive, Ref, toRef, watch } from 'vue'
 import InterfaceStore from '@/store/InterfaceStore'
 import LogoArweave from '@/assets/logos/arweave.svg?component'
 import { ApiConfig } from 'arweave/web/lib/api'
@@ -64,6 +64,12 @@ export function updateArweave (gateway: string | URL | ApiConfig) {
 	arweave = settings ? Arweave.init(settings) : Arweave.init(gatewayDefault)
 	arDB = { search: (...args) => new ArDB(arweave).search(...args) }
 	ArweaveStore.gatewayURL = settingsToUrl(arweave.getConfig().api)
+}
+
+export function watchTx (txId: Ref<string>) {
+	const data: { value?: ReturnType<typeof getTxById> } = reactive({})
+	watch(txId, id => data.value = getTxById(id), { immediate: true })
+	return toRef(data, 'value') as Ref<Partial<GQLTransactionInterface>>
 }
 
 export function getTxById (txId: string) {
