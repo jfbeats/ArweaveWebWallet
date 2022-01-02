@@ -66,20 +66,23 @@ export function updateArweave (gateway: string | URL | ApiConfig) {
 	ArweaveStore.gatewayURL = settingsToUrl(arweave.getConfig().api)
 }
 
-export function watchTx (txId: Ref<string>) {
-	const data: { value?: ReturnType<typeof getTxById> } = reactive({})
-	watch(txId, id => data.value = getTxById(id), { immediate: true })
-	return toRef(data, 'value') as Ref<Partial<GQLTransactionInterface>>
-}
-
-export function getTxById (txId: string) {
-	return getAsyncData({
+export function useWatchTx (txId: Ref<string>) {
+	const getTxById = (txId: string) => getAsyncData({
 		existingState: toRef(ArweaveStore.txs, txId),
 		query: async () => (await arDB.search().id(txId).find() as GQLEdgeTransactionInterface[])[0].node,
 		completed: () => ArweaveStore.txs[txId]?.block,
 		processResult: res => Object.assign(ArweaveStore.txs[txId] ??= {}, res),
 		seconds: 10,
-	}).state
+	})
+	const data: { value?: ReturnType<typeof getTxById>['state'] } = reactive({})
+	let destructor: () => any | undefined
+	watch(txId, id => {
+		destructor?.()
+		const handler = getTxById(id)
+		data.value = handler.state
+		destructor = handler.stop
+	}, { immediate: true })
+	return toRef(data, 'value') as Ref<Partial<GQLTransactionInterface>>
 }
 
 export async function fetchPublicKey (address: string) {
@@ -118,6 +121,7 @@ export class ArweaveAccount implements Account {
 			})}
 		}
 	}
+	destructor () { this.#balance.stop() }
 	
 	get key () { return this.state.key }
 	get balance () { return this.#balance.state.value }
@@ -139,6 +143,7 @@ export class ArweaveProvider extends ArweaveAccount implements Provider {
 			disabled.forEach(method => this[method] = undefined)
 		}
 	}
+	destructor () { super.destructor() } // Todo -------------------------------
 	get metadata () { return {
 		isSupported: true,
 		name: this.#wallet.jwk ? 'Arweave Wallet' : 'Arweave Address',

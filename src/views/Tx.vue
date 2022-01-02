@@ -80,7 +80,7 @@ import FoldingLayout from '@/components/layout/FoldingLayout.vue'
 import Address from '@/components/atomic/Address.vue'
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import InputGrid from '@/components/atomic/InputGrid.vue'
-import ArweaveStore, { arweave, watchTx } from '@/store/ArweaveStore'
+import ArweaveStore, { arweave, useWatchTx } from '@/store/ArweaveStore'
 import BlockStore, { getCurrentHeight } from '@/store/BlockStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { humanFileSize } from '@/functions/Utils'
@@ -90,7 +90,7 @@ const props = defineProps<{
 	txId: string
 }>()
 
-const tx = watchTx(toRef(props, 'txId'))
+const tx = useWatchTx(toRef(props, 'txId'))
 
 const isData = computed(() => tx.value.data?.size != 0)
 const isPending = computed(() => !tx.value.block)

@@ -1,4 +1,4 @@
-import { computed, isRef, Ref, ref, watchEffect, WatchStopHandle, WritableComputedRef } from 'vue'
+import { computed, effectScope, getCurrentScope, isRef, onScopeDispose, Ref, ref, watch, watchEffect, WatchStopHandle, WritableComputedRef } from 'vue'
 import InterfaceStore from '@/store/InterfaceStore'
 
 const globalClock = ref(0)
@@ -24,12 +24,7 @@ export function getAsyncData <T> (options: AsyncDataOptions<T>) {
 	const state = isRef(options.existingState) ? options.existingState : ref(options.existingState) as Ref<T | undefined>
 	const timestamp = isRef(options.timestamp) ? options.timestamp : ref(options.timestamp) as Ref<number | undefined>
 	const { query, queryStatus } = getQueryManager(options)
-	const refresh = async () => {
-		globalClock.value
-		if (queryStatus.running) { timestamp.value = Date.now(); return }
-		if (state.value != null && timestamp.value && Date.now() - timestamp.value < (options.seconds * 1000)) { return }
-		getState()
-	}
+	const localClock = ref(0)
 	const getState = async (force?: boolean) => {
 		if (options.completed?.()) { return state.value! }
 		if (queryStatus.promise && queryStatus.running) { timestamp.value = Date.now(); return queryStatus.promise }
@@ -44,11 +39,19 @@ export function getAsyncData <T> (options: AsyncDataOptions<T>) {
 			}).catch(e => { timestamp.value = rollback; reject(e) })
 		})
 	}
-	const computedState = computed({
-		get () { refresh(); return state.value },
+	const scope = effectScope()
+	scope.run(() => watch(globalClock, () => {
+		if (queryStatus.running) { timestamp.value = Date.now(); return }
+		if (options.completed?.()) { return }
+		if (state.value != null && timestamp.value && Date.now() - timestamp.value < (options.seconds * 1000)) { return }
+		localClock.value++
+	}))
+	const computedState = scope.run(() => computed({
+		get () { localClock.value; getState(); return state.value },
 		set (value) { state.value = value }
-	}) as WritableComputedRef<T | undefined>
-	return { state: computedState, getState, queryStatus }
+	})) as WritableComputedRef<T | undefined>
+	if (getCurrentScope()) { onScopeDispose(() => scope.stop()) }
+	return { state: computedState, getState, queryStatus, stop: scope.stop }
 }
 
 export function getQueryManager <T> (options: AsyncDataOptions<T>) {
