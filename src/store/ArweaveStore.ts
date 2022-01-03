@@ -102,11 +102,13 @@ export class ArweaveAccount implements Account {
 	state = reactive({
 		key: undefined as undefined | string,
 	})
+	get key () { return this.state.key }
 	#balance = getAsyncData({
 		query: async () => arweave.ar.winstonToAr(await arweave.wallets.getBalance(this.key!)),
 		awaitEffect: () => this.key,
 		seconds: 600,
 	})
+	get balance () { return this.#balance.state.value }
 	queries = reactive({} as { [key: string]: GQLEdgeTransactionInterface[] })
 	queriesStatus = reactive({} as { [key: string]: QueryStatusInterface })
 	
@@ -122,9 +124,6 @@ export class ArweaveAccount implements Account {
 		}
 	}
 	destructor () { this.#balance.stop() }
-	
-	get key () { return this.state.key }
-	get balance () { return this.#balance.state.value }
 	
 	fetchTransactions = async (query: Query) => fetchTransactions(this, query)
 	updateTransactions = async (query: Query) => updateTransactions(this, query)
@@ -143,7 +142,6 @@ export class ArweaveProvider extends ArweaveAccount implements Provider {
 			disabled.forEach(method => this[method] = undefined)
 		}
 	}
-	destructor () { super.destructor() } // Todo -------------------------------
 	get metadata () { return {
 		isSupported: true,
 		name: this.#wallet.jwk ? 'Arweave Wallet' : 'Arweave Address',

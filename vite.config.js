@@ -37,6 +37,7 @@ export default ({ mode }) => {
 		server: {
 			port: 8080,
 			https: false,
-		}
+		},
+		define: { 'process.env': {} },
 	})
 }

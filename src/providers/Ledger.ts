@@ -103,9 +103,7 @@ export const LedgerProviderData: ProviderData = {
 
 export class LedgerProvider extends ArweaveAccount implements Provider {
 	static isProviderFor (wallet: WalletDataInterface) { return wallet.provider === 'ledger' }
-	constructor (wallet: WalletDataInterface) {
-		super(wallet.arweave?.key)
-	}
+	constructor (wallet: WalletDataInterface) { super(wallet) }
 	get metadata () { return metadata }
 	async signTransaction (tx: Transaction, options: SignatureOptions) {
 		if (this.key !== await getAddress()) { throw new Error('Wrong account') }

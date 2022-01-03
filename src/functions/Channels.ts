@@ -1,4 +1,4 @@
-import { reactive, watch, WatchStopHandle } from 'vue'
+import { getCurrentScope, onScopeDispose, reactive, watch, WatchStopHandle } from 'vue'
 
 type PrefixTable = {
 	'connectorState:': InstanceState
@@ -18,6 +18,11 @@ export class Channel <T extends keyof PrefixTable> {
 		window.addEventListener('storage', this.storageListener)
 		if (!localStorage.getItem(this.stateChannel) && Object.keys(this.state).length) { this.writeState() }
 		this.update(localStorage.getItem(this.stateChannel))
+		if (getCurrentScope()) { onScopeDispose(() => this.destructor()) }
+	}
+	destructor () {
+		window.removeEventListener('storage', this.storageListener)
+		if (this.stopWrite) { this.stopWrite() }
 	}
 	
 	private writeState = () => {
@@ -43,12 +48,8 @@ export class Channel <T extends keyof PrefixTable> {
 			Object.assign(this.state, newState)
 		}
 	}
-	closeChannel = () => {
-		window.removeEventListener('storage', this.storageListener)
-		if (this.stopWrite) { this.stopWrite() }
-	}
 	deleteChannel = () => {
-		this.closeChannel()
+		this.destructor()
 		localStorage.removeItem(this.stateChannel)
 	}
 }
@@ -63,7 +64,7 @@ const chPrefix = 'connectorState:'
 const sharedPrefix = 'sharedState:'
 const heartbeatPrefix = 'heartbeat:'
 const stateChannel = chPrefix + instance
-const { state, closeChannel } = new Channel(chPrefix, instance, { origin, session })
+const { state, destructor } = new Channel(chPrefix, instance, { origin, session })
 const { states, closeChannels } = getChannels(chPrefix)
 const connectorChannels = getChannels(sharedPrefix)
 
@@ -95,7 +96,7 @@ function getChannels <T extends 'connectorState:' | 'sharedState:'> (prefix: T) 
 		states[name] = channels[name]!.state
 	}
 	const close = (name: string) => {
-		channels[name]?.closeChannel()
+		channels[name]?.destructor()
 		delete channels[name]
 		delete states[name]
 	}
@@ -179,7 +180,7 @@ async function init () {
 
 function close () {
 	window.removeEventListener('storage', globalStorageListener)
-	closeChannel()
+	destructor()
 	closeChannels()
 	connectorChannels.closeChannels()
 	localStorage.removeItem(stateChannel)

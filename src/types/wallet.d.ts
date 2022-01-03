@@ -42,9 +42,10 @@ interface Account {
 	queriesStatus: { [key: string]: QueryStatusInterface }
 	fetchTransactions: (query: Query) => Promise<any>
 	updateTransactions: (query: Query) => Promise<any>
+	destructor?: () => any
 }
 
-interface Provider {
+interface Provider extends Account {
 	metadata: Metadata
 	signTransaction?: (...args: any) => Promise<any>
 	sign?: (data: ArrayBufferView, options: any) => Promise<ArrayBufferView>
@@ -52,8 +53,9 @@ interface Provider {
 	download?: () => Promise<any>
 	verifyMessage: (message: Message | string) => boolean
 	runMessage: (message: Message) => Promise<any>
+	destructor?: () => any
 }
 
-interface WalletProxy extends Provider, Account {
+interface WalletProxy extends Provider {
 	id: string
 }

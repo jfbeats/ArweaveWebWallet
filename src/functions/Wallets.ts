@@ -55,7 +55,10 @@ export const Wallets = computed<WalletProxy[]>({
 		const runningWallets = Object.keys(WalletsStore)
 		const storageWallets = WalletsData.value.map(w => w.id + '')
 		for (const id of [...runningWallets, ...storageWallets]) {
-			if (runningWallets.includes(id) && !storageWallets.includes(id)) { delete WalletsStore[id] }
+			if (runningWallets.includes(id) && !storageWallets.includes(id)) {
+				WalletsStore[id].destructor?.()
+				delete WalletsStore[id]
+			}
 			if (!runningWallets.includes(id) && storageWallets.includes(id)) {
 				const wallet = WalletsData.value.find(w => w.id == id)!
 				const selectedProvider = selectProvider(wallet)!

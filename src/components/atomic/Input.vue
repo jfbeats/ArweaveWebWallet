@@ -1,7 +1,8 @@
 <template>
 	<div class="input input-box" :class="{ focus }">
 		<Icon v-if="icon" :icon="icon" />
-		<input class="text" v-model="model" :placeholder="placeholder" @focus="focus = true" @blur="focus = false" :disabled="disabled" :id="id" />
+<!--		<input ref="input" class="text" v-model="model" :placeholder="placeholder" @focus="focus = true" @blur="focus = false" :disabled="disabled" :id="id" @animationstart="handleAutofill" @change="handleChange" />-->
+		<RawInput class="text" v-model="model" :placeholder="placeholder" @focus="focus = true" @blur="focus = false" :disabled="disabled" :id="id" />
 		<button v-for="action in actions" class="action" :key="action.icon" @click="action.run">
 			<Icon :icon="action.icon" />
 		</button>
@@ -12,10 +13,12 @@
 
 <script setup>
 import Icon from '@/components/atomic/Icon.vue'
-import { computed, ref, watch } from 'vue'
+import RawInput from '@/components/function/RawInput.vue'
+import { computed, onMounted, ref, watch } from 'vue'
 
 const props = defineProps(['modelValue', 'icon', 'placeholder', 'actions', 'autocomplete', 'mask', 'disabled', 'id'])
 const emit = defineEmits(['update:modelValue'])
+
 const model = computed({
 	get () { return props.modelValue },
 	set (value) { emit('update:modelValue', value) }

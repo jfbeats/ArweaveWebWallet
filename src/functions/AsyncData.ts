@@ -1,4 +1,4 @@
-import { computed, effectScope, getCurrentScope, isRef, onScopeDispose, Ref, ref, watch, watchEffect, WatchStopHandle, WritableComputedRef } from 'vue'
+import { computed, effectScope, isRef, Ref, ref, watch, watchEffect, WatchStopHandle, WritableComputedRef } from 'vue'
 import InterfaceStore from '@/store/InterfaceStore'
 
 const globalClock = ref(0)
@@ -50,7 +50,6 @@ export function getAsyncData <T> (options: AsyncDataOptions<T>) {
 		get () { localClock.value; getState(); return state.value },
 		set (value) { state.value = value }
 	})) as WritableComputedRef<T | undefined>
-	if (getCurrentScope()) { onScopeDispose(() => scope.stop()) }
 	return { state: computedState, getState, queryStatus, stop: scope.stop }
 }
 
@@ -69,7 +68,7 @@ export function getQueryManager <T> (options: AsyncDataOptions<T>) {
 	return { query, queryStatus }
 }
 
-export async function awaitEffect (effect: () => any) {
+export function awaitEffect (effect: () => any) {
 	let watchStop: WatchStopHandle
 	return new Promise(resolve => {
 		watchStop = watchEffect(() => {
