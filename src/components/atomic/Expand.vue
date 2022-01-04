@@ -7,21 +7,21 @@
 	</button>
 </template>
 
-<script>
+
+
+<script setup>
 import { computed } from 'vue'
 
-export default {
-	props: ['modelValue'],
-	setup (props, { emit }) {
-		const expanded = computed({
-			get () { return props.modelValue },
-			set (value) { emit('update:modelValue', value) }
-		})
+const props = defineProps(['modelValue'])
+const emit = defineEmits(['update:modelValue'])
 
-		return { expanded }
-	}
-}
+const expanded = computed({
+	get () { return props.modelValue },
+	set (value) { emit('update:modelValue', value) }
+})
 </script>
+
+
 
 <style scoped>
 .expand {

@@ -13,9 +13,9 @@ import { computed, HTMLAttributes, StyleValue, useAttrs } from 'vue'
 import { RouteLocationRaw } from 'vue-router'
 
 const props = defineProps<{
-	to: RouteLocationRaw
-	class: HTMLAttributes['class']
-	style: StyleValue
+	to?: RouteLocationRaw
+	class?: HTMLAttributes['class']
+	style?: StyleValue
 }>()
 const attrs = useAttrs()
 

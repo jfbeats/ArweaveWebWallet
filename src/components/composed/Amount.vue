@@ -5,12 +5,11 @@
 	</span>
 </template>
 
-<script>
+
+
+<script setup>
 import Ar from '@/components/atomic/Ar.vue'
 import LocaleCurrency from '@/components/atomic/LocaleCurrency.vue'
 
-export default {
-	components: { Ar, LocaleCurrency },
-	props: ['ar']
-}
+const props = defineProps(['ar'])
 </script>

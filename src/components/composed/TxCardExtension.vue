@@ -14,32 +14,23 @@
 
 
 
-<script>
+<script setup>
 import Address from '@/components/atomic/Address.vue'
 import ArweaveStore, { arweave } from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { unpackTags } from '@/functions/Transactions'
 import { humanFileSize } from '@/functions/Utils'
-
 import { computed } from 'vue'
 
-export default {
-	components: { Address },
-	props: ['tx'],
-	setup (props) {
-		// owner - verify
-		// tags
-		// data_size
-		// data
-		// reward
-		
-		const verticalElement = computed(() => InterfaceStore.breakpoints.verticalLayout)
+const props = defineProps(['tx'])
 
+// owner - verify
+// tags
+// data_size
+// data
+// reward
 
-
-		return { verticalElement, humanFileSize }
-	}
-}
+const verticalElement = computed(() => InterfaceStore.breakpoints.verticalLayout)
 </script>
 
 

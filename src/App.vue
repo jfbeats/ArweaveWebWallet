@@ -18,7 +18,7 @@
 
 
 
-<script>
+<script setup>
 import Toolbar from '@/components/composed/Toolbar.vue'
 import UpdateAvailable from '@/components/function/UpdateAvailable.vue'
 import { Wallets } from '@/functions/Wallets'
@@ -27,78 +27,71 @@ import { addWallet } from '@/functions/Wallets'
 import { useRoute, useRouter } from 'vue-router'
 import { ref, toRef } from 'vue'
 
-export default {
-	components: { Toolbar, UpdateAvailable },
-	setup () {
-		const verticalLayout = toRef(InterfaceStore.breakpoints, 'verticalLayout')
-		const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
-		const sticky = ref(false)
-		emitter.on('beforeEnter', () => sticky.value = InterfaceStore.sticky)
-		emitter.on('afterLeave', () => sticky.value = InterfaceStore.sticky)
-		const dragOverlay = toRef(InterfaceStore, 'dragOverlay')
-		const hasToolbar = toRef(InterfaceStore.toolbar, 'enabled')
-		const router = useRouter()
-		const route = useRoute()
-		router.afterEach((to, from) => {
-			document.title = to.meta.title ? to.meta.title + ' | Arweave Wallet' : 'Arweave Wallet'
-			const routes = router.options.routes
-			const findRecursiveHelper = (name, arr) => {
-				const result = findRecursive(name, arr)
-				return result.found ? result : null
-			}
-			const findRecursive = (name, arr, position = 0, depth = 0) => {
-				for (const route of arr) {
-					if (route.name === name) { return { found: true, position, depth } }
-					position++
-					if (route.children) {
-						const recResult = findRecursive(name, route.children, position, depth + 1)
-						position += recResult.position
-						if (recResult.found) { return { found: true, position, depth: recResult.depth } }
-					}
-				}
-				return { found: false, position, depth }
-			}
-			const param = {
-				to: findRecursiveHelper(to.name, routes),
-				from: findRecursiveHelper(from.name, routes)
-			}
-			to.meta.transition = {}
-			to.meta.transition.param = param
-			to.meta.transition.name = param.to.position < param.from.position ? 'slide-down' : 'slide-up'
-			to.meta.transition.nameLayout = convertTransitionName(to.meta.transition.name)
-			if (to.params.walletId && from.params.walletId && to.params.walletId !== from.params.walletId) {
-				const toWallet = Wallets.value.findIndex(el => el.id == to.params.walletId)
-				const fromWallet = Wallets.value.findIndex(el => el.id == from.params.walletId)
-				const transition = toWallet < fromWallet ? 'slide-down' : 'slide-up'
-				to.meta.transition.nameWallet = convertTransitionName(transition)
-			}
-		})
+const router = useRouter()
+const route = useRoute()
 
-		const convertTransitionName = (name) => {
-			if (verticalLayout.value) {
-				if (name === 'slide-down') { return 'slide-right' }
-				if (name === 'slide-up') { return 'slide-left' }
-			}
-			return name
-		}
-
-		emitter.on('afterEnter', () => route.meta.transition = {})
-
-		return { verticalLayout, verticalContent, sticky, dragOverlay, hasToolbar, emitter }
-	},
-	methods: {
-		async droppedFiles (e) {
-			const walletPromises = []
-			for (const file of e.dataTransfer.files) {
-				const walletPromise = addWallet(JSON.parse(await file.text()))
-				walletPromises.push(walletPromise)
-			}
-			const ids = (await Promise.all(walletPromises)).filter(e => e !== null).map(e => e.id)
-			if (ids.length > 0) {
-				this.$router.push({ name: 'EditWallet', query: { wallet: ids } })
+const verticalLayout = toRef(InterfaceStore.breakpoints, 'verticalLayout')
+const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
+const sticky = ref(false)
+emitter.on('beforeEnter', () => sticky.value = InterfaceStore.sticky)
+emitter.on('afterLeave', () => sticky.value = InterfaceStore.sticky)
+const dragOverlay = toRef(InterfaceStore, 'dragOverlay')
+const hasToolbar = toRef(InterfaceStore.toolbar, 'enabled')
+router.afterEach((to, from) => {
+	document.title = to.meta.title ? to.meta.title + ' | Arweave Wallet' : 'Arweave Wallet'
+	const routes = router.options.routes
+	const findRecursiveHelper = (name, arr) => {
+		const result = findRecursive(name, arr)
+		return result.found ? result : null
+	}
+	const findRecursive = (name, arr, position = 0, depth = 0) => {
+		for (const route of arr) {
+			if (route.name === name) { return { found: true, position, depth } }
+			position++
+			if (route.children) {
+				const recResult = findRecursive(name, route.children, position, depth + 1)
+				position += recResult.position
+				if (recResult.found) { return { found: true, position, depth: recResult.depth } }
 			}
 		}
-	},
+		return { found: false, position, depth }
+	}
+	const param = {
+		to: findRecursiveHelper(to.name, routes),
+		from: findRecursiveHelper(from.name, routes)
+	}
+	to.meta.transition = {}
+	to.meta.transition.param = param
+	to.meta.transition.name = param.to.position < param.from.position ? 'slide-down' : 'slide-up'
+	to.meta.transition.nameLayout = convertTransitionName(to.meta.transition.name)
+	if (to.params.walletId && from.params.walletId && to.params.walletId !== from.params.walletId) {
+		const toWallet = Wallets.value.findIndex(el => el.id == to.params.walletId)
+		const fromWallet = Wallets.value.findIndex(el => el.id == from.params.walletId)
+		const transition = toWallet < fromWallet ? 'slide-down' : 'slide-up'
+		to.meta.transition.nameWallet = convertTransitionName(transition)
+	}
+})
+
+const convertTransitionName = (name) => {
+	if (verticalLayout.value) {
+		if (name === 'slide-down') { return 'slide-right' }
+		if (name === 'slide-up') { return 'slide-left' }
+	}
+	return name
+}
+
+emitter.on('afterEnter', () => route.meta.transition = {})
+
+const droppedFiles = async (e) => {
+	const walletPromises = []
+	for (const file of e.dataTransfer.files) {
+		const walletPromise = addWallet(JSON.parse(await file.text()))
+		walletPromises.push(walletPromise)
+	}
+	const ids = (await Promise.all(walletPromises)).filter(e => e !== null).map(e => e.id)
+	if (ids.length > 0) {
+		router.push({ name: 'EditWallet', query: { wallet: ids } })
+	}
 }
 </script>
 

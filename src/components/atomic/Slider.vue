@@ -17,74 +17,74 @@
 	</div>
 </template>
 
-<script>
+
+
+<script setup>
 import BigNumber from 'bignumber.js'
 import { computed, ref } from 'vue'
 
-export default {
-	props: ['modelValue', 'settings', 'progress'],
-	setup (props, { emit }) {
-		const model = computed({
-			get () { return props.modelValue },
-			set (value) {
-				const snapTo = snap(value)
-				emit('update:modelValue', snapTo || value)
-			}
-		})
-		const snapped = ref(null)
-		const range = computed(() => props.settings.max ? new BigNumber(props.settings.max.minus(props.settings.min || '0')) : null)
-		const snapAmount = computed(() => range.value.dividedToIntegerBy('50'))
-		const pokeAmount = computed(() => range.value.dividedToIntegerBy('50'))
-		const snap = (e) => {
-			snapped.value = null
-			if (!range.value) { return null }
-			const bigNumber = new BigNumber(e)
-			const result = { setting: null, distance: range.value }
-			for (const setting in props.settings) {
-				if (!props.settings[setting]) { continue }
-				const distance = props.settings[setting].minus(bigNumber).absoluteValue()
-				if (distance.lt(result.distance)) { result.setting = setting; result.distance = distance }
-			}
-			if (result.distance.lt(snapAmount.value)) {
-				const nearest = props.settings[result.setting].toString()
-				if (['minRange', 'default', 'maxRange'].includes(result.setting)) { snapped.value = nearest }
-				return nearest
-			}
-			return null
-		}
-		const poke = (e) => {
-			if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'ArrowUp' && e.key !== 'ArrowDown' || !range.value) { return }
-			e.preventDefault()
-			const currentValue = new BigNumber(model.value)
-			let nextValue = null
-			if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
-				nextValue = currentValue.minus(pokeAmount.value)
-				if (nextValue.isLessThan(props.settings.min || 0)) { nextValue = props.settings.min || 0 }
-			}
-			if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
-				nextValue = currentValue.plus(pokeAmount.value)
-				if (nextValue.isGreaterThan(props.settings.max)) { nextValue = props.settings.max }
-			}
-			model.value = nextValue.toString()
-		}
-		const focus = ref(false)
-		const hover = ref(false)
-		const rangeStart = computed(() => {
-			if (!props.settings.minRange || !props.settings.maxRange || !range.value) { return null }
-			return props.settings.minRange.dividedBy(range.value).times('100')
-		})
-		const rangeEnd = computed(() => {
-			if (!props.settings.minRange || !props.settings.maxRange || !range.value) { return null }
-			return props.settings.maxRange.dividedBy(range.value).times('100')
-		})
+const props = defineProps(['modelValue', 'settings', 'progress'])
+const emit = defineEmits(['update:modelValue'])
 
-		const thumbWidth = 4
-		const thumbPosition = computed(() => new BigNumber(model.value).dividedBy(range.value && range.value.gt(0) ? range.value : '1').times(100 - thumbWidth))
-
-		return { model, range, focus, hover, poke, rangeStart, rangeEnd, snapped, thumbWidth, thumbPosition }
+const model = computed({
+	get () { return props.modelValue },
+	set (value) {
+		const snapTo = snap(value)
+		emit('update:modelValue', snapTo || value)
 	}
+})
+const snapped = ref(null)
+const range = computed(() => props.settings.max ? new BigNumber(props.settings.max.minus(props.settings.min || '0')) : null)
+const snapAmount = computed(() => range.value.dividedToIntegerBy('50'))
+const pokeAmount = computed(() => range.value.dividedToIntegerBy('50'))
+const snap = (e) => {
+	snapped.value = null
+	if (!range.value) { return null }
+	const bigNumber = new BigNumber(e)
+	const result = { setting: null, distance: range.value }
+	for (const setting in props.settings) {
+		if (!props.settings[setting]) { continue }
+		const distance = props.settings[setting].minus(bigNumber).absoluteValue()
+		if (distance.lt(result.distance)) { result.setting = setting; result.distance = distance }
+	}
+	if (result.distance.lt(snapAmount.value)) {
+		const nearest = props.settings[result.setting].toString()
+		if (['minRange', 'default', 'maxRange'].includes(result.setting)) { snapped.value = nearest }
+		return nearest
+	}
+	return null
 }
+const poke = (e) => {
+	if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'ArrowUp' && e.key !== 'ArrowDown' || !range.value) { return }
+	e.preventDefault()
+	const currentValue = new BigNumber(model.value)
+	let nextValue = null
+	if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+		nextValue = currentValue.minus(pokeAmount.value)
+		if (nextValue.isLessThan(props.settings.min || 0)) { nextValue = props.settings.min || 0 }
+	}
+	if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+		nextValue = currentValue.plus(pokeAmount.value)
+		if (nextValue.isGreaterThan(props.settings.max)) { nextValue = props.settings.max }
+	}
+	model.value = nextValue.toString()
+}
+const focus = ref(false)
+const hover = ref(false)
+const rangeStart = computed(() => {
+	if (!props.settings.minRange || !props.settings.maxRange || !range.value) { return null }
+	return props.settings.minRange.dividedBy(range.value).times('100')
+})
+const rangeEnd = computed(() => {
+	if (!props.settings.minRange || !props.settings.maxRange || !range.value) { return null }
+	return props.settings.maxRange.dividedBy(range.value).times('100')
+})
+
+const thumbWidth = 4
+const thumbPosition = computed(() => new BigNumber(model.value).dividedBy(range.value && range.value.gt(0) ? range.value : '1').times(100 - thumbWidth))
 </script>
+
+
 
 <style scoped>
 .slider {

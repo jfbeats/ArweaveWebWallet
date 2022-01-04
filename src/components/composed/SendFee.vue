@@ -9,6 +9,8 @@
 	</div>
 </template>
 
+
+
 <script setup>
 import Slider from '@/components/atomic/Slider.vue'
 import Amount from '@/components/composed/Amount.vue'
@@ -68,6 +70,8 @@ watch(userFeeAr, userFeeAr => emit('update', userFeeAr))
 
 const progress = computed(() => BlockStore.mempoolStatus.progress)
 </script>
+
+
 
 <style scoped>
 .secondary {

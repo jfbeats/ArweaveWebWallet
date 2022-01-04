@@ -2,18 +2,13 @@
 	<span>{{ date }} {{ time }}</span>
 </template>
 
-<script>
+
+
+<script setup>
 import { computed } from 'vue'
 
-export default {
-	props: ['timestamp'],
-	setup (props) {
-		const date = computed(() => new Date(props.timestamp).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }))
-		const time = computed(() => new Date(props.timestamp).toLocaleTimeString())
-		return { date, time }
-	}
-}
-</script>
+const props = defineProps(['timestamp'])
 
-<style scoped>
-</style>
+const date = computed(() => new Date(props.timestamp).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }))
+const time = computed(() => new Date(props.timestamp).toLocaleTimeString())
+</script>

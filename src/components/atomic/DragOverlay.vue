@@ -4,17 +4,16 @@
 	</transition>
 </template>
 
-<script>
+
+
+<script setup>
 import InterfaceStore from '@/store/InterfaceStore'
 import { computed } from 'vue'
 
-export default {
-	setup () {
-		const dragOverlay = computed(() => InterfaceStore.dragOverlay)
-		return { dragOverlay }
-	}
-}
+const dragOverlay = computed(() => InterfaceStore.dragOverlay)
 </script>
+
+
 
 <style scoped>
 .dragOverlay {

@@ -12,34 +12,27 @@
 
 
 
-<script>
+<script setup>
 import ArweaveStore from '@/store/ArweaveStore'
 import Identicon from '@/components/atomic/Identicon.vue'
 import ProfileStore, { getArweaveId } from '@/store/ProfileStore'
 import { computed, watch, ref } from 'vue'
-
 import IconCloud from '@/assets/icons/cloud.svg?component'
 
-export default {
-	props: ['address'],
-	components: { Identicon, IconCloud },
-	setup (props) {
-		const isValid = computed(() => props.address?.match(/^[a-z0-9_-]{43}$/i))
-		const arweaveId = computed(() => ProfileStore.arweaveId[props.address])
-		const hasTransition = ref(!arweaveId.value)
-		watch(arweaveId, () => {
-			hasTransition.value = false
-			setTimeout(() => hasTransition.value = true, 200)
-		})
-		const loaded = ref(false)
-		watch(() => props.address, async () => {
-			loaded.value = false
-			getArweaveId(props.address)
-		}, { immediate: true })
+const props = defineProps(['address'])
 
-		return { ArweaveStore, isValid, arweaveId, hasTransition, loaded }
-	}
-}
+const isValid = computed(() => props.address?.match(/^[a-z0-9_-]{43}$/i))
+const arweaveId = computed(() => ProfileStore.arweaveId[props.address])
+const hasTransition = ref(!arweaveId.value)
+watch(arweaveId, () => {
+	hasTransition.value = false
+	setTimeout(() => hasTransition.value = true, 200)
+})
+const loaded = ref(false)
+watch(() => props.address, async () => {
+	loaded.value = false
+	getArweaveId(props.address)
+}, { immediate: true })
 </script>
 
 

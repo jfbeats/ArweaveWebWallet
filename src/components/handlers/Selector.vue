@@ -13,55 +13,53 @@
 	</div>
 </template>
 
-<script>
+
+
+<script setup>
 import ArweaveStore, { arweave } from '@/store/ArweaveStore'
 import Img from '@/components/handlers/Img.vue'
 import SmartWeave from '@/components/handlers/SmartWeave.vue'
 import { computed, reactive, watch } from 'vue'
 
-export default {
-	components: { Img, SmartWeave },
-	props: ['tx'],
-	setup (props) {
-		const data = reactive({
-			handler: null,
-			loaded: false,
-			payload: null,
-		})
+const props = defineProps(['tx'])
 
-		const gatewayLink = computed(() => ArweaveStore.gatewayURL + props.tx.id)
+const data = reactive({
+	handler: null,
+	loaded: false,
+	payload: null,
+})
 
-		watch(() => props.tx, async () => {
-			if (!props.tx) { return }
-			data.handler = null
-			data.loaded = false
-			if (props.tx.data?.size === '0') {
-				return
-			} else if (props.tx.data?.type === 'application/x.arweave-manifest+json' || props.tx.data?.type === 'text/html' || props.tx.data?.type === 'application/pdf') {
-				data.handler = 'iframe'
-			} else if (props.tx.data?.type?.split('/')[0] === 'image') {
-				data.handler = 'img'
-				// } else if (props.tx.tags?.find(el => el.name === 'App-Name')?.value === 'SmartWeaveContract') {
-				// 	data.handler = 'smartweave'
-			} else {
-				data.handler = 'raw'
+const gatewayLink = computed(() => ArweaveStore.gatewayURL + props.tx.id)
+
+watch(() => props.tx, async () => {
+	if (!props.tx) { return }
+	data.handler = null
+	data.loaded = false
+	if (props.tx.data?.size === '0') {
+		return
+	} else if (props.tx.data?.type === 'application/x.arweave-manifest+json' || props.tx.data?.type === 'text/html' || props.tx.data?.type === 'application/pdf') {
+		data.handler = 'iframe'
+	} else if (props.tx.data?.type?.split('/')[0] === 'image') {
+		data.handler = 'img'
+		// } else if (props.tx.tags?.find(el => el.name === 'App-Name')?.value === 'SmartWeaveContract') {
+		// 	data.handler = 'smartweave'
+	} else {
+		data.handler = 'raw'
+		try {
+			data.payload = await arweave.transactions.getData(props.tx.id, { decode: true, string: true })
+			if (data.payload[0] === "{") {
 				try {
-					data.payload = await arweave.transactions.getData(props.tx.id, { decode: true, string: true })
-					if (data.payload[0] === "{") {
-						try {
-							data.payload = JSON.stringify(JSON.parse(data.payload), null, 2)
-							data.handler = 'json'
-						}
-						catch { }
-					}
-				} catch { }
+					data.payload = JSON.stringify(JSON.parse(data.payload), null, 2)
+					data.handler = 'json'
+				}
+				catch { }
 			}
-		}, { immediate: true })
-
-		return { gatewayLink, data }
+		} catch { }
 	}
-}
+}, { immediate: true })
 </script>
+
+
 
 <style scoped>
 .iframe-container,

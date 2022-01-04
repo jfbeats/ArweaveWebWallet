@@ -8,36 +8,31 @@
 
 
 
-<script>
+<script setup>
 import Observer from '@/components/function/Observer.vue'
 import { ref, computed } from 'vue'
 
-export default {
-	components: { Observer },
-	props: ['src'],
-	setup (props, { emit }) {
-		const imgRef = ref(null)
-		const elAspect = ref(null)
-		const imgAspect = ref(null)
+const props = defineProps(['src'])
+const emit = defineEmits(['load'])
 
-		const resize = (size) => {
-			console.log(size)
-			elAspect.value = size.width / size.height
-		}
+const imgRef = ref(null)
+const elAspect = ref(null)
+const imgAspect = ref(null)
 
-		const load = () => {
-			imgAspect.value = imgRef.value.naturalWidth / imgRef.value.naturalHeight
-			emit('load')
-		}
-
-		const x = computed(() => elAspect.value && imgAspect.value && elAspect.value < imgAspect.value)
-		const y = computed(() => elAspect.value && imgAspect.value && elAspect.value >= imgAspect.value)
-
-		// Todo snap to center
-
-		return { x, y, resize, load, imgRef }
-	},
+const resize = (size) => {
+	console.log(size)
+	elAspect.value = size.width / size.height
 }
+
+const load = () => {
+	imgAspect.value = imgRef.value.naturalWidth / imgRef.value.naturalHeight
+	emit('load')
+}
+
+const x = computed(() => elAspect.value && imgAspect.value && elAspect.value < imgAspect.value)
+const y = computed(() => elAspect.value && imgAspect.value && elAspect.value >= imgAspect.value)
+
+// Todo snap to center
 </script>
 
 

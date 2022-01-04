@@ -6,41 +6,39 @@
 	</svg>
 </template>
 
-<script>
+
+
+<script setup>
 // Vue component made from https://github.com/stewartlord/identicon.js/
 // from a SHA-256 hash of the arweave address
 import { addressHashToColor, addressToHash } from '@/functions/Utils'
 import { computed, ref, watch } from 'vue'
 
-export default {
-	props: ['address'],
-	setup (props) {
-		const size = 5
-		const cell = size / 5
-		const stroke = size * 0.04
-		const addressHash = ref(null)
-		watch(() => props.address, async (val) => addressHash.value = await addressToHash(val), { immediate: true })
-		const style = computed(() => ({
-			color: `rgb(${addressHashToColor(addressHash.value).join(',')})`,
-		}))
-		const rects = computed(() => {
-			const result = []
-			if (!addressHash.value) { return result }
-			for (let i = 0; i < 15; i++) {
-				if (parseInt(addressHash.value.charAt(i), 16) % 2) { continue }
-				if (i < 5) {
-					result.push({ x: 2 * cell + stroke, y: i * cell + stroke, w: cell, h: cell })
-				} else if (i < 10) {
-					result.push({ x: 1 * cell + stroke, y: (i - 5) * cell + stroke, w: cell, h: cell })
-					result.push({ x: 3 * cell + stroke, y: (i - 5) * cell + stroke, w: cell, h: cell })
-				} else if (i < 15) {
-					result.push({ x: 0 * cell + stroke, y: (i - 10) * cell + stroke, w: cell, h: cell })
-					result.push({ x: 4 * cell + stroke, y: (i - 10) * cell + stroke, w: cell, h: cell })
-				}
-			}
-			return result
-		})
-		return { size, stroke, rects, style }
+const props = defineProps(['address'])
+
+const size = 5
+const cell = size / 5
+const stroke = size * 0.04
+const addressHash = ref(null)
+watch(() => props.address, async (val) => addressHash.value = await addressToHash(val), { immediate: true })
+const style = computed(() => ({
+	color: `rgb(${addressHashToColor(addressHash.value).join(',')})`,
+}))
+const rects = computed(() => {
+	const result = []
+	if (!addressHash.value) { return result }
+	for (let i = 0; i < 15; i++) {
+		if (parseInt(addressHash.value.charAt(i), 16) % 2) { continue }
+		if (i < 5) {
+			result.push({ x: 2 * cell + stroke, y: i * cell + stroke, w: cell, h: cell })
+		} else if (i < 10) {
+			result.push({ x: 1 * cell + stroke, y: (i - 5) * cell + stroke, w: cell, h: cell })
+			result.push({ x: 3 * cell + stroke, y: (i - 5) * cell + stroke, w: cell, h: cell })
+		} else if (i < 15) {
+			result.push({ x: 0 * cell + stroke, y: (i - 10) * cell + stroke, w: cell, h: cell })
+			result.push({ x: 4 * cell + stroke, y: (i - 10) * cell + stroke, w: cell, h: cell })
+		}
 	}
-}
+	return result
+})
 </script>

@@ -11,23 +11,17 @@
 
 
 
-<script>
+<script setup>
 import InterfaceStore from '@/store/InterfaceStore'
-import { onUnmounted, toRef, watch } from 'vue'
+import { onUnmounted, toRef, useSlots, watch } from 'vue'
 
-export default {
-	setup () {
-		const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
-		watch(() => verticalContent.value, (val) => val ? InterfaceStore.sticky = false : InterfaceStore.sticky = true, { immediate: true })
+const slots = useSlots()
 
-		onUnmounted(() => InterfaceStore.sticky = false)
-		return { verticalContent }
-	},
-	methods: {
-		hasLeft () { return !!this.$slots.left },
-		hasRight () { return !!this.$slots.right },
-	},
-}
+const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
+watch(() => verticalContent.value, (val) => val ? InterfaceStore.sticky = false : InterfaceStore.sticky = true, { immediate: true })
+onUnmounted(() => InterfaceStore.sticky = false)
+const hasLeft = () => !!slots.left
+const hasRight = () => !!slots.right
 </script>
 
 
