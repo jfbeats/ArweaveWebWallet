@@ -84,7 +84,7 @@
 
 
 
-<script>
+<script setup>
 import InputAddress from '@/components/atomic/InputAddress.vue';
 import InputAr from '@/components/atomic/InputAr.vue'
 import InputData from '@/components/atomic/InputData.vue'
@@ -96,134 +96,127 @@ import { awaitEffect } from '@/functions/AsyncData'
 import { addressHashToColor, addressToHash } from '@/functions/Utils'
 import BigNumber from 'bignumber.js'
 import { computed, markRaw, reactive, ref, watch } from 'vue'
-
 import IconNorthEast from '@/assets/icons/north_east.svg?component'
 import IconLabel from '@/assets/icons/label.svg?component'
 
-export default {
-	components: { InputAddress, InputAr, InputData, InputGrid, SendFee, Button, IconNorthEast },
-	props: ['wallet', 'model'],
-	setup (props) {
-		const setMax = async () => {
-			const balance = new BigNumber(props.wallet.balance)
-			await awaitEffect(() => txFee.value)
-			props.model.quantity = balance.minus(txFee.value).toString()
+const props = defineProps(['wallet', 'model'])
+
+const setMax = async () => {
+	const balance = new BigNumber(props.wallet.balance)
+	await awaitEffect(() => txFee.value)
+	props.model.quantity = balance.minus(txFee.value).toString()
+}
+
+const filesAdded = (files) => {
+	let contentTypeTag = props.model.tags.find(row => row.items[0].value === 'Content-Type')
+	props.model.data = files ? files[0] : ''
+	if (props.model.data && props.model.data.type) {
+		if (!contentTypeTag) {
+			contentTypeTag = tagSchema('Content-Type')
+			addTag(contentTypeTag)
 		}
-
-		const filesAdded = (files) => {
-			let contentTypeTag = props.model.tags.find(row => row.items[0].value === 'Content-Type')
-			props.model.data = files ? files[0] : ''
-			if (props.model.data && props.model.data.type) {
-				if (!contentTypeTag) {
-					contentTypeTag = tagSchema('Content-Type')
-					addTag(contentTypeTag)
-				}
-				contentTypeTag.items[1].value = props.model.data.type
-			} else {
-				const index = props.model.tags.indexOf(contentTypeTag)
-				props.model.tags.splice(index, 1)
-			}
-		}
-
-		const tagSchema = (name, value) => ({
-			items: [
-				{ name: 'Tag', value: name || '', icon: markRaw(IconLabel) },
-				{ name: 'Value', value: value || '' }
-			], deletable: true, key: Math.random()
-		})
-		const addTag = (tag) => props.model.tags.push(tag || tagSchema())
-
-		const txSize = computed(() => {
-			const data = props.model.data
-			return data.size || data.length || '0'
-		})
-		const txFee = ref(null)
-
-		const getTagsFromSchema = (tagsSchema) => {
-			const result = []
-			for (const row of tagsSchema) { result.push({ name: row.items[0].value, value: row.items[1].value }) }
-			return result
-		}
-
-		const loading = ref(false)
-		const validation = reactive({ target: '', quantity: '', data: '', tags: '' })
-
-		const isValid = () => {
-			for (const key in validation) { validation[key] = '' }
-			let result = true
-			if (!props.model.data && !(props.model.quantity > 0)) {
-				validation.global = "A transaction must at least have data, or an address and amount"
-				return
-			}
-			const balance = new BigNumber(props.wallet.balance)
-			if (balance.minus(txFee.value).minus(props.model.quantity || 0) < 0) {
-				if (props.model.quantity > 0) {
-					validation.quantity = "Current balance too low"; result = false
-				} else {
-					validation.data = "Current balance too low"; result = false
-				}
-			}
-			const tags = getTagsFromSchema(props.model.tags)
-			let tagLength = 0
-			for (const tag of tags) {
-				tagLength += tag.name.length + tag.value.length
-				if (tagLength > 2048) {
-					validation.tags = "Length of tags can't be greater than 2048"; result = false
-				}
-				if (!tag.name.length || !tag.value.length) {
-					validation.tags = "Tags can't be empty"; result = false
-				}
-			}
-			if (props.model.target.length && props.model.target.length < 43) {
-				validation.target = "Invalid address"; result = false
-			}
-			if (!props.model.target.length && props.model.quantity > 0) {
-				validation.target = "An address must be specified to send AR"; result = false
-			}
-			return result
-		}
-
-		const resetForm = () => {
-			props.model.target = ''
-			props.model.quantity = ''
-			props.model.data = ''
-			props.model.tags = []
-			// TODO reset the fee slider
-		}
-
-		const postTx = async () => {
-			if (loading.value || !isValid()) { return }
-			loading.value = true
-			try {
-				const tx = await buildTransaction({
-					target: props.model.target,
-					ar: props.model.quantity,
-					arReward: txFee.value,
-					tags: getTagsFromSchema(props.model.tags),
-					data: props.model.data,
-				})
-				await props.wallet.signTransaction(tx)
-				manageUpload(tx)
-				resetForm()
-			} catch (e) {
-				console.error(e)
-			}
-			loading.value = false
-		}
-
-		const addressHash = ref(null)
-		watch(() => props.wallet.key, async (val) => addressHash.value = await addressToHash(val), { immediate: true })
-		const addressHashColor = computed(() => addressHashToColor(addressHash.value).join(','))
-		const submitStyle = computed(() => ({
-			'--border': `rgba(${addressHashColor.value},0.8)`,
-			'--glow-color': `rgba(${addressHashColor.value},0.2)`,
-			'background-image': `radial-gradient(circle at center, rgba(${addressHashColor.value},0.4), 
-			rgba(${addressHashColor.value},0.3))`
-		}))
-
-		return { setMax, filesAdded, addTag, txSize, txFee, postTx, submitStyle, loading, validation, IconNorthEast }
+		contentTypeTag.items[1].value = props.model.data.type
+	} else {
+		const index = props.model.tags.indexOf(contentTypeTag)
+		props.model.tags.splice(index, 1)
 	}
 }
+
+const tagSchema = (name, value) => ({
+	items: [
+		{ name: 'Tag', value: name || '', icon: markRaw(IconLabel) },
+		{ name: 'Value', value: value || '' }
+	], deletable: true, key: Math.random()
+})
+const addTag = (tag) => props.model.tags.push(tag || tagSchema())
+
+const txSize = computed(() => {
+	const data = props.model.data
+	return data.size || data.length || '0'
+})
+const txFee = ref(null)
+
+const getTagsFromSchema = (tagsSchema) => {
+	const result = []
+	for (const row of tagsSchema) { result.push({ name: row.items[0].value, value: row.items[1].value }) }
+	return result
+}
+
+const loading = ref(false)
+const validation = reactive({ target: '', quantity: '', data: '', tags: '' })
+
+const isValid = () => {
+	for (const key in validation) { validation[key] = '' }
+	let result = true
+	if (!props.model.data && !(props.model.quantity > 0)) {
+		validation.global = "A transaction must at least have data, or an address and amount"
+		return
+	}
+	const balance = new BigNumber(props.wallet.balance)
+	if (balance.minus(txFee.value).minus(props.model.quantity || 0) < 0) {
+		if (props.model.quantity > 0) {
+			validation.quantity = "Current balance too low"; result = false
+		} else {
+			validation.data = "Current balance too low"; result = false
+		}
+	}
+	const tags = getTagsFromSchema(props.model.tags)
+	let tagLength = 0
+	for (const tag of tags) {
+		tagLength += tag.name.length + tag.value.length
+		if (tagLength > 2048) {
+			validation.tags = "Length of tags can't be greater than 2048"; result = false
+		}
+		if (!tag.name.length || !tag.value.length) {
+			validation.tags = "Tags can't be empty"; result = false
+		}
+	}
+	if (props.model.target.length && props.model.target.length < 43) {
+		validation.target = "Invalid address"; result = false
+	}
+	if (!props.model.target.length && props.model.quantity > 0) {
+		validation.target = "An address must be specified to send AR"; result = false
+	}
+	return result
+}
+
+const resetForm = () => {
+	props.model.target = ''
+	props.model.quantity = ''
+	props.model.data = ''
+	props.model.tags = []
+	// TODO reset the fee slider
+}
+
+const postTx = async () => {
+	if (loading.value || !isValid()) { return }
+	loading.value = true
+	try {
+		const tx = await buildTransaction({
+			target: props.model.target,
+			ar: props.model.quantity,
+			arReward: txFee.value,
+			tags: getTagsFromSchema(props.model.tags),
+			data: props.model.data,
+		})
+		await props.wallet.signTransaction(tx)
+		manageUpload(tx)
+		resetForm()
+	} catch (e) {
+		console.error(e)
+	}
+	loading.value = false
+}
+
+const addressHash = ref(null)
+watch(() => props.wallet.key, async (val) => addressHash.value = await addressToHash(val), { immediate: true })
+const addressHashColor = computed(() => addressHashToColor(addressHash.value).join(','))
+const submitStyle = computed(() => ({
+	'--border': `rgba(${addressHashColor.value},0.8)`,
+	'--glow-color': `rgba(${addressHashColor.value},0.2)`,
+	'background-image': `radial-gradient(circle at center, rgba(${addressHashColor.value},0.4),
+	rgba(${addressHashColor.value},0.3))`
+}))
 </script>
 
 

@@ -31,36 +31,33 @@
 
 
 
-<script>
+<script setup>
 import DragOverlay from '@/components/atomic/DragOverlay.vue'
 import InterfaceStore from '@/store/InterfaceStore'
-import { computed, ref, toRef } from 'vue'
+import { computed, ref, toRef, useAttrs } from 'vue'
 
 import IconText from '@/assets/icons/text.svg?component'
 import IconDrop from '@/assets/icons/drop.svg?component'
 import IconCloud from '@/assets/icons/cloud.svg?component'
 import IconX from '@/assets/icons/x.svg?component'
 
-export default {
-	components: { DragOverlay, IconText, IconDrop, IconCloud, IconX },
-	props: ['modelValue', 'disabled', 'id', 'placeholder'],
-	setup (props, { emit, attrs }) {
-		const model = computed({
-			get () { return props.modelValue },
-			set (value) { emit('update:modelValue', value) }
-		})
-		const focus = ref(0)
-		const dragOverlay = toRef(InterfaceStore, 'dragOverlay')
-		const handleFiles = (e) => {
-			if (attrs.disabled) { return }
-			if (e.dataTransfer?.files) { return emit('files', e.dataTransfer.files) }
-			if (e.target?.files) { return emit('files', e.target.files) }
-		}
-		const clearFiles = () => { emit('files', null) }
-		const isFile = computed(() => typeof model.value === "object")
-		return { model, focus, dragOverlay, handleFiles, clearFiles, isFile }
-	}
+const props = defineProps(['modelValue', 'disabled', 'id', 'placeholder'])
+const emit = defineEmits(['update:modelValue', 'files'])
+const attrs = useAttrs()
+
+const model = computed({
+	get () { return props.modelValue },
+	set (value) { emit('update:modelValue', value) }
+})
+const focus = ref(0)
+const dragOverlay = toRef(InterfaceStore, 'dragOverlay')
+const handleFiles = (e) => {
+	if (attrs.disabled) { return }
+	if (e.dataTransfer?.files) { return emit('files', e.dataTransfer.files) }
+	if (e.target?.files) { return emit('files', e.target.files) }
 }
+const clearFiles = () => { emit('files', null) }
+const isFile = computed(() => typeof model.value === "object")
 </script>
 
 

@@ -14,56 +14,51 @@
 
 
 
-<script>
+<script setup>
 import Icon from '@/components/atomic/Icon.vue'
 import { currency } from '@/store/ArweaveStore'
-import { computed, ref, toRef, watch } from 'vue'
-
+import { computed, ref, watch } from 'vue'
 import LogoArweave from '@/assets/logos/arweave.svg?component'
 
-export default {
-	components: { Icon },
-	props: ['modelValue', 'disabled', 'id'],
-	setup (props, { emit }) {
-		const model = computed({
-			get () {
-				const value = props.modelValue
-				if (focus.value === 0) {
-					input2.value = value && !isNaN(value) ? +(value * currentPrice.value).toFixed(2) : ''
-				}
-				return value
-			},
-			set (value) {
-				if (focus.value === 1 || focus.value === 0) {
-					input2.value = value && !isNaN(value) ? +(value * currentPrice.value).toFixed(2) : ''
-					emit('update:modelValue', value)
-				}
-			}
-		})
-		const input2 = ref('')
-		const model2 = computed({
-			get () { return input2.value },
-			set (value) {
-				if (focus.value === 2) {
-					input2.value = value
-					emit('update:modelValue', value && !isNaN(value) ? value / currentPrice.value : '')
-				}
-			}
-		})
-		const currentPrice = currency.currentPrice
-		const currencyType = computed(() => currency.settings.currency)
-		const currencySymbol = computed(() => new Intl.NumberFormat(navigator.languages, { style: 'currency', currency: currencyType.value }).format(0).replace(/[\w\d\.\,\s]/g, '') || '$')
-		const focus = ref(0)
-		watch(() => model.value, (newVal, oldVal) => {
-			if (newVal < 0) { return model.value = '' }
-			if (focus.value <= 1 && !newVal.match(/^(?:\d*\.?\d*)?$/)) { model.value = oldVal }
-		})
-		watch(() => model2.value, (newVal, oldVal) => {
-			if (focus.value === 2 && !newVal.match(/^(?:\d*\.?\d*)?$/)) { model2.value = oldVal }
-		})
-		return { model, model2, currentPrice, currencyType, currencySymbol, focus, LogoArweave }
+const props = defineProps(['modelValue', 'disabled', 'id'])
+const emit = defineEmits(['update:modelValue'])
+
+const model = computed({
+	get () {
+		const value = props.modelValue
+		if (focus.value === 0) {
+			input2.value = value && !isNaN(value) ? +(value * currentPrice.value).toFixed(2) : ''
+		}
+		return value
+	},
+	set (value) {
+		if (focus.value === 1 || focus.value === 0) {
+			input2.value = value && !isNaN(value) ? +(value * currentPrice.value).toFixed(2) : ''
+			emit('update:modelValue', value)
+		}
 	}
-}
+})
+const input2 = ref('')
+const model2 = computed({
+	get () { return input2.value },
+	set (value) {
+		if (focus.value === 2) {
+			input2.value = value
+			emit('update:modelValue', value && !isNaN(value) ? value / currentPrice.value : '')
+		}
+	}
+})
+const currentPrice = currency.currentPrice
+const currencyType = computed(() => currency.settings.currency)
+const currencySymbol = computed(() => new Intl.NumberFormat(navigator.languages, { style: 'currency', currency: currencyType.value }).format(0).replace(/[\w\d\.\,\s]/g, '') || '$')
+const focus = ref(0)
+watch(() => model.value, (newVal, oldVal) => {
+	if (newVal < 0) { return model.value = '' }
+	if (focus.value <= 1 && !newVal.match(/^(?:\d*\.?\d*)?$/)) { model.value = oldVal }
+})
+watch(() => model2.value, (newVal, oldVal) => {
+	if (focus.value === 2 && !newVal.match(/^(?:\d*\.?\d*)?$/)) { model2.value = oldVal }
+})
 </script>
 
 

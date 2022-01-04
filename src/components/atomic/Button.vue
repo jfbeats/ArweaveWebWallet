@@ -7,13 +7,9 @@
 
 
 
-<script>
+<script setup>
 import Icon from '@/components/atomic/Icon.vue'
-
-export default {
-	components: { Icon },
-	props: ['icon']
-}
+const props = defineProps(['icon'])
 </script>
 
 

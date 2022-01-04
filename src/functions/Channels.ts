@@ -21,6 +21,7 @@ export class Channel <T extends keyof PrefixTable> {
 		if (getCurrentScope()) { onScopeDispose(() => this.destructor()) }
 	}
 	destructor () {
+		if (!this) { return }
 		window.removeEventListener('storage', this.storageListener)
 		if (this.stopWrite) { this.stopWrite() }
 	}

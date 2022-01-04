@@ -19,21 +19,14 @@
 
 
 
-<script>
+<script setup>
 import IconBackground from '@/components/atomic/IconBackground.vue'
 import Date from '@/components/atomic/Date.vue'
 import Expand from '@/components/atomic/Expand.vue'
 import ActionsList from '@/components/composed/ActionsList.vue';
-
 import IconNotification from '@/assets/icons/notification.svg?component'
 
-export default {
-	components: {ActionsList, IconBackground, Date, Expand },
-	props: ['data'],
-	setup (props) {
-		return { IconNotification }
-	}
-}
+const props = defineProps(['data'])
 </script>
 
 

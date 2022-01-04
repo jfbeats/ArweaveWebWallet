@@ -5,17 +5,14 @@
 	</div>
 </template>
 
-<script>
+
+
+<script setup>
 import Icon from '@/components/atomic/Icon.vue'
-
-export default {
-	components: { Icon },
-	props: ['icon', 'img'],
-	setup () {
-
-	}
-}
+const props = defineProps(['icon', 'img'])
 </script>
+
+
 
 <style scoped>
 .icon-background {

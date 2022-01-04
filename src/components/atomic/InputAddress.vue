@@ -7,25 +7,20 @@
 
 
 
-<script>
+<script setup>
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import Input from '@/components/atomic/Input.vue'
-
 import IconPerson from '@/assets/icons/person.svg'
-import { computed } from 'vue';
+import { computed } from 'vue'
 
-export default {
-	components: { AddressIcon, Input },
-	props: ['modelValue', 'actions', 'disabled', 'id'],
-	setup (props, { emit }) {
-		const model = computed({
-			get () { return props.modelValue },
-			set (value) { emit('update:modelValue', value) }
-		})
-		const maskAddress = (address) => { return address.match(/^[a-z0-9_-]{0,43}$/i) }
-		return { model, maskAddress, IconPerson }
-	}
-}
+const props = defineProps(['modelValue', 'actions', 'disabled', 'id'])
+const emit = defineEmits(['update:modelValue'])
+
+const model = computed({
+	get () { return props.modelValue },
+	set (value) { emit('update:modelValue', value) }
+})
+const maskAddress = (address) => { return address.match(/^[a-z0-9_-]{0,43}$/i) }
 </script>
 
 

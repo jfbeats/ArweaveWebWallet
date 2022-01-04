@@ -40,23 +40,18 @@
 
 
 
-<script>
+<script setup>
 import Icon from '@/components/atomic/Icon.vue'
 import ArweaveStore from '@/store/ArweaveStore'
-import {computed} from "vue";
+import { computed } from 'vue'
 
-export default {
-	components: { Icon },
-	props: ['tx', 'direction'],
-	setup (props) {
-		const isData = computed(() => (props.tx.data?.size || props.tx.data_size) > 0)
-		const isValue = computed(() => (props.tx.quantity?.winston || props.tx.quantity) > 0)
-		const isPending = computed(() => !props.tx.id || !props.tx.block)
-		const uploadProgress = computed(() => ArweaveStore.uploads[props.tx.id]?.upload)
-		const styleObject = computed(() => ({ 'color': isData.value && !isValue.value ? 'var(--orange)' : props.direction === 'in' ? 'var(--green)' : 'var(--red)' }))
-		return { isData, isValue, isPending, uploadProgress, styleObject }
-	}
-}
+const props = defineProps(['tx', 'direction'])
+
+const isData = computed(() => (props.tx.data?.size || props.tx.data_size) > 0)
+const isValue = computed(() => (props.tx.quantity?.winston || props.tx.quantity) > 0)
+const isPending = computed(() => !props.tx.id || !props.tx.block)
+const uploadProgress = computed(() => ArweaveStore.uploads[props.tx.id]?.upload)
+const styleObject = computed(() => ({ 'color': isData.value && !isValue.value ? 'var(--orange)' : props.direction === 'in' ? 'var(--green)' : 'var(--red)' }))
 </script>
 
 

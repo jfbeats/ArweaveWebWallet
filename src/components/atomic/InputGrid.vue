@@ -16,21 +16,15 @@
 
 
 
-<script>
+<script setup>
 import Icon from '@/components/atomic/Icon.vue'
 import { ref } from 'vue'
-
 import IconX from '@/assets/icons/x.svg?component'
 
-export default {
-	components: { Icon },
-	props: ['schema', 'disabled'],
-	setup (props) {
-		const focus = ref(0)
-		const removeRow = (index) => props.schema.splice(index, 1)
-		return { focus, removeRow, IconX }
-	}
-}
+const props = defineProps(['schema', 'disabled'])
+
+const focus = ref(0)
+const removeRow = (index) => props.schema.splice(index, 1)
 </script>
 
 

@@ -10,22 +10,18 @@
 
 
 
-<script>
+<script setup>
 import Icon from '@/components/atomic/Icon.vue'
 import { computed, ref } from 'vue'
 
-export default {
-	components: { Icon },
-	props: ['modelValue', 'options', 'icon', 'placeholder'],
-	setup (props, { emit }) {
-		const model = computed({
-			get () { return props.modelValue },
-			set (value) { emit('update:modelValue', value) }
-		})
-		const focus = ref(false)
-		return { model, focus }
-	}
-}
+const props = defineProps(['modelValue', 'options', 'icon', 'placeholder'])
+const emit = defineEmits(['update:modelValue'])
+
+const model = computed({
+	get () { return props.modelValue },
+	set (value) { emit('update:modelValue', value) }
+})
+const focus = ref(false)
 </script>
 
 

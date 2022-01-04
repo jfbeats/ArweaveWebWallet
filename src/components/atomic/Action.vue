@@ -7,14 +7,14 @@
 	</router-link>
 </template>
 
-<script>
-import Icon from '@/components/atomic/Icon.vue'
 
-export default {
-	components: { Icon },
-	props: ['icon'],
-}
+
+<script setup>
+import Icon from '@/components/atomic/Icon.vue'
+const props = defineProps(['icon'])
 </script>
+
+
 
 <style scoped>
 .action {
