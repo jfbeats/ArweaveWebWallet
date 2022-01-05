@@ -1,10 +1,10 @@
 <template>
-	<input v-model="model" ref="input" @animationstart="handleAutofill" @change="handleChange" />
+	<input class="input" v-model="model" ref="input" @animationstart="handleAutofill" @change="handleChange" />
 </template>
 
 
 
-<script setup> // TODO replace normal inputs in other files by this one
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 
 const props = defineProps(['modelValue'])
@@ -14,37 +14,33 @@ const model = computed({
 	get () { return props.modelValue },
 	set (value) { emit('update:modelValue', value) }
 })
-const input = ref(null)
+const input = ref(undefined as undefined | HTMLInputElement)
 const hasAutofill = ref(false)
-const handleAutofill = (e) => {
-	if (e.animationName === 'onAutofill') { hasAutofill.value = true }
-	if (e.animationName === 'onAutofillCancel') { hasAutofill.value = false }
+const handleAutofill = (e: AnimationEvent) => {
+	if (e.animationName.includes('onAutofill')) { hasAutofill.value = true }
+	if (e.animationName.includes('onNotAutofill')) { hasAutofill.value = false }
 }
 const handleChange = () => {
-	if (hasAutofill.value) { setTimeout(() => input.value.value = input.value.value) }
+	if (hasAutofill.value) { setTimeout(() => input.value && (input.value.value = input.value.value)) }
 }
 </script>
 
 
 
 <style scoped>
-input {
+.input {
 	font-size: 1em;
 	outline: none;
 	border: none;
 	background-color: transparent;
 }
-</style>
 
-
-
-<style>
-input:-webkit-autofill {
+.input:-webkit-autofill {
 	animation: onAutofill 1s 2;
 	transition: background-color 100000s, color 100000s;
 }
 
-input:not(:-webkit-autofill) {
+.input:not(:-webkit-autofill) {
 	animation: onNotAutofill 1s 2;
 }
 
@@ -53,7 +49,7 @@ input:not(:-webkit-autofill) {
 	to { opacity: 1 }
 }
 
-@keyframes onAutofillCancel {
+@keyframes onNotAutofill {
 	from { opacity: 1 }
 	to { opacity: 1 }
 }

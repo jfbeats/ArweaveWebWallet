@@ -2,11 +2,11 @@
 	<div class="input-ar input-box" :class="{ focus }">
 		<div class="input">
 			<Icon :icon="LogoArweave"></Icon>
-			<input v-model="model" inputmode="numeric" class="text" placeholder="AR" @focus="focus = 1" @blur="focus = 0" :disabled="disabled" :id="id" />
+			<RawInput v-model="model" inputmode="numeric" class="text" placeholder="AR" @focus="focus = 1" @blur="focus = 0" :disabled="disabled" :id="id" />
 		</div>
 		<div v-if="currentPrice" class="spacer"></div>
 		<div v-if="currentPrice" class="input">
-			<input v-model="model2" inputmode="numeric" class="text right" :placeholder="currencyType" @focus="focus = 2" @blur="focus = 0" :disabled="disabled" />
+			<RawInput v-model="model2" inputmode="numeric" class="text right" :placeholder="currencyType" @focus="focus = 2" @blur="focus = 0" :disabled="disabled" />
 			<Icon :icon="currencySymbol" />
 		</div>
 	</div>
@@ -15,6 +15,7 @@
 
 
 <script setup>
+import RawInput from '@/components/function/RawInput.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import { currency } from '@/store/ArweaveStore'
 import { computed, ref, watch } from 'vue'

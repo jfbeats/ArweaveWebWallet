@@ -4,7 +4,7 @@
 			<div class="inputs">
 				<div v-for="(input, inputIndex) in row.items" :key="row.key + input.name" class="input" :class="{ flip: row.items.length == 2 && inputIndex == 1 }">
 					<Icon v-if="input.icon" :icon="input.icon" />
-					<input v-model="input.value" v-bind="input.attrs" class="text" :placeholder="input.name" @focus="focus = (index + 1) * (inputIndex + 1)" @blur="focus = 0" :disabled="disabled" />
+					<RawInput v-model="input.value" v-bind="input.attrs" class="text" :placeholder="input.name" @focus="focus = (index + 1) * (inputIndex + 1)" @blur="focus = 0" :disabled="disabled" />
 				</div>
 			</div>
 			<button v-if="row.deletable" class="remove" @click="removeRow(index)" type="button">
@@ -17,9 +17,10 @@
 
 
 <script setup>
+import RawInput from '@/components/function/RawInput.vue'
 import Icon from '@/components/atomic/Icon.vue'
-import { ref } from 'vue'
 import IconX from '@/assets/icons/x.svg?component'
+import { ref } from 'vue'
 
 const props = defineProps(['schema', 'disabled'])
 
