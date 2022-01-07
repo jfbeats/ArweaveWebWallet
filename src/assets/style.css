@@ -1,7 +1,7 @@
 :root {
 	--toolbar-size: 64px;
 	--toolbar-spacing: 10px;
-	--spacing-default: 20px;
+	--spacing-default: 18px;
 	--spacing: var(--spacing-default);
 	--column-width-small: 600px;
 	--column-width: 700px;
@@ -18,7 +18,7 @@
 	--element-secondary: #bbb;
 	--element-secondary-opacity: 0.75;
 	--element-disabled-opacity: 0.5;
-	--line-height: 2;
+	--line-height: 1.6;
 	--red: #BF616A;
 	--orange: #D08770;
 	--yellow: #EBCB8B;
@@ -28,9 +28,15 @@
 	--blue: #5E81AC;
 }
 
-@media (max-width: 499px) {
+@media (max-width: 599px) {
 	:root {
 		--spacing: 16px;
+	}
+}
+
+@media (max-width: 499px) {
+	:root {
+		--spacing: 14px;
 	}
 }
 
