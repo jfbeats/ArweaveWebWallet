@@ -19,6 +19,8 @@ type QueryStatusInterface<T> = {
 	promise?: Promise<T>
 }
 
+
+
 export function getAsyncData <T> (options: AsyncDataOptions<T>) {
 	console.log('new async data request')
 	const state = isRef(options.existingState) ? options.existingState : ref(options.existingState) as Ref<T | undefined>
@@ -68,6 +70,8 @@ export function getQueryManager <T> (options: AsyncDataOptions<T>) {
 	return { query, queryStatus }
 }
 
+
+
 export function awaitEffect (effect: () => any) {
 	let watchStop: WatchStopHandle
 	return new Promise(resolve => {
@@ -75,4 +79,40 @@ export function awaitEffect (effect: () => any) {
 			if (effect()) { resolve(true) }
 		})
 	}).then(() => { watchStop(); return true })
+}
+
+
+
+export function useDataWrapper <
+	SourceType extends { [key in Id]: string },
+	RuntimeType,
+	Id extends string,
+> (
+	source: Ref<SourceType[]>,
+	key: Id,
+	constructor: (source: SourceType) => RuntimeType,
+	destructor?: (runtime: RuntimeType) => any,
+) {
+	const Store: { [id: string]: RuntimeType } = {}
+	return computed<RuntimeType[]>({
+		get () {
+			const runtimeData = Object.keys(Store)
+			const sourceData = source.value.map(w => w[key] + '')
+			for (const id of [...runtimeData, ...sourceData]) {
+				if (runtimeData.includes(id) && !sourceData.includes(id)) {
+					destructor?.(Store[id])
+					delete Store[id]
+				}
+				if (!runtimeData.includes(id) && sourceData.includes(id)) {
+					const sourceEntry = source.value.find(w => w[key] == id)!
+					Store[id] = constructor(sourceEntry)
+				}
+			}
+			return Object.entries(Store).sort((a, b) => source.value.findIndex(s => s[key] == a[0]) - source.value.findIndex(s => s[key] == b[0])).map(e => e[1])
+		},
+		set (value) {
+			source.value = source.value.filter(s => value.find(r => r === Store[s[key]]))
+			.sort((a, b) => value.findIndex(r => r === Store[a[key]]) - value.findIndex(r => r === Store[b[key]]))
+		}
+	})
 }
