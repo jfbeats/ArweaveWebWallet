@@ -1,9 +1,9 @@
 <template>
 	<div ref="root" class="carousel flex-row no-scrollbar" :style="style">
 		<transition-group name="fade-list">
-			<div v-if="options?.overscroll" class="margin fade-list-item" key="margin1"></div>
+			<div v-if="options?.overscroll" class="margin fade-list-item" key="margin1" />
 			<slot />
-			<div v-if="options?.overscroll" class="margin fade-list-item" key="margin2"></div>
+			<div v-if="options?.overscroll" class="margin fade-list-item" key="margin2" />
 		</transition-group>
 	</div>
 </template>
@@ -11,10 +11,11 @@
 
 
 <script setup lang="ts">
-import { onMounted, ref, computed, watchEffect } from 'vue'
+import { awaitEffect } from '@/functions/AsyncData'
+import { onMounted, ref, computed, watch, nextTick } from 'vue'
 
 const props = defineProps<{
-	modelValue: number
+	modelValue?: number
 	options: {
 		position: ScrollLogicalPosition
 		overscroll: boolean
@@ -23,29 +24,33 @@ const props = defineProps<{
 }>()
 const emit = defineEmits(['update:modelValue'])
 
-const model = computed<number>({
+const model = computed<number | undefined>({
 	get () { return props.modelValue },
 	set (value) { emit('update:modelValue', value) }
 })
 const root = ref(null as null | HTMLElement)
 const elements = computed(() => {
-	if (!root.value?.children) { return null }
-	return Array(...root.value.children).slice(1, root.value.children.length - 1)
+	if (!root.value?.children) { return [] }
+	return Array(...root.value.children).filter(e => !e.classList.contains('margin'))
 })
 const style = computed(() => ({
 	'--position': props.options?.position || 'start',
 }))
 const effect = (instant?: boolean) => {
+	if (model.value == null) { return }
 	const index = Math.max(model.value || 0, 0)
-	if (!index) { return }
-	elements.value?.[index]?.scrollIntoView({
+	elements.value[index]?.scrollIntoView({
 		behavior: instant ? 'instant' as any : 'smooth',
 		block: 'start',
 		inline: props.options?.position || 'start',
 	})
 }
-watchEffect(() => effect())
-onMounted(() => setTimeout(() => effect(props.options.immediate)))
+onMounted(async () => {
+	await nextTick()
+	await awaitEffect(() => elements.value.length)
+	setTimeout(() => effect(props.options.immediate))
+	watch(model, () => effect())
+})
 </script>
 
 

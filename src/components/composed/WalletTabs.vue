@@ -1,6 +1,6 @@
 <template>
 	<div class="wallet-tabs">
-		<Carousel v-model="carouselIndex" :options="{ position: 'start', overscroll: false }">
+		<Carousel v-model="undefined" :options="{ position: 'start', overscroll: false }">
 			<button v-for="Wallet in Wallets" :key="Wallet.id" type="button" @click="model = Wallet.id" class="tab" :class="{ active: Wallet.id == model }">
 				<AddressIcon :address="Wallet.key" />
 			</button>
@@ -23,8 +23,6 @@ const model = computed({
 	get () { return props.modelValue },
 	set (value) { emit('update:modelValue', value) }
 })
-
-const carouselIndex = 0
 </script>
 
 
