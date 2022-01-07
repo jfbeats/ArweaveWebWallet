@@ -112,8 +112,11 @@ const connectData = computed(() => {
 })
 
 
-const connectionFeed = computed(() => currentId.value === props.state.walletId
-	? props.state.messageQueue?.filter((m) => !m.fulfilled) : [])
+
+const connectionFeed = computed(() => {
+	if (currentId.value !== props.state.walletId) { return [] }
+	return props.state.messageQueue?.filter((m) => !m.fulfilled)
+})
 
 
 

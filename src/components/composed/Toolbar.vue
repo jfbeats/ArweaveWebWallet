@@ -113,7 +113,7 @@ const links = toRef(InterfaceStore.toolbar, 'links')
 }
 
 .profile {
-	background: var(--background3);
+	background: var(--background);
 	width: 100%;
 	height: 100%;
 	border-radius: var(--border-radius3);
@@ -142,7 +142,6 @@ const links = toRef(InterfaceStore.toolbar, 'links')
 
 .dragging .icon > * {
 	transform: translateX(calc(100% + var(--toolbar-spacing) * 2));
-	box-shadow: 0 0 12px 1px #00000044;
 }
 
 [dir="rtl"] .dragging .icon > * {

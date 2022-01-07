@@ -43,8 +43,8 @@ emitter.once = (eventName, handler) => {
 
 const updateWindowSize = () => {
 	InterfaceStore.windowWidth = window.innerWidth
-	InterfaceStore.breakpoints.verticalLayout = InterfaceStore.windowWidth < 600
-	InterfaceStore.breakpoints.verticalContent = InterfaceStore.windowWidth < 1100
+	InterfaceStore.breakpoints.verticalLayout = InterfaceStore.windowWidth < 599
+	InterfaceStore.breakpoints.verticalContent = InterfaceStore.windowWidth < 1099
 }
 updateWindowSize()
 window.addEventListener('resize', updateWindowSize)
