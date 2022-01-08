@@ -17,7 +17,7 @@
 <script setup>
 import RawInput from '@/components/function/RawInput.vue'
 import Icon from '@/components/atomic/Icon.vue'
-import { currency } from '@/store/ArweaveStore'
+import { currency } from '@/store/CurrencyStore'
 import { computed, ref, watch } from 'vue'
 import LogoArweave from '@/assets/logos/arweave.svg?component'
 

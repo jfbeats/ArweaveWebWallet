@@ -7,7 +7,7 @@
 
 
 <script setup>
-import { currency } from '@/store/ArweaveStore'
+import { currency } from '@/store/CurrencyStore'
 import { computed } from 'vue'
 
 const props = defineProps(['ar'])
