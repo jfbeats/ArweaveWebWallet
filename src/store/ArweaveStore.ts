@@ -13,7 +13,7 @@ import { ArweaveVerifier, ArweaveProviderInterface } from 'arweave-wallet-connec
 import { decode, encode, getDecryptionKey, getSigningKey } from '@/functions/Crypto'
 import { getFeeRange } from '@/functions/Transactions'
 import { awaitEffect, getAsyncData } from '@/functions/AsyncData'
-import { Channel } from '@/functions/Channels'
+import { ChannelRef } from '@/functions/Channels'
 import type { WalletProxy } from '@/functions/Wallets'
 
 
@@ -445,7 +445,7 @@ function processUpdatedTxs () {
 export const currency = getConversion()
 
 function getConversion () {
-	const settings = new Channel('currency', undefined, { currency: 'USD', provider: 'redstone' }).state
+	const settings = new ChannelRef('currency', undefined, { currency: 'USD', provider: 'redstone' }).state.value
 	const currentPrice = getAsyncData({
 		existingState: toRef(settings, 'rate'),
 		timestamp: toRef(settings, 'timestamp'),

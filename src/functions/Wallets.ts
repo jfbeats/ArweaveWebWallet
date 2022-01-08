@@ -1,6 +1,7 @@
 import { ArweaveProvider, arweave } from '@/store/ArweaveStore'
 import { LedgerProvider } from '@/providers/Ledger'
-import { Channel } from '@/functions/Channels'
+import { ChannelRef } from '@/functions/Channels'
+import { useDataWrapper } from '@/functions/AsyncData'
 import { passwordEncrypt, passwordDecrypt, pkcs8ToJwk } from '@/functions/Crypto'
 import { uuidV4, download } from '@/functions/Utils'
 import { generateMnemonic as generateM, validateMnemonic as validateM } from 'bip39-web-crypto'
@@ -8,17 +9,7 @@ import { generateMnemonic as generateM, validateMnemonic as validateM } from 'bi
 import { getKeyPairFromMnemonic } from 'human-crypto-keys'
 // @ts-ignore
 import wordlist from 'bip39-web-crypto/src/wordlists/english.json'
-import { computed, reactive } from 'vue'
 import type { JWKInterface } from 'arweave/web/lib/wallet'
-import { useDataWrapper } from '@/functions/AsyncData'
-
-
-
-const WalletsChannel = new Channel('wallets', undefined, [])
-const WalletsData = computed<WalletDataInterface[]>({
-	get () { return WalletsChannel.state as any },
-	set (value) { WalletsChannel.set(value) }
-})
 
 
 
@@ -63,7 +54,7 @@ function walletFactory (wallet: WalletDataInterface): Provider {
 	const provider = selectProvider(walletProxy)
 	return new provider(walletProxy)
 }
-
+const WalletsData = new ChannelRef('wallets', undefined, []).state
 export const Wallets = useDataWrapper(WalletsData, 'id', walletFactory, (wallet) => { wallet.destructor?.() })
 
 

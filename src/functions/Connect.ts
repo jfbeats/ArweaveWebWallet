@@ -10,10 +10,10 @@ const { origin, session } = state
 const sharedState: Ref<ConnectorState | null> = ref(null)
 export const connectors = computed(() => {
 	const allConnectors = Object.entries(connectorChannels.states)
-		.filter(([key, val]) => key !== (origin + session) && val.walletId !== false)
+		.filter(([key, val]) => key !== (origin! + session) && val.walletId !== false)
 		.map(([key, val]) => val)
 	if (sharedState.value && sharedState.value?.walletId !== false) { allConnectors.push(sharedState.value) }
-	return allConnectors.sort((a, b) => a.timestamp - b.timestamp)
+	return allConnectors.sort((a, b) => a.timestamp! - b.timestamp!)
 })
 
 
@@ -69,7 +69,7 @@ async function initConnector () {
 
 
 
-function postMessage (message: Message) {
+function postMessage (message: any) {
 	if (!origin) { return }
 	windowRef.postMessage({ ...message, jsonrpc: '2.0' }, origin)
 }
@@ -82,6 +82,6 @@ export function navigateBack () {
 	} catch (e) { console.log(e) }
 }
 
-export function navigateBackAvailable (origin, session) {
+export function navigateBackAvailable (origin: string, session: string) {
 	return window.opener && state.origin === origin && state.session === session
 }

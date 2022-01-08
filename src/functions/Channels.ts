@@ -1,4 +1,4 @@
-import { getCurrentScope, onScopeDispose, reactive, watch, WatchStopHandle } from 'vue'
+import { getCurrentScope, onScopeDispose, reactive, watch, WatchStopHandle, ref, Ref } from 'vue'
 
 type PrefixTable = {
 	'connectorState:': InstanceState
@@ -7,7 +7,7 @@ type PrefixTable = {
 	currency: { rate?: string, currency: string, provider: string, timestamp?: number }
 }
 
-export class Channel <T extends keyof PrefixTable> {
+export class Channel <T extends keyof PrefixTable> { // Todo replace with ref version
 	state
 	private readonly stateChannel
 	private stopWrite?: WatchStopHandle
@@ -20,8 +20,7 @@ export class Channel <T extends keyof PrefixTable> {
 		this.update(localStorage.getItem(this.stateChannel))
 		if (getCurrentScope()) { onScopeDispose(() => this.destructor()) }
 	}
-	destructor () {
-		if (!this) { return }
+	destructor = () => {
 		window.removeEventListener('storage', this.storageListener)
 		if (this.stopWrite) { this.stopWrite() }
 	}
@@ -48,6 +47,49 @@ export class Channel <T extends keyof PrefixTable> {
 			for (const key in this.state) { !(key in newState) && delete this.state[key] }
 			Object.assign(this.state, newState)
 		}
+	}
+	deleteChannel = () => {
+		this.destructor()
+		localStorage.removeItem(this.stateChannel)
+	}
+}
+
+
+export class ChannelRef <T extends keyof PrefixTable> {
+	state
+	private readonly stateChannel
+	private stopWrite?: WatchStopHandle
+	
+	constructor (prefix: T, instanceName = '', init: PrefixTable[T]) {
+		this.state = ref(init) as Ref<PrefixTable[T]>
+		this.stateChannel = prefix + instanceName
+		window.addEventListener('storage', this.storageListener)
+		if (!localStorage.getItem(this.stateChannel)) {
+			if (typeof this.state.value === 'object' && Object.keys(this.state).length) { this.writeState() }
+			else if (this.state.value != null) { this.writeState() }
+		}
+		this.update(localStorage.getItem(this.stateChannel))
+		if (getCurrentScope()) { onScopeDispose(() => this.destructor()) }
+	}
+	destructor = () => {
+		window.removeEventListener('storage', this.storageListener)
+		if (this.stopWrite) { this.stopWrite() }
+	}
+	
+	private writeState = () => {
+		const stateString = JSON.stringify(this.state.value)
+		if (stateString === localStorage.getItem(this.stateChannel)) { return }
+		localStorage.setItem(this.stateChannel, stateString)
+	}
+	private startWrite = () => this.stopWrite = watch(this.state, this.writeState, { deep: true })
+	private update = (val: string | null) => {
+		if (this.stopWrite) { this.stopWrite() }
+		if (val) { this.state.value = JSON.parse(val) }
+		this.startWrite()
+	}
+	private storageListener = (e: StorageEvent) => {
+		if (e.key !== this.stateChannel || e.newValue === e.oldValue || !e.newValue) { return }
+		this.update(e.newValue)
 	}
 	deleteChannel = () => {
 		this.destructor()

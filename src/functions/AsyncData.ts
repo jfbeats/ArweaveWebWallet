@@ -22,7 +22,6 @@ type QueryStatusInterface<T> = {
 
 
 export function getAsyncData <T> (options: AsyncDataOptions<T>) {
-	console.log('new async data request')
 	const state = isRef(options.existingState) ? options.existingState : ref(options.existingState) as Ref<T | undefined>
 	const timestamp = isRef(options.timestamp) ? options.timestamp : ref(options.timestamp) as Ref<number | undefined>
 	const { query, queryStatus } = getQueryManager(options)
@@ -30,7 +29,7 @@ export function getAsyncData <T> (options: AsyncDataOptions<T>) {
 	const getState = async (force?: boolean) => {
 		if (options.completed?.()) { return state.value! }
 		if (queryStatus.promise && queryStatus.running) { timestamp.value = Date.now(); return queryStatus.promise }
-		if (queryStatus.promise && !force && state.value != null && timestamp.value && Date.now() - timestamp.value < (options.seconds * 1000)) { return queryStatus.promise }
+		if (!force && state.value != null && timestamp.value && Date.now() - timestamp.value < (options.seconds * 1000)) { return state.value }
 		const rollback = timestamp.value
 		timestamp.value = Date.now()
 		return new Promise<T>((resolve, reject) => {
@@ -61,7 +60,11 @@ export function getQueryManager <T> (options: AsyncDataOptions<T>) {
 		if (queryStatus.running && queryStatus.promise) { return queryStatus.promise }
 		queryStatus.running = true
 		queryStatus.promise = new Promise<T>(async (resolve, reject) => {
-			await awaitEffect(() => (options.awaitEffect ? options.awaitEffect() : true) && InterfaceStore.windowVisible)
+			await awaitEffect(() => {
+				const option = (options.awaitEffect ? options.awaitEffect() : true)
+				const visible = InterfaceStore.windowVisible
+				return option && visible
+			})
 			console.log(new Date(Date.now()).toTimeString(), options, queryStatus.promise)
 			options.query().then(resolve).catch(reject).finally(() => queryStatus.running = false)
 		})
