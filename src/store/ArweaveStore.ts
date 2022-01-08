@@ -14,6 +14,7 @@ import { decode, encode, getDecryptionKey, getSigningKey } from '@/functions/Cry
 import { getFeeRange } from '@/functions/Transactions'
 import { awaitEffect, getAsyncData } from '@/functions/AsyncData'
 import { Channel } from '@/functions/Channels'
+import type { WalletProxy } from '@/functions/Wallets'
 
 
 
@@ -112,15 +113,17 @@ export class ArweaveAccount implements Account {
 	queries = reactive({} as { [key: string]: GQLEdgeTransactionInterface[] })
 	queriesStatus = reactive({} as { [key: string]: QueryStatusInterface })
 	
-	constructor (init: string | WalletDataInterface) {
+	constructor (init: string | WalletProxy) {
 		if (typeof init === 'string') { this.state.key = init }
 		else if (typeof init === 'object') {
-			if (init.arweave?.key) { this.state.key = init.arweave.key }
-			else if (init.jwk) { arweave.wallets.jwkToAddress(init.jwk).then((address) => {
+			if (init.data.arweave?.key) { this.state.key = init.data.arweave.key }
+			else if (init.getPrivateKey) { (async () => {
+				const jwk = await init.getPrivateKey!()
+				const address = await arweave.wallets.jwkToAddress(jwk)
 				this.state.key = address
-				init.arweave ??= {}
-				init.arweave.key = address
-			})}
+				init.data.arweave ??= {}
+				init.data.arweave.key = address
+			})() }
 		}
 	}
 	destructor () { this.#balance.stop() }
@@ -132,38 +135,46 @@ export class ArweaveAccount implements Account {
 
 
 export class ArweaveProvider extends ArweaveAccount implements Provider {
-	#wallet: WalletDataInterface
-	static isProviderFor (wallet: WalletDataInterface) { return !!wallet.jwk }
-	constructor (init: WalletDataInterface) {
+	#wallet: WalletProxy
+	static isProviderFor (wallet: WalletProxy) { return !!wallet.data.jwk }
+	constructor (init: WalletProxy) {
 		super(init)
 		this.#wallet = init
-		if (!init.jwk) {
+		if (!this.#wallet.getPrivateKey) {
 			const disabled = ['download', 'signTransaction', 'sign', 'decrypt'] as const
 			disabled.forEach(method => this[method] = undefined)
 		}
 	}
+	get id () { return this.#wallet.id }
+	get uuid () { return this.#wallet.uuid }
 	get metadata () { return {
 		isSupported: true,
-		name: this.#wallet.jwk ? 'Arweave Wallet' : 'Arweave Address',
+		name: this.#wallet.getPrivateKey ? 'Arweave Wallet' : 'Arweave Address',
 		icon: LogoArweave,
 	}}
 	async signTransaction? (tx: Transaction, options?: SignatureOptions) {
 		if (tx.owner && tx.owner !== await this.getPublicKey()) { throw 'error' }
-		await arweave.transactions.sign(tx, this.#wallet.jwk, options)
+		await arweave.transactions.sign(tx, await this.#wallet.getPrivateKey!(), options)
 		return tx
 	}
 	async sign? (data: ArrayBufferView, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
-		const signed = await window.crypto.subtle.sign(options, await getSigningKey(this.#wallet.jwk as JsonWebKey), data)
+		const signingKey = await getSigningKey(await this.#wallet.getPrivateKey!() as JsonWebKey)
+		const signed = await window.crypto.subtle.sign(options, signingKey, data)
 		return new Uint8Array(signed)
 	}
 	async decrypt? (data: ArrayBufferView, options: Parameters<ArweaveProviderInterface['decrypt']>[1]) {
-		const decrypted = await window.crypto.subtle.decrypt(options, await getDecryptionKey(this.#wallet.jwk as JsonWebKey), data)
+		const decryptionKey = await getDecryptionKey(await this.#wallet.getPrivateKey!() as JsonWebKey)
+		const decrypted = await window.crypto.subtle.decrypt(options, decryptionKey, data)
 		return new Uint8Array(decrypted)
 	}
-	async getPublicKey () { return this.#wallet.jwk?.n || await awaitEffect(() => this.key) && fetchPublicKey(this.key!) || undefined }
+	async getPublicKey () {
+		if (this.#wallet.getPrivateKey) { return (await this.#wallet.getPrivateKey()).n }
+		await awaitEffect(() => this.key)
+		return fetchPublicKey(this.key!)
+	}
 	async download? () {
-		const key = this.key ? this.key : await arweave.wallets.jwkToAddress(this.#wallet.jwk)
-		download(key, JSON.stringify(this.#wallet.jwk))
+		await awaitEffect(() => this.key)
+		download(this.key!, JSON.stringify(await this.#wallet.getPrivateKey!()))
 	}
 	verifyMessage (message: Message | string) {
 		const verifier = new ArweaveVerifier()

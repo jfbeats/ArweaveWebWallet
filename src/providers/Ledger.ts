@@ -6,6 +6,8 @@ import Transaction from 'arweave/web/lib/transaction'
 import { ArweaveVerifier } from 'arweave-wallet-connector/lib/ArweaveWebWallet'
 import { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
 import { state } from '@/functions/Connect'
+import type { WalletProxy } from '@/functions/Wallets'
+
 
 
 async function getTransport () {
@@ -35,6 +37,7 @@ async function getAppInfo () {
 	try {
 		const app = new ArweaveApp(transport)
 		console.info("Requesting app info")
+		// @ts-ignore
 		response = await app.appInfo()
 		if (response.returnCode !== ArweaveApp.ErrorCode.NoError) {
 			console.error(`Error [${response.returnCode}] ${response.errorMessage}`)
@@ -88,6 +91,7 @@ async function sign (tx: Transaction) {
 
 
 export const metadata: Metadata = {
+	// @ts-ignore
 	isSupported: !!window.navigator.usb,
 	name: 'Ledger',
 	icon: LogoLedger,
@@ -102,8 +106,14 @@ export const LedgerProviderData: ProviderData = {
 }
 
 export class LedgerProvider extends ArweaveAccount implements Provider {
-	static isProviderFor (wallet: WalletDataInterface) { return wallet.provider === 'ledger' }
-	constructor (wallet: WalletDataInterface) { super(wallet) }
+	#wallet: WalletProxy
+	static isProviderFor (wallet: WalletProxy) { return wallet.data.provider === 'ledger' }
+	constructor (init: WalletProxy) {
+		super(init)
+		this.#wallet = init
+	}
+	get id () { return this.#wallet.id }
+	get uuid () { return this.#wallet.uuid }
 	get metadata () { return metadata }
 	async signTransaction (tx: Transaction, options: SignatureOptions) {
 		if (this.key !== await getAddress()) { throw new Error('Wrong account') }

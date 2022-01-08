@@ -1,9 +1,8 @@
 import { getDB } from '@/store/IndexedDB'
 import { Wallets } from '@/functions/Wallets'
-// @ts-ignore
-import { v4 as uuidv4 } from 'uuid'
 import { computed, reactive, watch } from 'vue'
 import { awaitEffect } from '@/functions/AsyncData'
+import { uuidV4 } from '@/functions/Utils'
 
 const errors = {
 	rejected: { code: 0, message: 'Rejected' },
@@ -47,7 +46,7 @@ export default class JsonRpc {
 		await awaitEffect(() => this.stateWallet.value)
 		if (!this.isMessage(message)) { return }
 		if (this.state.messageQueue.find(m => m.id === message.id)) { return true }
-		const uuid = uuidv4() as string
+		const uuid = uuidV4()
 		const storedMessage: StoredMessage = {
 			uuid,
 			origin: this.state.origin,

@@ -2,7 +2,7 @@ import { ArweaveProvider, arweave } from '@/store/ArweaveStore'
 import { LedgerProvider } from '@/providers/Ledger'
 import { Channel } from '@/functions/Channels'
 import { passwordEncrypt, passwordDecrypt, pkcs8ToJwk } from '@/functions/Crypto'
-import { download } from '@/functions/Utils'
+import { uuidV4, download } from '@/functions/Utils'
 import { generateMnemonic as generateM, validateMnemonic as validateM } from 'bip39-web-crypto'
 // @ts-ignore
 import { getKeyPairFromMnemonic } from 'human-crypto-keys'
@@ -10,11 +10,12 @@ import { getKeyPairFromMnemonic } from 'human-crypto-keys'
 import wordlist from 'bip39-web-crypto/src/wordlists/english.json'
 import { computed, reactive } from 'vue'
 import type { JWKInterface } from 'arweave/web/lib/wallet'
+import { useDataWrapper } from '@/functions/AsyncData'
 
 
 
 const WalletsChannel = new Channel('wallets', undefined, [])
-export const WalletsData = computed<WalletDataInterface[]>({
+const WalletsData = computed<WalletDataInterface[]>({
 	get () { return WalletsChannel.state as any },
 	set (value) { WalletsChannel.set(value) }
 })
@@ -23,56 +24,47 @@ export const WalletsData = computed<WalletDataInterface[]>({
 
 export const ProviderRegistry = {
 	arweave: ArweaveProvider,
-	ledger: LedgerProvider
+	ledger: LedgerProvider,
 }
 
-function selectProvider (wallet: WalletDataInterface) {
-	if (wallet.provider && ProviderRegistry[wallet.provider]) { return ProviderRegistry[wallet.provider] }
+
+
+function selectProvider (wallet: WalletProxy) {
+	if (wallet.data.provider && ProviderRegistry[wallet.data.provider]) { return ProviderRegistry[wallet.data.provider] }
 	for (const provider of Object.values(ProviderRegistry)) { if (provider.isProviderFor?.(wallet)) { return provider } }
 	return ProviderRegistry['arweave']
 }
 
-type GConstructor<T = {}> = new (...args: any[]) => T
-function setProvider<TBase extends GConstructor<Provider>> (Base: TBase) {
-	return class WalletProxy extends Base {
-		#wallet: WalletDataInterface
-		constructor (...args: any[]) {
-			super(...args)
-			this.#wallet = args[0]
+
+
+export class WalletProxy {
+	#wallet: WalletDataInterface
+	constructor (...args: any[]) {
+		const walletData = args[0] as WalletDataInterface
+		if (!walletData.uuid) { walletData.uuid = uuidV4() }
+		if (!walletData.jwk) {
+			const disabled = ['getPrivateKey'] as const
+			disabled.forEach(method => this[method] = undefined)
 		}
-		get id () { return this.#wallet.id + '' }
-		async getPrivateKey () {
-		
-		}
+		this.#wallet = walletData
+	}
+	get data () { return this.#wallet }
+	get id () { return this.#wallet.id + '' }
+	get uuid () { return this.#wallet.uuid! }
+	async getPrivateKey? (decrypt?: boolean): Promise<JWKInterface> {
+		return this.#wallet.jwk!
 	}
 }
 
 
 
-const WalletsStore: { [id: string]: WalletProxy } = {}
-export const Wallets = computed<WalletProxy[]>({
-	get () {
-		const runningWallets = Object.keys(WalletsStore)
-		const storageWallets = WalletsData.value.map(w => w.id + '')
-		for (const id of [...runningWallets, ...storageWallets]) {
-			if (runningWallets.includes(id) && !storageWallets.includes(id)) {
-				WalletsStore[id].destructor?.()
-				delete WalletsStore[id]
-			}
-			if (!runningWallets.includes(id) && storageWallets.includes(id)) {
-				const wallet = WalletsData.value.find(w => w.id == id)!
-				const selectedProvider = selectProvider(wallet)!
-				const dynamicClass = setProvider(selectedProvider)
-				WalletsStore[id] = new dynamicClass(wallet)
-			}
-		}
-		return Object.values(WalletsStore).sort((a, b) => WalletsData.value.findIndex(w => w.id == a.id) - WalletsData.value.findIndex(w => w.id == b.id))
-	},
-	set (value) {
-		WalletsData.value = WalletsData.value.filter(w => value.find(v => v.id == w.id))
-			.sort((a, b) => value.findIndex(w => w.id == a.id) - value.findIndex(w => w.id == b.id))
-	}
-})
+function walletFactory (wallet: WalletDataInterface): Provider {
+	const walletProxy = new WalletProxy(wallet)
+	const provider = selectProvider(walletProxy)
+	return new provider(walletProxy)
+}
+
+export const Wallets = useDataWrapper(WalletsData, 'id', walletFactory, (wallet) => { wallet.destructor?.() })
 
 
 
