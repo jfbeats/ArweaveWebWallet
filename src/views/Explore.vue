@@ -1,7 +1,7 @@
 <template>
 	<div class="settings">
 		<div class="column">
-<!--			<Input v-model="search" placeholder="Search" style="flex:1 1 0;" @keyup.enter="" />-->
+<!--			<Input v-model="search" :actions="[searchAction]" placeholder="Search" style="flex:1 1 0;" />-->
 <!--			search in address, tx, username (arweave id tags) -->
 			<div class="group">
 				<h2>Gateway State</h2>
@@ -51,9 +51,10 @@ import Date from '@/components/atomic/Date.vue'
 import Amount from '@/components/composed/Amount.vue'
 import { pendingList } from '@/store/BlockStore'
 import Link from '@/components/function/Link.vue'
+import IconSearch from '@/assets/icons/search.svg?component'
 
 const search = ref('')
-
+const searchAction = { run: () => {}, icon: IconSearch }
 
 
 </script>

@@ -1,7 +1,7 @@
 <template>
 	<span class="icon">
 		<transition name="fade-fast" mode="out-in">
-			<component v-if="component" :is="component" />
+			<component v-if="component" :is="component" :key="key" />
 			<svg v-else-if="iconData == 'loader'" class="loader" height="100" width="100" viewBox="0 0 100 100" :class="{ spin: progress == null }">
 				<circle stroke="#ffffff22" :stroke-width="thickness" fill="transparent" :r="normalizedRadius" :cx="50" :cy="50" />
 				<circle stroke="currentColor" :stroke-dasharray="circumference + ' ' + circumference" :style="{ strokeDashoffset }" :stroke-width="thickness" stroke-linecap="round" fill="transparent" :r="normalizedRadius" :cx="50" :cy="50" @animationiteration="finishAnimation = false" :class="{ spin: progress == null || finishAnimation }" />
@@ -14,10 +14,13 @@
 
 
 
-<script setup>
+<script setup lang="ts">
 import { computed, isRef, ref, watch } from 'vue'
 
-const props = defineProps(['icon', 'progress'])
+const props = defineProps<{
+	icon: string | Object
+	progress?: number
+}>()
 
 const iconData = computed(() => isRef(props.icon) ? props.icon.value : props.icon)
 const component = computed(() => typeof iconData.value === 'object' ? iconData.value : null)
@@ -29,9 +32,9 @@ const normalizedRadius = 50 - thickness / 2
 const circumference = normalizedRadius * 2 * Math.PI
 const strokeDashoffset = computed(() => circumference - (props.progress ?? 25) / 100 * circumference)
 const finishAnimation = ref(false)
-watch(() => props.progress, (value, oldValue) => {
-	if (value != null && oldValue == null) { finishAnimation.value = true }
-})
+watch(() => props.progress, (value, oldValue) => { if (value != null && oldValue == null) { finishAnimation.value = true } })
+const key = ref(0)
+watch(() => props.icon, () => key.value++, { deep: true })
 </script>
 
 

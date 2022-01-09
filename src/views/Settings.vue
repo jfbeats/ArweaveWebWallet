@@ -10,8 +10,7 @@
 			<div class="group">
 				<p>Gateway</p>
 				<div class="flex-row">
-					<Input v-model="gateway" :placeholder="ArweaveStore.gatewayURL" :icon="LogoArweave" style="flex:1 1 0;" @keyup.enter="gateway && setGateway()" />
-					<Button @click="setGateway()">{{ gateway ? 'Submit' : 'Reset' }}</Button>
+					<Input v-model="gateway" :actions="[gatewayAction]" :placeholder="ArweaveStore.gatewayURL" :icon="LogoArweave" style="flex:1 1 0;" />
 				</div>
 			</div>
 			<div class="group">
@@ -39,15 +38,18 @@ import WalletOptions from '@/components/composed/WalletOptions.vue'
 import Input from '@/components/atomic/Input.vue'
 import Select from '@/components/atomic/Select.vue'
 import Button from '@/components/atomic/Button.vue'
+import Icon from '@/components/atomic/Icon.vue'
 import { Wallets } from '@/functions/Wallets'
-import ArweaveStore, { updateArweave } from '@/store/ArweaveStore'
+import ArweaveStore, { gatewayDefault, updateArweave } from '@/store/ArweaveStore'
 import { currency, redstoneOptions } from '@/store/CurrencyStore'
 import { ref, computed } from 'vue'
 
 import LogoArweave from '@/assets/logos/arweave.svg?component'
 import LogoGithub from '@/assets/logos/socials/github.svg?component'
 import LogoDiscord from '@/assets/logos/socials/discord.svg?component'
-import Icon from '@/components/atomic/Icon.vue'
+
+import IconY from '@/assets/icons/y.svg?component'
+import IconX from '@/assets/icons/x.svg?component'
 
 const gateway = ref('')
 const setGateway = () => {
@@ -56,6 +58,11 @@ const setGateway = () => {
 	localStorage.setItem('gateway', gateway.value)
 	gateway.value = ''
 }
+
+const gatewayAction = computed(() => {
+	if (!gateway.value && ArweaveStore.gatewayURL.includes(gatewayDefault.host)) { return }
+	return { run: setGateway, icon: gateway.value ? IconY : IconX }
+})
 
 const currentSetting = computed({
 	get () { return { currency: currency.settings.currency, provider: currency.settings.provider } },

@@ -30,7 +30,7 @@ export let arDB: { search: InstanceType<typeof ArDB>['search'] }
 
 
 
-const gatewayDefault = {
+export const gatewayDefault = {
 	host: 'arweave.net',
 	port: 443,
 	protocol: 'https'

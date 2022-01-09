@@ -34,7 +34,7 @@
 		</div>
 		<div class="card">
 			<h2>Address Only</h2>
-			<InputAddress v-model="targetInput" :actions="[importAddressOnlyAction]" @keydown.enter="importAddressOnlyAction.run()" />
+			<InputAddress v-model="targetInput" :actions="[importAddressOnlyAction]" />
 		</div>
 	</div>
 </template>

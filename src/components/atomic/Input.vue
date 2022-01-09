@@ -1,16 +1,20 @@
 <template>
 	<div class="input input-box" :class="{ focus }">
 		<Icon v-if="icon" :icon="icon" />
-		<RawInput class="text" v-model="model" :placeholder="placeholder" @focus="focus = true" @blur="focus = false" :disabled="disabled" :id="id" />
-		<button v-for="action in actions" class="action" :key="action.icon" @click="action.run">
-			<Icon :icon="action.icon" />
-		</button>
+		<RawInput class="text" v-model="model" @keyup.enter="runLastAction" :placeholder="placeholder" @focus="focus = true" @blur="focus = false" :disabled="disabled" :id="id" />
+		<transition name="fade-fast" mode="out-in">
+			<div class="actions" :key="actionsComputed?.length">
+				<button v-for="action in actionsComputed" class="action"  @click="action.run">
+					<Icon :icon="action.icon" />
+				</button>
+			</div>
+		</transition>
 	</div>
 </template>
 
 
 
-<script setup>
+<script setup lang="ts">
 import Icon from '@/components/atomic/Icon.vue'
 import RawInput from '@/components/function/RawInput.vue'
 import { computed, ref, watch } from 'vue'
@@ -27,6 +31,8 @@ watch(() => model.value, (newVal, oldVal) => {
 	if (!props.mask) { return }
 	if (!props.mask(newVal)) { model.value = oldVal }
 })
+const actionsComputed = computed(() => props.actions?.filter((action: any) => action) || [])
+const runLastAction = () => props.actions?.[props.actions.length - 1]?.run?.()
 </script>
 
 
@@ -59,6 +65,13 @@ watch(() => model.value, (newVal, oldVal) => {
 	background-color: transparent;
 	color: var(--element-secondary);
 	width: 100%;
+}
+
+.actions {
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .action {
