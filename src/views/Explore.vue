@@ -8,14 +8,14 @@
 				<div class="flex-column">
 					<div>Peers: {{ networkInfo?.peers }}</div>
 					<div>Queue: {{ networkInfo?.queue_length }}</div>
-					<div>Latency: {{ networkInfo?.node_state_latency }}</div>
+					<div>State Latency: {{ networkInfo?.node_state_latency }}</div>
 					<div>Pending Transactions: {{ pendingList?.length }}</div>
 				</div>
 			</div>
 			<div class="group">
 				<h2>Weave State</h2>
 				<div class="flex-column">
-					<div>Height: {{ networkInfo?.height }}</div>
+					<div>Network Height: {{ networkInfo?.height }}</div>
 					<div>Weave Size: {{ humanFileSize(currentBlock?.weave_size) }}</div>
 					<div>Endowment Pool: <Amount :winston="currentBlock?.reward_pool" /></div>
 				</div>

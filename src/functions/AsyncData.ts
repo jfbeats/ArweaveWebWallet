@@ -64,8 +64,9 @@ export function getQueryManager <T> (options: AsyncDataOptions<T>) {
 		queryStatus.running = true
 		queryStatus.promise = new Promise<T>(async (resolve, reject) => {
 			if (options.awaitEffect) { await awaitEffect(() => options.awaitEffect?.()) }
-			console.log(new Date(Date.now()).toTimeString(), options, queryStatus.promise)
-			options.query().then(resolve).catch(reject).finally(() => queryStatus.running = false)
+			const query = options.query()
+			query.then(resolve).catch(reject).finally(() => queryStatus.running = false)
+			query.then(res => console.log(new Date(Date.now()).toLocaleTimeString() + '\n', { options, res }))
 		})
 		return queryStatus.promise
 	}
