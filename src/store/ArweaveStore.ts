@@ -1,7 +1,7 @@
 import Arweave from 'arweave'
 import ArDB from 'ardb'
 import { download } from '@/functions/Utils'
-import { computed, reactive, Ref, toRef, watch } from 'vue'
+import { reactive, Ref, toRef, watch } from 'vue'
 import InterfaceStore from '@/store/InterfaceStore'
 import LogoArweave from '@/assets/logos/arweave.svg?component'
 import { ApiConfig } from 'arweave/web/lib/api'
@@ -442,13 +442,21 @@ function processUpdatedTxs () {
 
 
 
-export const { state: networkInfo, getState: getNetworkInfo } = getAsyncData({
+const networkInfoData = getAsyncData({
 	query: () => arweave.network.getInfo(),
 	seconds: 10,
 })
-watch(() => ArweaveStore.gatewayURL, () => networkInfo.value = undefined)
+watch(() => ArweaveStore.gatewayURL, () => networkInfoData.state.value = undefined)
+export const networkInfo = networkInfoData.state
 
 
+export const currentBlockData = getAsyncData({
+	query: () => arweave.blocks.getCurrent(),
+	seconds: 60,
+	stale: (state) => networkInfoData.stateRef.value && state && networkInfoData.stateRef.value.height > state.height,
+	completed: (state) => networkInfoData.stateRef.value && state && networkInfoData.stateRef.value.height == state.height,
+})
+export const currentBlock = currentBlockData.state
 
 
 

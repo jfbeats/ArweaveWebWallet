@@ -3,12 +3,14 @@ import InterfaceStore from '@/store/InterfaceStore'
 
 const globalClock = ref(0)
 setInterval(() => globalClock.value++, 1000)
+watch(() => InterfaceStore.windowVisible, () => globalClock.value++)
 
 type AsyncDataOptions<T> = {
 	query: () => Promise<T>
 	seconds: number
 	awaitEffect?: () => any
-	completed?: () => any
+	stale?: (state: T | undefined) => any
+	completed?: (state: T | undefined) => any
 	timestamp?: Ref<number | undefined>
 	existingState?: Ref<T | undefined>
 	processResult?: (params: T, options: AsyncDataOptions<T>) => void
@@ -21,13 +23,13 @@ type QueryStatusInterface<T> = {
 
 
 
-export function getAsyncData <T> (options: AsyncDataOptions<T>) {
+export function getAsyncData <T> (options: AsyncDataOptions<T>) { // Todo slowdown on failure
 	const state = isRef(options.existingState) ? options.existingState : ref(options.existingState) as Ref<T | undefined>
 	const timestamp = isRef(options.timestamp) ? options.timestamp : ref(options.timestamp) as Ref<number | undefined>
 	const { query, queryStatus } = getQueryManager(options)
 	const localClock = ref(0)
 	const getState = async (force?: boolean) => {
-		if (options.completed?.()) { return state.value! }
+		if (options.completed?.(state.value)) { return state.value! }
 		if (queryStatus.promise && queryStatus.running) { timestamp.value = Date.now(); return queryStatus.promise }
 		if (!force && state.value != null && timestamp.value && Date.now() - timestamp.value < (options.seconds * 1000)) { return state.value }
 		const rollback = timestamp.value
@@ -42,16 +44,17 @@ export function getAsyncData <T> (options: AsyncDataOptions<T>) {
 	}
 	const scope = effectScope()
 	scope.run(() => watch(globalClock, () => {
+		if (options.completed?.(state.value)) { return }
+		if (!InterfaceStore.windowVisible) { return }
 		if (queryStatus.running) { timestamp.value = Date.now(); return }
-		if (options.completed?.()) { return }
-		if (state.value != null && timestamp.value && Date.now() - timestamp.value < (options.seconds * 1000)) { return }
+		if (!options.stale?.(state.value) && state.value != null && timestamp.value && Date.now() - timestamp.value < (options.seconds * 1000)) { return }
 		localClock.value++
 	}))
 	const computedState = scope.run(() => computed({
 		get () { localClock.value; getState(); return state.value },
 		set (value) { state.value = value }
 	})) as WritableComputedRef<T | undefined>
-	return { state: computedState, getState, queryStatus, stop: scope.stop }
+	return { state: computedState, stateRef: state, getState, queryStatus, stop: scope.stop }
 }
 
 export function getQueryManager <T> (options: AsyncDataOptions<T>) {
@@ -60,11 +63,7 @@ export function getQueryManager <T> (options: AsyncDataOptions<T>) {
 		if (queryStatus.running && queryStatus.promise) { return queryStatus.promise }
 		queryStatus.running = true
 		queryStatus.promise = new Promise<T>(async (resolve, reject) => {
-			await awaitEffect(() => {
-				const option = (options.awaitEffect ? options.awaitEffect() : true)
-				const visible = InterfaceStore.windowVisible
-				return option && visible
-			})
+			if (options.awaitEffect) { await awaitEffect(() => options.awaitEffect?.()) }
 			console.log(new Date(Date.now()).toTimeString(), options, queryStatus.promise)
 			options.query().then(resolve).catch(reject).finally(() => queryStatus.running = false)
 		})

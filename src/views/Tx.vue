@@ -40,7 +40,7 @@
 						<div class="ellipsis">{{ tx.block.id }}</div>
 						<span>
 							{{ tx.block.height }}
-							<template v-if="currentBlock">/ {{ currentBlock }}</template>
+							<template v-if="networkInfo?.height">/ {{ networkInfo.height }}</template>
 						</span>
 						<div>{{ date }}</div>
 					</div>
@@ -81,7 +81,7 @@ import Address from '@/components/atomic/Address.vue'
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import InputGrid from '@/components/atomic/InputGrid.vue'
 import Amount from '@/components/composed/Amount.vue'
-import ArweaveStore, { arweave, useWatchTx } from '@/store/ArweaveStore'
+import ArweaveStore, { arweave, useWatchTx, networkInfo } from '@/store/ArweaveStore'
 import BlockStore, { getCurrentHeight } from '@/store/BlockStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { humanFileSize } from '@/functions/Utils'

@@ -20,6 +20,7 @@ import ArweaveStore, { arweave } from '@/store/ArweaveStore'
 import Img from '@/components/handlers/Img.vue'
 import SmartWeave from '@/components/handlers/SmartWeave.vue'
 import { computed, reactive, watch } from 'vue'
+import { unpackTags } from '@/functions/Transactions'
 
 const props = defineProps(['tx'])
 
@@ -36,6 +37,8 @@ watch(() => props.tx, async () => {
 	data.handler = null
 	data.loaded = false
 	if (props.tx.data?.size === '0') {
+		return
+	} else if (unpackTags(props.tx.tags)['Bundle-Version']) {
 		return
 	} else if (props.tx.data?.type === 'application/x.arweave-manifest+json' || props.tx.data?.type === 'text/html' || props.tx.data?.type === 'application/pdf') {
 		data.handler = 'iframe'

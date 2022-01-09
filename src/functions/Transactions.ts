@@ -61,7 +61,7 @@ export async function getFeeRange () {
 	}
 	const ids = await getPending()
 	if (ids.length <= 1000) { return range }
-	const txs = await getMempool(ids)
+	const txs = await getMempool()
 	const fees = txs.map(tx => tx.node.fee.winston)
 	const sortedFees = fees.sort((a, b) => b - a)
 	const nextBlock = sortedFees.slice(0, 1000)

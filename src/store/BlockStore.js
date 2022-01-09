@@ -2,7 +2,7 @@ import ArweaveStore, { arweave, arDB } from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { reactive, watch } from 'vue'
 import axios from 'axios'
-import { awaitEffect } from '@/functions/AsyncData'
+import { awaitEffect, getAsyncData } from '@/functions/AsyncData'
 
 
 
@@ -19,7 +19,7 @@ export default BlockStore
 
 
 
-export async function getCurrentHeight () {
+export async function getCurrentHeight () { // Todo remove
 	if (BlockStore.currentHeightStatus.loading) { return currentHeightPromise() }
 	BlockStore.currentHeightStatus.loading = true
 	await awaitEffect(() => InterfaceStore.windowVisible)
@@ -32,7 +32,7 @@ export async function getCurrentHeight () {
 	return BlockStore.currentHeight
 }
 
-export async function getBlocks (min, max) {
+export async function getBlocks (min, max) { // Todo make a simpler getArweaveQueryManage({ block }) query
 	await awaitEffect(() => InterfaceStore.windowVisible)
 	const newQueries = []
 	for (let n = min; n <= max; n++) {
@@ -70,11 +70,24 @@ export async function getBlocks (min, max) {
 	return result
 }
 
-export async function getPending () {
+const pendingListData = getAsyncData({
+	query: async () => fetchPending(),
+	seconds: 10,
+})
+export const pendingList = pendingListData.state
+export const getPending = pendingListData.getState
+const mempoolData = getAsyncData({
+	query: async () => fetchMempool(await pendingListData.getState()),
+	seconds: 10,
+})
+export const mempool = mempoolData.state
+export const getMempool = mempoolData.getState
+
+async function fetchPending () {
 	return (await axios.get(ArweaveStore.gatewayURL + 'tx/pending')).data
 }
 
-export async function getMempool (pending) {
+async function fetchMempool (pending) {
 	await awaitEffect(() => !BlockStore.mempoolStatus.loading)
 	BlockStore.mempoolStatus.loading = true
 	const currentIds = pending || await getPending()
@@ -103,7 +116,7 @@ export async function getMempool (pending) {
 
 
 
-function currentHeightPromise () {
+function currentHeightPromise () { // Todo remove
 	return new Promise(resolve => {
 		watch(() => BlockStore.currentHeight, (height) => {
 			if (height) { resolve(height) }

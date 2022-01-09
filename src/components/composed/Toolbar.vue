@@ -16,6 +16,9 @@
 						<IconConnection class="small" alt="Connections" />
 					</router-link>
 				</transition>
+				<router-link class="icon control" :class="{ verticalLayout }" to="/explore" aria-label="Explore">
+					<IconSearch class="small" alt="Explore" />
+				</router-link>
 				<router-link class="icon control" :class="{ verticalLayout }" to="/add" aria-label="Add Wallet">
 					<IconAddBox class="small" alt="Add Wallet" />
 				</router-link>
@@ -44,6 +47,7 @@ import { useRoute } from 'vue-router'
 import IconConnection from '@/assets/icons/connection.svg?component'
 import IconAddBox from '@/assets/icons/add_box.svg?component'
 import IconSettings from '@/assets/icons/settings.svg?component'
+import IconSearch from '@/assets/icons/search.svg?component'
 
 const route = useRoute()
 const navTo = computed(() => route.matched[0]?.name === 'Wallet' ? null : 'TxList')
