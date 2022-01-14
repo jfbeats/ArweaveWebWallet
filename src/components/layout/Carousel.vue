@@ -12,7 +12,7 @@
 
 <script setup lang="ts">
 import { awaitEffect } from '@/functions/AsyncData'
-import { onMounted, ref, computed, watch, nextTick } from 'vue'
+import { onMounted, ref, computed, watch, nextTick, inject } from 'vue'
 
 const props = defineProps<{
 	modelValue?: number
@@ -20,9 +20,11 @@ const props = defineProps<{
 		position: ScrollLogicalPosition
 		overscroll: boolean
 		immediate?: boolean
+		ignoreTransition?: boolean
 	}
 }>()
 const emit = defineEmits(['update:modelValue'])
+const parentTransitionState = inject('transitionState', null as any)
 
 const model = computed<number | undefined>({
 	get () { return props.modelValue },
@@ -36,8 +38,9 @@ const elements = computed(() => {
 const style = computed(() => ({
 	'--position': props.options?.position || 'start',
 }))
-const effect = (instant?: boolean) => {
+const effect = async (instant?: boolean) => {
 	if (model.value == null) { return }
+	if (!props.options.ignoreTransition) { await awaitEffect(() => !parentTransitionState.running) }
 	const index = Math.max(model.value || 0, 0)
 	elements.value[index]?.scrollIntoView({
 		behavior: instant ? 'instant' as any : 'smooth',

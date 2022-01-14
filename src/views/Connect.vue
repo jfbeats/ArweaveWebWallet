@@ -1,6 +1,6 @@
 <template>
 	<div class="connect flex-column">
-		<Carousel v-model="currentConnectorIndex" :options="{ position: 'start', overscroll: true }" class="connectors">
+		<Carousel v-model="currentConnectorIndex" :options="{ position: 'start', overscroll: true, ignoreTransition: true }" class="connectors">
 			<div v-for="connector in connectors" :key="connector.session" class="connection-card-container  fade-list-item">
 				<ConnectionCard :state="connector" class="box" />
 			</div>

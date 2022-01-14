@@ -2,10 +2,10 @@
 	<div class="app" :class="{ verticalLayout, verticalContent, hasToolbar }">
 		<Toolbar v-if="hasToolbar" class="box no-scrollbar" @drop.prevent="droppedFiles" />
 		<router-view v-slot="{ Component }" @drop.prevent="droppedFiles">
-			<div class="router" :class="{ sticky }">
-				<transition :name="$route.meta.transition?.nameLayout" mode="out-in" @before-enter="emitter.emit('beforeEnter')" @after-enter="emitter.emit('afterEnter')" @before-leave="emitter.emit('beforeLeave')" @after-leave="emitter.emit('afterLeave')">
+			<div class="router">
+				<TransitionsManager :vector="$route.meta.transition?.nameLayout" :axis="verticalLayout ? 'x' : 'y'">
 					<component :is="Component" />
-				</transition>
+				</TransitionsManager>
 				<UpdateAvailable />
 			</div>
 		</router-view>
@@ -21,66 +21,37 @@
 <script setup>
 import Toolbar from '@/components/composed/Toolbar.vue'
 import UpdateAvailable from '@/components/function/UpdateAvailable.vue'
+import TransitionsManager from '@/components/visual/TransitionsManager.vue'
 import { Wallets } from '@/functions/Wallets'
-import InterfaceStore, { emitter } from '@/store/InterfaceStore'
+import InterfaceStore from '@/store/InterfaceStore'
 import { addWallet } from '@/functions/Wallets'
+import { findRoutePosition } from '@/router/Utils'
 import { useRoute, useRouter } from 'vue-router'
-import { ref, toRef } from 'vue'
+import { toRef } from 'vue'
 
 const router = useRouter()
 const route = useRoute()
 
 const verticalLayout = toRef(InterfaceStore.breakpoints, 'verticalLayout')
 const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
-const sticky = ref(false)
-emitter.on('beforeEnter', () => sticky.value = InterfaceStore.sticky)
-emitter.on('afterLeave', () => sticky.value = InterfaceStore.sticky)
 const dragOverlay = toRef(InterfaceStore, 'dragOverlay')
 const hasToolbar = toRef(InterfaceStore.toolbar, 'enabled')
 router.afterEach((to, from) => {
 	document.title = to.meta.title ? to.meta.title + ' | Arweave Wallet' : 'Arweave Wallet'
 	const routes = router.options.routes
-	const findRecursiveHelper = (name, arr) => {
-		const result = findRecursive(name, arr)
-		return result.found ? result : null
-	}
-	const findRecursive = (name, arr, position = 0, depth = 0) => {
-		for (const route of arr) {
-			if (route.name === name) { return { found: true, position, depth } }
-			position++
-			if (route.children) {
-				const recResult = findRecursive(name, route.children, position, depth + 1)
-				position += recResult.position
-				if (recResult.found) { return { found: true, position, depth: recResult.depth } }
-			}
-		}
-		return { found: false, position, depth }
-	}
 	const param = {
-		to: findRecursiveHelper(to.name, routes),
-		from: findRecursiveHelper(from.name, routes)
+		to: findRoutePosition(to.name, routes),
+		from: findRoutePosition(from.name, routes)
 	}
 	to.meta.transition = {}
 	to.meta.transition.param = param
-	to.meta.transition.name = param.to.position < param.from.position ? 'slide-down' : 'slide-up'
-	to.meta.transition.nameLayout = convertTransitionName(to.meta.transition.name)
+	to.meta.transition.nameLayout = param.to.position - param.from.position
 	if (to.params.walletId && from.params.walletId && to.params.walletId !== from.params.walletId) {
 		const toWallet = Wallets.value.findIndex(el => el.id == to.params.walletId)
 		const fromWallet = Wallets.value.findIndex(el => el.id == from.params.walletId)
-		const transition = toWallet < fromWallet ? 'slide-down' : 'slide-up'
-		to.meta.transition.nameWallet = convertTransitionName(transition)
+		to.meta.transition.nameWallet = toWallet - fromWallet
 	}
 })
-
-const convertTransitionName = (name) => {
-	if (verticalLayout.value) {
-		if (name === 'slide-down') { return 'slide-right' }
-		if (name === 'slide-up') { return 'slide-left' }
-	}
-	return name
-}
-
-emitter.on('afterEnter', () => route.meta.transition = {})
 
 const droppedFiles = async (e) => {
 	const walletPromises = []
@@ -123,7 +94,6 @@ const droppedFiles = async (e) => {
 	display: flex;
 	flex-direction: column;
 	overflow: auto;
-	overflow: overlay;
 	z-index: 10;
 	background: var(--background);
 	height: 100%;
@@ -141,11 +111,7 @@ const droppedFiles = async (e) => {
 	position: relative;
 	--current-vh: 100vh;
 	--current-vw: 100vw;
-	overflow: hidden;
-}
-
-.router.sticky {
-	overflow: unset;
+	overflow: clip;
 }
 
 #viewport {

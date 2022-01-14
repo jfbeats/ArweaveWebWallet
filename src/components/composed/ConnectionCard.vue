@@ -15,13 +15,13 @@
 			<Tabs :tabs="tabs" v-model="currentTab" :disabled="!currentId" />
 			<div class="container">
 				<div class="container-scroll">
-					<transition :name="transitionName" mode="out-in">
+					<TransitionsManager :vector="transitionName" axis="x">
 						<div :key="(currentId || '') + currentTab" class="content">
 							<div v-if="currentTab === 'Requests'">
 								<transition-group name="fade-list">
 									<WalletTabs v-if="isSelectingWallet" v-model="currentId" class="box fade-list-item" key="0" />
-									<div v-if="connectionFeed?.length === 0 && state.walletId && state.walletId === currentId" class="box status fade-list-item" key="0">Connected</div>
-									<Notification v-if="currentId !== state.walletId" :data="connectData" class="box fade-list-item" key="1">{{ connectData.content }}</Notification>
+									<div v-if="connectionFeed?.length === 0 && state.walletId && state.walletId === currentId" class="box status fade-list-item" key="1">Connected</div>
+									<Notification v-if="currentId !== state.walletId" :data="connectData" class="box fade-list-item" key="2">{{ connectData.content }}</Notification>
 									<PermissionCard v-for="messageEntry in connectionFeed" :key="messageEntry.uuid" :messageEntry="messageEntry" style="padding: var(--spacing);" class="box flex-column fade-list-item" />
 								</transition-group>
 							</div>
@@ -32,7 +32,7 @@
 								</transition-group>
 							</div>
 						</div>
-					</transition>
+					</TransitionsManager>
 				</div>
 			</div>
 		</div>
@@ -58,6 +58,7 @@ import IconConnection from '@/assets/icons/connection.svg?component'
 import IconY from '@/assets/icons/y.svg?component'
 import IconX from '@/assets/icons/x.svg?component'
 import IconLaunch from '@/assets/icons/launch.svg?component'
+import TransitionsManager from '@/components/visual/TransitionsManager.vue'
 
 const props = defineProps<{ state: ConnectorState }>()
 
@@ -121,8 +122,8 @@ const connectionFeed = computed(() => {
 
 
 const verticalLayout = toRef(InterfaceStore.breakpoints, 'verticalLayout')
-const transitionName = ref(null as null | string)
-const selectTransitionName = (val: number, oldVal: number) => val > oldVal ? transitionName.value = 'slide-left' : transitionName.value = 'slide-right'
+const transitionName = ref(null as null | number)
+const selectTransitionName = (val: number, oldVal: number) => transitionName.value = val - oldVal
 watch(() => tabs.findIndex(tab => tab.name === currentTab.value), selectTransitionName)
 watch(() => Wallets.value.findIndex(wallet => wallet.id === currentId.value), selectTransitionName)
 </script>

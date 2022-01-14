@@ -1,25 +1,34 @@
 <template>
 	<div class="folding-layout">
 		<div class="left no-scrollbar" :class="{ hasRight: hasRight() }">
-			<slot name="left" />
+			<TransitionsManager :vector="leftVector" :axis="leftAxis || (verticalLayout ? 'x' : 'y')" :appear="true">
+				<slot name="left" />
+			</TransitionsManager>
 		</div>
 		<div class="right">
-			<slot name="right" />
+			<TransitionsManager :vector="rightVector" :axis="rightAxis || (verticalLayout ? 'x' : 'y')">
+				<slot name="right" />
+			</TransitionsManager>
 		</div>
 	</div>
 </template>
 
 
 
-<script setup>
+<script setup lang="ts">
 import InterfaceStore from '@/store/InterfaceStore'
-import { onUnmounted, toRef, useSlots, watch } from 'vue'
+import TransitionsManager from '@/components/visual/TransitionsManager.vue'
+import { useSlots, toRef } from 'vue'
 
+const props = defineProps<{
+	leftVector?: number
+	rightVector?: number
+	leftAxis?: 'x' | 'y'
+	rightAxis?: 'x' | 'y'
+}>()
 const slots = useSlots()
 
-const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
-watch(() => verticalContent.value, (val) => val ? InterfaceStore.sticky = false : InterfaceStore.sticky = true, { immediate: true })
-onUnmounted(() => InterfaceStore.sticky = false)
+const verticalLayout = toRef(InterfaceStore.breakpoints, 'verticalLayout')
 const hasLeft = () => !!slots.left
 const hasRight = () => !!slots.right
 </script>

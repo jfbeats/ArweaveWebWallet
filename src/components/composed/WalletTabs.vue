@@ -1,6 +1,6 @@
 <template>
 	<div class="wallet-tabs">
-		<Carousel v-model="undefined" :options="{ position: 'start', overscroll: false }">
+		<Carousel v-model="carouselIndex" :options="{ position: 'center', overscroll: true }">
 			<button v-for="Wallet in Wallets" :key="Wallet.id" type="button" @click="model = Wallet.id" class="tab" :class="{ active: Wallet.id == model }">
 				<AddressIcon :address="Wallet.key" />
 			</button>
@@ -23,6 +23,8 @@ const model = computed({
 	get () { return props.modelValue },
 	set (value) { emit('update:modelValue', value) }
 })
+
+const carouselIndex = computed(() => Wallets.value.findIndex(w => w.id === model.value))
 </script>
 
 
@@ -31,14 +33,17 @@ const model = computed({
 .wallet-tabs {
 	display: flex;
 }
+
 .tab {
-	opacity: 0.5;
+	opacity: 0.2;
 	transition: 0.2s ease;
 }
+
 .tab.active,
 .tab:hover {
 	opacity: 1;
 }
+
 .address-icon {
 	width: 40px;
 	height: 40px;

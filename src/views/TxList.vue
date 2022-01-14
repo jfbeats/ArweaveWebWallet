@@ -1,7 +1,7 @@
 <template>
 	<div class="tx-list flex-column">
 		<Tabs queryName="view" :tabs="tabs" />
-		<transition :name="transitionName" mode="out-in">
+		<TransitionsManager :vector="transitionFactor" axis="x">
 			<div class="flex-column" :key="selectedQuery">
 				<transition-group name="fade-list-rise">
 					<TxCard class="card fade-list-item" v-for="tx in txs" :key="tx.node.id" :tx="tx.node" :currentAddress="wallet.key" />
@@ -11,15 +11,18 @@
 				</div>
 				<Observer observe="intersection" @intersection="fetchQuery" class="bottom" v-show="!fetchLoading && !completedQuery" />
 			</div>
-		</transition>
+		</TransitionsManager>
 	</div>
 </template>
+
+
 
 <script setup>
 import TxCard from '@/components/composed/TxCard.vue'
 import Tabs from '@/components/atomic/Tabs.vue'
 import Observer from '@/components/function/Observer.vue'
 import Icon from '@/components/atomic/Icon.vue'
+import TransitionsManager from '@/components/visual/TransitionsManager.vue'
 import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -49,11 +52,11 @@ const tabs = [
 	{ name: 'Received', color: 'var(--green)' },
 	{ name: 'Sent', color: 'var(--red)' },
 ]
-const transitionName = ref(null)
+const transitionFactor = ref(null)
 watch(() => selectedQuery.value, (state, prevState) => {
 	const toIndex = tabs.findIndex(el => el.name.toLowerCase() === state)
 	const fromIndex = tabs.findIndex(el => el.name.toLowerCase() === prevState)
-	transitionName.value = toIndex < fromIndex ? 'slide-right' : 'slide-left'
+	transitionFactor.value = toIndex - fromIndex
 	setTimeout(() => {
 		clearInterval(liveUpdate)
 		liveUpdate = setInterval(updateContent, 10000)
@@ -61,6 +64,8 @@ watch(() => selectedQuery.value, (state, prevState) => {
 	})
 })
 </script>
+
+
 
 <style scoped>
 .tx-list {

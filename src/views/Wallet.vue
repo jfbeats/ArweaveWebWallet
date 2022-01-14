@@ -1,26 +1,22 @@
 <template>
 	<div class="wallet">
-		<FoldingLayout v-if="wallet">
-			<template #left>
-				<transition :name="$route.meta.transition?.nameWallet" mode="out-in">
+		<router-view v-slot="{ Component }">
+			<FoldingLayout v-if="wallet" :leftVector="$route.meta.transition?.nameWallet" :rightVector="contentTransitionFactor" :rightAxis="contentTransitionAxis">
+				<template #left>
 					<div class="user-info flex-column" :key="wallet.key">
 						<Balance :wallet="wallet" />
 						<div class="actions">
 							<Action v-for="action in actions" :key="action.name" :to="{ name: action.name, query: { ...$route.query } }" :icon="action.icon" replace>{{ action.text }}</Action>
 						</div>
 					</div>
-				</transition>
-			</template>
-			<template #right>
-				<div class="wallet-view">
-					<router-view v-slot="{ Component }" class="router-view" @before-enter="emitter.emit('beforeEnter')">
-						<transition :name="$route.meta.transition?.nameWallet || $route.meta.transition?.name" mode="out-in" @before-enter="emitter.emit('beforeEnter')" @after-enter="emitter.emit('afterEnter')" @before-leave="emitter.emit('beforeLeave')" @after-leave="emitter.emit('afterLeave')">
-							<component :is="Component" :key="$route.path.split('/').slice(0, 3).join('')" />
-						</transition>
-					</router-view>
-				</div>
-			</template>
-		</FoldingLayout>
+				</template>
+				<template #right>
+					<div :key="contentKey" class="router-view">
+						<component :is="Component" />
+					</div>
+				</template>
+			</FoldingLayout>
+		</router-view>
 	</div>
 </template>
 
@@ -30,9 +26,9 @@
 import FoldingLayout from '@/components/layout/FoldingLayout.vue'
 import Balance from '@/components/composed/Balance.vue'
 import Action from '@/components/atomic/Action.vue'
-import { Wallets } from '@/functions/Wallets'
-import { emitter } from '@/store/InterfaceStore'
-import { watch } from 'vue'
+import InterfaceStore from '@/store/InterfaceStore'
+import { toRef, computed } from 'vue'
+import { useRoute } from 'vue-router'
 
 import IconNorthEast from '@/assets/icons/north_east.svg?component'
 import IconSwap from '@/assets/icons/swap.svg?component'
@@ -44,6 +40,11 @@ const actions = [
 	{ name: 'TxList', icon: IconSwap, text: 'Transactions' },
 	// { name: 'Tokens', icon: IconCircle, text: 'Tokens' },
 ]
+const verticalLayout = toRef(InterfaceStore.breakpoints, 'verticalLayout')
+const route = useRoute()
+const contentTransitionFactor = computed(() => route.meta.transition?.nameWallet || route.meta.transition?.nameLayout)
+const contentTransitionAxis = computed(() => route.meta.transition?.nameWallet && verticalLayout.value ? 'x' : 'y' || 'y')
+const contentKey = computed(() => route.path.split('/').join(''))
 </script>
 
 
@@ -64,11 +65,8 @@ const actions = [
 	padding: var(--spacing);
 }
 
-.wallet-view {
-	padding: var(--spacing);
-}
-
 .router-view {
+	padding: var(--spacing);
 	max-width: var(--column-large-width);
 }
 
