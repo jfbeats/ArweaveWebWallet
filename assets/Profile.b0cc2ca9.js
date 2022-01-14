@@ -1,2 +1,0 @@
-import{_,F as d}from"./index.902b7715.js";import{O as c,x as n,s as e,o as r,X as l,Y as p,a as t}from"./vendor.7f4d5d23.js";const i={components:{FoldingLayout:d}},s=o=>(l("data-v-167aa33d"),o=o(),p(),o),f=s(()=>t("div",{class:"test-left"},"hello",-1)),u=s(()=>t("div",{class:"test-right"},"hello",-1));function h(o,v,m,x,g,y){const a=c("FoldingLayout");return r(),n(a,null,{left:e(()=>[f]),right:e(()=>[u]),_:1})}var $=_(i,[["render",h],["__scopeId","data-v-167aa33d"]]);export{$ as default};
-//# sourceMappingURL=Profile.b0cc2ca9.js.map
