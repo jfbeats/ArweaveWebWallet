@@ -25,7 +25,7 @@ const resize = (size) => {
 }
 
 const load = () => {
-	imgAspect.value = imgRef.value.naturalWidth / imgRef.value.naturalHeight
+	imgAspect.value = imgRef.value && imgRef.value.naturalWidth / imgRef.value.naturalHeight
 	emit('load')
 }
 

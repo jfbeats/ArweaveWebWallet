@@ -26,20 +26,25 @@ type QueryStatusInterface<T> = {
 export function getAsyncData <T> (options: AsyncDataOptions<T>) { // Todo slowdown on failure
 	const state = isRef(options.existingState) ? options.existingState : ref(options.existingState) as Ref<T | undefined>
 	const timestamp = isRef(options.timestamp) ? options.timestamp : ref(options.timestamp) as Ref<number | undefined>
+	let cooldown = 0
 	const { query, queryStatus } = getQueryManager(options)
 	const localClock = ref(0)
 	const getState = async (force?: boolean) => {
 		if (options.completed?.(state.value)) { return state.value! }
-		if (queryStatus.promise && queryStatus.running) { timestamp.value = Date.now(); return queryStatus.promise }
+		if (queryStatus.promise && (queryStatus.running || cooldown)) { timestamp.value = Date.now(); return queryStatus.promise }
 		if (!force && state.value != null && timestamp.value && Date.now() - timestamp.value < (options.seconds * 1000)) { return state.value }
 		const rollback = timestamp.value
-		timestamp.value = Date.now()
+		const initTimestamp = Date.now()
+		timestamp.value = initTimestamp
 		return new Promise<T>((resolve, reject) => {
 			query().then(res => {
 				timestamp.value = Date.now()
 				options.processResult ? options.processResult(res, options) : state.value = res
 				resolve(state.value!)
-			}).catch(e => { timestamp.value = rollback; reject(e) })
+			}).catch(e => {
+				cooldown = Math.max(0, 20000 - (Date.now() - initTimestamp))
+				setTimeout(() => { cooldown = 0; timestamp.value = rollback; reject(e) }, cooldown)
+			})
 		})
 	}
 	const scope = effectScope()

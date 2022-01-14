@@ -23,7 +23,7 @@ if (props.observe === 'intersection' || props.observe.includes('intersection')) 
 		if (entries[0].isIntersecting) { emit('intersection', entries[0], unobserve) }
 		if (props.once) { unobserve() }
 	}, { threshold: [props.threshold] })
-	const unobserve = () => intersectionObserver.unobserve(observed.value)
+	const unobserve = () => observed.value && intersectionObserver.unobserve(observed.value)
 	onMounted(() => intersectionObserver.observe(observed.value))
 	onBeforeUnmount(unobserve)
 }
@@ -33,7 +33,7 @@ if (props.observe === 'resize' || props.observe.includes('resize')) {
 		emit('resize', entries[0]?.contentRect, unobserve)
 		if (props.once) { unobserve() }
 	})
-	const unobserve = () => resizeObserver.unobserve(observed.value)
+	const unobserve = () => observed.value && resizeObserver.unobserve(observed.value)
 	onMounted(() => {
 		// emit('resize', observed.value.getBoundingClientRect(), unobserve)
 		resizeObserver.observe(observed.value)

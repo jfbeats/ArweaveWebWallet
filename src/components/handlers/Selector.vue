@@ -89,7 +89,12 @@ watch(() => props.tx, async () => {
 	width: 100%;
 	height: 100%;
 	border: 0;
-	opacity: 0.6;
+	opacity: 0.5;
+	transition: opacity 0.6s ease;
+}
+
+.iframe:hover {
+	opacity: 1;
 }
 
 .raw {

@@ -6,16 +6,16 @@
 
 
 
-<script setup>
+<script setup lang="ts">
 import { currency } from '@/store/CurrencyStore'
 import { computed } from 'vue'
 
 const props = defineProps(['ar'])
 const currencyType = computed(() => currency.settings.currency)
 const converted = computed(() => {
-	if (props.ar == null || !currency.currentPrice.value) { return }
+	if (props.ar == null || isNaN(props.ar) || !currency.currentPrice.value) { return }
 	const num = currency.currentPrice.value * props.ar
-	return new Intl.NumberFormat(navigator.languages, { style: 'currency', currency: currencyType.value }).format(num)
+	return new Intl.NumberFormat([...navigator.languages], { style: 'currency', currency: currencyType.value }).format(num)
 })
 </script>
 
