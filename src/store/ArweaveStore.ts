@@ -8,7 +8,7 @@ import { ApiConfig } from 'arweave/web/lib/api'
 import { GQLEdgeTransactionInterface, GQLTransactionInterface } from 'ardb/lib/faces/gql'
 import Transaction, { TransactionInterface } from 'arweave/web/lib/transaction'
 import { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
-import { ArweaveVerifier, ArweaveProviderInterface } from 'arweave-wallet-connector/lib/ArweaveWebWallet'
+import { ArweaveVerifier as ArweaveMessageVerifier, ArweaveProviderInterface } from 'arweave-wallet-connector/lib/ArweaveWebWallet'
 import { decode, encode, getDecryptionKey, getSigningKey } from '@/functions/Crypto'
 import { getFeeRange } from '@/functions/Transactions'
 import { awaitEffect, getAsyncData } from '@/functions/AsyncData'
@@ -134,8 +134,10 @@ export class ArweaveAccount implements Account {
 
 
 export class ArweaveProvider extends ArweaveAccount implements Provider {
-	#wallet: WalletProxy
 	static isProviderFor (wallet: WalletProxy) { return !!wallet.data.jwk }
+	#wallet: WalletProxy
+	messageVerifier: ArweaveMessageVerifier
+	messageRunner: ArweaveMessageRunner
 	constructor (init: WalletProxy) {
 		super(init)
 		this.#wallet = init
@@ -143,6 +145,8 @@ export class ArweaveProvider extends ArweaveAccount implements Provider {
 			const disabled = ['download', 'signTransaction', 'sign', 'decrypt'] as const
 			disabled.forEach(method => this[method] = undefined)
 		}
+		this.messageVerifier = new ArweaveMessageVerifier()
+		this.messageRunner = new ArweaveMessageRunner(this)
 	}
 	get id () { return this.#wallet.id }
 	get uuid () { return this.#wallet.uuid }
@@ -175,35 +179,23 @@ export class ArweaveProvider extends ArweaveAccount implements Provider {
 		await awaitEffect(() => this.key)
 		download(this.key!, JSON.stringify(await this.#wallet.getPrivateKey!()))
 	}
-	verifyMessage (message: Message | string) {
-		const verifier = new ArweaveVerifier()
-		const apiToObject: { [key in keyof ArweaveAPI]?: keyof ArweaveProvider } = {
-			signTransaction: 'signTransaction',
-			getPublicKey: 'getPublicKey',
-			sign: 'sign',
-			decrypt: 'decrypt',
-		}
-		// @ts-ignore
-		if (typeof message === 'string') { return !!verifier[message] && (apiToObject[message] ? this[apiToObject[message]] : true) }
-		// @ts-ignore
-		return verifier[message.method]?.(...(message.params || [])) || false
-	}
-	async runMessage (message: Message) {
-		if (!this.verifyMessage(message)) { throw 'params changed and are not valid anymore' }
-		const runner = new ArweaveAPI(this)
-		// @ts-ignore
-		return runner[message.method]?.(...(message.params || []))
-	}
 }
 
 
 
-export class ArweaveAPI implements ArweaveProviderInterface {
+export class ArweaveMessageRunner implements Partial<ArweaveProviderInterface> {
 	#wallet: ArweaveProvider
-	
-	constructor (wallet: ArweaveProvider) { this.#wallet = wallet }
-	
-	async signTransaction (tx: TransactionInterface, options?: object) {
+	constructor (wallet: ArweaveProvider) {
+		this.#wallet = wallet
+		const apiToObject: [keyof ArweaveMessageRunner, keyof ArweaveProvider][] = [
+			['signTransaction', 'signTransaction'],
+			['getPublicKey', 'getPublicKey'],
+			['sign', 'sign'],
+			['decrypt', 'decrypt'],
+		]
+		apiToObject.forEach(([external, internal]) => !wallet[internal] && (this[external] = undefined))
+	}
+	async signTransaction? (tx: TransactionInterface, options?: object) {
 		if (!this.#wallet.signTransaction) { throw 'error' }
 		const txObject = new Transaction(tx)
 		// const fee = await getFeeRange()
@@ -217,18 +209,19 @@ export class ArweaveAPI implements ArweaveProviderInterface {
 			reward: txObject.reward
 		}
 	}
-	async getPublicKey () {
+	async getPublicKey? () {
 		const publicKey = await this.#wallet.getPublicKey()
 		if (!publicKey) { throw 'error' }
 		return publicKey
 	}
-	async sign (message: ArrayBufferView, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
+	async sign? (message: ArrayBufferView, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
+		throw 'error' // Todo make sure that it is not signing a transaction hash
 		return this.#wallet.sign!(message, options)
 	}
-	async decrypt (message: ArrayBufferView, options: Parameters<ArweaveProviderInterface['decrypt']>[1]) {
+	async decrypt? (message: ArrayBufferView, options: Parameters<ArweaveProviderInterface['decrypt']>[1]) {
 		return this.#wallet.decrypt!(message, options)
 	}
-	async getArweaveConfig () {
+	async getArweaveConfig? () {
 		const config = arweave.getConfig().api
 		return { protocol: config.protocol, host: config.host, port: config.port }
 	}

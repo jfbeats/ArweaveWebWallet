@@ -1,9 +1,9 @@
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import ArweaveApp from "@zondax/ledger-arweave"
-import { arweave, ArweaveAccount, ArweaveAPI, ArweaveProvider } from '@/store/ArweaveStore'
+import { arweave, ArweaveAccount, ArweaveMessageRunner } from '@/store/ArweaveStore'
+import { ArweaveVerifier as ArweaveMessageVerifier } from 'arweave-wallet-connector/lib/ArweaveWebWallet'
 import LogoLedger from '@/assets/logos/ledger.svg?component'
 import Transaction from 'arweave/web/lib/transaction'
-import { ArweaveVerifier } from 'arweave-wallet-connector/lib/ArweaveWebWallet'
 import { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
 import { state } from '@/functions/Connect'
 import type { WalletProxy } from '@/functions/Wallets'
@@ -107,10 +107,14 @@ export const LedgerProviderData: ProviderData = {
 
 export class LedgerProvider extends ArweaveAccount implements Provider {
 	#wallet: WalletProxy
+	messageVerifier: ArweaveMessageVerifier
+	messageRunner?: ArweaveMessageRunner
 	static isProviderFor (wallet: WalletProxy) { return wallet.data.provider === 'ledger' }
 	constructor (init: WalletProxy) {
 		super(init)
 		this.#wallet = init
+		this.messageVerifier = new ArweaveMessageVerifier()
+		if (state.type !== 'iframe') { this.messageRunner = new ArweaveMessageRunner(this as any) }
 	}
 	get id () { return this.#wallet.id }
 	get uuid () { return this.#wallet.uuid }
@@ -121,18 +125,4 @@ export class LedgerProvider extends ArweaveAccount implements Provider {
 		return sign(tx)
 	}
 	async getPublicKey () { return getPublicKey() }
-	verifyMessage (message: Message | string) {
-		const verifier = new ArweaveVerifier()
-		// @ts-ignore
-		if (typeof message === 'string') { return !!verifier[message] }
-		// @ts-ignore
-		return verifier[message.method]?.(...(message.params || [])) || false
-	}
-	async runMessage (message: Message) {
-		if (state.type === 'iframe') { return }
-		if (!this.verifyMessage(message)) { throw 'params changed and are not valid anymore' }
-		const runner = new ArweaveAPI(this as any)
-		// @ts-ignore
-		return runner[message.method]?.(...(message.params || []))
-	}
 }

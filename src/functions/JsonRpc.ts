@@ -13,7 +13,7 @@ const errors = {
 	params: { code: -32602, message: 'Invalid params' },
 	internal: { code: -32603, message: 'Internal error' },
 }
-const getError = (error: keyof typeof errors, data?: any) => ({ error: { ...errors[error], data } })
+const getError = (error: keyof typeof errors, data?: object) => ({ error: { ...errors[error], data } })
 
 
 
@@ -44,7 +44,7 @@ export default class JsonRpc {
 
 	async pushMessage (message: unknown) {
 		await awaitEffect(() => this.stateWallet.value)
-		if (!this.isMessage(message)) { return }
+		if (!this.isValidMessage(message)) { return }
 		if (this.state.messageQueue.find(m => m.id === message.id)) { return true }
 		const uuid = uuidV4()
 		const storedMessage: StoredMessage = {
@@ -71,8 +71,11 @@ export default class JsonRpc {
 	async runMessage (messageEntry: MessageEntry) {
 		const id = messageEntry.id
 		if (messageEntry.status !== 'accepted' || messageEntry.fulfilled) { return }
+		if (!this.stateWallet.value?.messageRunner) { return }
 		try {
-			const result = await this.stateWallet.value?.runMessage(await getMessage(messageEntry))
+			const message = await getMessage(messageEntry)
+			if (!this.isValidMessage(message)) { throw new Error('message changed and is not valid anymore') }
+			const result = await this.stateWallet.value?.messageRunner[message.method!]?.(...(message.params || []))
 			if (result === undefined) { return }
 			messageEntry.fulfilled = true
 			await this.updateMessage(messageEntry)
@@ -86,14 +89,15 @@ export default class JsonRpc {
 		}
 	}
 
-	isMessage (message: any) : message is Message {
+	isValidMessage (message: any) : message is Message {
 		if (typeof message !== 'object') { return false }
 		const { method, params, id } = message
 		if (id != null && typeof id !== 'number' && typeof id !== 'string') { return false }
 		if (typeof method !== 'string') { id != null && this.callbacks({ ...getError('request'), id }); return false }
-		if (!this.stateWallet.value?.verifyMessage(method)) { id != null && this.callbacks({ ...getError('method', method), id }); return false }
+		if (!this.stateWallet.value?.messageVerifier[method]) { id != null && this.callbacks({ ...getError('method', { method }), id }); return false }
+		if (this.stateWallet.value?.messageRunner && !this.stateWallet.value?.messageRunner[method]) { id != null && this.callbacks({ ...getError('method', { method }), id }); return false }
 		if (params != null && !Array.isArray(params)) { id != null && this.callbacks({ ...getError('params', { type: 'Params must be sent as an array', method, params }), id }); return false }
-		if (!this.stateWallet.value?.verifyMessage(message)) { id != null && this.callbacks({ ...getError('params', { type: 'Type error', method, params }), id }); return false }
+		if (!this.stateWallet.value?.messageVerifier[method](...(message.params || []))) { id != null && this.callbacks({ ...getError('params', { type: 'Type error', method, params }), id }); return false }
 		return true
 	}
 	

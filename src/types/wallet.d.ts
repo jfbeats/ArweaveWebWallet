@@ -9,6 +9,8 @@ type WalletDataInterface = {
 }
 
 interface Provider extends Account {
+	messageVerifier: any
+	messageRunner?: any
 	id: string
 	uuid: string
 	metadata: Metadata
@@ -16,8 +18,6 @@ interface Provider extends Account {
 	sign?: (data: ArrayBufferView, options: any) => Promise<ArrayBufferView>
 	decrypt?: (data: ArrayBufferView, options: any) => Promise<ArrayBufferView>
 	download?: () => Promise<any>
-	verifyMessage: (message: Message | string) => boolean
-	runMessage: (message: Message) => Promise<any>
 	destructor?: () => any
 }
 
