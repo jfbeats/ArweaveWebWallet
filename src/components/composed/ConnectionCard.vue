@@ -14,26 +14,34 @@
 		<div class="flex-column" style="flex: 1 1 0;">
 			<Tabs :tabs="tabs" v-model="currentTab" :disabled="!currentId" />
 			<div class="container">
-				<div class="container-scroll">
-					<TransitionsManager :vector="transitionName" axis="x">
-						<div :key="(currentId || '') + currentTab" class="content">
-							<div v-if="currentTab === 'Requests'">
-								<transition-group name="fade-list">
-									<WalletTabs v-if="isSelectingWallet" v-model="currentId" class="box fade-list-item" key="0" />
-									<div v-if="connectionFeed?.length === 0 && state.walletId && state.walletId === currentId" class="box status fade-list-item" key="1">Connected</div>
-									<Notification v-if="currentId !== state.walletId" :data="connectData" class="box fade-list-item" key="2">{{ connectData.content }}</Notification>
-									<PermissionCard v-for="messageEntry in connectionFeed" :key="messageEntry.uuid" :messageEntry="messageEntry" style="padding: var(--spacing);" class="box flex-column fade-list-item" />
-								</transition-group>
+				<TransitionsManager :vector="transitionName" axis="x">
+					<div :key="contentKey">
+						<transition-group name="fade-list">
+							<WalletTabs v-if="isSelectingWallet" v-model="currentId" class="fade-list-item" key="-1" />
+							<div class="container-scroll" key="0">
+								<TransitionsManager :vector="transitionName" axis="x">
+									<div :key="(currentId || '') + currentTab" class="content">
+										<div v-if="currentTab === 'Requests'">
+											<transition-group name="fade-list">
+												<div class="fade-list-item" key="0" :style="{ padding: 0, border: 0, outline: '0.5px solid var(--border)' }"/>
+												<div v-if="connectionFeed?.length === 0 && state.walletId && state.walletId === currentId" class="status fade-list-item" key="1">Connected</div>
+												<Notification v-if="currentId !== state.walletId" :data="connectData" class="fade-list-item" key="2">{{ connectData.content }}</Notification>
+												<PermissionCard v-for="messageEntry in connectionFeed" :key="messageEntry.uuid" :messageEntry="messageEntry" style="padding: var(--spacing);" class="flex-column fade-list-item" />
+											</transition-group>
+										</div>
+										<div v-else-if="currentTab === 'Permissions'">
+											<transition-group name="fade-list">
+												<div class="fade-list-item" key="0" :style="{ padding: 0, border: 0, outline: '0.5px solid var(--border)' }"/>
+												<div class="status fade-list-item" key="1">WIP</div>
+												<PermissionSettings :walletId="currentId" class="fade-list-item" key="2" />
+											</transition-group>
+										</div>
+									</div>
+								</TransitionsManager>
 							</div>
-							<div v-else-if="currentTab === 'Permissions'">
-								<transition-group name="fade-list">
-									<WalletTabs v-if="isSelectingWallet" v-model="currentId" class="box fade-list-item" key="0" />
-									<div class="box status fade-list-item" key="0">WIP</div>
-								</transition-group>
-							</div>
-						</div>
-					</TransitionsManager>
-				</div>
+						</transition-group>
+					</div>
+				</TransitionsManager>
 			</div>
 		</div>
 	</div>
@@ -49,6 +57,7 @@ import IconBackground from '@/components/atomic/IconBackground.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import Notification from '@/components/composed/Notification.vue'
 import PermissionCard from '@/components/composed/PermissionCard.vue'
+import PermissionSettings from '@/components/composed/PermissionSettings.vue'
 import { getWalletById, Wallets } from '@/functions/Wallets'
 import InterfaceStore from '@/store/InterfaceStore'
 import { navigateBack, navigateBackAvailable } from '@/functions/Connect'
@@ -85,13 +94,16 @@ const connect = () => {
 }
 const goBack = () => {
 	if (!props.state.walletId) { return }
+	if (currentId.value !== props.state.walletId) { contentKey.value++ }
 	isSelectingWallet.value = false
 	currentId.value = props.state.walletId
 }
 
 const isSelectingWallet = ref(!props.state.walletId)
+const contentKey = ref(0)
 const selectWallet = () => {
 	if (!isSelectingWallet.value) { isSelectingWallet.value = true; return }
+	if (currentId.value !== props.state.walletId) { contentKey.value++ }
 	currentId.value = props.state.walletId || Wallets.value[0]?.id
 	isSelectingWallet.value = false
 }
@@ -150,10 +162,18 @@ watch(() => Wallets.value.findIndex(wallet => wallet.id === currentId.value), se
 	justify-content: flex-end;
 }
 
+.fade-list-item {
+	padding: var(--spacing);
+	border-bottom: 0.5px solid var(--border);
+	position: relative;
+}
+
 .wallet-tabs {
 	padding: var(--spacing) 0;
 	justify-content: center;
 	width: 100%;
+	z-index: 0;
+	border-bottom: 0;
 }
 
 .container {
@@ -169,8 +189,10 @@ watch(() => Wallets.value.findIndex(wallet => wallet.id === currentId.value), se
 }
 
 .container-scroll {
-	overflow: hidden auto;
+	/*overflow: clip auto;*/
 	height: 100%;
+	z-index: 2;
+	position: relative;
 }
 
 .content {
@@ -179,6 +201,7 @@ watch(() => Wallets.value.findIndex(wallet => wallet.id === currentId.value), se
 	position: relative;
 	/* padding: var(--spacing);
 	border-bottom: 0.5px solid #ffffff20; */
+	
 }
 
 .status {
@@ -195,9 +218,9 @@ watch(() => Wallets.value.findIndex(wallet => wallet.id === currentId.value), se
 }
 
 .notification {
-	width: 100%;
-	padding: var(--spacing);
-	border-bottom: 0.5px solid var(--border);
+	/*width: 100%;*/
+	/*padding: var(--spacing);*/
+	/*border-bottom: 0.5px solid var(--border);*/
 }
 
 .icon-background {

@@ -17,7 +17,8 @@ import { onMounted, ref, computed, watch, nextTick, inject } from 'vue'
 const props = defineProps<{
 	modelValue?: number
 	options: {
-		position: ScrollLogicalPosition
+		inline?: ScrollLogicalPosition
+		block?: ScrollLogicalPosition
 		overscroll: boolean
 		immediate?: boolean
 		ignoreTransition?: boolean
@@ -36,7 +37,7 @@ const elements = computed(() => {
 	return Array(...root.value.children).filter(e => !e.classList.contains('margin'))
 })
 const style = computed(() => ({
-	'--position': props.options?.position || 'start',
+	'--position': props.options?.inline || 'start',
 }))
 const effect = async (instant?: boolean) => {
 	if (model.value == null) { return }
@@ -44,8 +45,8 @@ const effect = async (instant?: boolean) => {
 	const index = Math.max(model.value || 0, 0)
 	elements.value[index]?.scrollIntoView({
 		behavior: instant ? 'instant' as any : 'smooth',
-		block: 'start',
-		inline: props.options?.position || 'start',
+		block: props.options?.block || 'start',
+		inline: props.options?.inline || 'start',
 	})
 }
 onMounted(async () => {
