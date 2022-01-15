@@ -15,10 +15,10 @@
 			<Tabs :tabs="tabs" v-model="currentTab" :disabled="!currentId" />
 			<div class="container">
 				<TransitionsManager :vector="transitionName" axis="x">
-					<div :key="contentKey">
+					<div class="container-scroll" :key="contentKey">
 						<transition-group name="fade-list">
 							<WalletTabs v-if="isSelectingWallet" v-model="currentId" class="fade-list-item" key="-1" />
-							<div class="container-scroll" key="0">
+							<div class="page-container" key="0">
 								<TransitionsManager :vector="transitionName" axis="x">
 									<div :key="(currentId || '') + currentTab" class="content">
 										<div v-if="currentTab === 'Requests'">
@@ -178,7 +178,6 @@ watch(() => Wallets.value.findIndex(wallet => wallet.id === currentId.value), se
 
 .container {
 	flex: 1 1 0;
-	/* max-height: 60vh; */
 	background: var(--background);
 	border-radius: var(--border-radius) var(--border-radius) 0 0;
 	align-items: center;
@@ -189,9 +188,14 @@ watch(() => Wallets.value.findIndex(wallet => wallet.id === currentId.value), se
 }
 
 .container-scroll {
-	/*overflow: clip auto;*/
+	overflow: hidden auto;
 	height: 100%;
-	z-index: 2;
+	display: flex;
+	flex-direction: column;
+}
+
+.page-container {
+	height: 100%;
 	position: relative;
 }
 
@@ -199,9 +203,6 @@ watch(() => Wallets.value.findIndex(wallet => wallet.id === currentId.value), se
 	width: 100%;
 	height: 100%;
 	position: relative;
-	/* padding: var(--spacing);
-	border-bottom: 0.5px solid #ffffff20; */
-	
 }
 
 .status {
