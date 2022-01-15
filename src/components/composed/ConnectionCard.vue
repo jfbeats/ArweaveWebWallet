@@ -94,7 +94,7 @@ const connect = () => {
 }
 const goBack = () => {
 	if (!props.state.walletId) { return }
-	if (currentId.value !== props.state.walletId) { contentKey.value++ }
+	if (currentId.value !== (props.state.walletId || Wallets.value[0]?.id)) { contentKey.value++ }
 	isSelectingWallet.value = false
 	currentId.value = props.state.walletId
 }
@@ -103,7 +103,7 @@ const isSelectingWallet = ref(!props.state.walletId)
 const contentKey = ref(0)
 const selectWallet = () => {
 	if (!isSelectingWallet.value) { isSelectingWallet.value = true; return }
-	if (currentId.value !== props.state.walletId) { contentKey.value++ }
+	if (currentId.value !== (props.state.walletId || Wallets.value[0]?.id)) { contentKey.value++ }
 	currentId.value = props.state.walletId || Wallets.value[0]?.id
 	isSelectingWallet.value = false
 }

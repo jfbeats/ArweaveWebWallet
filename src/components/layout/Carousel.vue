@@ -12,16 +12,15 @@
 
 <script setup lang="ts">
 import { awaitEffect } from '@/functions/AsyncData'
-import { onMounted, ref, computed, watch, nextTick, inject } from 'vue'
+import { onMounted, onBeforeUnmount, ref, computed, watch, nextTick, inject } from 'vue'
 
 const props = defineProps<{
 	modelValue?: number
 	options: {
-		inline?: ScrollLogicalPosition
-		block?: ScrollLogicalPosition
+		align?: ScrollLogicalPosition
 		overscroll: boolean
 		immediate?: boolean
-		ignoreTransition?: boolean
+		awaitTransition?: boolean
 	}
 }>()
 const emit = defineEmits(['update:modelValue'])
@@ -32,29 +31,43 @@ const model = computed<number | undefined>({
 	set (value) { emit('update:modelValue', value) }
 })
 const root = ref(null as null | HTMLElement)
+const calcOffset = (el: HTMLElement) => {
+	if (!el || !root.value) { return }
+	if (props.options.align === 'center') { return el.offsetLeft + el.offsetWidth / 2 - root.value.offsetWidth! / 2 }
+	if (props.options.align === 'end') { return el.offsetLeft + el.offsetWidth - root.value.offsetWidth! }
+	return el.offsetLeft
+}
 const elements = computed(() => {
+	refresh.value
 	if (!root.value?.children) { return [] }
-	return Array(...root.value.children).filter(e => !e.classList.contains('margin'))
+	return Array(...root.value.children).filter(e => !e.classList.contains('margin')) as HTMLElement[]
 })
 const style = computed(() => ({
-	'--position': props.options?.inline || 'start',
+	'--position': props.options?.align || 'start',
 }))
-const effect = async (instant?: boolean) => {
-	if (model.value == null) { return }
-	if (!props.options.ignoreTransition) { await awaitEffect(() => !parentTransitionState.running) }
-	const index = Math.max(model.value || 0, 0)
-	elements.value[index]?.scrollIntoView({
+const effect = async (index?: number, instant?: boolean) => {
+	if (!instant && props.options.awaitTransition) { await awaitEffect(() => !parentTransitionState.running) }
+	index = Math.max(index || 0, 0)
+	root.value?.scroll({
+		left: calcOffset(elements.value[index]),
 		behavior: instant ? 'instant' as any : 'smooth',
-		block: props.options?.block || 'start',
-		inline: props.options?.inline || 'start',
 	})
 }
+let observer: MutationObserver
+const refresh = ref(0)
 onMounted(async () => {
+	observer = new MutationObserver(async () => { refresh.value++ })
+	observer.observe(root.value!, { subtree: false, childList: true })
 	await nextTick()
 	await awaitEffect(() => elements.value.length)
-	setTimeout(() => effect(props.options.immediate))
-	watch(model, () => effect())
+	setTimeout(() => {
+		const hasInitSlide = !props.options.immediate && model.value && model.value > 0 || false
+		if (!hasInitSlide) { effect(model.value, true) }
+		else { effect(0, true) }
+		watch(model, v => effect(v), { immediate: hasInitSlide })
+	})
 })
+onBeforeUnmount(() => observer && observer.disconnect())
 </script>
 
 

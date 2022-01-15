@@ -1,6 +1,6 @@
 <template>
 	<div class="connect flex-column">
-		<Carousel v-model="currentConnectorIndex" :options="{ inline: 'start', overscroll: true, ignoreTransition: true }" class="connectors">
+		<Carousel v-model="currentConnectorIndex" :options="{ align: 'start', overscroll: true }" class="connectors">
 			<div v-for="connector in connectors" :key="connector.session" class="connection-card-container  fade-list-item">
 				<ConnectionCard :state="connector" class="box" />
 			</div>
@@ -26,8 +26,7 @@ import { state, states } from '@/functions/Channels'
 import { connectors } from '@/functions/Connect'
 import { computed, onBeforeUnmount, ref } from 'vue'
 
-const currentConnectorIndex = ref(connectors.value.findIndex(value =>
-	value.origin === state.origin && value.session === state.session))
+const currentConnectorIndex = ref(connectors.value.findIndex(value => value.origin === state.origin && value.session === state.session))
 
 		// const test = ref(false)
 		// const testing = () => {
