@@ -23,9 +23,13 @@ const displayKeys = {
 	getArweaveConfig: 'Share arweave gateway configuration',
 } as const
 
-const getInstanceProperties = (instance: any) => Object.getOwnPropertyNames(Object.getPrototypeOf(instance)).filter(prop => instance[prop] && prop !== 'constructor')
+const getInstanceProperties = (wallet?: Provider) => {
+	if (!wallet || wallet.options && !wallet.options.permissions) { return [] }
+	return Object.getOwnPropertyNames(Object.getPrototypeOf(wallet.messageRunner))
+		.filter(prop => wallet.messageRunner[prop] && prop !== 'constructor')
+}
 const wallet = computed(() => getWalletById(props.walletId))
-const methods = computed(() => getInstanceProperties(wallet.value?.messageRunner))
+const methods = computed(() => getInstanceProperties(wallet.value))
 
 
 </script>

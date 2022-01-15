@@ -9,6 +9,7 @@ type WalletDataInterface = {
 }
 
 interface Provider extends Account {
+	options?: { permissions: boolean }
 	messageVerifier: any
 	messageRunner?: any
 	id: string

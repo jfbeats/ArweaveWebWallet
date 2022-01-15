@@ -110,6 +110,7 @@ export class LedgerProvider extends ArweaveAccount implements Provider {
 	messageVerifier: ArweaveMessageVerifier
 	messageRunner?: ArweaveMessageRunner
 	static isProviderFor (wallet: WalletProxy) { return wallet.data.provider === 'ledger' }
+	options = { permissions: false }
 	constructor (init: WalletProxy) {
 		super(init)
 		this.#wallet = init
