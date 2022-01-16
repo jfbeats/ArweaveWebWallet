@@ -1,4 +1,4 @@
-import { ArweaveProvider, arweave } from '@/store/ArweaveStore'
+import { ArweaveProvider, arweave, ArweaveAccount } from '@/store/ArweaveStore'
 import { LedgerProvider } from '@/providers/Ledger'
 import { ChannelRef } from '@/functions/Channels'
 import { useDataWrapper } from '@/functions/AsyncData'
@@ -61,6 +61,11 @@ export const Wallets = useDataWrapper(WalletsData, 'id', walletFactory, (wallet)
 
 export function getWalletById (walletId?: number | string) {
 	return Wallets.value.find(wallet => wallet.id == walletId)
+}
+
+export function getAccountByAddress (address: string): Account {
+	return Wallets.value.find(wallet => wallet.key == address)
+		|| new ArweaveAccount(address)
 }
 
 export async function generateMnemonic () {

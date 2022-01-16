@@ -5,9 +5,7 @@
 				<Icon class="logo" :icon="walletInfo.icon" />
 				<div>{{ arweaveId?.Name || walletInfo.name }}</div>
 			</div>
-			<div>
-				<Address class="secondary-text" :address="wallet.key" />
-			</div>
+			<Address class="secondary-text" :address="wallet.key" />
 		</div>
 	</transition>
 </template>
@@ -37,5 +35,9 @@ watch(() => props.wallet.key, () => getArweaveId(props.wallet.key))
 
 .logo {
 	margin-inline-end: 1em;
+}
+
+.address {
+	width: 100%;
 }
 </style>

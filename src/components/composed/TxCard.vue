@@ -1,7 +1,7 @@
 <template>
 	<div class="tx-card no-scrollbar" :class="{ verticalElement }">
 		<div class="tx-content" :class="{ 'flex-row': !verticalElement, 'flex-column': verticalElement }">
-			<Link class="left reset" :to="tx.id ? { name: 'Tx', params: { txId: tx.id } } : ''">
+			<Link class="left reset" :to="(tx.id && !half) ? { name: 'Tx', params: { txId: tx.id } } : ''">
 				<TxIcon class="tx-icon" :tx="tx" :direction="direction" />
 				<div class="margin" />
 				<div>
@@ -11,7 +11,7 @@
 					<div class="secondary-text">{{ context }}</div>
 				</div>
 			</Link>
-			<div class="right">
+			<div v-if="!half" class="right">
 				<div class="right-content">
 					<div class="right-text">
 						<Address v-if="relativeAddress" class="address" :address="relativeAddress" />
@@ -45,7 +45,7 @@ import InterfaceStore from '@/store/InterfaceStore'
 import { unpackTags } from '@/functions/Transactions'
 import { computed } from 'vue'
 
-const props = defineProps(['tx', 'currentAddress'])
+const props = defineProps(['tx', 'currentAddress', 'half'])
 
 const tags = computed(() => unpackTags(props.tx.tags))
 const timestamp = computed(() => props.tx.block?.timestamp * 1000)
