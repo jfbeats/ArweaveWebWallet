@@ -93,7 +93,7 @@ onBeforeUnmount(() => observer && observer.disconnect())
 }
 
 .margin {
-	width: calc(var(--current-vw) * 1);
+	width: 100%;
 	display: inline-block;
 }
 </style>

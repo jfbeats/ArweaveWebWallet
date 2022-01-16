@@ -51,4 +51,8 @@ const carouselIndex = computed(() => Wallets.value.findIndex(w => w.id === model
 	background: var(--background);
 	border-radius: var(--border-radius);
 }
+
+.carousel {
+	flex: 1 1 0;
+}
 </style>
