@@ -5,8 +5,8 @@
 	<div v-else-if="data.handler === 'img'" v-show="data.loaded" key="img" class="selector img-container box">
 		<Img :src="gatewayLink" @load="data.loaded = true" />
 	</div>
-	<div v-else-if="data.handler === 'smartweave'" key="smartweave" class="selector">
-		<SmartWeave :tx="tx" />
+	<div v-else-if="data.handler === 'smartweave'" key="smartweave" class="selector iframe-container box">
+		<iframe class="iframe" :src="'https://arcode.studio/#/' + tx.id" @load="data.loaded = true" />
 	</div>
 	<div v-else-if="data.handler === 'json' || data.handler === 'raw'" key="json" class="selector data-container box">
 		<pre class="raw">{{ data.payload }}</pre>
@@ -18,7 +18,6 @@
 <script setup>
 import ArweaveStore, { arweave } from '@/store/ArweaveStore'
 import Img from '@/components/handlers/Img.vue'
-import SmartWeave from '@/components/handlers/SmartWeave.vue'
 import { computed, reactive, watch } from 'vue'
 import { unpackTags } from '@/functions/Transactions'
 
@@ -44,8 +43,11 @@ watch(() => props.tx, async () => {
 		data.handler = 'iframe'
 	} else if (props.tx.data?.type?.split('/')[0] === 'image') {
 		data.handler = 'img'
-		// } else if (props.tx.tags?.find(el => el.name === 'App-Name')?.value === 'SmartWeaveContract') {
-		// 	data.handler = 'smartweave'
+	} else if (
+		props.tx.tags?.find(el => el.name === 'App-Name')?.value === 'SmartWeaveContract'
+		|| props.tx.tags?.find(el => el.name === 'App-Name')?.value === 'SmartWeaveContractSource'
+	) {
+		data.handler = 'smartweave'
 	} else {
 		data.handler = 'raw'
 		try {
@@ -93,7 +95,7 @@ watch(() => props.tx, async () => {
 	transition: opacity 0.6s ease;
 }
 
-.iframe:hover {
+.iframe:hover, .iframe:active {
 	opacity: 1;
 }
 
