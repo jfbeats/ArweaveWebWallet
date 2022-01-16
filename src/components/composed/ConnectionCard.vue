@@ -9,7 +9,7 @@
 				</div>
 				<Icon v-if="navigateBackAvailable(state.origin, state.session)" :icon="IconLaunch" />
 			</button>
-			<WalletSelector v-model="state.walletId" :default="defaultId" :exit="true" :active="!isSelectingWallet" @selectWallet="selectWallet" @exit="disconnect" />
+			<WalletSelector v-model="state.walletId" :default="defaultId" :exit="true" :active="!selectActive" @selectWallet="selectWallet" @exit="disconnect" />
 		</div>
 		<div class="flex-column" style="flex: 1 1 0;">
 			<Tabs :tabs="tabs" v-model="currentTab" :disabled="!currentId" />
@@ -17,7 +17,7 @@
 				<TransitionsManager :vector="transitionName" axis="x">
 					<div class="container-scroll" :key="contentKey">
 						<transition-group name="fade-list">
-							<WalletTabs v-if="isSelectingWallet" v-model="currentId" class="fade-list-item" key="-1" />
+							<WalletTabs v-if="selectActive" v-model="currentId" class="fade-list-item" key="-1" />
 							<div class="page-container" key="0">
 								<TransitionsManager :vector="transitionName" axis="x">
 									<div :key="(currentId || '') + currentTab" class="content">
@@ -82,30 +82,31 @@ const tabs = [
 const currentTab = ref(currentId.value ? tabs[0].name : null)
 watch(() => props.state.walletId, (walletId) => {
 	if (!walletId) { return }
-	isSelectingWallet.value = false
+	selectEnabled.value = false
 	currentId.value = walletId
 	currentTab.value = tabs[0].name
 })
 
 const disconnect = () => props.state.walletId = false
 const connect = () => {
-	isSelectingWallet.value = false
+	selectEnabled.value = false
 	props.state.walletId = currentId.value + ''
 }
 const goBack = () => {
 	if (!props.state.walletId) { return }
 	if (currentId.value !== (props.state.walletId || Wallets.value[0]?.id)) { contentKey.value++ }
-	isSelectingWallet.value = false
+	selectEnabled.value = false
 	currentId.value = props.state.walletId
 }
 
-const isSelectingWallet = ref(!props.state.walletId)
+const selectEnabled = ref(!props.state.walletId)
+const selectActive = computed(() => selectEnabled.value && Wallets.value.length > 1)
 const contentKey = ref(0)
 const selectWallet = () => {
-	if (!isSelectingWallet.value) { isSelectingWallet.value = true; return }
+	if (!selectEnabled.value) { selectEnabled.value = true; return }
 	if (currentId.value !== (props.state.walletId || Wallets.value[0]?.id)) { contentKey.value++ }
 	currentId.value = props.state.walletId || Wallets.value[0]?.id
-	isSelectingWallet.value = false
+	selectEnabled.value = false
 }
 
 const connectData = computed(() => {
