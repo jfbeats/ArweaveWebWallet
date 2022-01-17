@@ -1,5 +1,8 @@
 <template>
-	<div v-if="data.handler === 'iframe'" v-show="data.loaded" key="iframe" class="selector iframe-container box">
+	<div v-if="data.handler === 'intent'" @click="data.intent = true" class="selector data-container box" style="display: flex; justify-content: center; padding-top: 5em;">
+		<Button :icon="IconDownload">Load large file</Button>
+	</div>
+	<div v-else-if="data.handler === 'iframe'" v-show="data.loaded" key="iframe" class="selector iframe-container box">
 		<iframe class="iframe" :src="gatewayLink" @load="data.loaded = true" />
 	</div>
 	<div v-else-if="data.handler === 'img'" v-show="data.loaded" key="img" class="selector img-container box">
@@ -18,8 +21,10 @@
 <script setup>
 import ArweaveStore, { arweave } from '@/store/ArweaveStore'
 import Img from '@/components/handlers/Img.vue'
+import Button from '@/components/atomic/Button.vue'
 import { computed, reactive, watch } from 'vue'
 import { unpackTags } from '@/functions/Transactions'
+import IconDownload from '@/assets/icons/download.svg?component'
 
 const props = defineProps(['tx'])
 
@@ -27,28 +32,21 @@ const data = reactive({
 	handler: null,
 	loaded: false,
 	payload: null,
+	intent: false,
 })
 
 const gatewayLink = computed(() => ArweaveStore.gatewayURL + props.tx.id)
 
-watch(() => props.tx, async () => {
+const load = async () => {
 	if (!props.tx) { return }
-	data.handler = null
-	data.loaded = false
-	if (props.tx.data?.size === '0') {
-		return
-	} else if (unpackTags(props.tx.tags)['Bundle-Version']) {
-		return
-	} else if (props.tx.data?.type === 'application/x.arweave-manifest+json' || props.tx.data?.type === 'text/html' || props.tx.data?.type === 'application/pdf') {
-		data.handler = 'iframe'
-	} else if (props.tx.data?.type?.split('/')[0] === 'image') {
-		data.handler = 'img'
-	} else if (
-		props.tx.tags?.find(el => el.name === 'App-Name')?.value === 'SmartWeaveContract'
-		|| props.tx.tags?.find(el => el.name === 'App-Name')?.value === 'SmartWeaveContractSource'
-	) {
-		data.handler = 'smartweave'
-	} else {
+	if (props.tx.data?.size === '0') { return }
+	const tags = unpackTags(props.tx.tags)
+	if (tags['Bundle-Version']) { return }
+	if (props.tx.data?.size > 104857600 && !data.intent) { return data.handler = 'intent' }
+	if (props.tx.data?.type === 'application/x.arweave-manifest+json' || props.tx.data?.type === 'text/html' || props.tx.data?.type === 'application/pdf') { return data.handler = 'iframe' }
+	if (props.tx.data?.type?.split('/')[0] === 'image') { return data.handler = 'img' }
+	if (tags['App-Name'] === 'SmartWeaveContract' || tags['App-Name'] === 'SmartWeaveContractSource') { return data.handler = 'smartweave' }
+	else {
 		data.handler = 'raw'
 		try {
 			data.payload = await arweave.transactions.getData(props.tx.id, { decode: true, string: true })
@@ -56,12 +54,22 @@ watch(() => props.tx, async () => {
 				try {
 					data.payload = JSON.stringify(JSON.parse(data.payload), null, 2)
 					data.handler = 'json'
-				}
-				catch { }
+				} catch (e) { }
 			}
-		} catch { }
+		} catch (e) { }
 	}
+}
+
+watch(() => props.tx.id, () => {
+	data.intent = false
+	data.handler = null
+	data.loaded = false
+	load()
 }, { immediate: true })
+
+watch(() => data.intent, () => {
+	data.intent && load()
+})
 </script>
 
 
