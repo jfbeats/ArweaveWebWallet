@@ -19,6 +19,7 @@ import type { WalletProxy } from '@/functions/Wallets'
 
 const ArweaveStore = reactive({
 	gatewayURL: null as null | string,
+	gatewayURLObject: null as null | URL,
 	wallets: {} as { [key: string]: ArweaveAccount },
 	txs: {} as { [key: string]: Partial<GQLTransactionInterface> },
 	uploads: {} as { [key: string]: { upload?: number } },
@@ -64,6 +65,7 @@ export function updateArweave (gateway: string | URL | ApiConfig) {
 	arweave = settings ? Arweave.init(settings) : Arweave.init(gatewayDefault)
 	arDB = { search: (...args) => new ArDB(arweave).search(...args) }
 	ArweaveStore.gatewayURL = settingsToUrl(arweave.getConfig().api)
+	ArweaveStore.gatewayURLObject = new URL(ArweaveStore.gatewayURL)
 }
 
 export function useWatchTx (txId: Ref<string>) {

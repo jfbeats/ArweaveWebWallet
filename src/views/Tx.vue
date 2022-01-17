@@ -28,7 +28,7 @@
 							<h3>Transaction</h3>
 							<Address :address="tx.id">ID:&nbsp;</Address>
 							<!-- Status: included, number of confirmations /50 -> settled -->
-							<div v-if="isData"><a :href="ArweaveStore.gatewayURL + tx.id" target="_blank">{{ ArweaveStore.gatewayURL }}</a></div>
+							<div v-if="isData"><a :href="ArweaveStore.gatewayURL + tx.id" target="_blank">{{ ArweaveStore.gatewayURLObject?.hostname }}</a></div>
 							<div v-if="tx.data?.type === 'application/x.arweave-manifest+json'"><a :href="ArweaveStore.gatewayURL + 'tx/' + tx.id + '/data.json'" target="_blank">Manifest</a></div>
 						</div>
 						
