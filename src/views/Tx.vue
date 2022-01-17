@@ -13,8 +13,10 @@
 								<AddressIcon :address="tx.owner.address" />
 							</div>
 							<WalletInfo :wallet="sender" />
-							<div class="spacer" />
 						</div>
+						<div class="spacer" />
+						<div v-if="tx.recipient" class="divider" />
+						<div v-if="tx.recipient" class="spacer" />
 						
 						<div v-if="tx.recipient" class="row flex-column" style="align-items: center;">
 							<div class="address-icon-margin">
@@ -139,7 +141,27 @@ const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
 }
 
 .spacer {
-	height: calc(var(--spacing) * 3);
+	height: var(--spacing);
+}
+
+.divider {
+	border-bottom: solid 1px var(--border2);
+	position: relative;
+}
+
+.divider:after {
+	--size: 32px;
+	content: "";
+	background: var(--background2);
+	height: var(--size);
+	width: var(--size);
+	border-bottom: solid 1px var(--border2);
+	border-right: solid 1px var(--border2);
+	position: absolute;
+	right: calc(50% - var(--size) / 2);
+	bottom: calc(-1px - var(--size) / 2);
+	transform: rotate(45deg);
+	margin-top: -1rem;
 }
 
 .verticalContent .meta {
