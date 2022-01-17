@@ -6,7 +6,7 @@
 		<Img :src="gatewayLink" @load="data.loaded = true" />
 	</div>
 	<div v-else-if="data.handler === 'smartweave'" key="smartweave" class="selector iframe-container box">
-		<iframe class="iframe" :src="'https://arcode.studio/#/' + tx.id" @load="data.loaded = true" />
+		<iframe class="iframe" :src="'https://arcode.studio/#/' + tx.id + '?theme=dark-blue&hideToolbar=true'" @load="data.loaded = true" style="opacity:1;"/>
 	</div>
 	<div v-else-if="data.handler === 'json' || data.handler === 'raw'" key="json" class="selector data-container box">
 		<pre class="raw">{{ data.payload }}</pre>
