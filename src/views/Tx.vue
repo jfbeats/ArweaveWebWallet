@@ -81,7 +81,6 @@ import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import InputGrid from '@/components/atomic/InputGrid.vue'
 import Amount from '@/components/composed/Amount.vue'
 import ArweaveStore, { arweave, useWatchTx, networkInfo } from '@/store/ArweaveStore'
-import BlockStore, { getCurrentHeight } from '@/store/BlockStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { humanFileSize } from '@/functions/Utils'
 import { watch, computed, ref, toRef } from 'vue'
@@ -107,7 +106,6 @@ const date = computed(() => {
 		+ ' ' + dateObj.toLocaleTimeString()
 })
 const status = ref(null as any)
-const currentBlock = toRef(BlockStore, 'currentHeight')
 const tagsSchema = computed(() => {
 	if (!tx.value.tags) { return }
 	const result = []
@@ -122,7 +120,6 @@ const tagsSchema = computed(() => {
 	return result
 })
 watch(() => props.txId, async () => {
-	getCurrentHeight()
 	arweave.transactions.getStatus(props.txId).then(s => status.value = s.status).catch(() => status.value = 'Not Found')
 }, { immediate: true })
 const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')

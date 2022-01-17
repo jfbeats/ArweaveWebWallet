@@ -66,7 +66,7 @@ const dataType = computed(() => {
 })
 const dataInfo = computed(() => tags.value['Service'] || tags.value['App-Name'] || tags.value['User-Agent']?.split('/')[0])
 const context = computed(() => {
-	const fallback = isValue.value && isData.value ? 'Payment | Data' : isValue.value ? 'Payment' : isData.value ? 'Data' : props.tx.tags ? 'Tags' : 'Empty'
+	const fallback = isValue.value && isData.value ? 'Payment | Data' : isValue.value ? 'Payment' : isData.value ? 'Data' : props.tx.tags?.length ? 'Tags' : 'Empty'
 	const dataTypeUsed = !isValue.value && isData.value
 	return (dataTypeUsed ? null : dataType.value) || dataInfo.value || fallback
 })

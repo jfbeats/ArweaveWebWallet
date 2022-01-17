@@ -1,4 +1,4 @@
-import ArweaveStore, { arweave, arDB } from '@/store/ArweaveStore'
+import ArweaveStore, { arDB } from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { reactive, watch } from 'vue'
 import axios from 'axios'
@@ -18,19 +18,6 @@ const BlockStore = reactive({
 export default BlockStore
 
 
-
-export async function getCurrentHeight () { // Todo remove
-	if (BlockStore.currentHeightStatus.loading) { return currentHeightPromise() }
-	BlockStore.currentHeightStatus.loading = true
-	await awaitEffect(() => InterfaceStore.windowVisible)
-
-	try {
-		BlockStore.currentHeight = (await arweave.network.getInfo())?.height
-	} catch (e) { console.error(e) }
-
-	setTimeout(() => BlockStore.currentHeightStatus.loading = false, 60000)
-	return BlockStore.currentHeight
-}
 
 export async function getBlocks (min, max) { // Todo make a simpler getArweaveQueryManage({ block }) query
 	await awaitEffect(() => InterfaceStore.windowVisible)
@@ -115,14 +102,6 @@ async function fetchMempool (pending) {
 }
 
 
-
-function currentHeightPromise () { // Todo remove
-	return new Promise(resolve => {
-		watch(() => BlockStore.currentHeight, (height) => {
-			if (height) { resolve(height) }
-		})
-	})
-}
 
 function groupContinuousNumbers (blocks) {
 	if (!blocks.length) { return [] }
