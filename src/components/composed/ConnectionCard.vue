@@ -15,7 +15,12 @@
 			<Tabs :tabs="tabs" v-model="currentTab" :disabled="!currentId" />
 			<div class="container">
 				<TransitionsManager :vector="transitionName" axis="x">
-					<div class="container-scroll" :key="contentKey">
+					<div v-if="!Wallets.length" class="status flex-column" style="color: inherit; cursor: pointer;" @click="router.push('/add')">
+<!--						todo make overlay prompt component and use it here  -->
+						<Icon :icon="IconAddBox" style="font-size: 3em; margin-top: 40%;" />
+						<div>Add wallet</div>
+					</div>
+					<div v-else class="container-scroll" :key="contentKey">
 						<transition-group name="fade-list">
 							<WalletTabs v-if="selectActive" v-model="currentId" class="fade-list-item" key="-1" />
 							<div class="page-container" key="0">
@@ -58,18 +63,21 @@ import Icon from '@/components/atomic/Icon.vue'
 import Notification from '@/components/composed/Notification.vue'
 import PermissionCard from '@/components/composed/PermissionCard.vue'
 import PermissionSettings from '@/components/composed/PermissionSettings.vue'
+import TransitionsManager from '@/components/visual/TransitionsManager.vue'
 import { getWalletById, Wallets } from '@/functions/Wallets'
 import InterfaceStore from '@/store/InterfaceStore'
 import { navigateBack, navigateBackAvailable } from '@/functions/Connect'
 import { computed, ref, toRef, watch } from 'vue'
+import { useRouter } from 'vue-router'
 
 import IconConnection from '@/assets/icons/connection.svg?component'
 import IconY from '@/assets/icons/y.svg?component'
 import IconX from '@/assets/icons/x.svg?component'
 import IconLaunch from '@/assets/icons/launch.svg?component'
-import TransitionsManager from '@/components/visual/TransitionsManager.vue'
+import IconAddBox from '@/assets/icons/add_box.svg?component'
 
 const props = defineProps<{ state: ConnectorState }>()
+const router = useRouter()
 
 const defaultId = Wallets.value[0]?.id
 const addresses = computed(() => Wallets.value.map(wallet => wallet.key))

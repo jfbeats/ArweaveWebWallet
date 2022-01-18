@@ -82,6 +82,7 @@ export function navigateBack () {
 	} catch (e) { console.log(e) }
 }
 
-export function navigateBackAvailable (origin: string, session: string) {
+export function navigateBackAvailable (origin: string, session: string) { // todo figure out if the feature can work properly more often
+	return false
 	return window.opener && state.origin === origin && state.session === session
 }
