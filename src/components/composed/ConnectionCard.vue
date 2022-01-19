@@ -37,8 +37,7 @@
 										<div v-else-if="currentTab === 'Permissions'">
 											<transition-group name="fade-list">
 												<div class="fade-list-item" key="0" :style="{ padding: 0, border: 0, outline: '0.5px solid var(--border)' }"/>
-												<div class="status fade-list-item" key="1">WIP</div>
-												<PermissionSettings :walletId="currentId" class="fade-list-item" key="2" />
+												<PermissionSettings :state="state" :walletId="currentId" class="fade-list-item" key="2" />
 											</transition-group>
 										</div>
 									</div>

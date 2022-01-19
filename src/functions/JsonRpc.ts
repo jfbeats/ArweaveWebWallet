@@ -46,6 +46,8 @@ export default class JsonRpc {
 		await awaitEffect(() => this.stateWallet.value)
 		if (!this.isValidMessage(message)) { return }
 		if (this.state.messageQueue.find(m => m.id === message.id)) { return true }
+		const permissions = getPermissions(this.state, this.stateWallet.value?.uuid)
+		const permittedRun = !!permissions?.[message.method]
 		const uuid = uuidV4()
 		const storedMessage: StoredMessage = {
 			uuid,
@@ -60,7 +62,7 @@ export default class JsonRpc {
 		const messageEntry: MessageEntry = {
 			uuid,
 			id: message.id,
-			status: undefined,
+			status: permittedRun ? 'accepted' : undefined,
 			fulfilled: false,
 		}
 		if (!await this.storeMessage(storedMessage)) { return true }
@@ -75,7 +77,9 @@ export default class JsonRpc {
 		try {
 			const message = await getMessage(messageEntry)
 			if (!this.isValidMessage(message)) { throw new Error('message changed and is not valid anymore') }
-			const result = await this.stateWallet.value?.messageRunner[message.method!]?.(...(message.params || []))
+			const runner = this.stateWallet.value?.messageRunner
+			if (runner.getMethodMetadata(message.method)?.skip) { return }
+			const result = await (runner as any)[message.method!]?.(...(message.params || []))
 			if (result === undefined) { return }
 			messageEntry.fulfilled = true
 			await this.updateMessage(messageEntry)
@@ -95,7 +99,8 @@ export default class JsonRpc {
 		if (id != null && typeof id !== 'number' && typeof id !== 'string') { return false }
 		if (typeof method !== 'string') { id != null && this.callbacks({ ...getError('request'), id }); return false }
 		if (!this.stateWallet.value?.messageVerifier[method]) { id != null && this.callbacks({ ...getError('method', { method }), id }); return false }
-		if (this.stateWallet.value?.messageRunner && !this.stateWallet.value?.messageRunner[method]) { id != null && this.callbacks({ ...getError('method', { method }), id }); return false }
+		if (!(this.stateWallet.value?.messageRunner as any)[method]) { id != null && this.callbacks({ ...getError('method', { method }), id }); return false }
+		if (this.stateWallet.value?.messageRunner.getMethodMetadata(method)?.unavailable) { id != null && this.callbacks({ ...getError('method', { method }), id }); return false }
 		if (params != null && !Array.isArray(params)) { id != null && this.callbacks({ ...getError('params', { type: 'Params must be sent as an array', method, params }), id }); return false }
 		if (!this.stateWallet.value?.messageVerifier[method](...(message.params || []))) { id != null && this.callbacks({ ...getError('params', { type: 'Type error', method, params }), id }); return false }
 		return true
@@ -147,4 +152,12 @@ export async function getMessage (messageEntry: MessageEntry): Promise<StoredMes
 	const store = dbTx.objectStore('messages')
 	const storeRequest = store.get(messageEntry.uuid)
 	return new Promise(resolve => storeRequest.onsuccess = () => resolve(storeRequest.result))
+}
+
+function getPermissions (state: ConnectorState, uuid?: string) {
+	if (!uuid) { return }
+	const stored = localStorage.getItem('connectionSettings:' + state.origin)
+	if (!stored) { return }
+	const permissions = JSON.parse(stored) as ConnectionSettings
+	return permissions?.[uuid]
 }

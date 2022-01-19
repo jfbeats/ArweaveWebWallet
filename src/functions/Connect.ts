@@ -34,7 +34,7 @@ if (window.opener) {
 	// only show connections when popup or iframe is active
 }
 
-export { state }
+export { state } // todo reexport not working, type missing
 
 
 

@@ -1,12 +1,13 @@
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import ArweaveApp from "@zondax/ledger-arweave"
-import { arweave, ArweaveAccount, ArweaveMessageRunner } from '@/store/ArweaveStore'
+import { arweave, ArweaveAccount, ArweaveMessageRunner, ArweaveProvider } from '@/store/ArweaveStore'
 import { ArweaveVerifier as ArweaveMessageVerifier } from 'arweave-wallet-connector/lib/ArweaveWebWallet'
 import LogoLedger from '@/assets/logos/ledger.svg?component'
 import Transaction from 'arweave/web/lib/transaction'
 import { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
 import { state } from '@/functions/Connect'
 import type { WalletProxy } from '@/functions/Wallets'
+import { awaitEffect } from '@/functions/AsyncData'
 
 
 
@@ -88,14 +89,28 @@ async function sign (tx: Transaction) {
 
 
 
-
-
-export const metadata: Metadata = {
+export const metadata: Metadata <ArweaveProvider> = {
 	// @ts-ignore
 	isSupported: !!window.navigator.usb,
 	name: 'Ledger',
 	icon: LogoLedger,
+	methods: {
+		signTransaction: { skip: state.type === 'iframe', userIntent: true },
+		getPublicKey: { skip: state.type === 'iframe', userIntent: true },
+		sign: { skip: state.type === 'iframe', unavailable: true },
+		decrypt: { skip: state.type === 'iframe', unavailable: true },
+	},
 }
+
+const asyncMetadata = async () => { // todo fix see Connect.ts
+	await awaitEffect(() => state.type)
+	const skip = state.type === 'iframe'
+	metadata.methods!.signTransaction!.skip = skip
+	metadata.methods!.getPublicKey!.skip = skip
+	metadata.methods!.sign!.skip = skip
+	metadata.methods!.decrypt!.skip = skip
+}
+asyncMetadata()
 
 export const LedgerProviderData: ProviderData = {
 	...metadata,
@@ -108,20 +123,19 @@ export const LedgerProviderData: ProviderData = {
 export class LedgerProvider extends ArweaveAccount implements Provider {
 	#wallet: WalletProxy
 	messageVerifier: ArweaveMessageVerifier
-	messageRunner?: ArweaveMessageRunner
+	messageRunner: ArweaveMessageRunner
 	static isProviderFor (wallet: WalletProxy) { return wallet.data.provider === 'ledger' }
-	options = { permissions: false }
 	constructor (init: WalletProxy) {
 		super(init)
 		this.#wallet = init
 		this.messageVerifier = new ArweaveMessageVerifier()
-		if (state.type !== 'iframe') { this.messageRunner = new ArweaveMessageRunner(this as any) }
+		this.messageRunner = new ArweaveMessageRunner(this as any)
 	}
 	get id () { return this.#wallet.id }
 	get uuid () { return this.#wallet.uuid }
 	get metadata () { return metadata }
 	async signTransaction (tx: Transaction, options: SignatureOptions) {
-		if (this.key !== await getAddress()) { throw new Error('Wrong account') }
+		if (this.key !== await getAddress()) { throw new Error('Wrong account') } // todo getting wrong account error while ledger does not have the app opened
 		if (tx.owner && tx.owner !== await this.getPublicKey()) { throw 'error' }
 		return sign(tx)
 	}

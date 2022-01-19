@@ -3,6 +3,7 @@ import { getCurrentScope, onScopeDispose, reactive, watch, WatchStopHandle, ref,
 type PrefixTable = {
 	'connectorState:': InstanceState
 	'sharedState:': ConnectorState
+	'connectionSettings:': ConnectionSettings
 	wallets: WalletDataInterface[]
 	currency: { rate?: string, currency: string, provider: string, timestamp?: number }
 }

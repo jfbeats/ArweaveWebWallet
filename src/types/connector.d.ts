@@ -2,7 +2,7 @@ type Status = 'accepted' | 'rejected' | 'error' | undefined
 
 type Message = {
 	id?: number
-	method?: string
+	method: string
 	params?: unknown[]
 }
 
@@ -37,3 +37,5 @@ type ConnectorState = {
 	walletId?: string | false
 	link?: boolean
 }
+
+type ConnectionSettings = { [uuid: string]: { [method: string]: boolean } } | undefined

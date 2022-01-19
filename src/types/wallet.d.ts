@@ -9,12 +9,11 @@ type WalletDataInterface = {
 }
 
 interface Provider extends Account {
-	options?: { permissions: boolean }
 	messageVerifier: any
-	messageRunner?: any
+	messageRunner: MessageRunner
 	id: string
 	uuid: string
-	metadata: Metadata
+	metadata: Metadata<any>
 	signTransaction?: (...args: any) => Promise<any>
 	sign?: (data: ArrayBufferView, options: any) => Promise<ArrayBufferView>
 	decrypt?: (data: ArrayBufferView, options: any) => Promise<ArrayBufferView>
@@ -32,6 +31,10 @@ interface Account {
 	destructor?: () => any
 }
 
+interface MessageRunner {
+	getMethodMetadata: (method: string) => MethodMetadata | undefined
+}
+
 
 
 type Query = 'received' | 'sent' | 'all'
@@ -45,12 +48,19 @@ type QueryStatusInterface = {
 	[key in Query]?: import('ardb/lib/faces/gql').GQLEdgeTransactionInterface // TODO make it a tx id?
 }
 
-type Metadata = {
+type MethodMetadata = {
+	skip?: boolean
+	unavailable?: boolean
+	userIntent?: boolean
+}
+
+type Metadata <T> = {
 	name: string
 	icon: import('vue').Component
 	isSupported: boolean
+	methods?: { [keys in keyof T]?: MethodMetadata }
 }
 
-interface ProviderData extends Metadata {
+interface ProviderData extends Metadata<any> {
 	getImportData: () => Promise<Omit<WalletDataInterface, 'id'>>
 }

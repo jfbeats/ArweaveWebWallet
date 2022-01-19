@@ -59,7 +59,7 @@ export const Wallets = useDataWrapper(WalletsData, 'id', walletFactory, (wallet)
 
 
 
-export function getWalletById (walletId?: number | string) {
+export function getWalletById (walletId?: any) {
 	return Wallets.value.find(wallet => wallet.id == walletId)
 }
 
