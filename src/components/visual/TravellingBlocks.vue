@@ -5,7 +5,7 @@
 				<div class="bubble" v-for="n in nbBlocks" :key="n" :style="`--size:${5 + Math.random() * 2}rem; --distance:${120 + Math.random() * 100}px; --position:${Math.random() * 100}%; --time:${4 + Math.random() * 18}s; --delay:${-1 * (4 + Math.random() * 2)}s;`" />
 			</div>
 		</div>
-		<svg style="position:absolute;">
+		<svg style="position:fixed;">
 			<defs>
 				<filter id="blob">
 					<feGaussianBlur in="SourceGraphic" result="blur" stdDeviation="7" />
@@ -18,39 +18,46 @@
 	</div>
 </template>
 
-<script>
+
+
+<script setup>
 import InterfaceStore from '@/store/InterfaceStore'
 import { computed } from 'vue'
 
-export default {
-	setup () {
-		const nbBlocks = computed(() => Math.floor(InterfaceStore.windowWidth / 60))
-		return { nbBlocks }
-	}
-}
+const nbBlocks = computed(() => Math.floor(InterfaceStore.windowWidth / 60))
 </script>
+
+
 
 <style scoped>
 .travelling-blocks {
+	position: absolute;
+	height: 100%;
 	width: 100%;
-	overflow: hidden;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
 	pointer-events: none;
 }
 
 .footer {
+	opacity: 0.8;
+	overflow: hidden;
+	position: relative;
 	width: 100%;
 	height: 100%;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: flex-end;
+	/*display: flex;*/
+	/*flex-direction: column;*/
+	/*align-items: center;*/
+	/*justify-content: flex-end;*/
 }
 
 .bubbles {
 	position: absolute;
-	bottom: -1rem;
-	height: 3rem;
-	width: 120%;
+	bottom: 0;
+	height: 2rem;
+	width: 100%;
 	background: #ffffff;
 	filter: url("#blob");
 }

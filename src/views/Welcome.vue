@@ -1,40 +1,39 @@
 <template>
-	<div class="welcome flex-column">
-		<transition name="slide-down" appear>
-			<div class="column">
-				<div class="logo-background">
-					<ArweaveOutlineLogo class="logo" />
+	<div class="welcome">
+		<div class="flex-column">
+			<transition name="slide-down" appear>
+				<div class="column">
+					<div class="logo-background">
+						<ArweaveOutlineLogo class="logo" />
+					</div>
 				</div>
-			</div>
-		</transition>
-		<transition name="slide-down" appear>
-			<div class="column content">
-				<div>
-					<h1>{{ title }}</h1>
-					<p>{{ description }}</p>
-					<p>Alpha</p>
+			</transition>
+			<transition name="slide-down" appear>
+				<div class="column content">
+					<div>
+						<h1>{{ title }}</h1>
+						<p>{{ description }}</p>
+						<p>Alpha</p>
+					</div>
 				</div>
-			</div>
-		</transition>
-		<div class="spacer" />
+			</transition>
+			<div class="spacer" />
+		</div>
 		<TravellingBlocks />
 	</div>
 </template>
 
-<script>
+
+
+<script setup>
 import ArweaveOutlineLogo from '@/assets/logos/arweaveOutline.svg?component'
 import TravellingBlocks from '@/components/visual/TravellingBlocks.vue'
 
-export default {
-	components: { ArweaveOutlineLogo, TravellingBlocks },
-	setup () {
-		return {
-			description: import.meta.env.VITE_DESCRIPTION,
-			title: import.meta.env.VITE_TITLE,
-		}
-	}
-}
+const description = import.meta.env.VITE_DESCRIPTION
+const title = import.meta.env.VITE_TITLE
 </script>
+
+
 
 <style scoped>
 .welcome {
@@ -76,14 +75,6 @@ export default {
 	text-align: center;
 	min-width: min(320px, 100vw);
 	max-width: min(35vh, 100vw);
-}
-
-.travelling-blocks {
-	position: absolute;
-	width: 100%;
-	height: 100%;
-	opacity: 0.8;
-	margin: 0;
 }
 
 h1 {
