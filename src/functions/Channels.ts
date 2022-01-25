@@ -1,4 +1,5 @@
-import { getCurrentScope, onScopeDispose, reactive, watch, WatchStopHandle, ref, Ref } from 'vue'
+import { getCurrentScope, onScopeDispose, reactive, watch, ref, effectScope } from 'vue'
+import type { EffectScope, Ref, WatchStopHandle } from 'vue'
 
 type PrefixTable = {
 	'connectorState:': InstanceState
@@ -97,6 +98,30 @@ export class ChannelRef <T extends keyof PrefixTable> {
 		localStorage.removeItem(this.stateChannel)
 	}
 }
+
+const channelInstances = {} as { [key: string]: { channel: ChannelRef<any>, subscribers: number, scope: EffectScope } }
+export function useChannel <T extends keyof PrefixTable> (prefix: T, instanceName = '', init: PrefixTable[T]) {
+	const key = prefix + instanceName
+	
+	if (!channelInstances[key]) {
+		const scope = effectScope(true)
+		const channel = scope.run(() => new ChannelRef(prefix, instanceName, init))!
+		channelInstances[key] = { channel, subscribers: 0, scope }
+	}
+	channelInstances[key].subscribers++
+	console.log(channelInstances[key].subscribers)
+	
+	const stop = () => {
+		channelInstances[key].subscribers--
+		console.log(channelInstances[key].subscribers)
+		if (channelInstances[key].subscribers  > 0) { return }
+		channelInstances[key].scope.stop()
+		delete channelInstances[key]
+	}
+	if (getCurrentScope()) { onScopeDispose(stop) }
+	return { state: channelInstances[key].channel.state, stop }
+}
+
 
 
 const hash = new URLSearchParams(window.location.hash.slice(1))
