@@ -100,7 +100,7 @@ export class ChannelRef <T extends keyof PrefixTable> {
 }
 
 const channelInstances = {} as { [key: string]: { channel: ChannelRef<any>, subscribers: number, scope: EffectScope } }
-export function useChannel <T extends keyof PrefixTable> (prefix: T, instanceName = '', init: PrefixTable[T]) {
+export function useChannel <T extends keyof PrefixTable> (prefix: T, instanceName = '', init: PrefixTable[T]) { // todo use that composition function instead of direct channels
 	const key = prefix + instanceName
 	
 	if (!channelInstances[key]) {
@@ -109,11 +109,9 @@ export function useChannel <T extends keyof PrefixTable> (prefix: T, instanceNam
 		channelInstances[key] = { channel, subscribers: 0, scope }
 	}
 	channelInstances[key].subscribers++
-	console.log(channelInstances[key].subscribers)
 	
 	const stop = () => {
 		channelInstances[key].subscribers--
-		console.log(channelInstances[key].subscribers)
 		if (channelInstances[key].subscribers  > 0) { return }
 		channelInstances[key].scope.stop()
 		delete channelInstances[key]
