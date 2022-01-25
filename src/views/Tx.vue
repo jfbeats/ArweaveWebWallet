@@ -8,6 +8,16 @@
 						<TxCard :tx="tx" half="true" />
 						<div class="spacer" />
 						
+						<div v-if="tx.recipient" class="row flex-column" style="align-items: center;">
+							<div class="address-icon-margin">
+								<AddressIcon :address="tx.recipient" />
+							</div>
+							<WalletInfo :wallet="recipient" />
+						</div>
+						
+						<div v-if="tx.recipient" class="spacer" />
+						<div v-if="tx.recipient" class="divider" />
+						
 						<div class="row flex-column" style="align-items: center;">
 							<div class="address-icon-margin">
 								<AddressIcon :address="tx.owner.address" />
@@ -15,16 +25,6 @@
 							<WalletInfo :wallet="sender" />
 						</div>
 						<div class="spacer" />
-						<div v-if="tx.recipient" class="divider" />
-						<div v-if="tx.recipient" class="spacer" />
-						
-						<div v-if="tx.recipient" class="row flex-column" style="align-items: center;">
-							<div class="address-icon-margin">
-								<AddressIcon :address="tx.recipient" />
-							</div>
-							<WalletInfo :wallet="recipient" />
-							<div class="spacer" />
-						</div>
 						
 						<div>
 							<h3>Transaction</h3>
@@ -155,8 +155,8 @@ const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
 	background: var(--background2);
 	height: var(--size);
 	width: var(--size);
-	border-bottom: solid 1px var(--border2);
-	border-right: solid 1px var(--border2);
+	border-top: solid 1px var(--border2);
+	border-left: solid 1px var(--border2);
 	position: absolute;
 	right: calc(50% - var(--size) / 2);
 	bottom: calc(-1px - var(--size) / 2);
