@@ -28,6 +28,10 @@ watch(() => props.wallet.key, () => getArweaveId(props.wallet.key))
 
 
 <style scoped>
+.wallet-info {
+	max-width: 100%;
+}
+
 .name {
 	display: flex;
 	align-items: center;
