@@ -3,6 +3,7 @@ import { Wallets } from '@/functions/Wallets'
 import { computed, reactive, watch } from 'vue'
 import { awaitEffect } from '@/functions/AsyncData'
 import { uuidV4 } from '@/functions/Utils'
+import { useChannel } from '@/functions/Channels'
 
 const errors = {
 	rejected: { code: 0, message: 'Rejected' },
@@ -21,17 +22,24 @@ export default class JsonRpc {
 	callbacks
 	state
 	stateWallet
-	watchStop
+	permissions
+	watchStop // todo collect scope instead
 
 	constructor (callbacks: (message: any) => void, state: ConnectorState) {
 		this.callbacks = callbacks
 		this.state = state || reactive({})
 		this.state.messageQueue ??= []
 		this.stateWallet = computed(() => Wallets.value.find(w => w.id === this.state.walletId))
-		this.watchStop = watch(() => this.state.messageQueue, async () => {
+		const permissionsChannel = useChannel('connectionSettings:', this.state.origin, {})
+		this.permissions = computed(() => {
+			const uuid = this.stateWallet.value?.uuid
+			return permissionsChannel.state.value?.[uuid!]
+		})
+		this.watchStop = watch(() => [this.state.messageQueue, permissionsChannel.state.value], async () => {
 			for (const messageEntry of this.state.messageQueue) {
-				if (!messageEntry || messageEntry.fulfilled) { continue }
-				if (messageEntry.status === 'accepted') { this.runMessage(messageEntry) }
+				if (!messageEntry || messageEntry.fulfilled || messageEntry.processing) { continue }
+				this.evalPermission(messageEntry)
+				if (messageEntry.status === 'accepted' || messageEntry.status === 'allowed') { this.runMessage(messageEntry) }
 				if (messageEntry.status === 'rejected') {
 					messageEntry.fulfilled = true
 					const id = messageEntry.id
@@ -41,13 +49,13 @@ export default class JsonRpc {
 			}
 		}, { deep: true })
 	}
-
+	
+	destructor () { this.watchStop() }
+	
 	async pushMessage (message: unknown) {
 		await awaitEffect(() => this.stateWallet.value)
 		if (!this.isValidMessage(message)) { return }
-		if (this.state.messageQueue.find(m => m.id === message.id)) { return true }
-		const permissions = getPermissions(this.state, this.stateWallet.value?.uuid)
-		const permittedRun = !!permissions?.[message.method]
+		if (this.state.messageQueue.find(m => m.id === message.id)) { return }
 		const uuid = uuidV4()
 		const storedMessage: StoredMessage = {
 			uuid,
@@ -62,18 +70,22 @@ export default class JsonRpc {
 		const messageEntry: MessageEntry = {
 			uuid,
 			id: message.id,
-			status: permittedRun ? 'accepted' : undefined,
+			method: message.method,
+			status: undefined,
 			fulfilled: false,
+			processing: false,
 		}
-		if (!await this.storeMessage(storedMessage)) { return true }
-		this.state.messageQueue.push(messageEntry)
-		return true
+		this.evalPermission(messageEntry)
+		if (await this.storeMessage(storedMessage)) { this.state.messageQueue.push(messageEntry) }
+		if (!messageEntry.status && message.id != null) { return true }
 	}
 
 	async runMessage (messageEntry: MessageEntry) {
-		const id = messageEntry.id
-		if (messageEntry.status !== 'accepted' || messageEntry.fulfilled) { return }
+		if (messageEntry.status !== 'accepted' && messageEntry.status !== 'allowed') { return }
 		if (!this.stateWallet.value?.messageRunner) { return }
+		if (messageEntry.processing) { return }
+		messageEntry.processing = true
+		const id = messageEntry.id
 		try {
 			const message = await getMessage(messageEntry)
 			if (!this.isValidMessage(message)) { throw new Error('message changed and is not valid anymore') }
@@ -85,7 +97,6 @@ export default class JsonRpc {
 			await this.updateMessage(messageEntry)
 			if (id != null) { this.callbacks({ result, id }) }
 		} catch (e) {
-			messageEntry.fulfilled = true
 			messageEntry.status = 'error'
 			console.error(e)
 			await this.updateMessage(messageEntry)
@@ -93,7 +104,7 @@ export default class JsonRpc {
 		}
 	}
 
-	isValidMessage (message: any) : message is Message {
+	isValidMessage (message: any): message is Message {
 		if (typeof message !== 'object') { return false }
 		const { method, params, id } = message
 		if (id != null && typeof id !== 'number' && typeof id !== 'string') { return false }
@@ -140,8 +151,12 @@ export default class JsonRpc {
 			}
 		})
 	}
-
-	destructor () { this.watchStop() }
+	
+	private evalPermission (messageEntry: MessageEntry) {
+		if (messageEntry.status != null) { return }
+		const allowed = !!this.permissions.value?.[messageEntry.method]
+		if (allowed) { messageEntry.status = 'allowed' }
+	}
 }
 
 
@@ -152,12 +167,4 @@ export async function getMessage (messageEntry: MessageEntry): Promise<StoredMes
 	const store = dbTx.objectStore('messages')
 	const storeRequest = store.get(messageEntry.uuid)
 	return new Promise(resolve => storeRequest.onsuccess = () => resolve(storeRequest.result))
-}
-
-function getPermissions (state: ConnectorState, uuid?: string) {
-	if (!uuid) { return }
-	const stored = localStorage.getItem('connectionSettings:' + state.origin)
-	if (!stored) { return }
-	const permissions = JSON.parse(stored) as ConnectionSettings
-	return permissions?.[uuid]
 }

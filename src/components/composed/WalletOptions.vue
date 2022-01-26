@@ -8,7 +8,7 @@
 		</div>
 		<div class="content">
 			<div class="bottom">
-				<div><button v-if="wallet.download" @click="wallet.download">Download</button></div>
+				<div><button v-if="wallet.download && !wallet.metadata.methods.download?.unavailable" @click="wallet.download">Download</button></div>
 				<div><button @click="deleteWallet(wallet)">Delete</button></div>
 			</div>
 		</div>
@@ -17,14 +17,14 @@
 
 
 
-<script setup>
+<script setup lang="ts">
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import WalletInfo from '@/components/composed/WalletInfo.vue'
 import { deleteWallet } from '@/functions/Wallets'
 
-const props = defineProps({
-	wallet: Object
-})
+const props = defineProps<{
+	wallet: Provider
+}>()
 </script>
 
 

@@ -9,11 +9,11 @@ type WalletDataInterface = {
 }
 
 interface Provider extends Account {
+	metadata: Metadata<this>
 	messageVerifier: any
 	messageRunner: MessageRunner
 	id: string
 	uuid: string
-	metadata: Metadata<any>
 	signTransaction?: (...args: any) => Promise<any>
 	sign?: (data: ArrayBufferView, options: any) => Promise<ArrayBufferView>
 	decrypt?: (data: ArrayBufferView, options: any) => Promise<ArrayBufferView>
@@ -22,6 +22,7 @@ interface Provider extends Account {
 }
 
 interface Account {
+	metadata: AccountMetadata
 	key?: string
 	balance?: string
 	queries: { [key: string]: any[] }
@@ -37,6 +38,29 @@ interface MessageRunner {
 
 
 
+type AccountMetadata = {
+	name: string
+	icon: import('vue').FunctionalComponent<import('vue').SVGAttributes, {}>
+}
+
+type StaticMetadata = AccountMetadata & {
+	isSupported: boolean
+	isProviderFor: (wallet: import('@/functions/Wallets').WalletProxy) => boolean
+	addImportData: (data: Partial<WalletDataInterface>) => Promise<void>
+}
+
+type MethodMetadata = {
+	skip?: boolean
+	unavailable?: boolean
+	userIntent?: boolean
+}
+
+type Metadata <T> = StaticMetadata & {
+	methods: { [keys in keyof T]?: MethodMetadata }
+}
+
+
+
 type Query = 'received' | 'sent' | 'all'
 type QueryStatusInterface = {
 	completed?: boolean
@@ -46,21 +70,4 @@ type QueryStatusInterface = {
 	promise?: Promise<import('ardb/lib/faces/gql').GQLEdgeTransactionInterface[]> // TODO
 } & {
 	[key in Query]?: import('ardb/lib/faces/gql').GQLEdgeTransactionInterface // TODO make it a tx id?
-}
-
-type MethodMetadata = {
-	skip?: boolean
-	unavailable?: boolean
-	userIntent?: boolean
-}
-
-type Metadata <T> = {
-	name: string
-	icon: import('vue').Component
-	isSupported: boolean
-	methods?: { [keys in keyof T]?: MethodMetadata }
-}
-
-interface ProviderData extends Metadata<any> {
-	getImportData: () => Promise<Omit<WalletDataInterface, 'id'>>
 }

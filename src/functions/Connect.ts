@@ -51,17 +51,24 @@ async function initConnector () {
 	}
 	const disconnect = () => { deleteChannel(); postMessage({ method: 'disconnect' }) }
 	watch(() => connectorState.walletId, (id) => id === false ? disconnect() : connect())
+	if (state.type === 'popup') {
+		const keepPopup = computed(() => !connectorState.link)
+		watch(keepPopup, () => postMessage({ method: 'keepPopup', params: keepPopup.value }), { immediate: true })
+	}
 	watchEffect(() => {
 		const linkedState = Object.entries(filterChannels({ origin, session, type: state.type === 'popup' ? 'iframe' : 'popup' }))[0]?.[1]
-		if (linkedState) { connectorState.link = true }
+		if (linkedState) {
+			connectorState.link = true
+			postMessage({ method: 'usePopup', params: false })
+		}
 		const disconnectCondition = () => !linkedState && state.type === 'iframe' && connectorState.link && (connectorState.walletId == null || connectorState.walletId === false)
 		if (disconnectCondition()) { setTimeout(() => disconnectCondition() && disconnect(), 500) }
 	})
 	const jsonRpc = new JsonRpc(postMessage, connectorState)
-	window.addEventListener('message', (e) => {
+	window.addEventListener('message', async (e) => {
 		if (e.source !== windowRef || e.origin !== origin) { return }
-		console.info(`${location.hostname}:${state.type}:`, e.data)
-		jsonRpc.pushMessage(e.data)
+		const prompt = await jsonRpc.pushMessage(e.data)
+		if (prompt && state.type === 'iframe' && connectorState.link) { postMessage({ method: 'showIframe', params: true }) }
 	})
 	if (state.type === 'iframe') { window.addEventListener('beforeunload', () => disconnect()) }
 	postMessage({ method: 'ready' })

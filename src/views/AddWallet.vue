@@ -26,9 +26,9 @@
 		</div>
 		<div class="card">
 			<h2>Hardware</h2>
-			<template v-for="provider in hardwareProviders" :key="provider.name">
-				<Button :disabled="!provider.isSupported" @click="importProvider(provider)" :icon="provider.icon">
-					{{ provider.name }} {{ !provider.isSupported ? ' not supported for this browser' : '' }}
+			<template v-for="provider in hardwareProviders" :key="provider.metadata.name">
+				<Button :disabled="!provider.metadata.isSupported" @click="importProvider(provider)" :icon="provider.metadata.icon">
+					{{ provider.metadata.name }} {{ !provider.metadata.isSupported ? ' not supported for this browser' : '' }}
 				</Button>
 			</template>
 		</div>
@@ -41,14 +41,14 @@
 
 
 
-<script setup>
+<script setup lang="ts">
 import InputData from '@/components/atomic/InputData.vue'
 import InputAddress from '@/components/atomic/InputAddress.vue';
 import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
-import { LedgerProviderData } from '@/providers/Ledger.ts'
+import { LedgerProvider } from '@/providers/Ledger'
 import { arweave } from '@/store/ArweaveStore'
-import { addWallet, addAddress, generateMnemonic, validateMnemonic, addMnemonic, addProvider } from '@/functions/Wallets.ts'
+import { addWallet, addAddress, generateMnemonic, validateMnemonic, addMnemonic, addProvider } from '@/functions/Wallets'
 import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -58,12 +58,12 @@ import IconAddBox from '@/assets/icons/add_box.svg?component'
 const router = useRouter()
 const passphraseInput = ref('')
 const targetInput = ref('')
-const maskAddress = (address) => { return address.match(/^[a-z0-9_-]{0,43}$/i) }
+// const maskAddress = (address) => { return address.match(/^[a-z0-9_-]{0,43}$/i) }
 const popup = reactive({})
 const isPassphrase = computed(() => passphraseInput.value.trim().split(/\s+/g).length >= 12)
 const isCreatingWallet = ref(false)
 const isGeneratingWallet = ref(false)
-const createdWallet = ref(null)
+const createdWallet = ref(null as null | string)
 const create = async () => {
 	isCreatingWallet.value = true
 	passphraseInput.value = await generateMnemonic()
@@ -97,11 +97,11 @@ const importFile = async (file) => {
 	const id = await addWallet(JSON.parse(await file[0].text()))
 	router.push({ name: 'EditWallet', query: { wallet: id } })
 }
-const importProvider = async (provider) => {
+const importProvider = async (provider: Provider) => {
 	const id = await addProvider(provider)
 	router.push({ name: 'EditWallet', query: { wallet: id } })
 }
-const hardwareProviders = [LedgerProviderData]
+const hardwareProviders = [LedgerProvider]
 const importAddressOnlyAction = { icon: IconAddBox, run: async () => {
 	const id = await addAddress(targetInput.value)
 	router.push({ name: 'EditWallet', query: { wallet: id } })

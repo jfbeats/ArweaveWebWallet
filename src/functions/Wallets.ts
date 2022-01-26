@@ -22,7 +22,7 @@ export const ProviderRegistry = {
 
 function selectProvider (wallet: WalletProxy) {
 	if (wallet.data.provider && ProviderRegistry[wallet.data.provider]) { return ProviderRegistry[wallet.data.provider] }
-	for (const provider of Object.values(ProviderRegistry)) { if (provider.isProviderFor?.(wallet)) { return provider } }
+	for (const provider of Object.values(ProviderRegistry)) { if (provider.metadata.isProviderFor?.(wallet)) { return provider } }
 	return ProviderRegistry['arweave']
 }
 
@@ -105,11 +105,11 @@ export async function addAddress (addressSource: any) {
 	return wallet.id
 }
 
-export async function addProvider (provider: ProviderData) {
-	const importData = await provider.getImportData()
-	const wallet = { id: getNewId(), ...importData }
-	WalletsData.value.push(wallet)
-	return wallet.id
+export async function addProvider (provider: Provider) {
+	const walletData = { id: getNewId() } // todo same but with jwk for arweave provider
+	await provider.metadata.addImportData(walletData)
+	WalletsData.value.push(walletData)
+	return walletData.id
 }
 
 export function deleteWallet (wallet: WalletDataInterface) {

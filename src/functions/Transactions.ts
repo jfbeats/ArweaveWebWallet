@@ -3,6 +3,7 @@ import { getPending, getMempool } from '@/store/BlockStore'
 import BigNumber from 'bignumber.js'
 import { CreateTransactionInterface } from 'arweave/web'
 import Transaction from 'arweave/web/lib/transaction'
+import { download } from '@/functions/Utils'
 
 export type TxParams = {
 	target?: string
@@ -81,4 +82,10 @@ export function unpackTagsDuplicated (tags: { name: string, value: string }[]) {
 	const result = {} as { [key:string]: string[] }
 	for (const { name, value } of tags) { (result[name] ??= []).push(value) }
 	return result
+}
+
+export async function exportTransaction (tx: Transaction) {
+	// find if corresponding message in current connector queue
+	download('Transaction', JSON.stringify(tx))
+	// await for matching importTransaction before completing
 }
