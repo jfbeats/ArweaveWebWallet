@@ -230,7 +230,7 @@ export class ArweaveMessageRunner implements MessageRunner, Partial<ArweaveProvi
 		return publicKey
 	}
 	async sign (message: ArrayBufferView, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
-		throw 'error' // Todo make sure that it is not signing a transaction hash
+		if (message.byteLength === 48) { throw 'error' }
 		return this.#wallet.sign!(message, options)
 	}
 	async decrypt (message: ArrayBufferView, options: Parameters<ArweaveProviderInterface['decrypt']>[1]) {
