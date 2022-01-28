@@ -2,50 +2,52 @@
 	<div v-if="data.handler === 'intent'" @click="data.intent = true" class="selector data-container box" style="display: flex; justify-content: center; padding-top: 5em;">
 		<Button :icon="IconDownload">Load large file</Button>
 	</div>
-	<div v-else-if="data.handler === 'iframe'" v-show="data.loaded" key="iframe" class="selector iframe-container box">
-		<iframe class="iframe" :src="gatewayLink" @load="data.loaded = true" />
-	</div>
-	<div v-else-if="data.handler === 'img'" v-show="data.loaded" key="img" class="selector img-container box">
-		<Img :src="gatewayLink" @load="data.loaded = true" />
-	</div>
-	<div v-else-if="data.handler === 'smartweave'" key="smartweave" class="selector iframe-container box">
-		<iframe class="iframe" :src="'https://arcode.studio/#/' + tx.id + '?theme=dark-blue&hideToolbar=true'" @load="data.loaded = true" style="opacity:1;"/>
-	</div>
 	<div v-else-if="data.handler === 'json' || data.handler === 'raw'" key="json" class="selector data-container box">
 		<pre class="raw">{{ data.payload }}</pre>
+	</div>
+	<div v-else-if="data.handler" v-show="data.loaded" v-bind="data.handler.containerAttrs" class="selector box">
+		<component :is="data.handler.is" v-bind="data.handler.attrs" @load="data.loaded = true"></component>
 	</div>
 </template>
 
 
 
-<script setup>
+<script setup lang="ts">
 import ArweaveStore, { arweave } from '@/store/ArweaveStore'
 import Img from '@/components/handlers/Img.vue'
 import Button from '@/components/atomic/Button.vue'
-import { computed, reactive, watch } from 'vue'
+import { computed, markRaw, reactive, watch } from 'vue'
 import { unpackTags } from '@/functions/Transactions'
 import IconDownload from '@/assets/icons/download.svg?component'
+
+type Handler = {
+	is: string | object
+	attrs?: object
+	containerAttrs?: object
+}
 
 const props = defineProps(['tx'])
 
 const data = reactive({
-	handler: null,
+	handler: undefined as undefined | Handler | 'intent' | 'raw' | 'json',
+	payload: undefined as any,
 	loaded: false,
-	payload: null,
 	intent: false,
 })
 
 const gatewayLink = computed(() => ArweaveStore.gatewayURL + props.tx.id)
+const smartweaveLink = computed(() => 'https://arcode.studio/#/' + props.tx.id + '?theme=dark-blue&hideToolbar=true')
 
 const load = async () => {
 	if (!props.tx) { return }
 	if (props.tx.data?.size === '0') { return }
 	const tags = unpackTags(props.tx.tags)
 	if (tags['Bundle-Version']) { return }
+	if (props.tx.data?.type === 'application/x.arweave-manifest+json' || props.tx.data?.type === 'text/html' || props.tx.data?.type === 'application/pdf') { return data.handler = { is: 'iframe', attrs: { src: gatewayLink.value, class: ['hover'] }, containerAttrs: { class: ['iframe-container'] } } }
+	if (props.tx.data?.type?.split('/')[0] === 'video') { return data.handler = { is: 'iframe', attrs: { src: gatewayLink.value }, containerAttrs: { class: ['iframe-container'] } } }
 	if (props.tx.data?.size > 104857600 && !data.intent) { return data.handler = 'intent' }
-	if (props.tx.data?.type === 'application/x.arweave-manifest+json' || props.tx.data?.type === 'text/html' || props.tx.data?.type === 'application/pdf') { return data.handler = 'iframe' }
-	if (props.tx.data?.type?.split('/')[0] === 'image') { return data.handler = 'img' }
-	if (tags['App-Name'] === 'SmartWeaveContract' || tags['App-Name'] === 'SmartWeaveContractSource') { return data.handler = 'smartweave' }
+	if (props.tx.data?.type?.split('/')[0] === 'image') { return data.handler = { is: markRaw(Img), attrs: { src: gatewayLink.value }, containerAttrs: { class: ['img-container'] } } }
+	if (tags['App-Name'] === 'SmartWeaveContract' || tags['App-Name'] === 'SmartWeaveContractSource') { return data.handler = { is: 'iframe', attrs: { src: smartweaveLink.value }, containerAttrs: { class: ['iframe-container'] } } }
 	else {
 		data.handler = 'raw'
 		try {
@@ -61,9 +63,10 @@ const load = async () => {
 }
 
 watch(() => props.tx.id, () => {
-	data.intent = false
-	data.handler = null
+	data.handler = undefined
+	data.payload = undefined
 	data.loaded = false
+	data.intent = false
 	load()
 }, { immediate: true })
 
@@ -94,16 +97,19 @@ watch(() => data.intent, () => {
 	padding: var(--spacing);
 }
 
-.iframe {
+iframe {
 	flex: 1 1 0;
 	width: 100%;
 	height: 100%;
 	border: 0;
-	opacity: 0.5;
 	transition: opacity 0.6s ease;
 }
 
-.iframe:hover, .iframe:active {
+iframe.hover {
+	opacity: 0.5;
+}
+
+iframe.hover:hover {
 	opacity: 1;
 }
 
