@@ -15,11 +15,7 @@
 			<Tabs :tabs="tabs" v-model="currentTab" :disabled="!currentId" />
 			<div class="container">
 				<TransitionsManager :vector="transitionName" axis="x">
-					<div v-if="!Wallets.length" class="status flex-column" style="color: inherit; cursor: pointer;" @click="router.push('/add')">
-<!--						todo make overlay prompt component and use it here  -->
-						<Icon :icon="IconAddBox" style="font-size: 3em; margin-top: 40%;" />
-						<div>Add wallet</div>
-					</div>
+					<OverlayPrompt v-if="!Wallets.length" :options="{ action: { icon: IconAddBox, name: 'Add wallet', run: () => router.push('/add') } }" />
 					<div v-else class="container-scroll" :key="contentKey">
 						<transition-group name="fade-list">
 							<WalletTabs v-if="selectActive" v-model="currentId" class="fade-list-item" key="-1" />
@@ -31,6 +27,7 @@
 												<div class="fade-list-item" key="0" :style="{ padding: 0, border: 0, outline: '0.5px solid var(--border)' }"/>
 												<div v-if="connectionFeed?.length === 0 && state.walletId && state.walletId === currentId" class="status fade-list-item" key="1">Connected</div>
 												<Notification v-if="currentId !== state.walletId" :data="connectData" class="fade-list-item" key="2">{{ connectData.content }}</Notification>
+<!--												stay logged in here -->
 												<PermissionCard v-for="messageEntry in connectionFeed" :key="messageEntry.uuid" :messageEntry="messageEntry" style="padding: var(--spacing);" class="flex-column fade-list-item" />
 											</transition-group>
 										</div>
@@ -74,6 +71,7 @@ import IconY from '@/assets/icons/y.svg?component'
 import IconX from '@/assets/icons/x.svg?component'
 import IconLaunch from '@/assets/icons/launch.svg?component'
 import IconAddBox from '@/assets/icons/add_box.svg?component'
+import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
 
 const props = defineProps<{ state: ConnectorState }>()
 const router = useRouter()

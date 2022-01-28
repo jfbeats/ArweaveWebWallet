@@ -12,17 +12,7 @@
 				<Button v-else-if="isCreatingWallet" :disabled="createdWallet == null" @click="goToCreatedWallet" :icon="createdWallet == null ? 'loader' : ''">{{ createdWallet == null ? 'Generating, write down the passphrase' : 'Passphrase saved? Click here to proceed' }}</Button>
 				<Button v-else :disabled="!isPassphrase || isGeneratingWallet" @click="confirmPassphrase">Import passphrase</Button>
 			</div>
-			<transition name="fade-fast" mode="in-out">
-				<div v-if="popup.enabled" :key="popup.message" class="overlay flex-column">
-					<div style="flex:1 1 auto; display:flex; flex-direction:column; align-items:center; justify-content:space-evenly; margin-bottom:var(--spacing);">
-						<Icon v-if="popup.icon" :icon="popup.icon" style="font-size: 2em;" />
-						{{ popup.message }}
-					</div>
-					<div class="actions-container flex-row">
-						<Button v-for="action in popup.actions" :key="action.name" @click="action.action">{{ action.name }}</Button>
-					</div>
-				</div>
-			</transition>
+			<OverlayPrompt :options="popup" />
 		</div>
 		<div class="card">
 			<h2>Hardware</h2>
@@ -54,12 +44,13 @@ import { useRouter } from 'vue-router'
 
 import LogoArweave from '@/assets/logos/arweave.svg?component'
 import IconAddBox from '@/assets/icons/add_box.svg?component'
+import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
 
 const router = useRouter()
 const passphraseInput = ref('')
 const targetInput = ref('')
 // const maskAddress = (address) => { return address.match(/^[a-z0-9_-]{0,43}$/i) }
-const popup = reactive({})
+const popup = ref(undefined as undefined | object)
 const isPassphrase = computed(() => passphraseInput.value.trim().split(/\s+/g).length >= 12)
 const isCreatingWallet = ref(false)
 const isGeneratingWallet = ref(false)
@@ -76,23 +67,23 @@ const goToCreatedWallet = () => {
 const importPassphrase = async () => {
 	isGeneratingWallet.value = true
 	const id = addMnemonic(passphraseInput.value)
-	popup.enabled = true
-	popup.icon = 'loader'
-	popup.message = 'Importing'
-	popup.actions = []
+	popup.value = {
+		icon: 'loader',
+		message: 'importing',
+	}
 	router.push({ name: 'EditWallet', query: { wallet: await id } })
 }
 const confirmPassphrase = async () => {
 	if (await validateMnemonic(passphraseInput.value)) { return importPassphrase() }
-	popup.enabled = true
-	popup.icon = ''
-	popup.message = 'This passphrase is not valid, do you want to import it anyway?'
-	popup.actions = [
-		{ name: 'Back', action: () => popup.enabled = false },
-		{ name: 'Import Passphrase', action: () => importPassphrase() }
-	]
+	popup.value = {
+		message: 'This passphrase is not valid, do you want to import it anyway?',
+		actions: [
+			{ name: 'Back', run: () => popup.value = undefined },
+			{ name: 'Import Passphrase', run: () => importPassphrase() },
+		]
+	}
 }
-const importFile = async (file) => {
+const importFile = async (file: File[]) => {
 	if (!file) { return }
 	const id = await addWallet(JSON.parse(await file[0].text()))
 	router.push({ name: 'EditWallet', query: { wallet: id } })
@@ -128,30 +119,10 @@ const importAddressOnlyAction = { icon: IconAddBox, run: async () => {
 	text-align: center;
 }
 
-.actions-container {
-	width: 100%;
-}
-
 .button {
 	background-image: radial-gradient(circle at center, #81a1c166, #81a1c133);
 	height: 5em;
 	font-size: 1.1em;
 	width: 100%;
-}
-
-.overlay {
-	background: inherit;
-	border-radius: inherit;
-	padding: inherit;
-	position: absolute;
-	width: 100%;
-	height: 100%;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	z-index: 10;
-	align-items: center;
-	justify-content: space-evenly;
 }
 </style>
