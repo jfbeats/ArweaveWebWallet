@@ -1,8 +1,9 @@
 <template>
 	<TransitionsManager>
-		<component :is="options.action ? 'button' : 'div'" v-if="options" :key="options.message || options.action?.name" class="overlay-prompt flex-column" @click="options.action?.run">
+		<component :is="options.action ? 'button' : 'div'" v-if="options" :key="options.message || options.action?.name" class="overlay-prompt flex-column" :class="{ inline: options.inline }" @click="options.action?.run">
 			<div style="flex:1 1 auto; display:flex; flex-direction:column; align-items:center; justify-content:space-evenly; margin-bottom:var(--spacing);">
 				<Icon v-if="options.icon || options.action?.icon" :icon="options.icon || options.action?.icon" style="font-size: 4em;" />
+				<slot />
 				{{ options.message || options.action?.name }}
 			</div>
 			<div v-if="options.actions?.length" class="actions-container flex-row">
@@ -25,6 +26,7 @@ const props = defineProps<{
 		message?: string
 		action?: Action
 		actions?: Action[]
+		inline?: boolean
 	}
 }>()
 </script>
@@ -38,14 +40,14 @@ const props = defineProps<{
 	padding: inherit;
 	position: absolute;
 	width: 100%;
-	height: 100%;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	right: 0;
 	z-index: 10;
 	align-items: center;
 	justify-content: space-evenly;
+}
+
+.overlay-prompt:not(.inline) {
+	height: 100%;
+	inset: 0;
 }
 
 .actions-container {

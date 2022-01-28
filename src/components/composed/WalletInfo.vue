@@ -12,15 +12,15 @@
 
 
 
-<script setup>
+<script setup lang="ts">
 import Address from '@/components/atomic/Address.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import ProfileStore, { getArweaveId } from '@/store/ProfileStore'
 import { computed, watch } from 'vue'
 import LogoArweave from '@/assets/logos/arweave.svg?component'
 
-const props = defineProps(['wallet'])
-const arweaveId = computed(() => ProfileStore.arweaveId[props.wallet.key])
+const props = defineProps<{ wallet: Account }>()
+const arweaveId = computed(() => (ProfileStore.arweaveId as any)[props.wallet.key!])
 const walletInfo = computed(() => props.wallet.metadata || { icon: LogoArweave, name: 'Arweave wallet' })
 watch(() => props.wallet.key, () => getArweaveId(props.wallet.key))
 </script>

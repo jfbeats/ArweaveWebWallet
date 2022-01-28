@@ -26,7 +26,9 @@
 											<transition-group name="fade-list">
 												<div class="fade-list-item" key="0" :style="{ padding: 0, border: 0, outline: '0.5px solid var(--border)' }"/>
 												<div v-if="connectionFeed?.length === 0 && state.walletId && state.walletId === currentId" class="status fade-list-item" key="1">Connected</div>
-												<Notification v-if="currentId !== state.walletId" :data="connectData" class="fade-list-item" key="2">{{ connectData.content }}</Notification>
+												<OverlayPrompt v-if="currentId !== state.walletId" :options="connectOptions" class="fade-list-item" key="2">
+													<ProfilePreview v-if="currentWallet" :wallet="currentWallet" />
+												</OverlayPrompt>
 <!--												stay logged in here -->
 												<PermissionCard v-for="messageEntry in connectionFeed" :key="messageEntry.uuid" :messageEntry="messageEntry" style="padding: var(--spacing);" class="flex-column fade-list-item" />
 											</transition-group>
@@ -60,6 +62,7 @@ import Notification from '@/components/composed/Notification.vue'
 import PermissionCard from '@/components/composed/PermissionCard.vue'
 import PermissionSettings from '@/components/composed/PermissionSettings.vue'
 import TransitionsManager from '@/components/visual/TransitionsManager.vue'
+import ProfilePreview from '@/components/composed/ProfilePreview.vue'
 import { getWalletById, Wallets } from '@/functions/Wallets'
 import InterfaceStore from '@/store/InterfaceStore'
 import { navigateBack, navigateBackAvailable } from '@/functions/Connect'
@@ -79,6 +82,7 @@ const router = useRouter()
 const defaultId = Wallets.value[0]?.id
 const addresses = computed(() => Wallets.value.map(wallet => wallet.key))
 const currentId = ref(props.state.walletId || defaultId)
+const currentWallet = computed(() => getWalletById(currentId.value))
 const defaultWallet = computed(() => getWalletById(defaultId))
 const tabs = [
 	{ name: 'Requests', color: 'var(--orange)' },
@@ -114,21 +118,10 @@ const selectWallet = () => {
 	selectEnabled.value = false
 }
 
-const connectData = computed(() => {
-	const content = !props.state.walletId ?
-		`Connect to ${props.state.appInfo?.name || props.state.origin} from the account ${currentId.value}`
-		: `Switch to ${currentId.value}`
-	return {
-		title: props.state.walletId ? 'Switch' : 'Connect',
-		timestamp: Date.now(), // todo
-		actions: [
-			{ name: 'Connect', icon: IconY, run: connect },
-			{ name: !props.state.walletId ? 'Switch' : 'Cancel', icon: IconX, run: !props.state.walletId ? selectWallet : goBack },
-		],
-		expanded: true,
-		content,
-	}
-})
+const connectOptions = computed(() => ({
+	actions: [{ name: props.state.walletId ? 'Switch' : 'Connect', icon: IconY, run: connect }],
+	inline: true,
+}))
 
 
 

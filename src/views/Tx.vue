@@ -8,22 +8,12 @@
 						<TxCard :tx="tx" half="true" />
 						<div class="spacer" />
 						
-						<div v-if="tx.recipient" class="row flex-column" style="align-items: center;">
-							<div class="address-icon-margin">
-								<AddressIcon :address="tx.recipient" />
-							</div>
-							<WalletInfo :wallet="recipient" />
-						</div>
+						<ProfilePreview v-if="tx.recipient" :wallet="recipient" />
 						
 						<div v-if="tx.recipient" class="spacer" />
 						<div v-if="tx.recipient" class="divider" />
 						
-						<div class="row flex-column" style="align-items: center;">
-							<div class="address-icon-margin">
-								<AddressIcon :address="tx.owner.address" />
-							</div>
-							<WalletInfo :wallet="sender" />
-						</div>
+						<ProfilePreview :wallet="sender" />
 						<div class="spacer" />
 						
 						<div>
@@ -89,6 +79,7 @@ import { watch, computed, ref, toRef } from 'vue'
 import TxCard from '@/components/composed/TxCard.vue'
 import WalletInfo from '@/components/composed/WalletInfo.vue'
 import { getAccountByAddress } from '@/functions/Wallets'
+import ProfilePreview from '@/components/composed/ProfilePreview.vue'
 
 const props = defineProps<{
 	txId: string
@@ -196,16 +187,6 @@ const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
 	justify-content: center;
 	border: 4px solid var(--border);
 	border-radius: 50%;
-}
-
-.address-icon-margin {
-	padding: var(--spacing);
-}
-
-.address-icon {
-	width: 80px;
-	height: 80px;
-	border-radius: var(--border-radius);
 }
 
 .address {

@@ -23,7 +23,7 @@ type QueryStatusInterface<T> = {
 
 
 
-export function getAsyncData <T> (options: AsyncDataOptions<T>) { // Todo slowdown on failure
+export function getAsyncData <T> (options: AsyncDataOptions<T>) {
 	const state = isRef(options.existingState) ? options.existingState : ref(options.existingState) as Ref<T | undefined>
 	const timestamp = isRef(options.timestamp) ? options.timestamp : ref(options.timestamp) as Ref<number | undefined>
 	let cooldown = 0
