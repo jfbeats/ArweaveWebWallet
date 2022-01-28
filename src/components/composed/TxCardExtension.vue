@@ -4,7 +4,7 @@
 			<div v-if="tx.tags.length">Tags:</div>
 			<div v-if="tx.data_size">Data: {{ humanFileSize(tx.data_size) }}</div>
 		</div>
-		<ul v-if="tx.tags.length" class="tags secondary-text">
+		<ul v-if="tx.tags.length" class="tags secondary-text no-scrollbar">
 			<li v-for="tag in tx.tags">
 				{{ tag.name + ' | ' + tag.value }}
 			</li>
@@ -38,10 +38,15 @@ const verticalElement = computed(() => InterfaceStore.breakpoints.verticalLayout
 <style scoped>
 .tags {
 	white-space: normal;
+	overflow-x: auto;
 }
 
 ul {
 	padding-inline-start: 1em;
 	margin-block-start: 0;
+}
+
+li {
+	white-space: nowrap;
 }
 </style>
