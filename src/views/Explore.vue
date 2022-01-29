@@ -1,8 +1,7 @@
 <template>
 	<div class="settings">
 		<div class="column">
-<!--			<Input v-model="search" :actions="[searchAction]" placeholder="Search" style="flex:1 1 0;" />-->
-<!--			search in address, tx, username (arweave id tags) -->
+<!--			<GlobalSearch />-->
 			<div class="group">
 				<h2>Gateway State</h2>
 				<div class="flex-column">
@@ -40,23 +39,16 @@
 
 
 <script setup lang="ts">
-import Input from '@/components/atomic/Input.vue'
 import Select from '@/components/atomic/Select.vue'
 import Button from '@/components/atomic/Button.vue'
 import ArweaveStore, { currentBlock, networkInfo } from '@/store/ArweaveStore'
-import { reactive, ref, computed } from 'vue'
 import LogoArweave from '@/assets/logos/arweave.svg?component'
 import { humanFileSize } from '@/functions/Utils'
 import Date from '@/components/atomic/Date.vue'
 import Amount from '@/components/composed/Amount.vue'
 import { pendingList } from '@/store/BlockStore'
 import Link from '@/components/function/Link.vue'
-import IconSearch from '@/assets/icons/search.svg?component'
-
-const search = ref('')
-const searchAction = { run: () => {}, icon: IconSearch }
-
-
+import GlobalSearch from '@/components/composed/GlobalSearch.vue'
 </script>
 
 
