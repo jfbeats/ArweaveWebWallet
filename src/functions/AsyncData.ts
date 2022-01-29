@@ -1,14 +1,17 @@
-import { computed, effectScope, isRef, Ref, ref, watch, watchEffect, WatchStopHandle, WritableComputedRef } from 'vue'
+import { reactive, computed, effectScope, isRef, Ref, ref, watch, watchEffect, WatchStopHandle, WritableComputedRef } from 'vue'
 import InterfaceStore from '@/store/InterfaceStore'
 
 const globalClock = ref(0)
 setInterval(() => globalClock.value++, 1000)
 watch(() => InterfaceStore.windowVisible, () => globalClock.value++)
 
-type AsyncDataOptions<T> = {
+type QueryManagerOptions<T> = {
 	query: () => Promise<T>
-	seconds: number
 	awaitEffect?: () => any
+}
+
+type AsyncDataOptions<T> = QueryManagerOptions<T> & {
+	seconds: number
 	stale?: (state: T | undefined) => any
 	completed?: (state: T | undefined) => any
 	timestamp?: Ref<number | undefined>
@@ -62,8 +65,8 @@ export function getAsyncData <T> (options: AsyncDataOptions<T>) {
 	return { state: computedState, stateRef: state, getState, queryStatus, stop: scope.stop }
 }
 
-export function getQueryManager <T> (options: AsyncDataOptions<T>) {
-	const queryStatus: QueryStatusInterface<T> = { running: false }
+export function getQueryManager <T> (options: QueryManagerOptions<T>) {
+	const queryStatus: QueryStatusInterface<T> = reactive({ running: false })
 	const query = () => {
 		if (queryStatus.running && queryStatus.promise) { return queryStatus.promise }
 		queryStatus.running = true
