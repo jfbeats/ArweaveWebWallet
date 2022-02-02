@@ -30,7 +30,7 @@ const props = defineProps<{ wallet: Account }>()
 
 const fetchLoading = computed(() => props.wallet?.queries?.[selectedQuery.value].fetchQuery.queryStatus.running)
 const route = useRoute()
-const selectedQuery = computed(() => (route.query.view || 'received') as 'received' | 'sent')
+const selectedQuery = computed(() => (route.query.view || 'all') as 'all' | 'received' | 'sent')
 const txs = computed(() => props.wallet?.queries?.[selectedQuery.value].updateQuery.state.value || [])
 const completedQuery = computed(() => props.wallet?.queries?.[selectedQuery.value].status?.completed)
 const fetchQuery = async () => {
