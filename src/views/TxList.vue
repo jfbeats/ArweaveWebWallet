@@ -17,51 +17,37 @@
 
 
 
-<script setup>
+<script setup lang="ts">
 import TxCard from '@/components/composed/TxCard.vue'
 import Tabs from '@/components/atomic/Tabs.vue'
 import Observer from '@/components/function/Observer.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import TransitionsManager from '@/components/visual/TransitionsManager.vue'
-import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
-const props = defineProps(['wallet'])
+const props = defineProps<{ wallet: Account }>()
 
-const fetchLoading = computed(() => props.wallet?.queriesStatus?.[selectedQuery.value]?.fetch)
-let liveUpdate
+const fetchLoading = computed(() => props.wallet?.queries?.[selectedQuery.value].fetchQuery.queryStatus.running)
 const route = useRoute()
-const selectedQuery = computed(() => route.query.view || 'all')
-const txs = computed(() => props.wallet?.queries?.[selectedQuery.value] || [])
-const completedQuery = computed(() => props.wallet?.queriesStatus?.[selectedQuery.value]?.completed)
-const updateContent = () => props.wallet.updateTransactions(selectedQuery.value)
+const selectedQuery = computed(() => (route.query.view || 'received') as 'received' | 'sent')
+const txs = computed(() => props.wallet?.queries?.[selectedQuery.value].updateQuery.state.value || [])
+const completedQuery = computed(() => props.wallet?.queries?.[selectedQuery.value].status?.completed)
 const fetchQuery = async () => {
 	if (fetchLoading.value) { return }
 	console.log('Queried', selectedQuery.value)
-	await props.wallet.fetchTransactions(selectedQuery.value)
+	await props.wallet?.queries?.[selectedQuery.value].fetchQuery.query()
 }
-onMounted(() => {
-	liveUpdate = setInterval(updateContent, 10000)
-	updateContent()
-})
-onBeforeUnmount(() => {
-	clearInterval(liveUpdate)
-})
 const tabs = [
 	{ name: 'All', color: 'var(--orange)' },
 	{ name: 'Received', color: 'var(--green)' },
 	{ name: 'Sent', color: 'var(--red)' },
 ]
-const transitionFactor = ref(null)
+const transitionFactor = ref(undefined as undefined | number)
 watch(() => selectedQuery.value, (state, prevState) => {
 	const toIndex = tabs.findIndex(el => el.name.toLowerCase() === state)
 	const fromIndex = tabs.findIndex(el => el.name.toLowerCase() === prevState)
 	transitionFactor.value = toIndex - fromIndex
-	setTimeout(() => {
-		clearInterval(liveUpdate)
-		liveUpdate = setInterval(updateContent, 10000)
-		updateContent()
-	})
 })
 </script>
 

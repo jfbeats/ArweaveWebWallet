@@ -25,10 +25,7 @@ interface Account {
 	metadata: AccountMetadata
 	key?: string
 	balance?: string
-	queries: { [key: string]: any[] }
-	queriesStatus: { [key: string]: QueryStatusInterface }
-	fetchTransactions: (query: Query) => Promise<any>
-	updateTransactions: (query: Query) => Promise<any>
+	queries: { [key: string]: any }
 	destructor?: () => any
 }
 
@@ -61,13 +58,9 @@ type Metadata <T> = StaticMetadata & {
 
 
 
-type Query = 'received' | 'sent' | 'all'
-type QueryStatusInterface = {
-	completed?: boolean
-	fetch?: boolean
-	update?: boolean
-	cursor?: string // TODO
-	promise?: Promise<import('ardb/lib/faces/gql').GQLEdgeTransactionInterface[]> // TODO
-} & {
-	[key in Query]?: import('ardb/lib/faces/gql').GQLEdgeTransactionInterface // TODO make it a tx id?
-}
+type QueryOptions = Partial<{
+	owner: string
+	target: string
+	tags: { [key: string]: string }
+	block: { min?: number, max?: number }
+}>
