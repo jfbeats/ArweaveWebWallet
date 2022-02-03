@@ -68,6 +68,7 @@ watch(() => props.address, async () => {
 	right: 0;
 	bottom: 0;
 	object-fit: cover;
+	background: var(--background);
 }
 
 .cloud {
