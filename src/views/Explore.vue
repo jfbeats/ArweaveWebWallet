@@ -1,7 +1,7 @@
 <template>
 	<div class="settings">
 		<div class="column">
-<!--			<GlobalSearch />-->
+			<GlobalSearch />
 			<div class="group">
 				<h2>Gateway State</h2>
 				<div class="flex-column">

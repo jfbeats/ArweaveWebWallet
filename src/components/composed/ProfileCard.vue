@@ -1,5 +1,5 @@
 <template>
-	<div class="profile-preview flex-column row" style="align-items: center;">
+	<div class="profile-card flex-row row" style="align-items: center;">
 		<div class="address-icon-margin">
 			<AddressIcon :address="wallet.key" />
 		</div>
@@ -20,7 +20,7 @@ const props = defineProps<{ wallet: Account }>()
 
 <style scoped>
 .address-icon-margin {
-	padding: var(--spacing);
+	/*padding: var(--spacing);*/
 }
 
 .address-icon {

@@ -257,7 +257,7 @@ function newArdb (query: QueryOptions) {
 
 
 
-function arweaveQuery (query: QueryOptions) {
+export function arweaveQuery (query: QueryOptions) {
 	const status = reactive({ completed: false })
 	const data = ref([] as GQLEdgeTransactionInterface[])
 	const refresh = 10
@@ -329,7 +329,7 @@ function arweaveQuery (query: QueryOptions) {
 
 
 
-function queryAggregator (queries: ReturnType<typeof arweaveQuery>[]) {
+export function queryAggregator (queries: ReturnType<typeof arweaveQuery>[]) {
 	const status = reactive({ completed: false })
 	const data = ref([] as GQLEdgeTransactionInterface[])
 	const refresh = 10

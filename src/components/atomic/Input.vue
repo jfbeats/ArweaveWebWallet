@@ -4,7 +4,7 @@
 		<RawInput class="text" v-model="model" @keyup.enter="runLastAction" :placeholder="placeholder" @focus="focus = true" @blur="focus = false" :disabled="disabled" :id="id" />
 		<transition name="fade-fast" mode="out-in">
 			<div class="actions" :key="actionsComputed?.length">
-				<button v-for="action in actionsComputed" class="action"  @click="action.run">
+				<button v-for="action in actionsComputed" class="action" @click="action.run">
 					<Icon :icon="action.icon" />
 				</button>
 			</div>
