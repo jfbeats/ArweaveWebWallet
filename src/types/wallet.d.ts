@@ -59,6 +59,7 @@ type Metadata <T> = StaticMetadata & {
 
 
 type QueryOptions = Partial<{
+	ids: string[]
 	owner: string
 	target: string
 	tags: { [key: string]: string }

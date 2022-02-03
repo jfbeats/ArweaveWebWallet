@@ -246,6 +246,7 @@ const blockSort = (a: GQLEdgeTransactionInterface, b: GQLEdgeTransactionInterfac
 
 function newArdb (query: QueryOptions) {
 	const ardb = new ArDB(arweave).search()
+	if (query.ids) { ardb.ids(query.ids) }
 	if (query.owner) { ardb.from(query.owner) }
 	if (query.target) { ardb.to(query.target) }
 	if (query.block?.min) { ardb.min(query.block.min) }
