@@ -29,6 +29,7 @@ export async function getArweaveId (address) {
 		if (!arweaveIdTx) { return }
 		const tags = unpackTags(arweaveIdTx.tags)
 		if (tags.Image && !tags.Image.match(/^[a-z0-9_-]{43}$/i)) { delete tags.image }
+		if (!tags.Image && tags['Content-Type']?.includes('image')) { tags.Image = arweaveIdTx.id }
 		ProfileStore.arweaveId[address] = tags
 	} catch (e) {
 		ProfileStore.arweaveIdStatus[address].loading = false
