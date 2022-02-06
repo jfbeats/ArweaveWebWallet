@@ -114,6 +114,7 @@ const links = toRef(InterfaceStore.toolbar, 'links')
 	opacity: var(--element-secondary-opacity);
 	width: unset;
 	height: unset;
+	color: inherit;
 }
 
 .profile {

@@ -1,6 +1,6 @@
 <template>
 	<div class="welcome">
-		<div class="flex-column">
+		<div class="flex-column" style="align-items: center;">
 			<transition name="slide-down" appear>
 				<div class="column">
 					<div class="logo-background">
@@ -65,7 +65,6 @@ const title = import.meta.env.VITE_TITLE
 .logo {
 	width: 100%;
 	height: 100%;
-	opacity: 0.8;
 }
 
 .content {

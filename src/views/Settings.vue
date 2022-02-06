@@ -22,6 +22,7 @@
 				<p v-if="isUser"><a href="https://discord.gg/W6VybRqwBP"><Icon :icon="LogoDiscord" style="vertical-align: text-top;" /> Discord</a> - Send feedback, questions or talk about anything</p>
 				<p><a href="https://github.com/jfbeats/ArweaveWebWallet"><Icon :icon="LogoGithub" style="vertical-align: text-top;" /> ArweaveWebWallet</a> - Source code</p>
 				<p><a href="https://jfbeats.github.io/ArweaveWalletConnector"><Icon :icon="LogoGithub" style="vertical-align: text-top;" /> ArweaveWalletConnector</a> - Integrate the universal connector to use web wallets like arweave.app inside your own applications</p>
+				<p><a href="https://arwiki.wiki" target="_blank"><Icon :icon="LogoArweave" style="vertical-align: text-top;" /> Arwiki</a> - Information about Arweave</p>
 			</div>
 			<!-- <div class="group">
 				<p>Fund the project</p>
