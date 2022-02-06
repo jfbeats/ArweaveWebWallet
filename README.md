@@ -4,19 +4,13 @@
 
 ## Link
 
-Unreleased but functional app. Always kept in sync with the source code. 
-
 https://arweave.app
-
-## Demo
-
-Using the link below, a few wallets without their private keys will be preloaded in order to demo the interface and can be removed by refreshing the page. 
-
-https://arweave.app/demo
 
 ## Features
 
-- Create or import wallets by passphrase or key file
-- Send and receive AR tokens
-- View transactions and data
+- Create / Import / Export wallets by passphrase or key file
 - Ledger support (awaiting release on Ledger app store)
+- Send and receive AR tokens
+- Upload permanent data
+- View transactions and data
+- Connect and use your accounts with any web applications supporting the [connector](https://github.com/jfbeats/ArweaveWalletConnector)
