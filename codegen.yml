@@ -1,0 +1,9 @@
+overwrite: true
+generates:
+  src/arweave/generatedGraphql.ts:
+    schema: "https://arweave.net/graphql"
+    documents: "src/arweave/arweave.graphql"
+    plugins:
+      - "typescript"
+      - "typescript-operations"
+      - "typescript-graphql-request"

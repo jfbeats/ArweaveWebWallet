@@ -58,10 +58,17 @@ type Metadata <T> = StaticMetadata & {
 
 
 
-type QueryOptions = Partial<{
+type QueryBlockFilter = { min?: number, max?: number }
+
+type QueryTransactionOptions = Partial<{
 	ids: string[]
 	owner: string
 	target: string
 	tags: { [key: string]: string }
-	block: { min?: number, max?: number }
+	block: QueryBlockFilter
+	direction: 'up' | 'down'
+}>
+
+type QueryBlockOptions = QueryBlockFilter & Partial<{
+	direction: 'up' | 'down'
 }>

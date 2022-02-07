@@ -11,9 +11,11 @@ import { ArweaveVerifier as ArweaveMessageVerifier, ArweaveProviderInterface } f
 import { reactive, ref, Ref, toRef, watch } from 'vue'
 import type { WalletProxy } from '@/functions/Wallets'
 import type { ApiConfig } from 'arweave/web/lib/api'
-import type { GQLEdgeTransactionInterface, GQLTransactionInterface } from 'ardb/lib/faces/gql'
+import type { GQLEdgeTransactionInterface, GQLEdgeBlockInterface, GQLTransactionInterface } from 'ardb/lib/faces/gql'
 import type { TransactionInterface } from 'arweave/web/lib/transaction'
 import type { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
+import { getSdk } from '@/arweave/generatedGraphql'
+import { GraphQLClient } from 'graphql-request'
 
 
 
@@ -71,7 +73,7 @@ export function updateArweave (gateway: string | URL | ApiConfig) {
 export function useWatchTx (txId: Ref<string>) {
 	const getTxById = (txId: string) => getAsyncData({
 		existingState: toRef(ArweaveStore.txs, txId),
-		query: async () => (await arDB.search().id(txId).find() as GQLEdgeTransactionInterface[])[0].node,
+		query: async () => (await newArdb({ ids: [txId] }).find() as GQLEdgeTransactionInterface[])[0].node,
 		completed: () => ArweaveStore.txs[txId]?.block,
 		processResult: res => Object.assign(ArweaveStore.txs[txId] ??= {}, res),
 		seconds: 10,
@@ -88,7 +90,7 @@ export function useWatchTx (txId: Ref<string>) {
 }
 
 export async function fetchPublicKey (address: string) {
-	const tx = await arDB.search().from(address).find() as GQLEdgeTransactionInterface[]
+	const tx = await newArdb({ owner: address }).only('owner.key').find() as GQLEdgeTransactionInterface[]
 	return tx?.[0]?.node.owner.key
 }
 
@@ -115,8 +117,8 @@ export class ArweaveAccount implements Account {
 	queries
 	
 	constructor (private init: string | WalletProxy) {
-		const received = arweaveQuery({ target: this.key })
-		const sent = arweaveQuery({ owner: this.key })
+		const received = arweaveQuery({ recipients: [this.key] })
+		const sent = arweaveQuery({ owners: [this.key] })
 		const all = queryAggregator([received, sent])
 		this.queries = { all, received, sent }
 	}
@@ -242,22 +244,25 @@ export class ArweaveMessageRunner implements MessageRunner, Partial<ArweaveProvi
 const blockSort = (a: GQLEdgeTransactionInterface, b: GQLEdgeTransactionInterface) => (b.node.block?.height ?? Number.MAX_SAFE_INTEGER)
 	- (a.node.block?.height ?? Number.MAX_SAFE_INTEGER)
 
+const query = () => getSdk(new GraphQLClient((ArweaveStore.gatewayURL || 'https://arweave.net/') + 'graphql'))
 
 
-function newArdb (query: QueryOptions) {
+
+function newArdb (query: QueryTransactionOptions) {
 	const ardb = new ArDB(arweave).search()
 	if (query.ids) { ardb.ids(query.ids) }
 	if (query.owner) { ardb.from(query.owner) }
 	if (query.target) { ardb.to(query.target) }
+	for (const tag in query.tags) { ardb.tag(tag, query.tags[tag]) }
 	if (query.block?.min) { ardb.min(query.block.min) }
 	if (query.block?.max) { ardb.max(query.block.max) }
-	for (const tag in query.tags) { ardb.tag(tag, query.tags[tag]) }
+	if (query.direction === 'up') { ardb.sort('HEIGHT_ASC') }
 	return ardb
 }
 
 
 
-export function arweaveQuery (query: QueryOptions) {
+export function arweaveQuery (options: Parameters<ReturnType<typeof query>['getTransactions']>[0]) { // rename to arweaveTransactions
 	const status = reactive({ completed: false })
 	const data = ref([] as GQLEdgeTransactionInterface[])
 	const refresh = 10
@@ -266,19 +271,20 @@ export function arweaveQuery (query: QueryOptions) {
 	const fetchQuery = getQueryManager({
 		query: async () => {
 			if (status.completed) { return data.value }
-			const ardbFetch = newArdb(query)
 			let fulfilled = false
 			let results: any
 			try {
 				const firstFetch = !data.value.length
 				for (let i = 0; !fulfilled; i++) {
 					if (i === 0 && firstFetch) {
-						results = await ardbFetch.find() as GQLEdgeTransactionInterface[]
+						results = await query().getTransactions(options)
 					} else {
 						const cursor = data.value[data.value.length - 1].cursor
-						results = await ardbFetch.cursor(cursor).find() as GQLEdgeTransactionInterface[]
+						results = await query().getTransactions({ ...options, after: cursor })
 					}
-					if (results.length < 10) { status.completed = true; fulfilled = true }
+					if (!results.transactions.pageInfo.hasNextPage) { status.completed = true; fulfilled = true }
+					results = results.transactions.edges
+					if (results.length < 10) { status.completed = true; fulfilled = true } // todo remove??
 					if (results[results.length - 1]?.node.block) { fulfilled = true }
 					data.value.push(...results)
 				}
@@ -289,20 +295,21 @@ export function arweaveQuery (query: QueryOptions) {
 	})
 	
 	const updateQuery = getAsyncData({
-		awaitEffect: () => !fetchQuery.queryStatus.running && data.value.length && refreshEnabled.value,
+		awaitEffect: () => !fetchQuery.queryStatus.running && refreshEnabled.value,
 		query: async () => {
-			const ardbUpdate = newArdb(query)
 			let requireSort = false
 			let fulfilled = false
 			let results: any
 			for (let i = 0; !fulfilled; i++) {
-				if (i === 0) { results = await ardbUpdate.find() as GQLEdgeTransactionInterface[] }
+				if (i === 0) { results = await query().getTransactions(options) }
 				else {
 					if (!results) { return }
 					const cursor = results[results.length - 1].cursor
-					results = await ardbUpdate.cursor(cursor).find() as GQLEdgeTransactionInterface[]
+					results = await query().getTransactions({ ...options, after: cursor })
 				}
-				if (results.length < 10) { status.completed = true; fulfilled = true }
+				if (!results.transactions.pageInfo.hasNextPage) { status.completed = true; fulfilled = true }
+				results = results.transactions.edges
+				if (results.length < 10) { status.completed = true; fulfilled = true } // todo remove??
 				const resultsFiltered = []
 				for (const result of results) {
 					const matchingTx = data.value.find(el => el.node.id === result.node.id)
@@ -317,6 +324,46 @@ export function arweaveQuery (query: QueryOptions) {
 				if (resultsFiltered.length > 0) { data.value.splice(0, 0, ...resultsFiltered) }
 				if (requireSort) { data.value.sort(blockSort); requireSort = false }
 			}
+			return results
+		},
+		seconds: refresh,
+		existingState: data,
+		processResult: () => {},
+	})
+	
+	return { state: updateQuery.state, fetchQuery, updateQuery, status }
+}
+
+
+
+export function arweaveQueryBlocks (options: Parameters<ReturnType<typeof query>['getBlocks']>[0]) { // rename to arweaveBlocks
+	const status = reactive({ completed: false })
+	const data = ref([] as GQLEdgeBlockInterface[])
+	const refresh = 10
+	const refreshEnabled = ref(false)
+	
+	const fetchQuery = getQueryManager({
+		query: async () => {
+			if (status.completed) { return data.value }
+			let results: any
+			try {
+				const cursor = data.value[data.value.length - 1]?.cursor
+				if (!cursor) { results = await query().getBlocks(options) }
+				else { results = await query().getBlocks({ ...options, after: cursor }) }
+				if (!results.blocks.pageInfo.hasNextPage) { status.completed = true }
+				results = results.blocks.edges
+				if (results.length < 10) { status.completed = true } // todo remove??
+				if (!data.value.length) { setTimeout(() => refreshEnabled.value = true, refresh * 1000) }
+				data.value.push(...results)
+			} catch (e) { console.error(e); await new Promise<void>(res => setTimeout(() => res(), 10000)) }
+		},
+	})
+	
+	const updateQuery = getAsyncData({
+		awaitEffect: () => !fetchQuery.queryStatus.running && refreshEnabled.value,
+		query: async () => {
+			let results = (await query().getBlocks({ ...options, height: { min: data.value[0].node.height + 1 }, sort: 'HEIGHT_ASC' })).blocks.edges
+			if (results.length > 0) { data.value.splice(0, 0, ...results.reverse()) }
 			return results
 		},
 		seconds: refresh,
@@ -347,7 +394,7 @@ export function queryAggregator (queries: ReturnType<typeof arweaveQuery>[]) {
 		data.value.sort(blockSort)
 	}, { deep: true, flush: 'sync' }))
 	
-	const fetchQuery = getQueryManager({
+	const fetchQuery = getQueryManager({ // todo does not recover from error
 		query: async () => {
 			let fulfilled = false
 			for (let i = 0; !fulfilled; i++) {
