@@ -1,21 +1,20 @@
 import Arweave from 'arweave'
 import Transaction from 'arweave/web/lib/transaction'
+import { getSdk, SortOrder } from '@/arweave/generatedGraphql'
+import { GraphQLClient } from 'graphql-request'
 import ArDB from 'ardb'
 import LogoArweave from '@/assets/logos/arweave.svg?component'
 import { download } from '@/functions/Utils'
-import { decode, encode, getDecryptionKey, getSigningKey } from '@/functions/Crypto'
-import { exportTransaction, getFeeRange } from '@/functions/Transactions'
+import { getDecryptionKey, getSigningKey } from '@/functions/Crypto'
+import { exportTransaction } from '@/functions/Transactions'
 import { awaitEffect, getAsyncData, getQueryManager } from '@/functions/AsyncData'
-import { ChannelRef } from '@/functions/Channels'
-import { ArweaveVerifier as ArweaveMessageVerifier, ArweaveProviderInterface } from 'arweave-wallet-connector/lib/ArweaveWebWallet'
+import { ArweaveProviderInterface, ArweaveVerifier as ArweaveMessageVerifier } from 'arweave-wallet-connector/lib/ArweaveWebWallet'
 import { reactive, ref, Ref, toRef, watch } from 'vue'
 import type { WalletProxy } from '@/functions/Wallets'
 import type { ApiConfig } from 'arweave/web/lib/api'
-import type { GQLEdgeTransactionInterface, GQLEdgeBlockInterface, GQLTransactionInterface } from 'ardb/lib/faces/gql'
 import type { TransactionInterface } from 'arweave/web/lib/transaction'
+import type { GQLEdgeBlockInterface, GQLEdgeTransactionInterface, GQLTransactionInterface } from 'ardb/lib/faces/gql'
 import type { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
-import { getSdk } from '@/arweave/generatedGraphql'
-import { GraphQLClient } from 'graphql-request'
 
 
 
@@ -248,7 +247,7 @@ const query = () => getSdk(new GraphQLClient((ArweaveStore.gatewayURL || 'https:
 
 
 
-function newArdb (query: QueryTransactionOptions) {
+function newArdb (query: QueryTransactionOptions) { // todo remove
 	const ardb = new ArDB(arweave).search()
 	if (query.ids) { ardb.ids(query.ids) }
 	if (query.owner) { ardb.from(query.owner) }
@@ -263,7 +262,7 @@ function newArdb (query: QueryTransactionOptions) {
 
 
 export function arweaveQuery (options: Parameters<ReturnType<typeof query>['getTransactions']>[0]) { // rename to arweaveTransactions
-	const status = reactive({ completed: false })
+	const status = reactive({ completed: false }) // --updateCompleted-- true if block range is settled
 	const data = ref([] as GQLEdgeTransactionInterface[])
 	const refresh = 10
 	const refreshEnabled = ref(false)
@@ -362,7 +361,7 @@ export function arweaveQueryBlocks (options: Parameters<ReturnType<typeof query>
 	const updateQuery = getAsyncData({
 		awaitEffect: () => !fetchQuery.queryStatus.running && refreshEnabled.value,
 		query: async () => {
-			let results = (await query().getBlocks({ ...options, height: { min: data.value[0].node.height + 1 }, sort: 'HEIGHT_ASC' })).blocks.edges
+			let results = (await query().getBlocks({ ...options, height: { min: data.value[0].node.height + 1 }, sort: SortOrder.HeightAsc })).blocks.edges
 			if (results.length > 0) { data.value.splice(0, 0, ...results.reverse()) }
 			return results
 		},
