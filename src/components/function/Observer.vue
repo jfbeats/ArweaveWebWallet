@@ -6,7 +6,7 @@
 
 
 
-<script setup>
+<script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 
 const props = defineProps({
@@ -14,13 +14,16 @@ const props = defineProps({
 	threshold: { default: 0 },
 	once: { type: Boolean, default: false },
 })
-const emit = defineEmits(['intersection', 'resize'])
+const emit = defineEmits<{
+	(e: 'intersection', value: IntersectionObserverEntry): void
+	(e: 'resize', value: ResizeObserverEntry): void
+}>()
 
 const observed = ref(null)
 
-if (props.observe === 'intersection' || props.observe.includes('intersection')) {
+if (!props.observe || props.observe === 'intersection' || props.observe?.includes('intersection')) {
 	const intersectionObserver = new IntersectionObserver((entries) => {
-		if (entries[0].isIntersecting) { emit('intersection', entries[0], unobserve) }
+		if (entries[0].isIntersecting) { emit('intersection', entries[0]) }
 		if (props.once) { unobserve() }
 	}, { threshold: [props.threshold] })
 	const unobserve = () => observed.value && intersectionObserver.unobserve(observed.value)
@@ -28,9 +31,9 @@ if (props.observe === 'intersection' || props.observe.includes('intersection')) 
 	onBeforeUnmount(unobserve)
 }
 
-if (props.observe === 'resize' || props.observe.includes('resize')) {
+if (props.observe === 'resize' || props.observe?.includes('resize')) {
 	const resizeObserver = new ResizeObserver((entries) => {
-		emit('resize', entries[0]?.contentRect, unobserve)
+		emit('resize', entries[0])
 		if (props.once) { unobserve() }
 	})
 	const unobserve = () => observed.value && resizeObserver.unobserve(observed.value)

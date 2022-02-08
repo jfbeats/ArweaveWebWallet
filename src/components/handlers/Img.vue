@@ -8,20 +8,20 @@
 
 
 
-<script setup>
+<script setup lang="ts">
 import Observer from '@/components/function/Observer.vue'
 import { ref, computed } from 'vue'
 
 const props = defineProps(['src'])
 const emit = defineEmits(['load'])
 
-const imgRef = ref(null)
-const elAspect = ref(null)
-const imgAspect = ref(null)
+const imgRef = ref(null as null | HTMLImageElement)
+const elAspect = ref(null as null | number)
+const imgAspect = ref(null as null | number)
 
-const resize = (size) => {
+const resize = (size: ResizeObserverEntry) => {
 	console.log(size)
-	elAspect.value = size.width / size.height
+	elAspect.value = size.contentRect.width / size.contentRect.height
 }
 
 const load = () => {

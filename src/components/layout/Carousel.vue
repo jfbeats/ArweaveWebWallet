@@ -1,9 +1,13 @@
 <template>
 	<div ref="root" class="carousel flex-row no-scrollbar" :style="style">
 		<transition-group name="fade-list">
-			<div v-if="options?.overscroll" class="margin fade-list-item" key="margin1" />
+			<div v-if="options?.overscroll" class="margin fade-list-item" key="margin1">
+				<Observer class="limit start" @intersection="val => emit('start', val)" />
+			</div>
 			<slot />
-			<div v-if="options?.overscroll" class="margin fade-list-item" key="margin2" />
+			<div v-if="options?.overscroll" class="margin fade-list-item" key="margin2">
+				<Observer class="limit end" @intersection="val => emit('end', val)" />
+			</div>
 		</transition-group>
 	</div>
 </template>
@@ -11,6 +15,7 @@
 
 
 <script setup lang="ts">
+import Observer from '@/components/function/Observer.vue'
 import { awaitEffect } from '@/functions/AsyncData'
 import { onMounted, onBeforeUnmount, ref, computed, watch, nextTick, inject } from 'vue'
 
@@ -23,7 +28,7 @@ const props = defineProps<{
 		awaitTransition?: boolean
 	}
 }>()
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'start', 'end'])
 const parentTransitionState = inject('transitionState', null as any)
 
 const model = computed<number | undefined>({
@@ -75,6 +80,7 @@ onBeforeUnmount(() => observer && observer.disconnect())
 <style scoped>
 .carousel {
 	--position: start;
+	width: 100%;
 	scroll-snap-type: x mandatory;
 	overflow: auto;
 	white-space: nowrap;
@@ -95,5 +101,21 @@ onBeforeUnmount(() => observer && observer.disconnect())
 .margin {
 	width: 100%;
 	display: inline-block;
+	position: relative;
+}
+
+.limit {
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	height: 1px;
+}
+
+.limit.start {
+	left: 200px;
+}
+
+.limit.end {
+	right: 200px;
 }
 </style>
