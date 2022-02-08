@@ -52,12 +52,12 @@ watch(search, () => {
 		data.value.idQuery = idQuery
 		query = queryAggregator([
 			idQuery,
-			arweaveQuery({ owner: search.value }),
-			arweaveQuery({ target: search.value }),
+			arweaveQuery({ owners: [search.value] }),
+			arweaveQuery({ recipients: [search.value] }),
 		])
 	}
 	else if (search.value.length) { query = queryAggregator([
-		arweaveQuery({ tags: { 'App-Name': 'arweave-id', 'Name': search.value } }),
+		arweaveQuery({ tags: [{ name: 'App-Name', values: ['arweave-id'] }, { name: 'Name', values: [search.value] }] }),
 	])}
 	data.value.query = query?.state
 	query?.fetchQuery.query()
