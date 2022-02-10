@@ -1,7 +1,6 @@
 import Arweave from 'arweave'
 import Transaction from 'arweave/web/lib/transaction'
-import { getSdk, SortOrder } from '@/arweave/generatedGraphql'
-import { GraphQLClient } from 'graphql-request'
+import arweaveGraphql, { SortOrder } from 'arweave-graphql'
 import ArDB from 'ardb'
 import LogoArweave from '@/assets/logos/arweave.svg?component'
 import { download } from '@/functions/Utils'
@@ -243,7 +242,7 @@ export class ArweaveMessageRunner implements MessageRunner, Partial<ArweaveProvi
 const blockSort = (a: GQLEdgeTransactionInterface, b: GQLEdgeTransactionInterface) => (b.node.block?.height ?? Number.MAX_SAFE_INTEGER)
 	- (a.node.block?.height ?? Number.MAX_SAFE_INTEGER)
 
-const query = () => getSdk(new GraphQLClient((ArweaveStore.gatewayURL || 'https://arweave.net/') + 'graphql'))
+const query = () => arweaveGraphql((ArweaveStore.gatewayURL || 'https://arweave.net/') + 'graphql')
 
 
 
