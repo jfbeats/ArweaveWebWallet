@@ -21,7 +21,7 @@ const ArweaveStore = reactive({
 	gatewayURL: null as null | string,
 	gatewayURLObject: null as null | URL,
 	wallets: {} as { [key: string]: ArweaveAccount },
-	txs: {} as { [key: string]: Partial<GQLTransactionInterface> },
+	txs: {} as { [key: string]: any },
 	uploads: {} as { [key: string]: { upload?: number } },
 })
 
@@ -71,9 +71,9 @@ export function updateArweave (gateway: string | URL | ApiConfig) {
 export function useWatchTx (txId: Ref<string>) {
 	const getTxById = (txId: string) => getAsyncData({
 		existingState: toRef(ArweaveStore.txs, txId),
-		query: async () => (await newArdb({ ids: [txId] }).find() as GQLEdgeTransactionInterface[])[0].node,
+		query: async () => (await graphql().getTransactions({ ids: [txId] })).transactions.edges[0]?.node,
 		completed: () => ArweaveStore.txs[txId]?.block,
-		processResult: res => Object.assign(ArweaveStore.txs[txId] ??= {}, res),
+		processResult: res => ArweaveStore.txs[txId] = res,
 		seconds: 10,
 	})
 	const data: { value?: ReturnType<typeof getTxById>['state'] } = reactive({})
@@ -84,11 +84,11 @@ export function useWatchTx (txId: Ref<string>) {
 		data.value = handler.state
 		destructor = handler.stop
 	}, { immediate: true })
-	return toRef(data, 'value') as Ref<Partial<GQLTransactionInterface>>
+	return toRef(data, 'value')
 }
 
 export async function fetchPublicKey (address: string) {
-	const tx = await newArdb({ owner: address }).only('owner.key').find() as GQLEdgeTransactionInterface[]
+	const tx = (await graphql().getTransactions({ owners: [address] })).transactions.edges
 	return tx?.[0]?.node.owner.key
 }
 
@@ -242,25 +242,11 @@ export class ArweaveMessageRunner implements MessageRunner, Partial<ArweaveProvi
 const blockSort = (a: GQLEdgeTransactionInterface, b: GQLEdgeTransactionInterface) => (b.node.block?.height ?? Number.MAX_SAFE_INTEGER)
 	- (a.node.block?.height ?? Number.MAX_SAFE_INTEGER)
 
-const query = () => arweaveGraphql((ArweaveStore.gatewayURL || 'https://arweave.net/') + 'graphql')
+export const graphql = () => arweaveGraphql((ArweaveStore.gatewayURL || 'https://arweave.net/') + 'graphql')
 
 
 
-function newArdb (query: QueryTransactionOptions) { // todo remove
-	const ardb = new ArDB(arweave).search()
-	if (query.ids) { ardb.ids(query.ids) }
-	if (query.owner) { ardb.from(query.owner) }
-	if (query.target) { ardb.to(query.target) }
-	for (const tag in query.tags) { ardb.tag(tag, query.tags[tag]) }
-	if (query.block?.min) { ardb.min(query.block.min) }
-	if (query.block?.max) { ardb.max(query.block.max) }
-	if (query.direction === 'up') { ardb.sort('HEIGHT_ASC') }
-	return ardb
-}
-
-
-
-export function arweaveQuery (options: Parameters<ReturnType<typeof query>['getTransactions']>[0]) { // rename to arweaveTransactions
+export function arweaveQuery (options: Parameters<ReturnType<typeof graphql>['getTransactions']>[0]) { // rename to arweaveTransactions
 	const status = reactive({ completed: false }) // --updateCompleted-- true if block range is settled
 	const data = ref([] as GQLEdgeTransactionInterface[])
 	const refresh = 10
@@ -275,10 +261,10 @@ export function arweaveQuery (options: Parameters<ReturnType<typeof query>['getT
 				const firstFetch = !data.value.length
 				for (let i = 0; !fulfilled; i++) {
 					if (i === 0 && firstFetch) {
-						results = await query().getTransactions(options)
+						results = await graphql().getTransactions(options)
 					} else {
 						const cursor = data.value[data.value.length - 1].cursor
-						results = await query().getTransactions({ ...options, after: cursor })
+						results = await graphql().getTransactions({ ...options, after: cursor })
 					}
 					if (!results.transactions.pageInfo.hasNextPage) { status.completed = true; fulfilled = true }
 					results = results.transactions.edges
@@ -299,11 +285,11 @@ export function arweaveQuery (options: Parameters<ReturnType<typeof query>['getT
 			let fulfilled = false
 			let results: any
 			for (let i = 0; !fulfilled; i++) {
-				if (i === 0) { results = await query().getTransactions(options) }
+				if (i === 0) { results = await graphql().getTransactions(options) }
 				else {
 					if (!results) { return }
 					const cursor = results[results.length - 1].cursor
-					results = await query().getTransactions({ ...options, after: cursor })
+					results = await graphql().getTransactions({ ...options, after: cursor })
 				}
 				if (!results.transactions.pageInfo.hasNextPage) { status.completed = true; fulfilled = true }
 				results = results.transactions.edges
@@ -334,7 +320,7 @@ export function arweaveQuery (options: Parameters<ReturnType<typeof query>['getT
 
 
 
-export function arweaveQueryBlocks (options: Parameters<ReturnType<typeof query>['getBlocks']>[0]) { // rename to arweaveBlocks
+export function arweaveQueryBlocks (options: Parameters<ReturnType<typeof graphql>['getBlocks']>[0]) { // rename to arweaveBlocks
 	const status = reactive({ completed: false })
 	const data = ref([] as GQLEdgeBlockInterface[])
 	const refresh = 10
@@ -346,8 +332,8 @@ export function arweaveQueryBlocks (options: Parameters<ReturnType<typeof query>
 			let results: any
 			try {
 				const cursor = data.value[data.value.length - 1]?.cursor
-				if (!cursor) { results = await query().getBlocks(options) }
-				else { results = await query().getBlocks({ ...options, after: cursor }) }
+				if (!cursor) { results = await graphql().getBlocks(options) }
+				else { results = await graphql().getBlocks({ ...options, after: cursor }) }
 				if (!results.blocks.pageInfo.hasNextPage) { status.completed = true }
 				results = results.blocks.edges
 				if (results.length < 10) { status.completed = true } // todo remove??
@@ -360,7 +346,7 @@ export function arweaveQueryBlocks (options: Parameters<ReturnType<typeof query>
 	const updateQuery = getAsyncData({
 		awaitEffect: () => !fetchQuery.queryStatus.running && refreshEnabled.value,
 		query: async () => {
-			let results = (await query().getBlocks({ ...options, height: { min: data.value[0].node.height + 1 }, sort: SortOrder.HeightAsc })).blocks.edges
+			let results = (await graphql().getBlocks({ ...options, height: { min: data.value[0].node.height + 1 }, sort: SortOrder.HeightAsc })).blocks.edges
 			if (results.length > 0) { data.value.splice(0, 0, ...results.reverse()) }
 			return results
 		},

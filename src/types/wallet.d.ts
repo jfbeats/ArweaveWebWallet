@@ -41,9 +41,11 @@ type AccountMetadata = {
 }
 
 type StaticMetadata = AccountMetadata & {
+	link?: string
 	isSupported: boolean
 	isProviderFor: (wallet: import('@/functions/Wallets').WalletProxy) => boolean
 	addImportData: (data: Partial<WalletDataInterface>) => Promise<void>
+	verify?: () => any
 }
 
 type MethodMetadata = {

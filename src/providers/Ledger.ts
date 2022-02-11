@@ -90,13 +90,16 @@ async function sign (tx: Transaction) {
 export class LedgerProvider extends ArweaveAccount implements Provider {
 	static get metadata (): StaticMetadata { return {
 		name: 'Ledger',
-		icon: LogoLedger, // @ts-ignore
+		icon: LogoLedger,
+		link: 'https://shop.ledger.com?r=1a60a479b0af',
+		// @ts-ignore
 		isSupported: !!window.navigator.usb,
 		isProviderFor: (walletProxy) => walletProxy.data.provider === 'ledger',
 		addImportData: async (walletData) => {
 			walletData.provider = 'ledger'
-			walletData.arweave = { key: await getAddress(true) }
+			walletData.arweave = { key: await getAddress() }
 		},
+		verify: async () => getAddress(true),
 	}}
 	get metadata (): Metadata<ArweaveProvider> { return {
 		...LedgerProvider.metadata,

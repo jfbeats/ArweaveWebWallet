@@ -8,19 +8,27 @@
 			<div class="flex-column">
 				<InputData v-model="passphraseInput" @files="importFile" :disabled="isCreatingWallet" placeholder="Import passphrase or key file" />
 				<div />
-				<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create()" :disabled="passphraseInput.length && !isPassphrase" :icon="LogoArweave">Create new wallet</Button>
-				<Button v-else-if="isCreatingWallet" :disabled="createdWallet == null" @click="goToCreatedWallet" :icon="createdWallet == null ? 'loader' : ''">{{ createdWallet == null ? 'Generating, write down the passphrase' : 'Passphrase saved? Click here to proceed' }}</Button>
-				<Button v-else :disabled="!isPassphrase || isGeneratingWallet" @click="confirmPassphrase">Import passphrase</Button>
+				<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create()" :disabled="passphraseInput.length && !isPassphrase" :icon="LogoArweave" class="main">Create new wallet</Button>
+				<Button v-else-if="isCreatingWallet" :disabled="createdWallet == null" @click="goToCreatedWallet" :icon="createdWallet == null ? 'loader' : ''" class="main">{{ createdWallet == null ? 'Generating, write down the passphrase' : 'Passphrase saved? Click here to proceed' }}</Button>
+				<Button v-else :disabled="!isPassphrase || isGeneratingWallet" @click="confirmPassphrase" class="main">Import passphrase</Button>
 			</div>
 			<OverlayPrompt :options="popup" />
 		</div>
-		<div class="card">
-			<h2>Hardware</h2>
-			<template v-for="provider in hardwareProviders" :key="provider.metadata.name">
-				<Button :disabled="!provider.metadata.isSupported" @click="importProvider(provider)" :icon="provider.metadata.icon">
-					{{ provider.metadata.name }} {{ !provider.metadata.isSupported ? ' not supported for this browser' : '' }}
+		<div class="card" v-for="provider in hardwareProviders" :key="provider.metadata.name">
+			<h2 class="flex-row" style="align-items: center;"><Icon :icon="provider.metadata.icon" /><span>{{ provider.metadata.name }} Hardware Wallet</span></h2>
+			<div class="flex-column">
+				<Button :disabled="!provider.metadata.isSupported" @click="importProvider(provider)" :icon="provider.metadata.icon" class="main">
+					{{ !provider.metadata.isSupported
+						? `${provider.metadata.name} not supported for this browser`
+						: `Connect with ${provider.metadata.name}` }}
 				</Button>
-			</template>
+				<div class="flex-row">
+					<Button :icon="IconVerify" @click="provider.metadata.verify">Verify address</Button>
+					<a :href="provider.metadata.link" target="_blank" class="reset">
+						<Button :icon="IconLaunch">Purchase | affiliate link</Button>
+					</a>
+				</div>
+			</div>
 		</div>
 		<div class="card">
 			<h2>Address Only</h2>
@@ -36,6 +44,7 @@ import InputData from '@/components/atomic/InputData.vue'
 import InputAddress from '@/components/atomic/InputAddress.vue';
 import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
+import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
 import { LedgerProvider } from '@/providers/Ledger'
 import { arweave } from '@/store/ArweaveStore'
 import { addWallet, addAddress, generateMnemonic, validateMnemonic, addMnemonic, addProvider } from '@/functions/Wallets'
@@ -44,7 +53,8 @@ import { useRouter } from 'vue-router'
 
 import LogoArweave from '@/assets/logos/arweave.svg?component'
 import IconAddBox from '@/assets/icons/add_box.svg?component'
-import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
+import IconLaunch from '@/assets/icons/launch.svg?component'
+import IconVerify from '@/assets/icons/verify.svg?component'
 
 const router = useRouter()
 const passphraseInput = ref('')
@@ -119,9 +129,9 @@ const importAddressOnlyAction = { icon: IconAddBox, run: async () => {
 	text-align: center;
 }
 
-.button {
+.button.main {
 	background-image: radial-gradient(circle at center, #81a1c166, #81a1c133);
-	height: 5em;
+	height: 4em;
 	font-size: 1.1em;
 	width: 100%;
 }
