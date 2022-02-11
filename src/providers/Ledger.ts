@@ -95,7 +95,7 @@ export class LedgerProvider extends ArweaveAccount implements Provider {
 		isProviderFor: (walletProxy) => walletProxy.data.provider === 'ledger',
 		addImportData: async (walletData) => {
 			walletData.provider = 'ledger'
-			walletData.arweave = { key: await getAddress() }
+			walletData.arweave = { key: await getAddress(true) }
 		},
 	}}
 	get metadata (): Metadata<ArweaveProvider> { return {
