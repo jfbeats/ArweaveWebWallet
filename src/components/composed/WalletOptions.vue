@@ -8,8 +8,8 @@
 		</div>
 		<div class="content">
 			<div class="bottom flex-row">
-				<Button v-if="wallet.download && !wallet.metadata.methods.download?.unavailable" @click="() => wallet.download()">Download</Button>
-				<Button @click="deleteWallet(wallet)">Delete</Button>
+				<Button v-if="wallet.download && !wallet.metadata.methods.download?.unavailable" :icon="IconDownload" @click="() => wallet.download()">Download</Button>
+				<Button :icon="IconX" @click="deleteWallet(wallet)">Delete</Button>
 			</div>
 		</div>
 	</div>
@@ -22,6 +22,8 @@ import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import WalletInfo from '@/components/composed/WalletInfo.vue'
 import Button from '@/components/atomic/Button.vue'
 import { deleteWallet } from '@/functions/Wallets'
+import IconDownload from '@/assets/icons/download.svg?component'
+import IconX from '@/assets/icons/x.svg?component'
 
 const props = defineProps<{
 	wallet: Provider
