@@ -61,6 +61,7 @@ export async function getFeeRange () {
 		min: null as null | BigNumber,
 		max: new BigNumber('145605600')
 	}
+	return range
 	const ids = await getPending()
 	if (ids.length <= blockSize) { return range }
 	const txs = await getMempool()
