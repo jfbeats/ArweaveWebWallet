@@ -4,6 +4,7 @@ import BigNumber from 'bignumber.js'
 import { CreateTransactionInterface } from 'arweave/web'
 import Transaction from 'arweave/web/lib/transaction'
 import { download } from '@/functions/Utils'
+import { createToast } from 'mosha-vue-toastify'
 
 export type TxParams = {
 	target?: string
@@ -16,6 +17,7 @@ export type TxParams = {
 	tags?: { name: string, value: string }[]
 	data?: string | File
 }
+
 export async function buildTransaction (tx: TxParams) {
 	const txSettings = {} as Partial<CreateTransactionInterface>
 	txSettings.target = tx.target || ''
@@ -54,6 +56,7 @@ export async function manageUpload (tx: Transaction) {
 	return uploader.lastResponseStatus
 }
 
+let failedLastFeeRange = false
 export async function getFeeRange () {
 	const blockSize = 1000
 	const range = {
@@ -61,16 +64,21 @@ export async function getFeeRange () {
 		min: null as null | BigNumber,
 		max: new BigNumber('145605600')
 	}
-	return range
-	const ids = await getPending()
+	const ids = await getPending(failedLastFeeRange)
 	if (ids.length <= blockSize) { return range }
-	const txs = await getMempool()
+	const txs = await getMempool(failedLastFeeRange)
 	const fees = txs.map(tx => tx.fee.winston)
 	const sortedFees = fees.sort((a, b) => (+b) - (+a))
 	const nextBlock = sortedFees.slice(0, blockSize)
-	range.min = (new BigNumber(nextBlock.slice(-1)[0])).plus('1')
 	range.max = (new BigNumber(nextBlock[0])).plus('1')
-	range.default = (new BigNumber(nextBlock.slice(-(blockSize/10))[0])).plus('1') // use % of result length instead of offset
+	if (txs.length < (ids.length / 4)) {
+		createToast('Unable to estimate optimal transaction fee', { type: 'warning', showIcon: true })
+		failedLastFeeRange = true
+		return range
+	}
+	failedLastFeeRange = false
+	range.min = (new BigNumber(nextBlock.slice(-1)[0])).plus('1')
+	range.default = (new BigNumber(nextBlock.slice(-(txs.length/10))[0])).plus('1')
 	return range
 }
 

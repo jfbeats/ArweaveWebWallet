@@ -24,7 +24,7 @@ export default BlockStore
 
 
 const pendingListData = getAsyncData({
-	query: async () => fetchPending(),
+	query: async () => (await axios.get(ArweaveStore.gatewayURL + 'tx/pending')).data,
 	seconds: 10,
 })
 export const pendingList = pendingListData.state
@@ -58,7 +58,3 @@ const mempoolData = getAsyncData({
 })
 export const mempool = mempoolData.state
 export const getMempool = mempoolData.getState
-
-async function fetchPending () {
-	return (await axios.get(ArweaveStore.gatewayURL + 'tx/pending')).data
-}
