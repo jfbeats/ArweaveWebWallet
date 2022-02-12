@@ -7,9 +7,9 @@
 			</div>
 		</div>
 		<div class="content">
-			<div class="bottom">
-				<div><button v-if="wallet.download && !wallet.metadata.methods.download?.unavailable" @click="wallet.download">Download</button></div>
-				<div><button @click="deleteWallet(wallet)">Delete</button></div>
+			<div class="bottom flex-row">
+				<Button v-if="wallet.download && !wallet.metadata.methods.download?.unavailable" @click="() => wallet.download()">Download</Button>
+				<Button @click="deleteWallet(wallet)">Delete</Button>
 			</div>
 		</div>
 	</div>
@@ -20,6 +20,7 @@
 <script setup lang="ts">
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import WalletInfo from '@/components/composed/WalletInfo.vue'
+import Button from '@/components/atomic/Button.vue'
 import { deleteWallet } from '@/functions/Wallets'
 
 const props = defineProps<{
@@ -52,7 +53,7 @@ const props = defineProps<{
 	min-width: 0;
 	display: flex;
 	flex-direction: column;
-	padding: 24px;
+	padding: var(--spacing) 0;
 }
 
 .bottom {
