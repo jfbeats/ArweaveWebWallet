@@ -1,7 +1,6 @@
 import Arweave from 'arweave'
 import Transaction from 'arweave/web/lib/transaction'
 import arweaveGraphql, { SortOrder } from 'arweave-graphql'
-import ArDB from 'ardb'
 import LogoArweave from '@/assets/logos/arweave.svg?component'
 import { download } from '@/functions/Utils'
 import { getDecryptionKey, getSigningKey } from '@/functions/Crypto'
@@ -10,9 +9,9 @@ import { awaitEffect, getAsyncData, getQueryManager } from '@/functions/AsyncDat
 import { ArweaveProviderInterface, ArweaveVerifier as ArweaveMessageVerifier } from 'arweave-wallet-connector/lib/ArweaveWebWallet'
 import { reactive, ref, Ref, toRef, watch } from 'vue'
 import type { WalletProxy } from '@/functions/Wallets'
+import type { TransactionEdge as GQLTransactionEdge, BlockEdge as GQLBlockEdge } from 'arweave-graphql'
 import type { ApiConfig } from 'arweave/web/lib/api'
 import type { TransactionInterface } from 'arweave/web/lib/transaction'
-import type { GQLEdgeBlockInterface, GQLEdgeTransactionInterface, GQLTransactionInterface } from 'ardb/lib/faces/gql'
 import type { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
 
 
@@ -27,7 +26,6 @@ const ArweaveStore = reactive({
 
 export default ArweaveStore
 export let arweave: Arweave
-export let arDB: { search: InstanceType<typeof ArDB>['search'] }
 
 
 
@@ -63,7 +61,6 @@ export async function testGateway (gateway: string | URL | ApiConfig) {
 export function updateArweave (gateway: string | URL | ApiConfig) {
 	const settings = typeof gateway === 'string' ? urlToSettings(gateway) : gateway
 	arweave = settings ? Arweave.init(settings) : Arweave.init(gatewayDefault)
-	arDB = { search: (...args) => new ArDB(arweave).search(...args) }
 	ArweaveStore.gatewayURL = settingsToUrl(arweave.getConfig().api)
 	ArweaveStore.gatewayURLObject = new URL(ArweaveStore.gatewayURL)
 }
@@ -239,7 +236,7 @@ export class ArweaveMessageRunner implements MessageRunner, Partial<ArweaveProvi
 
 
 
-const blockSort = (a: GQLEdgeTransactionInterface, b: GQLEdgeTransactionInterface) => (b.node.block?.height ?? Number.MAX_SAFE_INTEGER)
+const blockSort = (a: GQLTransactionEdge, b: GQLTransactionEdge) => (b.node.block?.height ?? Number.MAX_SAFE_INTEGER)
 	- (a.node.block?.height ?? Number.MAX_SAFE_INTEGER)
 
 export const graphql = () => arweaveGraphql((ArweaveStore.gatewayURL || 'https://arweave.net/') + 'graphql')
@@ -248,7 +245,7 @@ export const graphql = () => arweaveGraphql((ArweaveStore.gatewayURL || 'https:/
 
 export function arweaveQuery (options: Parameters<ReturnType<typeof graphql>['getTransactions']>[0]) { // rename to arweaveTransactions
 	const status = reactive({ completed: false }) // --updateCompleted-- true if block range is settled
-	const data = ref([] as GQLEdgeTransactionInterface[])
+	const data = ref([] as GQLTransactionEdge[])
 	const refresh = 10
 	const refreshEnabled = ref(false)
 
@@ -322,7 +319,7 @@ export function arweaveQuery (options: Parameters<ReturnType<typeof graphql>['ge
 
 export function arweaveQueryBlocks (options: Parameters<ReturnType<typeof graphql>['getBlocks']>[0]) { // rename to arweaveBlocks
 	const status = reactive({ completed: false })
-	const data = ref([] as GQLEdgeBlockInterface[])
+	const data = ref([] as GQLBlockEdge[])
 	const refresh = 10
 	const refreshEnabled = ref(false)
 	
@@ -362,7 +359,7 @@ export function arweaveQueryBlocks (options: Parameters<ReturnType<typeof graphq
 
 export function queryAggregator (queries: ReturnType<typeof arweaveQuery>[]) {
 	const status = reactive({ completed: false })
-	const data = ref([] as GQLEdgeTransactionInterface[])
+	const data = ref([] as { node: any, cursor: string }[])
 	const refresh = 10
 	
 	const initial = [] as any[]

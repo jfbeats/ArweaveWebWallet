@@ -4,6 +4,7 @@ import router from './router'
 import { plugin as Slicksort } from 'vue-slicksort'
 import '@/assets/animations.css'
 import '@/assets/style.css'
+import 'mosha-vue-toastify/dist/style.css'
 
 import SW from '@/functions/sw'
 SW.registration.then(r => setInterval(() => r.update(), 60 * 60 * 1000))
