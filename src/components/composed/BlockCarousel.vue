@@ -1,9 +1,11 @@
 <template>
-	<Carousel v-model="index" :options="{ align: 'center', overscroll: true }" @start="start" @end="end" class="block-carousel">
-		<BlockCard v-for="block in state" :key="block.node.id" :block="block" class="block fade-list-item box">
-		
-		</BlockCard>
-	</Carousel>
+	<div class="block-carousel">
+		<Carousel v-model="index" :options="{ align: 'center', overscroll: true }" @start="start" @end="end" class="block-carousel">
+			<div v-for="block in state" :key="block.node.id" class="block fade-list-item">
+				<BlockCard :block="block" class="box" />
+			</div>
+		</Carousel>
+	</div>
 </template>
 
 
@@ -29,14 +31,29 @@ const end = (val: IntersectionObserverEntry) => val.isIntersecting
 
 
 <style>
+.block-carousel {
+	display: flex;
+	justify-content: stretch;
+	flex-direction: column;
+	min-height: 500px;
+}
 
+.carousel {
+	height: 100%;
+	flex: 1 1 0;
+}
 
 .block {
-	margin-top: var(--spacing);
-	/*height: var(--current-vh);*/
+	padding-top: var(--spacing);
+	height: 100%;
 	width: var(--current-vw);
 	max-width: var(--column-width-small);
 	/*padding: 0;*/
-	display: inline-block;
+	display: inline-flex;
+	flex-direction: column;
+}
+
+.box {
+	flex: 1 1 0;
 }
 </style>

@@ -1,58 +1,59 @@
 <template>
-	<div class="connection-card flex-column no-scrollbar">
-		<div class="flex-row">
-			<button type="button" class="info flex-row" @click="navigateBack" :disabled="!navigateBackAvailable(state.origin, state.session)">
-				<IconBackground :img="state.appInfo?.logo" :icon="IconConnection" />
-				<div style="min-width: 0;">
-					<div class="ellipsis">{{ state.appInfo?.name || 'Connector' }}</div>
-					<div class="secondary-text ellipsis">{{ state.origin }}</div>
-				</div>
-				<Icon v-if="navigateBackAvailable(state.origin, state.session)" :icon="IconLaunch" />
-			</button>
-			<WalletSelector v-model="state.walletId" :default="defaultId" :exit="true" :active="!selectActive" @selectWallet="selectWallet" @exit="disconnect" />
-		</div>
-		<div class="flex-column" style="flex: 1 1 0;">
-			<Tabs :tabs="tabs" v-model="currentTab" :disabled="!currentId" />
-			<div class="container">
-				<TransitionsManager :vector="transitionName" axis="x">
-					<OverlayPrompt v-if="!Wallets.length" :options="{ action: { icon: IconAddBox, name: 'Add wallet', run: () => router.push('/add') } }" />
-					<div v-else class="container-scroll" :key="contentKey">
-						<transition-group name="fade-list">
-							<WalletTabs v-if="selectActive" v-model="currentId" class="fade-list-item" key="-1" />
-							<div class="page-container" key="0">
-								<TransitionsManager :vector="transitionName" axis="x">
-									<div :key="(currentId || '') + currentTab" class="content">
-										<div v-if="currentTab === 'Requests'">
-											<transition-group name="fade-list">
-												<div class="fade-list-item" key="0" :style="{ padding: 0, border: 0, outline: '0.5px solid var(--border)' }"/>
-												<div v-if="connectionFeed?.length === 0 && state.walletId && state.walletId === currentId" class="status fade-list-item" key="1">Connected</div>
-												<OverlayPrompt v-if="currentId !== state.walletId" :options="connectOptions" class="fade-list-item" key="2">
-													<ProfilePreview v-if="currentWallet" :wallet="currentWallet" />
-												</OverlayPrompt>
-<!--												stay logged in here -->
-												<PermissionCard v-for="messageEntry in connectionFeed" :key="messageEntry.uuid" :messageEntry="messageEntry" style="padding: var(--spacing);" class="flex-column fade-list-item" />
-											</transition-group>
-										</div>
-										<div v-else-if="currentTab === 'Permissions'">
-											<transition-group name="fade-list">
-												<div class="fade-list-item" key="0" :style="{ padding: 0, border: 0, outline: '0.5px solid var(--border)' }"/>
-												<PermissionSettings :state="state" :walletId="currentId" class="fade-list-item" key="2" />
-											</transition-group>
-										</div>
-									</div>
-								</TransitionsManager>
-							</div>
-						</transition-group>
+	<ListContainer class="connection-card flex-column no-scrollbar">
+		<template #header>
+			<div class="flex-row">
+				<button type="button" class="info flex-row" @click="navigateBack" :disabled="!navigateBackAvailable(state.origin, state.session)">
+					<IconBackground :img="state.appInfo?.logo" :icon="IconConnection" />
+					<div style="min-width: 0;">
+						<div class="ellipsis">{{ state.appInfo?.name || 'Connector' }}</div>
+						<div class="secondary-text ellipsis">{{ state.origin }}</div>
 					</div>
-				</TransitionsManager>
+					<Icon v-if="navigateBackAvailable(state.origin, state.session)" :icon="IconLaunch" />
+				</button>
+				<WalletSelector v-model="state.walletId" :default="defaultId" :exit="true" :active="!selectActive" @selectWallet="selectWallet" @exit="disconnect" />
 			</div>
-		</div>
-	</div>
+			<Tabs :tabs="tabs" v-model="currentTab" :disabled="!currentId" />
+		</template>
+		<template #default>
+			<TransitionsManager :vector="transitionName" axis="x">
+				<OverlayPrompt v-if="!Wallets.length" :options="{ action: { icon: IconAddBox, name: 'Add wallet', run: () => router.push('/add') } }" />
+				<div v-else class="container-scroll" :key="contentKey">
+					<transition-group name="fade-list">
+						<WalletTabs v-if="selectActive" v-model="currentId" class="fade-list-item" key="-1" />
+						<div class="page-container" key="0">
+							<TransitionsManager :vector="transitionName" axis="x">
+								<div :key="(currentId || '') + currentTab" class="content">
+									<div v-if="currentTab === 'Requests'">
+										<transition-group name="fade-list">
+											<div class="fade-list-item" key="0" :style="{ padding: 0, border: 0, outline: '0.5px solid var(--border)' }"/>
+											<div v-if="connectionFeed?.length === 0 && state.walletId && state.walletId === currentId" class="status fade-list-item" key="1">Connected</div>
+											<OverlayPrompt v-if="currentId !== state.walletId" :options="connectOptions" class="fade-list-item" key="2">
+												<ProfilePreview v-if="currentWallet" :wallet="currentWallet" />
+											</OverlayPrompt>
+<!--												stay logged in here -->
+											<PermissionCard v-for="messageEntry in connectionFeed" :key="messageEntry.uuid" :messageEntry="messageEntry" style="padding: var(--spacing);" class="flex-column fade-list-item" />
+										</transition-group>
+									</div>
+									<div v-else-if="currentTab === 'Permissions'">
+										<transition-group name="fade-list">
+											<div class="fade-list-item" key="0" :style="{ padding: 0, border: 0, outline: '0.5px solid var(--border)' }"/>
+											<PermissionSettings :state="state" :walletId="currentId" class="fade-list-item" key="2" />
+										</transition-group>
+									</div>
+								</div>
+							</TransitionsManager>
+						</div>
+					</transition-group>
+				</div>
+			</TransitionsManager>
+		</template>
+	</ListContainer>
 </template>
 
 
 
 <script setup lang="ts">
+import ListContainer from '@/components/layout/ListContainer.vue'
 import WalletSelector from '@/components/composed/WalletSelector.vue'
 import WalletTabs from '@/components/composed/WalletTabs.vue'
 import Tabs from '@/components/atomic/Tabs.vue'
@@ -173,17 +174,6 @@ watch(() => Wallets.value.findIndex(wallet => wallet.id === currentId.value), se
 	width: 100%;
 	z-index: 0;
 	border-bottom: 0;
-}
-
-.container {
-	flex: 1 1 0;
-	background: var(--background);
-	border-radius: var(--border-radius) var(--border-radius) 0 0;
-	align-items: center;
-	justify-content: flex-start;
-	overflow: hidden;
-	position: relative;
-	min-height: min(300px, calc(var(--current-vh) - calc(var(--spacing) + 5px)));
 }
 
 .container-scroll {

@@ -1,16 +1,21 @@
 <template>
-	<div class="block-card">
-		<Observer @intersection="visible = true" />
+	<ListContainer class="block-card">
+		<template #header>
 			<div class="flex-row" style="align-items: center; justify-content: space-between">
 				<h2>
 					Block {{ block.node.height }}
 				</h2>
+				<Observer @intersection="visible = true">
 				<div v-if="data" style="text-align: end">
 					<div>{{ data.txs?.length }} Transactions | {{ humanFileSize(data.block_size) }}</div>
 					<div><Date :timestamp="data.timestamp * 1000" /></div>
 				</div>
+				</Observer>
 			</div>
-	</div>
+		</template>
+		<template #default>
+		</template>
+	</ListContainer>
 </template>
 
 
@@ -21,6 +26,7 @@ import { ref, watch } from 'vue'
 import { arweave } from '@/store/ArweaveStore'
 import { humanFileSize } from '@/functions/Utils'
 import Date from '@/components/atomic/Date.vue'
+import ListContainer from '@/components/layout/ListContainer.vue'
 
 const props = defineProps<{ block: any }>()
 
@@ -33,8 +39,6 @@ watch(visible, async visible => visible && !data.value && (data.value = await ar
 
 
 
-<style>
-.block-card {
+<style scoped>
 
-}
 </style>

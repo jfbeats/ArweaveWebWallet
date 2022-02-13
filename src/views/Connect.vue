@@ -63,7 +63,6 @@ const currentConnectorIndex = ref(connectors.value.findIndex(value => value.orig
 
 .connection-card {
 	padding: var(--spacing);
-	padding-bottom: 0;
 	height: 100%;
 }
 
