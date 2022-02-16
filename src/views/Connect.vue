@@ -17,26 +17,11 @@
 <script setup lang="ts">
 import Carousel from '@/components/layout/Carousel.vue'
 import ConnectionCard from '@/components/composed/ConnectionCard.vue'
-import AddressIcon from '@/components/atomic/AddressIcon.vue'
-import Address from '@/components/atomic/Address.vue'
-import Button from '@/components/atomic/Button.vue'
-import ArweaveStore from '@/store/ArweaveStore'
-import InterfaceStore from '@/store/InterfaceStore'
 import { state, states } from '@/functions/Channels'
 import { connectors } from '@/functions/Connect'
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { ref } from 'vue'
 
 const currentConnectorIndex = ref(connectors.value.findIndex(value => value.origin === state.origin && value.session === state.session))
-
-		// const test = ref(false)
-		// const testing = () => {
-		// 	test.value = !test.value
-		// 	setTimeout(testing, 4000)
-		// }
-		// testing()
-		// const connectorsComp = computed(() => test.value ? [connectors.value[0], connectors.value[2]] : connectors.value)
-		// InterfaceStore.toolbar.links = false
-		// onBeforeUnmount(() => InterfaceStore.toolbar.links = true)
 </script>
 
 
@@ -62,7 +47,6 @@ const currentConnectorIndex = ref(connectors.value.findIndex(value => value.orig
 }
 
 .connection-card {
-	padding: var(--spacing);
 	height: 100%;
 }
 
@@ -90,14 +74,6 @@ const currentConnectorIndex = ref(connectors.value.findIndex(value => value.orig
 
 .fade-list-leave-active {
 	position: absolute !important;
-	/* scroll-snap-align: none; */
-}
-
-.fade-list-enter-active {
-	/* scroll-snap-align: none; */
-}
-
-.fade-list-move {
 	/* scroll-snap-align: none; */
 }
 </style>
