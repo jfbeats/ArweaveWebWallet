@@ -75,7 +75,7 @@ watch(search, () => {
 	background: var(--background2);
 	border-radius: var(--border-radius);
 	position: relative;
-	z-index: 10;
+	z-index: 2;
 }
 
 .results {

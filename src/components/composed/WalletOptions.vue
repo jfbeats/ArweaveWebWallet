@@ -1,5 +1,5 @@
 <template>
-	<div class="wallet-options">
+	<div class="wallet-options flex-column">
 		<div class="left">
 			<AddressIcon class="profile" :address="wallet.key" />
 			<div class="profile-info">
@@ -53,9 +53,6 @@ const props = defineProps<{
 .content {
 	flex: 1 1 auto;
 	min-width: 0;
-	display: flex;
-	flex-direction: column;
-	padding: var(--spacing) 0;
 }
 
 .bottom {

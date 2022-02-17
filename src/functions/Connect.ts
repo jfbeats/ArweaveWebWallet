@@ -4,10 +4,11 @@ import JsonRpc from '@/functions/JsonRpc'
 import { watch, watchEffect, computed, reactive, ref, Ref } from 'vue'
 import { getWalletById } from '@/functions/Wallets'
 import { awaitEffect } from '@/functions/AsyncData'
+import InterfaceStore from '@/store/InterfaceStore'
 
 let windowRef: Window
 const { origin, session } = state
-const sharedState: Ref<ConnectorState | null> = ref(null)
+export const sharedState: Ref<ConnectorState | null> = ref(null)
 export const connectors = computed(() => {
 	const allConnectors = Object.entries(connectorChannels.states)
 		.filter(([key, val]) => key !== (origin! + session) && val.walletId !== false)
@@ -50,11 +51,13 @@ async function initConnector () {
 		postMessage({ method: 'connect', params: wallet.key })
 	}
 	const disconnect = () => { deleteChannel(); postMessage({ method: 'disconnect' }) }
-	watch(() => connectorState.walletId, (id) => id === false ? disconnect() : connect())
+	if (state.type === 'iframe') { InterfaceStore.toolbar.enabled = false }
 	if (state.type === 'popup') {
+		if (!connectorState.walletId) { InterfaceStore.toolbar.enabled = false }
 		const keepPopup = computed(() => !connectorState.link)
 		watch(keepPopup, () => postMessage({ method: 'keepPopup', params: keepPopup.value }), { immediate: true })
 	}
+	watch(() => connectorState.walletId, (id) => id === false ? disconnect() : connect())
 	watchEffect(() => {
 		const linkedState = Object.entries(filterChannels({ origin, session, type: state.type === 'popup' ? 'iframe' : 'popup' }))[0]?.[1]
 		if (linkedState) {

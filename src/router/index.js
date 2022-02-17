@@ -110,7 +110,7 @@ const routes = [
 	{
 		path: '/:pathMatch(.*)*',
 		redirect: () => {
-			if (state.type === 'iframe') { InterfaceStore.toolbar.enabled = false; return 'Connect' }
+			if (state.type === 'iframe') { return 'Connect' }
 			if (state.type === 'popup') { return { name: 'Connect' } }
 			return Wallets.value[0]
 				? { name: 'TxList', params: { walletId: Wallets.value[0].id } }

@@ -3,7 +3,10 @@
 		<div class="column">
 			<h2>Wallet Settings</h2>
 			<div class="flex-column">
-				<WalletOptions class="wallet-options" v-for="wallet in Wallets" :key="wallet.id" :wallet="wallet" />
+				<template v-for="wallet in Wallets" :key="wallet.id">
+					<WalletOptions class="wallet-options" :wallet="wallet" />
+					<div></div>
+				</template>
 				<Button v-if="!Wallets.length" style="font-size:1.5em; background:var(--background3);" @click="$router.push({ name: 'AddWallet' })" icon="+" />
 			</div>
 			<h2>App Settings</h2>

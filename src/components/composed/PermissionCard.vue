@@ -1,6 +1,7 @@
 <template>
 	<div v-show="message" class="permission-card">
 		<template v-if="message?.method === 'signTransaction'">
+			<span>Sign transaction</span>
 			<TxCard :tx="tx" />
 			<TxCardExtension :tx="tx" />
 		</template>
