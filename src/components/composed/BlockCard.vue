@@ -1,12 +1,12 @@
 <template>
 	<ListContainer class="block-card">
 		<template #header>
-			<div class="flex-row" style="align-items: center; justify-content: space-between">
+			<div class="flex-row" style="align-items: center; justify-content: space-between; flex-wrap: wrap;">
 				<h2 class="flex-row" style="align-items: center;">
 					<Icon :icon="IconCube" style="font-size: 1.5em; color: var(--orange);" />
 					<span>Block {{ block.node.height }}</span>
 				</h2>
-				<Observer @intersection="visible = true">
+				<Observer @intersection="visible = true" style="flex: 1 1 0;">
 					<TransitionsManager>
 						<div v-if="data" style="text-align: end">
 							<div>{{ data.txs?.length }} Transactions | {{ humanFileSize(data.block_size) }}</div>
