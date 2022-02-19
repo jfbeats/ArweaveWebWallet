@@ -15,6 +15,7 @@ interface Provider extends Account {
 	id: string
 	uuid: string
 	signTransaction?: (...args: any) => Promise<any>
+	bundle?: (...args: any) => Promise<any>
 	sign?: (data: ArrayBufferView, options: any) => Promise<ArrayBufferView>
 	decrypt?: (data: ArrayBufferView, options: any) => Promise<ArrayBufferView>
 	download?: () => Promise<any>

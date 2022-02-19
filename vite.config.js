@@ -24,6 +24,7 @@ export default ({ mode }) => {
 			}
 		},
 		build: {
+			target: 'esnext',
 			sourcemap: true,
 			rollupOptions: {
 				plugins: [

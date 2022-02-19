@@ -4,7 +4,7 @@ import arweaveGraphql, { SortOrder } from 'arweave-graphql'
 import LogoArweave from '@/assets/logos/arweave.svg?component'
 import { download } from '@/functions/Utils'
 import { getDecryptionKey, getSigningKey } from '@/functions/Crypto'
-import { exportTransaction } from '@/functions/Transactions'
+import { exportTransaction, manageUpload } from '@/functions/Transactions'
 import { awaitEffect, getAsyncData, getQueryManager } from '@/functions/AsyncData'
 import { ArweaveProviderInterface, ArweaveVerifier as ArweaveMessageVerifier } from 'arweave-wallet-connector/lib/ArweaveWebWallet'
 import { reactive, ref, Ref, toRef, watch } from 'vue'
@@ -140,6 +140,7 @@ export class ArweaveProvider extends ArweaveAccount implements Provider {
 		methods: {
 			download: { unavailable: !this.#wallet.data.jwk },
 			signTransaction: { userIntent: !this.#wallet.data.jwk },
+			bundle: { unavailable: !this.#wallet.data.jwk },
 			sign: { unavailable: !this.#wallet.data.jwk },
 			decrypt: { unavailable: !this.#wallet.data.jwk },
 		}
@@ -161,6 +162,19 @@ export class ArweaveProvider extends ArweaveAccount implements Provider {
 		if (tx.owner && tx.owner !== await this.getPublicKey()) { throw 'error' }
 		await arweave.transactions.sign(tx, await this.#wallet.getPrivateKey!(), options)
 		return tx
+	}
+	async bundle (tx: Transaction, options?: object) {
+		const { WebBundlr } = await import('@bundlr-network/client')
+		const sponsoredSize = 120000
+		const bundlr = new WebBundlr('https://node1.bundlr.network/', 'Arweave', await this.#wallet.getPrivateKey!())
+		const data = tx.get('data', { decode: true, string: false })
+		const tags = tx.tags.map(tag => ({
+			name: tag.get('name', { decode: true, string: true }),
+			value: tag.get('value', { decode: true, string: true })
+		}))
+		// const bundleTx = bundlr.createTransaction(data, { tags })
+		// await bundleTx.sign()
+		// await bundleTx.upload()
 	}
 	async sign (data: ArrayBufferView, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
 		const signingKey = await getSigningKey(await this.#wallet.getPrivateKey!() as JsonWebKey)
@@ -193,6 +207,7 @@ export class ArweaveMessageRunner implements MessageRunner, Partial<ArweaveProvi
 	getMethodMetadata (method: string) {
 		const map: { [keys in keyof this]?: keyof Metadata<ArweaveProvider>['methods'] } = {
 			signTransaction: 'signTransaction',
+			dispatch: 'bundle',
 			getPublicKey: 'getPublicKey',
 			sign: 'sign',
 			decrypt: 'decrypt',
@@ -203,7 +218,6 @@ export class ArweaveMessageRunner implements MessageRunner, Partial<ArweaveProvi
 		return methods?.[providerMethod as keyof typeof methods]
 	}
 	async signTransaction (tx: TransactionInterface, options?: object) {
-		if (!this.#wallet.signTransaction) { throw 'error' }
 		const txObject = new Transaction(tx)
 		// const fee = await getFeeRange()
 		// if (fee.default?.gt(txObject.reward)) { txObject.reward = fee.default.toString() }
@@ -215,6 +229,12 @@ export class ArweaveMessageRunner implements MessageRunner, Partial<ArweaveProvi
 			signature: txObject.signature,
 			reward: txObject.reward
 		}
+	}
+	async dispatch (tx: TransactionInterface, options?: object) {
+		// todo do not store large data in indexeddb
+		const txObject = new Transaction(tx)
+		await this.#wallet.signTransaction(txObject)
+		manageUpload(txObject)
 	}
 	async getPublicKey () {
 		const publicKey = await this.#wallet.getPublicKey()

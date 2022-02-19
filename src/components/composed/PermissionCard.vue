@@ -5,6 +5,11 @@
 			<TxCard :tx="tx" />
 			<TxCardExtension :tx="tx" />
 		</template>
+		<template v-if="message?.method === 'dispatch'">
+			<span>Sign transaction and upload</span>
+			<TxCard :tx="tx" />
+			<TxCardExtension :tx="tx" />
+		</template>
 		<template v-else-if="message?.method === 'getPublicKey'" class="permission-card">
 			Share the public key
 		</template>
@@ -43,7 +48,7 @@ const props = defineProps<{ messageEntry: MessageEntry }>()
 const message = ref(null as null | StoredMessage)
 
 const tx = computed(() => {
-	if (message.value?.method !== 'signTransaction') { return }
+	if (message.value?.method !== 'signTransaction' && message.value?.method !== 'dispatch') { return }
 	const receivedTx = message.value?.params?.[0] as Parameters<ArweaveVerifier['signTransaction']>[0]
 	const tags = receivedTx.tags?.map(({name, value}) => ({ name: window.atob(name), value: window.atob(value) }))
 	return { ...receivedTx, tags }

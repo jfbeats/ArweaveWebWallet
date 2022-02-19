@@ -10,8 +10,10 @@
 		"graphql": "graphql-codegen --config codegen.yml"
 	},
 	"dependencies": {
+		"@bundlr-network/client": "^0.5.12",
 		"@ledgerhq/hw-transport-webusb": "^6.7.0",
 		"@zondax/ledger-arweave": "^1.0.0",
+		"arbundles": "^0.6.13",
 		"arverify": "^0.0.11",
 		"arweave": "^1.10.23",
 		"arweave-graphql": "^0.0.2",
