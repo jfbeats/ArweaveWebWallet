@@ -10,6 +10,7 @@
 					</div>
 					<Icon v-if="navigateBackAvailable(state.origin, state.session)" :icon="IconLaunch" />
 				</button>
+<!--				TODO do not display icon when nothing is connected (no default) -->
 				<WalletSelector v-model="state.walletId" :default="defaultId" :exit="true" :active="!selectActive" @selectWallet="selectWallet" @exit="disconnect" />
 			</div>
 			<Tabs :tabs="tabs" v-model="currentTab" :disabled="!currentId" />

@@ -108,7 +108,7 @@ export async function addAddress (addressSource: any) {
 export async function addProvider (provider: Provider) {
 	const walletData = { id: getNewId() } // todo same but with jwk for arweave provider
 	await provider.metadata.addImportData(walletData)
-	WalletsData.value.push(walletData)
+	WalletsData.value.push(walletData) // todo if not already present
 	return walletData.id
 }
 
