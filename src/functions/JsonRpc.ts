@@ -92,11 +92,11 @@ export default class JsonRpc {
 			const runner = this.stateWallet.value?.messageRunner
 			if (runner.getMethodMetadata(message.method)?.skip) { return }
 			const result = await (runner as any)[message.method!]?.(...(message.params || []))
-			if (result === undefined) { return }
 			messageEntry.fulfilled = true
 			await this.updateMessage(messageEntry)
 			if (id != null) { this.callbacks({ result, id }) }
 		} catch (e) {
+			// todo ledger transaction not removed on error
 			messageEntry.status = 'error'
 			console.error(e)
 			await this.updateMessage(messageEntry)
