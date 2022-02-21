@@ -1,7 +1,7 @@
 <template>
 	<ListContainer class="block-card">
 		<template #header>
-			<Observer @intersection="visible = true">
+			<Observer @intersection="visible = true" :threshold="0.5">
 				<div class="flex-row" style="align-items: center; justify-content: space-between; flex-wrap: wrap;">
 					<h2 class="flex-row" style="align-items: center;">
 						<Icon :icon="IconCube" style="font-size: 1.5em; color: var(--orange);" />

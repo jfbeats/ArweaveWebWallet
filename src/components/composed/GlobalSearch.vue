@@ -5,17 +5,17 @@
 		</div>
 		<TransitionsManager>
 			<div v-if="data.query?.length" class="results input-box">
-				<List class="query-list input-box">
-					<List v-if="wallet" class="flex-column">
+				<div class="query-list input-box flex-column">
+					<div v-if="wallet" class="flex-column">
 						<div class="secondary-text">User</div>
 						<ProfileCard :wallet="wallet" compact="true" />
 						<div />
-					</List>
+					</div>
 					<div class="secondary-text">Transactions</div>
 					<div v-for="item in data.query" :key="item" class="result">
 						<TxCard :tx="item.node" :options="{ currentAddress: wallet?.key }" />
 					</div>
-				</List>
+				</div>
 			</div>
 		</TransitionsManager>
 	</div>
