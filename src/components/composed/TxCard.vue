@@ -60,8 +60,9 @@ const value = computed(() => props.tx.quantity?.ar || arweave.ar.winstonToAr(pro
 const isValue = computed(() => value.value > 0)
 const isData = computed(() => (props.tx.data?.size || props.tx.data_size) > 0)
 const dataType = computed(() => {
+	if (tags.value['Bundle-Version']) return 'Bundle'
 	const type = tags.value['Content-Type']
-	if (type === 'application/x.arweave-manifest+json') { return 'Folder' }
+	if (type === 'application/x.arweave-manifest+json') { return 'Index' }
 	return type?.split('/').join(' ')
 })
 const dataInfo = computed(() => tags.value['Service'] || tags.value['App-Name'] || tags.value['User-Agent']?.split('/')[0])
