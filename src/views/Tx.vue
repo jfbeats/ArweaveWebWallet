@@ -5,7 +5,7 @@
 				<div class="box" style="padding: 0;">
 					<div class="box-padding flex-column" :style="[tagsSchema.length && 'padding-bottom: 0']">
 						
-						<TxCard :tx="tx" half="true" />
+						<TxCard :tx="tx" :options="{ half: true }" />
 						<div class="spacer" />
 						
 						<ProfilePreview v-if="tx.recipient" :wallet="recipient" />

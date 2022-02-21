@@ -330,6 +330,7 @@ export function arweaveQuery (options: Parameters<ReturnType<typeof graphql>['ge
 		seconds: refresh,
 		existingState: data,
 		processResult: () => {},
+		completed: () => options?.block?.max
 	})
 	
 	return { state: updateQuery.state, fetchQuery, updateQuery, status }

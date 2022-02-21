@@ -6,17 +6,17 @@
 				<div class="group">
 					<h2><span style="text-transform: capitalize;">{{ ArweaveStore.gatewayURLObject.hostname }}</span> Gateway State</h2>
 					<div class="flex-column">
-						<div>Peers: {{ networkInfo?.peers }}</div>
-						<div>Queue: {{ networkInfo?.queue_length }}</div>
-						<div>State Latency: {{ networkInfo?.node_state_latency }}</div>
-						<div>Pending Transactions: {{ pendingList?.length }}</div>
+						<div>Peers: {{ networkInfo?.peers ?? '...' }}</div>
+						<div>Queue: {{ networkInfo?.queue_length ?? '...' }}</div>
+						<div>State Latency: {{ networkInfo?.node_state_latency ?? '...' }}</div>
+						<div>Pending Transactions: {{ pendingList?.length ?? '...' }}</div>
 					</div>
 				</div>
 				<div class="group">
 					<h2>Weave State</h2>
 					<div class="flex-column">
-						<div>Network Height: {{ networkInfo?.height }}</div>
-						<div>Weave Size: {{ humanFileSize(currentBlock?.weave_size) }}</div>
+						<div>Network Height: {{ networkInfo?.height ?? '...' }}</div>
+						<div>Weave Size: {{ currentBlock?.weave_size && humanFileSize(currentBlock?.weave_size) || '...' }}</div>
 						<div>Endowment Pool: <Amount :winston="currentBlock?.reward_pool" /></div>
 					</div>
 				</div>

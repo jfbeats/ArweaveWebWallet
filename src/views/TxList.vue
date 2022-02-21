@@ -4,7 +4,7 @@
 		<TransitionsManager :vector="transitionFactor" axis="x">
 			<div class="flex-column" :key="selectedQuery">
 				<transition-group name="fade-list-rise">
-					<TxCard class="card fade-list-item" v-for="tx in txs" :key="tx.node.id" :tx="tx.node" :currentAddress="wallet.key" />
+					<TxCard class="card fade-list-item" v-for="tx in txs" :key="tx.node.id" :tx="tx.node" :options="{ currentAddress: wallet.key }" />
 				</transition-group>
 				<div v-if="!completedQuery" class="loader-container">
 					<Icon icon="loader" />

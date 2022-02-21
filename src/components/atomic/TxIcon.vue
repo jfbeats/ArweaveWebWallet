@@ -33,12 +33,11 @@ const isValue = computed(() => (props.tx.quantity?.winston || props.tx.quantity)
 const isPending = computed(() => !props.tx.id || !props.tx.block)
 const uploadProgress = computed(() => ArweaveStore.uploads[props.tx.id]?.upload)
 const icon = computed(() => {
+	if (unpackTags(props.tx.tags)['Bundle-Version']) return IconCube
 	if (props.direction === 'in' && !isData.value) return IconTxIn
 	if (props.direction === 'out' && !isData.value) return IconTxOut
 	if (props.direction === 'in' && !isValue.value) return IconTxInData
-	if (props.direction === 'out' && !isValue.value)
-		if (unpackTags(props.tx.tags)['Bundle-Version']) return IconCube
-	 	else return IconTxOutData
+	if (props.direction === 'out' && !isValue.value) return IconTxOutData
 	if (props.direction === 'in') return IconTxInFull
 	if (props.direction === 'out') return IconTxOutFull
 })

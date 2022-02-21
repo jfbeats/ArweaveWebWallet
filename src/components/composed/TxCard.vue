@@ -1,7 +1,7 @@
 <template>
 	<div class="tx-card no-scrollbar" :class="{ verticalElement }">
 		<div class="tx-content" :class="{ 'flex-row': !verticalElement, 'flex-column': verticalElement }">
-			<Link class="left reset" :to="(tx.id && !half) ? { name: 'Tx', params: { txId: tx.id } } : ''">
+			<Link class="left reset" :to="(tx.id && !options?.half) ? { name: 'Tx', params: { txId: tx.id } } : ''">
 				<TxIcon class="tx-icon" :tx="tx" :direction="direction" />
 				<div class="margin" />
 				<div>
@@ -11,15 +11,14 @@
 					<div class="secondary-text">{{ context }}</div>
 				</div>
 			</Link>
-			<div v-if="!half" class="right">
+			<div v-if="!options?.half" class="right">
 				<div class="right-content">
 					<div class="right-text">
 						<Address v-if="relativeAddress" class="address" :address="relativeAddress" />
-						<!-- <div v-else class="ellipsis">
-							<Amount :ar="tx.fee.ar" />
-						</div>-->
+						<div v-else-if="dataSize" class="secondary-text ellipsis">Size: {{ dataSize }}</div>
 						<div class="secondary-text ellipsis">
 							<template v-if="status">{{ status }}</template>
+							<template v-else-if="options?.space">Fee: <Amount :ar="tx.fee.ar" /></template>
 							<Date v-else-if="timestamp" :timestamp="timestamp" />
 						</div>
 					</div>
@@ -33,7 +32,7 @@
 
 
 
-<script setup>
+<script setup lang="ts">
 import Address from '@/components/atomic/Address.vue'
 import TxIcon from '@/components/atomic/TxIcon.vue'
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
@@ -44,8 +43,16 @@ import ArweaveStore, { arweave } from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
 import { unpackTags } from '@/functions/Transactions'
 import { computed } from 'vue'
+import { humanFileSize } from '@/functions/Utils'
 
-const props = defineProps(['tx', 'currentAddress', 'half'])
+const props = defineProps<{
+	tx: any
+	options?: {
+		currentAddress?: any
+		half?: any
+		space?: boolean
+	}
+}>()
 
 const tags = computed(() => unpackTags(props.tx.tags))
 const timestamp = computed(() => props.tx.block?.timestamp * 1000)
@@ -54,11 +61,12 @@ const status = computed(() => {
 	if (!props.tx.id) { return 'Awaiting approval' }
 	if (!props.tx.block) { return 'Pending' }
 })
-const direction = computed(() => props.tx.recipient && props.tx.recipient === props.currentAddress ? 'in' : 'out')
-const relativeAddress = computed(() => direction.value === 'in' ? props.tx.owner.address : props.tx.recipient || props.tx.target)
+const direction = computed(() => props.tx.recipient && props.tx.recipient === props.options?.currentAddress ? 'in' : 'out')
+const relativeAddress = computed(() => direction.value === 'in' ? props.tx.owner.address : (props.tx.recipient || props.tx.target))
 const value = computed(() => props.tx.quantity?.ar || arweave.ar.winstonToAr(props.tx.quantity))
 const isValue = computed(() => value.value > 0)
 const isData = computed(() => (props.tx.data?.size || props.tx.data_size) > 0)
+const dataSize = computed(() => isData.value && humanFileSize(props.tx.data?.size || props.tx.data_size))
 const dataType = computed(() => {
 	if (tags.value['Bundle-Version']) return 'Bundle'
 	const type = tags.value['Content-Type']

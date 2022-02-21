@@ -13,7 +13,7 @@
 					</List>
 					<div class="secondary-text">Transactions</div>
 					<div v-for="item in data.query" :key="item" class="result">
-						<TxCard :tx="item.node" :current-address="wallet?.key"></TxCard>
+						<TxCard :tx="item.node" :options="{ currentAddress: wallet?.key }" />
 					</div>
 				</List>
 			</div>
