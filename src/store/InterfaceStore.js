@@ -58,7 +58,7 @@ document.addEventListener('dragend', (e) => { e.preventDefault(); dragCount = 0;
 document.addEventListener('dragover', (e) => { e.preventDefault() }, true)
 document.addEventListener('drop', (e) => { e.preventDefault(); dragCount = 0; InterfaceStore.dragOverlay = false; }, true)
 
-if (navigator.appVersion.indexOf("Win") != -1) {
+if (navigator.appVersion.indexOf("Win") != -1 || navigator.appVersion.indexOf('Macintosh') != -1) {
 	document.documentElement.classList.add('styleScroll')
 }
 
