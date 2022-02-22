@@ -70,10 +70,10 @@ const dataSize = computed(() => isData.value && humanFileSize(props.tx.data?.siz
 const dataType = computed(() => {
 	if (tags.value['Bundle-Version']) return 'Bundle'
 	const type = tags.value['Content-Type']
-	if (type === 'application/x.arweave-manifest+json') { return 'Index' }
+	if (type === 'application/x.arweave-manifest+json') { return 'Manifest' }
 	return type?.split('/').join(' ')
 })
-const dataInfo = computed(() => tags.value['Service'] || tags.value['App-Name'] || tags.value['User-Agent']?.split('/')[0])
+const dataInfo = computed(() => tags.value['Service'] || tags.value['App-Name'] || tags.value['Application'] || tags.value['User-Agent']?.split('/')[0])
 const context = computed(() => {
 	const fallback = isValue.value && isData.value ? 'Payment | Data' : isValue.value ? 'Payment' : isData.value ? 'Data' : props.tx.tags?.length ? 'Tags' : 'Empty'
 	const dataTypeUsed = !isValue.value && isData.value
