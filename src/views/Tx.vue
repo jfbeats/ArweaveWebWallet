@@ -1,12 +1,16 @@
 <template>
-	<FoldingLayout v-if="tx">
+	<div v-if="!tx" style="position: relative; width: 100%; min-height: var(--current-vh); color: var(--element-secondary);">
+		<OverlayPrompt :options="{ icon: 'loader' }" class="box">
+			<h2 v-if="queryStatus.error">{{ queryStatus.error }}</h2>
+			<h2 v-else>Loading</h2>
+		</OverlayPrompt>
+	</div>
+	<FoldingLayout v-else>
 		<template #left>
 			<div class="meta flex-column">
 				<div class="box" style="padding: 0;">
 					<div class="box-padding flex-column" :style="[tagsSchema.length && 'padding-bottom: 0']">
-						
 						<TxCard :tx="tx" :options="{ half: true }" />
-						<div class="spacer" />
 						
 						<ProfilePreview v-if="tx.recipient" :wallet="recipient" />
 						
@@ -14,7 +18,6 @@
 						<div v-if="tx.recipient" class="divider" />
 						
 						<ProfilePreview :wallet="sender" />
-						<div class="spacer" />
 						
 						<div>
 							<h3>Transaction</h3>
@@ -24,13 +27,18 @@
 							<div v-if="tx.data?.type === 'application/x.arweave-manifest+json'"><a :href="ArweaveStore.gatewayURL + 'tx/' + tx.id + '/data.json'" target="_blank">Manifest</a></div>
 						</div>
 						
+						<div v-if="tx.bundledIn?.id">
+							<h3>Bundle</h3>
+							<div><Address :address="tx.bundledIn?.id">ID:&nbsp;</Address></div>
+						</div>
+						
 						<div v-if="isPending">
 							<h3>Pending</h3>
 							<div v-if="status">Status: {{ status }}</div>
 						</div>
 						<div v-else>
 							<h3>Block</h3>
-							<Address :address="tx.block.id">ID:&nbsp;</Address>
+							<div><Address :address="tx.block.id">ID:&nbsp;</Address></div>
 							<div>
 								Height: {{ tx.block.height }}
 								<span class="secondary-text" v-if="networkInfo?.height">/ {{ networkInfo.height }}</span>
@@ -57,7 +65,7 @@
 			</div>
 		</template>
 
-		<template #right v-if="isData">
+		<template #right v-if="tx && isData">
 			<Selector :tx="tx" :class="{ inline: !verticalContent }" />
 		</template>
 	</FoldingLayout>
@@ -80,12 +88,15 @@ import TxCard from '@/components/composed/TxCard.vue'
 import WalletInfo from '@/components/composed/WalletInfo.vue'
 import { getAccountByAddress } from '@/functions/Wallets'
 import ProfilePreview from '@/components/composed/ProfilePreview.vue'
+import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
 
 const props = defineProps<{
 	txId: string
 }>()
 
-const tx = useWatchTx(toRef(props, 'txId'))
+const handler = useWatchTx(toRef(props, 'txId'))
+const tx = handler.state
+const queryStatus = handler.queryStatus
 
 const sender = computed(() => tx.value.owner && getAccountByAddress(tx.value.owner.address))
 const recipient = computed(() => tx.value.recipient && getAccountByAddress(tx.value.recipient))
@@ -113,7 +124,9 @@ const tagsSchema = computed(() => {
 	return result
 })
 watch(() => props.txId, async () => {
-	arweave.transactions.getStatus(props.txId).then(s => status.value = s.status).catch(() => status.value = 'Not Found')
+	const id = tx.value?.bundledIn?.id || props.txId
+	if (!id) { return }
+	arweave.transactions.getStatus(id).then(s => status.value = s.status).catch(() => status.value = 'Not Found')
 }, { immediate: true })
 const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
 </script>

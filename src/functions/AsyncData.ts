@@ -22,6 +22,7 @@ type AsyncDataOptions<T> = QueryManagerOptions<T> & {
 type QueryStatusInterface<T> = {
 	running: boolean
 	promise?: Promise<T>
+	error?: string
 }
 
 
@@ -42,9 +43,11 @@ export function getAsyncData <T> (options: AsyncDataOptions<T>) {
 		return new Promise<T>((resolve, reject) => {
 			query().then(res => {
 				timestamp.value = Date.now()
+				if (!res) { throw new Error('not found') }
 				options.processResult ? options.processResult(res, options) : state.value = res
 				resolve(state.value!)
 			}).catch(e => {
+				queryStatus.error = e
 				cooldown = Math.max(0, 20000 - (Date.now() - initTimestamp))
 				setTimeout(() => { cooldown = 0; timestamp.value = rollback; reject(e) }, cooldown)
 			})

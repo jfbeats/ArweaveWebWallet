@@ -73,15 +73,16 @@ export function useWatchTx (txId: Ref<string>) {
 		processResult: res => ArweaveStore.txs[txId] = res,
 		seconds: 10,
 	})
-	const data: { value?: ReturnType<typeof getTxById>['state'] } = reactive({})
+	const data: { value?: ReturnType<typeof getTxById>['state'], queryStatus?: ReturnType<typeof getTxById>['queryStatus'] } = reactive({})
 	let destructor: () => any | undefined
 	watch(txId, id => {
 		destructor?.()
 		const handler = getTxById(id)
 		data.value = handler.state
+		data.queryStatus = handler.queryStatus
 		destructor = handler.stop
 	}, { immediate: true })
-	return toRef(data, 'value')
+	return { state: toRef(data, 'value'), queryStatus: toRef(data, 'queryStatus') }
 }
 
 export async function fetchPublicKey (address: string) {
