@@ -13,7 +13,7 @@ import type { TransactionEdge as GQLTransactionEdge, BlockEdge as GQLBlockEdge }
 import type { ApiConfig } from 'arweave/web/lib/api'
 import type { TransactionInterface } from 'arweave/web/lib/transaction'
 import type { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
-
+import axios from 'axios'
 
 
 const ArweaveStore = reactive({
@@ -158,23 +158,27 @@ export class ArweaveProvider extends ArweaveAccount implements Provider {
 	get id () { return this.#wallet.id }
 	get uuid () { return this.#wallet.uuid }
 	async signTransaction (tx: Transaction, options?: SignatureOptions) {
+		// todo test balance
 		if (!this.#wallet.data.jwk) { return exportTransaction(tx) }
 		if (tx.owner && tx.owner !== await this.getPublicKey()) { throw 'error' }
 		await arweave.transactions.sign(tx, await this.#wallet.getPrivateKey!(), options)
 		return tx
 	}
 	async bundle (tx: Transaction, options?: object) {
-		const { WebBundlr } = await import('@bundlr-network/client')
-		const sponsoredSize = 120000
-		const bundlr = new WebBundlr('https://node1.bundlr.network/', 'Arweave', await this.#wallet.getPrivateKey!())
+		const { createData, signers } = await import('@/../scripts/bundle')
 		const data = tx.get('data', { decode: true, string: false })
 		const tags = tx.tags.map(tag => ({
 			name: tag.get('name', { decode: true, string: true }),
 			value: tag.get('value', { decode: true, string: true })
 		}))
-		// const bundleTx = bundlr.createTransaction(data, { tags })
-		// await bundleTx.sign()
-		// await bundleTx.upload()
+		const signer = new signers.ArweaveSigner(await this.#wallet.getPrivateKey!())
+		const bundleTx = createData(data, signer, { tags })
+		await bundleTx.sign(signer)
+		const res = await axios.post('https://node2.bundlr.network/tx', bundleTx.getRaw(), { headers: { "Content-Type": "application/octet-stream", "Transfer-Encoding": "chunked" } })
+		console.log(res)
+		if (res.status === 201) { return { id: bundleTx.id } }
+		if (res.status === 402) { throw new Error('insufficient funds') }
+		else { throw new Error('error') }
 	}
 	async sign (data: ArrayBufferView, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
 		const signingKey = await getSigningKey(await this.#wallet.getPrivateKey!() as JsonWebKey)
@@ -233,8 +237,8 @@ export class ArweaveMessageRunner implements MessageRunner, Partial<ArweaveProvi
 	async dispatch (tx: TransactionInterface, options?: object) {
 		// todo do not store large data in indexeddb
 		const txObject = new Transaction(tx)
-		await this.#wallet.signTransaction(txObject)
-		manageUpload(txObject)
+		await this.#wallet.bundle(txObject)
+		// manageUpload(txObject)
 	}
 	async getPublicKey () {
 		const publicKey = await this.#wallet.getPublicKey()
