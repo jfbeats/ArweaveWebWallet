@@ -54,7 +54,7 @@ const props = defineProps<{
 	}
 }>()
 
-const tags = computed(() => unpackTags(props.tx.tags))
+const tags = computed(() => unpackTags(props.tx.tags, { lowercase: true }))
 const timestamp = computed(() => props.tx.block?.timestamp * 1000)
 const status = computed(() => {
 	if (ArweaveStore.uploads[props.tx.id]) { return `Uploading ${ArweaveStore.uploads[props.tx.id].upload}%` }
@@ -68,12 +68,12 @@ const isValue = computed(() => value.value > 0)
 const isData = computed(() => (props.tx.data?.size || props.tx.data_size) > 0)
 const dataSize = computed(() => isData.value && humanFileSize(props.tx.data?.size || props.tx.data_size))
 const dataType = computed(() => {
-	if (tags.value['Bundle-Version']) return 'Bundle'
-	const type = tags.value['Content-Type']
-	if (type === 'application/x.arweave-manifest+json') { return 'Manifest' }
-	return type?.split('/').join(' ')
+	if (tags.value['bundle-version']) return 'Bundle'
+	if (tags.value['content-type'] === 'text/html') { return 'Website' }
+	if (tags.value['content-type'] === 'application/x.arweave-manifest+json') { return 'Manifest' }
+	return tags.value['content-type']?.split('/').join(' ')
 })
-const dataInfo = computed(() => tags.value['Service'] || tags.value['App-Name'] || tags.value['Application'] || tags.value['User-Agent']?.split('/')[0])
+const dataInfo = computed(() => tags.value['service'] || tags.value['app-name'] || tags.value['application'] || tags.value['arweave-app'] || tags.value['uploading-app'] || tags.value['app'] || tags.value['user-agent']?.split('/')[0] || tags.value['file-name'])
 const context = computed(() => {
 	const fallback = isValue.value && isData.value ? 'Payment | Data' : isValue.value ? 'Payment' : isData.value ? 'Data' : props.tx.tags?.length ? 'Tags' : 'Empty'
 	const dataTypeUsed = !isValue.value && isData.value
@@ -103,6 +103,7 @@ const verticalElement = computed(() => InterfaceStore.breakpoints.verticalLayout
 	flex: 0 0 auto;
 	display: flex;
 	align-items: center;
+	text-transform: capitalize;
 }
 
 .right {

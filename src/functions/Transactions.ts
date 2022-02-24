@@ -82,16 +82,13 @@ export async function getFeeRange () {
 	return range
 }
 
-export function unpackTags (tags: { name: string, value: string }[]) {
-	const result = {} as { [key:string]: string }
-	for (const { name, value } of tags) { result[name] ??= value }
-	return result
-}
-
-export function unpackTagsDuplicated (tags: { name: string, value: string }[]) {
-	const result = {} as { [key:string]: string[] }
-	for (const { name, value } of tags) { (result[name] ??= []).push(value) }
-	return result
+export function unpackTags <T extends boolean = false> (tags: { name: string, value: string }[], options?: { duplicate?: T, lowercase?: boolean }) {
+	const result = {} as { [key:string]: any }
+	const set = options?.duplicate
+		? (tag: typeof tags[0]) => (result[options?.lowercase ? tag.name.toLowerCase() : tag.name] ??= []).push(tag.value)
+		: (tag: typeof tags[0]) => result[options?.lowercase ? tag.name.toLowerCase() : tag.name] ??= tag.value
+	tags.forEach(set)
+	return result as { [key:string]: (T extends true ? string[] : string) }
 }
 
 export async function exportTransaction (tx: Transaction) {
