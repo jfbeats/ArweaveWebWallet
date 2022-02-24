@@ -19,7 +19,11 @@ export const connectors = computed(() => {
 
 
 
-if (window.opener) {
+
+if (document.location.pathname.split('/').filter(el => el)[0] === 'extension') {
+	state.type = 'extension'
+	windowRef = window.parent
+} else if (window.opener) {
 	localStorage.setItem('global', '1')
 	state.type = 'popup'
 	windowRef = window.opener

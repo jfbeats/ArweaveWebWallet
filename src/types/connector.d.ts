@@ -25,7 +25,7 @@ type MessageEntry = Omit<Message, 'params'> & {
 type InstanceState = {
 	origin?: string
 	session?: string
-	type?: 'popup' | 'iframe' | 'client'
+	type?: 'extension' | 'popup' | 'iframe' | 'client'
 }
 
 type ConnectorState = {
