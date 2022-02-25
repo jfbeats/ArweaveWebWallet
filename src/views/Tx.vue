@@ -21,15 +21,22 @@
 						
 						<div>
 							<h3>Transaction</h3>
-							<Address :address="tx.id">ID:&nbsp;</Address>
 							<!-- Status: included, number of confirmations /50 -> settled -->
-							<div v-if="isData"><a :href="ArweaveStore.gatewayURL + tx.id" target="_blank">{{ ArweaveStore.gatewayURLObject?.hostname }}</a></div>
-							<div v-if="tx.data?.type === 'application/x.arweave-manifest+json'"><a :href="ArweaveStore.gatewayURL + 'tx/' + tx.id + '/data.json'" target="_blank">Manifest</a></div>
+							<div class="flex-column">
+								<div>
+									<div v-if="isData"><a :href="ArweaveStore.gatewayURL + tx.id" target="_blank">{{ ArweaveStore.gatewayURLObject?.hostname }}</a></div>
+									<div v-if="tx.data?.type === 'application/x.arweave-manifest+json'"><a :href="ArweaveStore.gatewayURL + 'tx/' + tx.id + '/data.json'" target="_blank">Manifest</a></div>
+								</div>
+								<div class="secondary-text"><Address :address="tx.id">ID:&nbsp;</Address></div>
+							</div>
 						</div>
 						
 						<div v-if="tx.bundledIn?.id">
 							<h3>Bundle</h3>
-							<div><Address :address="tx.bundledIn?.id">ID:&nbsp;</Address></div>
+							<div class="flex-column">
+								<TxCard v-if="bundleTx" :tx="bundleTx" :options="{ space: true }" />
+								<div class="secondary-text"><Address :address="tx.bundledIn?.id">ID:&nbsp;</Address></div>
+							</div>
 						</div>
 						
 						<div v-if="isPending">
@@ -38,12 +45,13 @@
 						</div>
 						<div v-else>
 							<h3>Block</h3>
-							<div><Address :address="tx.block.id">ID:&nbsp;</Address></div>
 							<div>
 								Height: {{ tx.block.height }}
 								<span class="secondary-text" v-if="networkInfo?.height">/ {{ networkInfo.height }}</span>
 							</div>
 							<div>{{ date }}</div>
+							<div class="spacer" />
+							<div class="secondary-text"><Address :address="tx.block.id">ID:&nbsp;</Address></div>
 						</div>
 	
 						<div>
@@ -98,22 +106,25 @@ const handler = useWatchTx(toRef(props, 'txId'))
 const tx = handler.state
 const queryStatus = handler.queryStatus
 
-const sender = computed(() => tx.value.owner && getAccountByAddress(tx.value.owner.address))
-const recipient = computed(() => tx.value.recipient && getAccountByAddress(tx.value.recipient))
+const bundleId = computed(() => tx.value?.bundledIn?.id)
+const bundleTx = useWatchTx(bundleId).state
 
-const isData = computed(() => tx.value.data?.size != 0)
-const isPending = computed(() => !tx.value.block)
+const sender = computed(() => tx.value?.owner && getAccountByAddress(tx.value?.owner.address))
+const recipient = computed(() => tx.value?.recipient && getAccountByAddress(tx.value?.recipient))
+
+const isData = computed(() => tx.value?.data?.size != 0)
+const isPending = computed(() => !tx.value?.block)
 const date = computed(() => {
-	if (!tx.value.block) { return '' }
-	const dateObj = new Date(tx.value.block.timestamp * 1000)
+	if (!tx.value?.block) { return '' }
+	const dateObj = new Date(tx.value?.block.timestamp * 1000)
 	return dateObj.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
 		+ ' ' + dateObj.toLocaleTimeString()
 })
 const status = ref(null as any)
 const tagsSchema = computed(() => {
-	if (!tx.value.tags) { return }
+	if (!tx.value?.tags) { return }
 	const result = []
-	for (const tag of tx.value.tags) {
+	for (const tag of tx.value?.tags) {
 		result.push({
 			items: [
 				{ name: '', value: tag.name, attrs: { disabled: true } },

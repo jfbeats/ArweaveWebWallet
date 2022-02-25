@@ -49,12 +49,13 @@ const hasRight = () => !!slots.right
 .left {
 	overflow: auto;
 	height: var(--current-vh);
-	min-width: 0;
+	min-width: 40vw;
 	position: sticky;
 	top: 0;
 }
 
 .left.hasRight {
+	min-width: 0;
 	width: 40vw;
 	z-index: 1;
 }

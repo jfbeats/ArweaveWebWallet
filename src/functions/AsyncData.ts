@@ -65,7 +65,7 @@ export function getAsyncData <T> (options: AsyncDataOptions<T>) {
 		get () { localClock.value; getState(); return state.value },
 		set (value) { state.value = value }
 	})) as WritableComputedRef<T | undefined>
-	return { state: computedState, stateRef: state, getState, queryStatus, stop: scope.stop }
+	return { state: computedState, stateRef: state, getState, queryStatus, stop: () => scope.stop() }
 }
 
 export function getQueryManager <T> (options: QueryManagerOptions<T>) {
