@@ -176,11 +176,13 @@ export class ArweaveProvider extends ArweaveAccount implements Provider {
 		const signer = new signers.ArweaveSigner(await this.#wallet.getPrivateKey!())
 		const bundleTx = createData(data, signer, { tags })
 		await bundleTx.sign(signer)
-		const res = await axios.post('https://node2.bundlr.network/tx', bundleTx.getRaw(), { headers: { "Content-Type": "application/octet-stream", "Transfer-Encoding": "chunked" } })
-		console.log(res)
-		if (res.status === 201) { return { id: bundleTx.id } }
-		if (res.status === 402) { throw new Error('insufficient funds') }
-		else { throw new Error('error') }
+		const res = await axios.post('https://node2.bundlr.network/tx', bundleTx.getRaw(), {
+			headers: { "Content-Type": "application/octet-stream", "Transfer-Encoding": "chunked" },
+			maxBodyLength: Infinity,
+		})
+		console.log(res, bundleTx)
+		if (res.status >= 200 && res.status < 300) { return { id: bundleTx.id } }
+		throw new Error(res.status + '')
 	}
 	async sign (data: ArrayBufferView, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
 		const signingKey = await getSigningKey(await this.#wallet.getPrivateKey!() as JsonWebKey)
@@ -239,8 +241,19 @@ export class ArweaveMessageRunner implements MessageRunner, Partial<ArweaveProvi
 	async dispatch (tx: TransactionInterface, options?: object) {
 		// todo do not store large data in indexeddb
 		const txObject = new Transaction(tx)
-		await this.#wallet.bundle(txObject)
-		// manageUpload(txObject)
+		let dispatchResult: Awaited<ReturnType<ArweaveProviderInterface['dispatch']>> | undefined
+		try {
+			const res = await this.#wallet.bundle(txObject)
+			dispatchResult = { id: res.id, type: 'BUNDLED' }
+		} catch (e) { console.error(e) }
+		if (dispatchResult) { return dispatchResult }
+		try {
+			await this.#wallet.signTransaction(txObject)
+			// manageUpload(txObject)
+			dispatchResult = { id: txObject.id, type: 'BASE' }
+		} catch (e) { console.error(e) }
+		if (dispatchResult) { return dispatchResult }
+		throw 'testing without base tx fallback'
 	}
 	async getPublicKey () {
 		const publicKey = await this.#wallet.getPublicKey()
