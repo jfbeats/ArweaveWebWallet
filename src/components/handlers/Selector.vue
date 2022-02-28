@@ -51,7 +51,7 @@ const load = async () => {
 	else {
 		data.handler = 'raw'
 		try {
-			data.payload = await arweave.transactions.getData(props.tx.id, { decode: true, string: true })
+			data.payload = (await arweave.api.get(props.tx.id)).data
 			if (data.payload[0] === "{") {
 				try {
 					data.payload = JSON.stringify(JSON.parse(data.payload), null, 2)
