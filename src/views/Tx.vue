@@ -21,7 +21,6 @@
 						
 						<div>
 							<h3>Transaction</h3>
-							<!-- Status: included, number of confirmations /50 -> settled -->
 							<div class="flex-column">
 								<div>
 									<div v-if="isData"><a :href="ArweaveStore.gatewayURL + tx.id" target="_blank">{{ ArweaveStore.gatewayURLObject?.hostname }}</a></div>
@@ -47,7 +46,7 @@
 							<h3>Block</h3>
 							<div>
 								Height: {{ tx.block.height }}
-								<span class="secondary-text" v-if="networkInfo?.height">/ {{ networkInfo.height }}</span>
+								<span class="secondary-text" v-if="networkInfo?.height">/ {{ networkInfo.height }} ({{ confirmations }} confirmation{{ confirmations > 1 ? 's' : ''}})</span>
 							</div>
 							<div>{{ date }}</div>
 							<div class="spacer" />
@@ -121,6 +120,7 @@ const date = computed(() => {
 		+ ' ' + dateObj.toLocaleTimeString()
 })
 const status = ref(null as any)
+const confirmations = computed(() => networkInfo.value?.height - tx.value?.block?.height + 1)
 const tagsSchema = computed(() => {
 	if (!tx.value?.tags) { return }
 	const result = []
