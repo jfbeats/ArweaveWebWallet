@@ -42,7 +42,7 @@ const smartweaveLink = computed(() => 'https://arcode.studio/#/' + props.tx.id +
 
 const load = async () => {
 	if (!props.tx) { return }
-	if (props.tx.data?.size === '0') { return }
+	if (props.tx.data?.size === '0' || props.tx.data?.size == null) { return }
 	const tags = unpackTags(props.tx.tags)
 	if (tags['Bundle-Version']) {
 		data.loaded = true
@@ -52,10 +52,11 @@ const load = async () => {
 			containerAttrs: { class: ['data-container'] }
 		}
 	}
-	if (props.tx.data?.type === 'application/x.arweave-manifest+json' || props.tx.data?.type === 'text/html' || props.tx.data?.type === 'application/pdf') { return data.handler = { is: 'iframe', attrs: { src: gatewayLink.value, class: ['hover'] }, containerAttrs: { class: ['iframe-container'] } } }
-	if (props.tx.data?.type?.split('/')[0] === 'video') { return data.handler = { is: 'iframe', attrs: { src: gatewayLink.value }, containerAttrs: { class: ['iframe-container'] } } }
-	if (props.tx.data?.size > 104857600 && !data.intent) { return data.handler = 'intent' }
-	if (props.tx.data?.type?.split('/')[0] === 'image') { return data.handler = { is: markRaw(Img), attrs: { src: gatewayLink.value }, containerAttrs: { class: ['img-container'] } } }
+	if (tags['Content-Type'] === 'application/x.arweave-manifest+json' || tags['Content-Type'] === 'text/html' || tags['Content-Type'] === 'application/pdf') { return data.handler = { is: 'iframe', attrs: { src: gatewayLink.value, class: ['hover'] }, containerAttrs: { class: ['iframe-container'] } } }
+	if (tags['Content-Type']?.split('/')[0] === 'video') { return data.handler = { is: 'iframe', attrs: { src: gatewayLink.value }, containerAttrs: { class: ['iframe-container'] } } }
+	// if (tags['Content-Type']?.split('/')[0] === 'audio') { return data.handler = { is: 'iframe', attrs: { src: gatewayLink.value }, containerAttrs: { class: ['iframe-container'] } } }
+	if (props.tx.data.size > 104857600 && !data.intent) { return data.handler = 'intent' }
+	if (tags['Content-Type']?.split('/')[0] === 'image') { return data.handler = { is: markRaw(Img), attrs: { src: gatewayLink.value }, containerAttrs: { class: ['img-container'] } } }
 	if (tags['App-Name'] === 'SmartWeaveContract' || tags['App-Name'] === 'SmartWeaveContractSource') { return data.handler = { is: 'iframe', attrs: { src: smartweaveLink.value }, containerAttrs: { class: ['iframe-container'] } } }
 	else {
 		data.handler = 'raw'
