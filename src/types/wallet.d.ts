@@ -26,7 +26,7 @@ interface Account {
 	metadata: AccountMetadata
 	key?: string
 	balance?: string
-	queries: { [key: string]: any }
+	queries: { query: any, name: string, color: string }[]
 	destructor?: () => any
 }
 
@@ -58,20 +58,3 @@ type MethodMetadata = {
 type Metadata <T> = StaticMetadata & {
 	methods: { [keys in keyof T]?: MethodMetadata }
 }
-
-
-
-type QueryBlockFilter = { min?: number, max?: number }
-
-type QueryTransactionOptions = Partial<{
-	ids: string[]
-	owner: string
-	target: string
-	tags: { [key: string]: string }
-	block: QueryBlockFilter
-	direction: 'up' | 'down'
-}>
-
-type QueryBlockOptions = QueryBlockFilter & Partial<{
-	direction: 'up' | 'down'
-}>

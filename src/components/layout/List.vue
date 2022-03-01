@@ -1,7 +1,7 @@
 <template>
 	<div class="list flex-column">
 		<transition-group name="fade-list-rise">
-			<component v-for="tx in txs" :tx="tx.node" :key="tx.node.id" :is="component" v-bind="componentProps" class="fade-list-item" />
+			<component v-for="tx in txs" :tx="tx.node" :key="tx.node.id" :is="component" v-bind="componentProps" class="fade-list-item" :class="[card && 'card']" />
 		</transition-group>
 		<div v-if="!completedQuery" class="loader-container">
 			<Icon icon="loader" />
@@ -21,13 +21,11 @@ const props = defineProps<{
 	query: any
 	component: any
 	componentProps?: object
-	options?: {
-		style?: 'card' | 'block'
-	}
+	card?: any
 }>()
 
 const fetchLoading = computed(() => props.query.fetchQuery.queryStatus.running)
-const txs = computed(() => props.query.updateQuery.state.value || [])
+const txs = computed(() => props.query.updateQuery.state.value || props.query.updateQuery.state || [])
 const completedQuery = computed(() => props.query.status?.completed)
 const fetchQuery = () => props.query.fetchQuery.query()
 </script>

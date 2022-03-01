@@ -117,7 +117,11 @@ export class ArweaveAccount implements Account {
 		const received = arweaveQuery({ recipients: [this.key] })
 		const sent = arweaveQuery({ owners: [this.key] })
 		const all = queryAggregator([received, sent])
-		this.queries = { all, received, sent }
+		this.queries = [
+			{ query: all, name: 'All', color: 'var(--orange)' }, // todo name and color in metadata object
+			{ query: received, name: 'Received', color: 'var(--green)' },
+			{ query: sent, name: 'Sent', color: 'var(--red)' },
+		]
 	}
 	destructor () { this.#balance.stop() }
 }
@@ -349,7 +353,7 @@ export function arweaveQuery (options: Parameters<ReturnType<typeof graphql>['ge
 		seconds: refresh,
 		existingState: data,
 		processResult: () => {},
-		completed: () => options?.block?.max
+		completed: () => options?.block?.max || options?.bundledIn
 	})
 	
 	return { state: updateQuery.state, fetchQuery, updateQuery, status }

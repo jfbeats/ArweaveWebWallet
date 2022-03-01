@@ -135,6 +135,7 @@ const tagsSchema = computed(() => {
 	return result
 })
 watch(() => props.txId, async () => {
+	if (tx.value?.block) { return }
 	const id = tx.value?.bundledIn?.id || props.txId
 	if (!id) { return }
 	arweave.transactions.getStatus(id).then(s => status.value = s.status).catch(() => status.value = 'Not Found')

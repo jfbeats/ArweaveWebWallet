@@ -13,9 +13,11 @@
 
 
 <script setup lang="ts">
-import ArweaveStore, { arweave } from '@/store/ArweaveStore'
+import ArweaveStore, { arweave, arweaveQuery } from '@/store/ArweaveStore'
 import Img from '@/components/handlers/Img.vue'
 import Button from '@/components/atomic/Button.vue'
+import List from '@/components/layout/List.vue'
+import TxCard from '@/components/composed/TxCard.vue'
 import { computed, markRaw, reactive, watch } from 'vue'
 import { unpackTags } from '@/functions/Transactions'
 import IconDownload from '@/assets/icons/download.svg?component'
@@ -42,7 +44,14 @@ const load = async () => {
 	if (!props.tx) { return }
 	if (props.tx.data?.size === '0') { return }
 	const tags = unpackTags(props.tx.tags)
-	if (tags['Bundle-Version']) { return }
+	if (tags['Bundle-Version']) {
+		data.loaded = true
+		return data.handler = {
+			is: markRaw(List),
+			attrs: { query: arweaveQuery({ bundledIn: props.tx.id }), component: markRaw(TxCard), componentProps: { options: { space: true } } },
+			containerAttrs: { class: ['data-container'] }
+		}
+	}
 	if (props.tx.data?.type === 'application/x.arweave-manifest+json' || props.tx.data?.type === 'text/html' || props.tx.data?.type === 'application/pdf') { return data.handler = { is: 'iframe', attrs: { src: gatewayLink.value, class: ['hover'] }, containerAttrs: { class: ['iframe-container'] } } }
 	if (props.tx.data?.type?.split('/')[0] === 'video') { return data.handler = { is: 'iframe', attrs: { src: gatewayLink.value }, containerAttrs: { class: ['iframe-container'] } } }
 	if (props.tx.data?.size > 104857600 && !data.intent) { return data.handler = 'intent' }
