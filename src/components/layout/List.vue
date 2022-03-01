@@ -3,7 +3,10 @@
 		<transition-group name="fade-list-rise">
 			<component v-for="tx in txs" :tx="tx.node" :key="tx.node.id" :is="component" v-bind="componentProps" class="fade-list-item" :class="[card && 'card']" />
 		</transition-group>
-		<div v-if="!completedQuery" class="loader-container">
+		<div v-if="txs && !txs.length && completedQuery" class="loader-container">
+			<Icon :icon="IconNoResult" />
+		</div>
+		<div v-else-if="!completedQuery" class="loader-container">
 			<Icon icon="loader" />
 		</div>
 		<Observer observe="intersection" @intersection="val => val.isIntersecting && fetchQuery()" class="bottom" v-show="!fetchLoading && !completedQuery" />
@@ -16,6 +19,8 @@
 import Observer from '@/components/function/Observer.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import { computed } from 'vue'
+
+import IconNoResult from '@/assets/icons/no_result.svg?component'
 
 const props = defineProps<{
 	query: any
