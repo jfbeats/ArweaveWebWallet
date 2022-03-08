@@ -1,81 +1,83 @@
 <template>
-	<div v-if="!tx" style="position: relative; width: 100%; min-height: var(--current-vh); color: var(--element-secondary);">
-		<OverlayPrompt :options="{ icon: 'loader' }" class="box">
-			<h2 v-if="queryStatus.error">{{ queryStatus.error }}</h2>
-			<h2 v-else>Loading</h2>
-		</OverlayPrompt>
-	</div>
-	<FoldingLayout v-else>
-		<template #left>
-			<div class="meta flex-column">
-				<div class="box" style="padding: 0;">
-					<div class="box-padding flex-column" :style="[tagsSchema.length && 'padding-bottom: 0']">
-						<TxCard :tx="tx" :options="{ half: true }" />
-						
-						<ProfilePreview v-if="tx.recipient" :wallet="recipient" />
-						
-						<div v-if="tx.recipient" class="spacer" />
-						<div v-if="tx.recipient" class="divider" />
-						
-						<ProfilePreview :wallet="sender" />
-						
-						<div>
-							<h3>Transaction</h3>
-							<div class="flex-column">
-								<div>
-									<div v-if="isData"><a :href="ArweaveStore.gatewayURL + tx.id" target="_blank">{{ ArweaveStore.gatewayURLObject?.hostname }}</a></div>
-									<div v-if="tx.data?.type === 'application/x.arweave-manifest+json'"><a :href="ArweaveStore.gatewayURL + 'tx/' + tx.id + '/data.json'" target="_blank">Manifest</a></div>
+	<TransitionsManager :vector="vector" axis="x">
+		<div v-if="!tx" style="position: relative; width: 100%; min-height: var(--current-vh); color: var(--element-secondary);">
+			<OverlayPrompt :options="{ icon: 'loader' }" class="box">
+				<h2 v-if="queryStatus.error">{{ queryStatus.error }}</h2>
+				<h2 v-else>Loading</h2>
+			</OverlayPrompt>
+		</div>
+		<FoldingLayout v-else :key="txId">
+			<template #left>
+				<div class="meta flex-column">
+					<div class="box" style="padding: 0;">
+						<div class="box-padding flex-column" :style="[tagsSchema.length && 'padding-bottom: 0']">
+							<TxCard :tx="tx" :options="{ half: true }" />
+							
+							<ProfilePreview v-if="tx.recipient" :wallet="recipient" />
+							
+							<div v-if="tx.recipient" class="spacer" />
+							<div v-if="tx.recipient" class="divider" />
+							
+							<ProfilePreview :wallet="sender" />
+							
+							<div>
+								<h3>Transaction</h3>
+								<div class="flex-column">
+									<div>
+										<div v-if="isData"><a :href="ArweaveStore.gatewayURL + tx.id" target="_blank">{{ ArweaveStore.gatewayURLObject?.hostname }}</a></div>
+										<div v-if="tx.data?.type === 'application/x.arweave-manifest+json'"><a :href="ArweaveStore.gatewayURL + 'tx/' + tx.id + '/data.json'" target="_blank">Manifest</a></div>
+									</div>
+									<div class="secondary-text"><Address :address="tx.id">ID:&nbsp;</Address></div>
 								</div>
-								<div class="secondary-text"><Address :address="tx.id">ID:&nbsp;</Address></div>
 							</div>
-						</div>
-						
-						<div v-if="tx.bundledIn?.id">
-							<h3>Bundle</h3>
-							<div class="flex-column">
-								<TxCard v-if="bundleTx" :tx="bundleTx" :options="{ space: true }" />
-								<div class="secondary-text"><Address :address="tx.bundledIn?.id">ID:&nbsp;</Address></div>
+							
+							<div v-if="tx.bundledIn?.id">
+								<h3>Bundle</h3>
+								<div class="flex-column">
+									<TxCard v-if="bundleTx" :tx="bundleTx" :options="{ space: true }" />
+									<div class="secondary-text"><Address :address="tx.bundledIn?.id">ID:&nbsp;</Address></div>
+								</div>
 							</div>
-						</div>
-						
-						<div v-if="isPending">
-							<h3>Pending</h3>
-							<div v-if="status">Status: {{ status }}</div>
-						</div>
-						<div v-else>
-							<h3>Block</h3>
+							
+							<div v-if="isPending">
+								<h3>Pending</h3>
+								<div v-if="status">Status: {{ status }}</div>
+							</div>
+							<div v-else>
+								<h3>Block</h3>
+								<div>
+									Height: {{ tx.block.height }}
+									<span class="secondary-text" v-if="networkInfo?.height">/ {{ networkInfo.height }} ({{ confirmations }} confirmation{{ confirmations > 1 ? 's' : ''}})</span>
+								</div>
+								<div>{{ date }}</div>
+								<div class="spacer" />
+								<div class="secondary-text"><Address :address="tx.block.id">ID:&nbsp;</Address></div>
+							</div>
+		
 							<div>
-								Height: {{ tx.block.height }}
-								<span class="secondary-text" v-if="networkInfo?.height">/ {{ networkInfo.height }} ({{ confirmations }} confirmation{{ confirmations > 1 ? 's' : ''}})</span>
+								<h3>Data</h3>
+								<div>Size: {{ humanFileSize(tx.data.size) }}</div>
+								<div>
+									Fee:
+									<Amount :ar="tx.fee.ar" />
+								</div>
 							</div>
-							<div>{{ date }}</div>
-							<div class="spacer" />
-							<div class="secondary-text"><Address :address="tx.block.id">ID:&nbsp;</Address></div>
-						</div>
-	
-						<div>
-							<h3>Data</h3>
-							<div>Size: {{ humanFileSize(tx.data.size) }}</div>
-							<div>
-								Fee:
-								<Amount :ar="tx.fee.ar" />
+							<div v-if="tagsSchema.length">
+								<h3>Tags</h3>
 							</div>
 						</div>
-						<div v-if="tagsSchema.length">
-							<h3>Tags</h3>
+						<div v-if="tagsSchema.length" style="background: var(--background2); border-radius: var(--border-radius);">
+							<InputGrid :schema="tagsSchema" disabled />
 						</div>
-					</div>
-					<div v-if="tagsSchema.length" style="background: var(--background2); border-radius: var(--border-radius);">
-						<InputGrid :schema="tagsSchema" disabled />
 					</div>
 				</div>
-			</div>
-		</template>
-
-		<template #right v-if="tx && isData">
-			<Selector :tx="tx" :class="{ inline: !verticalContent }" />
-		</template>
-	</FoldingLayout>
+			</template>
+	
+			<template #right v-if="tx && isData">
+				<Selector :tx="tx" :class="{ inline: !verticalContent }" />
+			</template>
+		</FoldingLayout>
+	</TransitionsManager>
 </template>
 
 
@@ -84,7 +86,6 @@
 import Selector from '@/components/handlers/Selector.vue'
 import FoldingLayout from '@/components/layout/FoldingLayout.vue'
 import Address from '@/components/atomic/Address.vue'
-import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import InputGrid from '@/components/atomic/InputGrid.vue'
 import Amount from '@/components/composed/Amount.vue'
 import ArweaveStore, { arweave, useWatchTx, networkInfo } from '@/store/ArweaveStore'
@@ -92,10 +93,10 @@ import InterfaceStore from '@/store/InterfaceStore'
 import { humanFileSize } from '@/functions/Utils'
 import { watch, computed, ref, toRef } from 'vue'
 import TxCard from '@/components/composed/TxCard.vue'
-import WalletInfo from '@/components/composed/WalletInfo.vue'
 import { getAccountByAddress } from '@/functions/Wallets'
 import ProfilePreview from '@/components/composed/ProfilePreview.vue'
 import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
+import TransitionsManager from '@/components/visual/TransitionsManager.vue'
 
 const props = defineProps<{
 	txId: string
@@ -106,12 +107,13 @@ const tx = handler.state
 const queryStatus = handler.queryStatus
 
 const bundleId = computed(() => tx.value?.bundledIn?.id)
-const bundleTx = useWatchTx(bundleId).state
+const bundleHandler = useWatchTx(bundleId)
+const bundleTx = bundleHandler.state
 
 const sender = computed(() => tx.value?.owner && getAccountByAddress(tx.value?.owner.address))
 const recipient = computed(() => tx.value?.recipient && getAccountByAddress(tx.value?.recipient))
 
-const isData = computed(() => tx.value?.data?.size != 0)
+const isData = computed(() => tx.value?.data?.size !== '0')
 const isPending = computed(() => !tx.value?.block)
 const date = computed(() => {
 	if (!tx.value?.block) { return '' }
@@ -120,7 +122,7 @@ const date = computed(() => {
 		+ ' ' + dateObj.toLocaleTimeString()
 })
 const status = ref(null as any)
-const confirmations = computed(() => networkInfo.value?.height - tx.value?.block?.height + 1)
+const confirmations = computed(() => networkInfo.value?.height && tx.value?.block?.height && (networkInfo.value?.height - tx.value?.block?.height + 1))
 const tagsSchema = computed(() => {
 	if (!tx.value?.tags) { return }
 	const result = []
@@ -141,6 +143,12 @@ watch(() => props.txId, async () => {
 	arweave.transactions.getStatus(id).then(s => status.value = s.status).catch(() => status.value = 'Not Found')
 }, { immediate: true })
 const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
+const vector = ref(0)
+watch(tx, (val, oldVal) => {
+	if (!oldVal) return
+	if (oldVal?.bundledIn?.id === props.txId) return vector.value = -1
+	vector.value = 1
+})
 </script>
 
 

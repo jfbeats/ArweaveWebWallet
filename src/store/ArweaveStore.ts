@@ -5,15 +5,16 @@ import LogoArweave from '@/assets/logos/arweave.svg?component'
 import { download } from '@/functions/Utils'
 import { getDecryptionKey, getSigningKey } from '@/functions/Crypto'
 import { exportTransaction, manageUpload } from '@/functions/Transactions'
-import { awaitEffect, getAsyncData, getQueryManager } from '@/functions/AsyncData'
+import { awaitEffect, getAsyncData, getReactiveAsyncData, getQueryManager } from '@/functions/AsyncData'
 import { ArweaveProviderInterface, ArweaveVerifier as ArweaveMessageVerifier } from 'arweave-wallet-connector/lib/ArweaveWebWallet'
-import { reactive, ref, Ref, toRef, watch } from 'vue'
+import { computed, isRef, reactive, ref, Ref, watch } from 'vue'
+import axios from 'axios'
 import type { WalletProxy } from '@/functions/Wallets'
 import type { TransactionEdge as GQLTransactionEdge, BlockEdge as GQLBlockEdge } from 'arweave-graphql'
 import type { ApiConfig } from 'arweave/web/lib/api'
 import type { TransactionInterface } from 'arweave/web/lib/transaction'
 import type { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
-import axios from 'axios'
+
 
 
 const ArweaveStore = reactive({
@@ -65,25 +66,13 @@ export function updateArweave (gateway: string | URL | ApiConfig) {
 	ArweaveStore.gatewayURLObject = new URL(ArweaveStore.gatewayURL)
 }
 
-export function useWatchTx (txId: Ref<string>) {
-	const getTxById = (txId: string) => getAsyncData({
-		existingState: toRef(ArweaveStore.txs, txId),
-		query: async () => (await graphql().getTransactions({ ids: [txId] })).transactions.edges[0]?.node,
-		completed: () => ArweaveStore.txs[txId]?.block,
-		processResult: res => ArweaveStore.txs[txId] = res,
+export function useWatchTx (txId: Ref<string | undefined>) {
+	return getReactiveAsyncData({
+		params: txId,
+		query: async (txId) => (await graphql().getTransactions({ ids: [txId] })).transactions.edges[0]?.node,
+		completed: (state: any) => state?.block,
 		seconds: 10,
 	})
-	const data = reactive({}) as Partial<ReturnType<typeof getTxById>>
-	let destructor: () => any | undefined
-	watch(txId, id => {
-		destructor?.()
-		if (!id) { return }
-		const handler = getTxById(id)
-		data.state = handler.state
-		data.queryStatus = handler.queryStatus
-		destructor = handler.stop
-	}, { immediate: true })
-	return { state: toRef(data, 'state'), queryStatus: toRef(data, 'queryStatus') }
 }
 
 export async function fetchPublicKey (address: string) {
@@ -114,8 +103,8 @@ export class ArweaveAccount implements Account {
 	queries
 	
 	constructor (private init: string | WalletProxy) {
-		const received = arweaveQuery({ recipients: [this.key] })
-		const sent = arweaveQuery({ owners: [this.key] })
+		const received = arweaveQuery(computed(() => (this.key ? { recipients: [this.key] } : undefined)))
+		const sent = arweaveQuery(computed(() => (this.key ? { owners: [this.key] } : undefined )))
 		const all = queryAggregator([received, sent])
 		this.queries = [
 			{ query: all, name: 'All', color: 'var(--orange)' }, // todo name and color in metadata object
@@ -178,10 +167,11 @@ export class ArweaveProvider extends ArweaveAccount implements Provider {
 			value: tag.get('value', { decode: true, string: true })
 		}))
 		const signer = new signers.ArweaveSigner(await this.#wallet.getPrivateKey!())
-		const bundleTx = createData(data, signer, { tags })
+		const anchor = arweave.utils.bufferTob64(crypto.getRandomValues(new Uint8Array(32))).slice(0, 32)
+		const bundleTx = createData(data, signer, { tags, anchor })
 		await bundleTx.sign(signer)
 		const res = await axios.post('https://node2.bundlr.network/tx', bundleTx.getRaw(), {
-			headers: { "Content-Type": "application/octet-stream", "Transfer-Encoding": "chunked" },
+			headers: { "Content-Type": "application/octet-stream" },
 			maxBodyLength: Infinity,
 		})
 		console.log(res, bundleTx)
@@ -286,25 +276,36 @@ export const graphql = () => arweaveGraphql((ArweaveStore.gatewayURL || 'https:/
 
 
 
-export function arweaveQuery (options: Parameters<ReturnType<typeof graphql>['getTransactions']>[0]) { // rename to arweaveTransactions
-	const status = reactive({ completed: false }) // --updateCompleted-- true if block range is settled
+type arweaveQueryOptions = Parameters<ReturnType<typeof graphql>['getTransactions']>[0] | Ref<Parameters<ReturnType<typeof graphql>['getTransactions']>[0]>
+
+export function arweaveQuery (options: arweaveQueryOptions) { // todo rename to arweaveTransactions
+	const optionsRef = isRef(options) ? options : ref(options)
+	const status = reactive({ completed: false, reset: 0 })
 	const data = ref([] as GQLTransactionEdge[])
 	const refresh = 10
 	const refreshEnabled = ref(false)
-
+	const refreshSwitch = ref(true) // todo
+	
+	watch(optionsRef, () => {
+		status.completed = false
+		data.value = []
+		refreshEnabled.value = false
+		status.reset++
+	}, { deep: true })
+	
 	const fetchQuery = getQueryManager({
 		query: async () => {
-			if (status.completed) { return data.value }
+			if (optionsRef.value == null || status.completed) { return data.value }
 			let fulfilled = false
 			let results: any
 			try {
 				const firstFetch = !data.value.length
 				for (let i = 0; !fulfilled; i++) {
 					if (i === 0 && firstFetch) {
-						results = await graphql().getTransactions(options)
+						results = await graphql().getTransactions(optionsRef.value)
 					} else {
 						const cursor = data.value[data.value.length - 1].cursor
-						results = await graphql().getTransactions({ ...options, after: cursor })
+						results = await graphql().getTransactions({ ...optionsRef.value, after: cursor })
 					}
 					if (!results.transactions.pageInfo.hasNextPage) { status.completed = true; fulfilled = true }
 					results = results.transactions.edges
@@ -314,7 +315,8 @@ export function arweaveQuery (options: Parameters<ReturnType<typeof graphql>['ge
 				}
 				if (firstFetch) { setTimeout(() => refreshEnabled.value = true, refresh * 1000) }
 			}
-			catch (e) { console.error(e); await new Promise<void>(res => setTimeout(() => res(), 10000)) }
+			catch (e) { console.error(e); await new Promise<void>(res => setTimeout(() => res(), 10000)); throw e }
+			return results
 		},
 	})
 	
@@ -325,11 +327,11 @@ export function arweaveQuery (options: Parameters<ReturnType<typeof graphql>['ge
 			let fulfilled = false
 			let results: any
 			for (let i = 0; !fulfilled; i++) {
-				if (i === 0) { results = await graphql().getTransactions(options) }
+				if (i === 0) { results = await graphql().getTransactions(optionsRef.value) }
 				else {
 					if (!results) { return }
 					const cursor = results[results.length - 1].cursor
-					results = await graphql().getTransactions({ ...options, after: cursor })
+					results = await graphql().getTransactions({ ...optionsRef.value, after: cursor })
 				}
 				if (!results.transactions.pageInfo.hasNextPage) { status.completed = true; fulfilled = true }
 				results = results.transactions.edges
@@ -353,15 +355,17 @@ export function arweaveQuery (options: Parameters<ReturnType<typeof graphql>['ge
 		seconds: refresh,
 		existingState: data,
 		processResult: () => {},
-		completed: () => options?.block?.max || options?.bundledIn
+		completed: () => optionsRef.value?.block?.max || optionsRef.value?.bundledIn || !refreshSwitch.value
 	})
 	
-	return { state: updateQuery.state, fetchQuery, updateQuery, status }
+	const setRefresh = (b: any) => refreshSwitch.value = !!b
+	
+	return { state: updateQuery.state, fetchQuery, updateQuery, status, setRefresh }
 }
 
 
 
-export function arweaveQueryBlocks (options: Parameters<ReturnType<typeof graphql>['getBlocks']>[0]) { // rename to arweaveBlocks
+export function arweaveQueryBlocks (options: Parameters<ReturnType<typeof graphql>['getBlocks']>[0]) { // todo rename to arweaveBlocks and make reactive
 	const status = reactive({ completed: false })
 	const data = ref([] as GQLBlockEdge[])
 	const refresh = 10
@@ -402,24 +406,32 @@ export function arweaveQueryBlocks (options: Parameters<ReturnType<typeof graphq
 
 
 export function queryAggregator (queries: ReturnType<typeof arweaveQuery>[]) {
-	const status = reactive({ completed: false })
+	const status = reactive({ completed: false, reset: 0 })
 	const data = ref([] as { node: any, cursor: string }[])
 	const refresh = 10
 	
-	const initial = [] as any[]
-	const lastAdded = [] as any[]
+	let initial = [] as any[]
+	let lastAdded = [] as any[]
 	
-	queries.map(query => watch(() => query.updateQuery.stateRef.value, state => {
-		if (!state) { return }
-		const queryIndex = queries.indexOf(query)
-		const index = state.indexOf(initial[queryIndex])
-		const newResults = [] as any[]
-		for (let i = index - 1; i >= 0; i--) { if (data.value.indexOf(state[i]) < 0) { newResults.push(state[i]) } }
-		if (newResults.length) { data.value.splice(0, 0, ...newResults) }
-		data.value.sort(blockSort)
-	}, { deep: true, flush: 'sync' }))
+	queries.map(query => {
+		watch(() => query.updateQuery.stateRef.value, state => {
+			if (!state) { return }
+			const queryIndex = queries.indexOf(query)
+			const index = state.indexOf(initial[queryIndex])
+			const newResults = [] as any[]
+			for (let i = index - 1; i >= 0; i--) { if (data.value.indexOf(state[i]) < 0) { newResults.push(state[i]) } }
+			if (newResults.length) { data.value.splice(0, 0, ...newResults) }
+			data.value.sort(blockSort)
+		}, { deep: true, flush: 'sync' })
+		watch(() => query.status.reset, () => {
+			data.value = []
+			initial = []
+			lastAdded = []
+			status.reset++
+		})
+	})
 	
-	const fetchQuery = getQueryManager({ // todo does not recover from error
+	const fetchQuery = getQueryManager({
 		query: async () => {
 			let fulfilled = false
 			for (let i = 0; !fulfilled; i++) {
@@ -449,6 +461,7 @@ export function queryAggregator (queries: ReturnType<typeof arweaveQuery>[]) {
 				const queryIndex = row.indexOf(nextEl)
 				queryControls[queryIndex].step()
 			}
+			return 'aggregated query fetch completed'
 		},
 	})
 	
@@ -504,14 +517,6 @@ export function queryAggregator (queries: ReturnType<typeof arweaveQuery>[]) {
 // 		}
 // 	}
 // }
-
-function processUpdatedTxs () {
-	// TODO
-	// take tx array from update function that were not already known
-	// check if wallets with cached balance are involved
-}
-
-
 
 
 

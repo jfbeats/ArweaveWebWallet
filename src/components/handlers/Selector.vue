@@ -48,8 +48,8 @@ const load = async () => {
 		data.loaded = true
 		return data.handler = {
 			is: markRaw(List),
-			attrs: { query: arweaveQuery({ bundledIn: props.tx.id }), component: markRaw(TxCard), componentProps: { options: { space: true } } },
-			containerAttrs: { class: ['data-container'] }
+			attrs: { query: arweaveQuery({ bundledIn: props.tx.id }), component: markRaw(TxCard), componentProps: { options: { space: true } }, class: ['column'] },
+			containerAttrs: { class: ['data-container', 'column-container'] }
 		}
 	}
 	if (tags['Content-Type'] === 'application/x.arweave-manifest+json' || tags['Content-Type'] === 'text/html' || tags['Content-Type'] === 'application/pdf') { return data.handler = { is: 'iframe', attrs: { src: gatewayLink.value, class: ['hover'] }, containerAttrs: { class: ['iframe-container'] } } }
@@ -128,5 +128,15 @@ iframe.hover:hover {
 	padding: var(--spacing);
 	margin: 0;
 	white-space: pre-wrap;
+}
+
+.column-container {
+	display: flex;
+	justify-content: center;
+}
+
+.column {
+	max-width: var(--column-large-width);
+	flex: 1 1 0;
 }
 </style>

@@ -73,7 +73,7 @@ const dataType = computed(() => {
 	if (tags.value['content-type'] === 'application/x.arweave-manifest+json') { return 'Manifest' }
 	return tags.value['content-type']?.split('/').join(' ')
 })
-const dataInfo = computed(() => tags.value['service'] || tags.value['app-name'] || tags.value['application'] || tags.value['arweave-app'] || tags.value['uploading-app'] || tags.value['app'] || tags.value['user-agent']?.split('/')[0] || tags.value['file-name'])
+const dataInfo = computed(() => tags.value['service'] || tags.value['app-name'] || tags.value['application'] || tags.value['arweave-app'] || tags.value['uploading-app'] || tags.value['app'] || tags.value['user-agent']?.split('/').join(' ') || tags.value['file-name'])
 const context = computed(() => {
 	const fallback = isValue.value && isData.value ? 'Payment | Data' : isValue.value ? 'Payment' : isData.value ? 'Data' : props.tx.tags?.length ? 'Tags' : 'Empty'
 	const dataTypeUsed = !isValue.value && isData.value

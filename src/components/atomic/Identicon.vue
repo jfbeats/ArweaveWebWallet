@@ -8,24 +8,24 @@
 
 
 
-<script setup>
+<script setup lang="ts">
 // Vue component made from https://github.com/stewartlord/identicon.js/
 // from a SHA-256 hash of the arweave address
 import { addressHashToColor, addressToHash } from '@/functions/Utils'
 import { computed, ref, watch } from 'vue'
 
-const props = defineProps(['address'])
+const props = defineProps<{ address: string }>()
 
 const size = 5
 const cell = size / 5
 const stroke = size * 0.04
-const addressHash = ref(null)
+const addressHash = ref(undefined as undefined | string)
 watch(() => props.address, async (val) => addressHash.value = await addressToHash(val), { immediate: true })
 const style = computed(() => ({
 	color: `rgb(${addressHashToColor(addressHash.value).join(',')})`,
 }))
 const rects = computed(() => {
-	const result = []
+	const result = [] as any[]
 	if (!addressHash.value) { return result }
 	for (let i = 0; i < 15; i++) {
 		if (parseInt(addressHash.value.charAt(i), 16) % 2) { continue }

@@ -1,6 +1,6 @@
 <template>
 	<nav class="toolbar" id="nav">
-		<SlickList class="wallets" :axis="axis" :lockAxis="axis" v-model:list="Wallets" :pressDelay="150" helperClass="dragging" dir="ltr">
+		<SlickList class="wallets" :axis="axis" :lockAxis="axis" v-model:list="Wallets" :pressDelay="150" helperClass="dragging" dir="ltr" @sort-start="haptic">
 			<SlickItem v-for="(wallet, i) in Wallets" :index="i" :key="wallet.key" draggable="false" class="drag-container">
 				<router-link :to="{ name: navTo, params: { walletId: wallet.id }, query: { ...$route.query } }" custom v-slot="{ href, navigate }">
 					<button type="button" class="icon wallet" :href="href" @click="select(wallet, navigate)" :class="{ active: wallet.id == selected && links, accent: !links, verticalLayout }" draggable="false" @dragstart.prevent>
@@ -37,7 +37,6 @@
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import DragOverlay from '@/components/atomic/DragOverlay.vue'
 import { SlickList, SlickItem } from 'vue-slicksort'
-import ArweaveStore from '@/store/ArweaveStore'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import { connectors } from '@/functions/Connect'
 import { Wallets } from '@/functions/Wallets'
@@ -57,11 +56,11 @@ const select = (wallet, navigate) => {
 }
 const selected = computed(() => {
 	if (links.value) { return route.params.walletId }
-	return ArweaveStore.currentWallet?.id
 })
 const verticalLayout = toRef(InterfaceStore.breakpoints, 'verticalLayout')
 const axis = computed(() => verticalLayout.value ? 'x' : 'y')
 const links = toRef(InterfaceStore.toolbar, 'links')
+const haptic = () => navigator.vibrate?.(10)
 </script>
 
 

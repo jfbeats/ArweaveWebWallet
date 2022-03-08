@@ -18,15 +18,15 @@ export function humanFileSize (size: string | number) {
 	return +(+size / Math.pow(1024, i)).toFixed(2) + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i]
 }
 
-export async function addressToHash (address: string) {
-	if (!address) { return null }
+export async function addressToHash (address?: string) {
+	if (!address) { return }
 	const hashBuffer = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(address))
 	const hashArray = Array.from(new Uint8Array(hashBuffer))
 	const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 	return hashHex
 }
 
-export function addressHashToColor (addressHash: string) {
+export function addressHashToColor (addressHash?: string) {
 	if (!addressHash) { return [0, 0, 0] }
 	const colors = hsl2rgb(parseInt(addressHash.substr(-7), 16) / 0xfffffff, 0.25, 0.6)
 	return colors.map(Math.round)
