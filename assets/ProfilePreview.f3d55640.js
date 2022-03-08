@@ -1,0 +1,2 @@
+import{_ as a,k as l,W as t}from"./index.56a13940.js";import{l as o,o as r,c as n,a as c,s}from"./vendor.eb613411.js";const _={class:"profile-preview flex-column row",style:{"align-items":"center"}},d={class:"address-icon-margin"},i=o({props:{wallet:null},setup(e){return(p,f)=>(r(),n("div",_,[c("div",d,[s(l,{address:e.wallet.key},null,8,["address"])]),s(t,{wallet:e.wallet},null,8,["wallet"])]))}});var v=a(i,[["__scopeId","data-v-f770342a"]]);export{v as P};
+//# sourceMappingURL=ProfilePreview.f3d55640.js.map
