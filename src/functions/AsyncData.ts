@@ -41,8 +41,9 @@ type QueryStatusInterface<T> = {
 export function getReactiveAsyncData <T, P> (options: ReactiveQueryOptions<T, P>) {
 	const { query, params, ...newOptions } = options
 	const state = ref<T | undefined>()
-	watch(params, () => {
-		if (params.value == null) { return }
+	watch(params, (val, oldVal) => {
+		if (val == null) { return }
+		if (JSON.stringify(val) === JSON.stringify(oldVal)) { return }
 		state.value = undefined
 	}, { immediate: true, deep: true })
 	const asyncDataOptions: AsyncDataOptions<T> = {
@@ -73,7 +74,6 @@ export function getAsyncData <T> (options: AsyncDataOptions<T>) {
 				options.processResult ? options.processResult(res, options) : state.value = res
 				resolve(state.value!)
 			}).catch(e => {
-				queryStatus.error = e
 				cooldown = Math.max(0, 20000 - (Date.now() - initTimestamp))
 				setTimeout(() => { cooldown = 0; timestamp.value = rollback; reject(e) }, cooldown)
 			})
@@ -97,13 +97,13 @@ export function getAsyncData <T> (options: AsyncDataOptions<T>) {
 export function getQueryManager <T> (options: QueryManagerOptions<T>) {
 	const queryStatus: QueryStatusInterface<T> = reactive({ running: false })
 	const query = () => {
-		// todo clear queryStatus.error on change
 		if (queryStatus.running && queryStatus.promise) { return queryStatus.promise }
 		queryStatus.running = true
+		queryStatus.error = undefined
 		queryStatus.promise = new Promise<T>(async (resolve, reject) => {
 			if (options.awaitEffect) { await awaitEffect(() => options.awaitEffect?.()) }
 			const query = options.query()
-			query.then(resolve).catch(reject).finally(() => queryStatus.running = false)
+			query.then(resolve).catch(e => { queryStatus.error = e; reject(e) }).finally(() => queryStatus.running = false)
 			query.then(res => console.log(new Date(Date.now()).toLocaleTimeString() + '\n', { options, res }))
 		})
 		return queryStatus.promise

@@ -41,7 +41,7 @@
 							
 							<div v-if="isPending">
 								<h3>Pending</h3>
-								<div v-if="status">Status: {{ status }}</div>
+								<div>Status: {{ status ? status : '...' }}</div>
 							</div>
 							<div v-else>
 								<h3>Block</h3>
@@ -97,6 +97,7 @@ import { getAccountByAddress } from '@/functions/Wallets'
 import ProfilePreview from '@/components/composed/ProfilePreview.vue'
 import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
 import TransitionsManager from '@/components/visual/TransitionsManager.vue'
+import { getReactiveAsyncData } from '@/functions/AsyncData'
 
 const props = defineProps<{
 	txId: string
@@ -110,6 +111,14 @@ const bundleId = computed(() => tx.value?.bundledIn?.id)
 const bundleHandler = useWatchTx(bundleId)
 const bundleTx = bundleHandler.state
 
+const statusId = computed(() => tx.value?.bundledIn?.id || props.txId)
+const status = getReactiveAsyncData({
+	params: statusId,
+	query: async param => (await arweave.transactions.getStatus(param)).status,
+	completed: (state: any) => !statusId.value || tx.value?.block || state && state !== 404,
+	seconds: 30,
+}).state
+
 const sender = computed(() => tx.value?.owner && getAccountByAddress(tx.value?.owner.address))
 const recipient = computed(() => tx.value?.recipient && getAccountByAddress(tx.value?.recipient))
 
@@ -121,7 +130,6 @@ const date = computed(() => {
 	return dateObj.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
 		+ ' ' + dateObj.toLocaleTimeString()
 })
-const status = ref(null as any)
 const confirmations = computed(() => networkInfo.value?.height && tx.value?.block?.height && (networkInfo.value?.height - tx.value?.block?.height + 1))
 const tagsSchema = computed(() => {
 	if (!tx.value?.tags) { return }
@@ -136,12 +144,7 @@ const tagsSchema = computed(() => {
 	}
 	return result
 })
-watch(() => props.txId, async () => {
-	if (tx.value?.block) { return }
-	const id = tx.value?.bundledIn?.id || props.txId
-	if (!id) { return }
-	arweave.transactions.getStatus(id).then(s => status.value = s.status).catch(() => status.value = 'Not Found')
-}, { immediate: true })
+
 const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
 const vector = ref(0)
 watch(tx, (val, oldVal) => {
