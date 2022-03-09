@@ -19,8 +19,8 @@ export const connectors = computed(() => {
 
 
 
-
-if (document.location.pathname.split('/').filter(el => el)[0] === 'extension') {
+if (sessionStorage.getItem('type') === 'extension' || document.location.pathname.split('/').filter(el => el)[0] === 'extension') {
+	sessionStorage.setItem('type', 'extension')
 	state.type = 'extension'
 	windowRef = window.parent
 } else if (window.opener) {
@@ -86,6 +86,10 @@ async function initConnector () {
 function postMessage (message: any) {
 	if (!origin) { return }
 	windowRef.postMessage({ ...message, jsonrpc: '2.0' }, origin)
+}
+
+export function connectRequest () {
+	windowRef.postMessage('arweave-wallet-connector:connect', '*')
 }
 
 export function navigateBack () {

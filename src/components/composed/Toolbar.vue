@@ -25,6 +25,9 @@
 				<router-link class="icon control" :class="{ verticalLayout }" to="/settings" aria-label="Settings">
 					<IconSettings class="small" alt="Settings" />
 				</router-link>
+				<div v-if="state.type === 'extension'" class="icon control" :class="{ verticalLayout }" @click="connectRequest">
+					<IconPlug class="small" alt="plug" />
+				</div>
 			</div>
 		</transition>
 		<DragOverlay />
@@ -38,7 +41,7 @@ import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import DragOverlay from '@/components/atomic/DragOverlay.vue'
 import { SlickList, SlickItem } from 'vue-slicksort'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
-import { connectors } from '@/functions/Connect'
+import { connectors, connectRequest, state } from '@/functions/Connect'
 import { Wallets } from '@/functions/Wallets'
 import { computed, toRef } from 'vue'
 import { useRoute } from 'vue-router'
@@ -47,6 +50,7 @@ import IconConnection from '@/assets/icons/connection.svg?component'
 import IconAddBox from '@/assets/icons/add_box.svg?component'
 import IconSettings from '@/assets/icons/settings.svg?component'
 import IconSearch from '@/assets/icons/search.svg?component'
+import IconPlug from '@/assets/icons/plug.svg?component'
 
 const route = useRoute()
 const navTo = computed(() => route.matched[0]?.name === 'Wallet' ? null : 'TxList')
@@ -114,6 +118,7 @@ const haptic = () => navigator.vibrate?.(10)
 	width: unset;
 	height: unset;
 	color: inherit;
+	cursor: pointer;
 }
 
 .profile {
