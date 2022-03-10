@@ -1,8 +1,10 @@
 <template>
 	<div class="wallet-selector">
-		<button v-if="model" type="button" @click="$emit('selectWallet')" class="tab" :class="{ active }">
-			<AddressIcon :address="address" />
-		</button>
+		<TransitionsManager>
+			<button v-if="model" type="button" @click="$emit('selectWallet')" class="tab" :class="{ active }">
+				<AddressIcon :address="address" />
+			</button>
+		</TransitionsManager>
 		<button v-if="exit" class="exit" type="button" @click="$emit('exit')">
 			<div class="exit-background" />
 			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -17,14 +19,15 @@
 
 <script setup lang="ts">
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
+import TransitionsManager from '@/components/visual/TransitionsManager.vue'
 import { computed } from 'vue'
 import { getWalletById } from '@/functions/Wallets'
 
-const props = defineProps({ modelValue: String, default: String, exit: Boolean, active: Boolean })
+const props = defineProps({ modelValue: String, exit: Boolean, active: Boolean })
 const emit = defineEmits(['update:modelValue', 'selectWallet', 'exit'])
 
 const model = computed<string | undefined>({
-	get () { return props.modelValue || props.default },
+	get () { return props.modelValue },
 	set (value) { emit('update:modelValue', value) }
 })
 
