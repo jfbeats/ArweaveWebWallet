@@ -215,9 +215,11 @@ export class ArweaveMessageRunner implements MessageRunner, Partial<ArweaveProvi
 			decrypt: 'decrypt',
 		}
 		const providerMethod = map[method as keyof this]
-		if (!providerMethod) { return }
-		const methods = this.#wallet.metadata?.methods
-		return methods?.[providerMethod as keyof typeof methods]
+		if (!providerMethod) { return {} }
+		const methodsMetadata = this.#wallet.metadata?.methods
+		const result = methodsMetadata?.[providerMethod as keyof typeof methodsMetadata]
+		if (!result && this.#wallet[providerMethod as keyof typeof methodsMetadata]) { return {} }
+		return result || { unavailable: true }
 	}
 	async signTransaction (tx: TransactionInterface, options?: object) {
 		const txObject = new Transaction(tx)

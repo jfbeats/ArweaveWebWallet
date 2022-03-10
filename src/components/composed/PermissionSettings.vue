@@ -36,7 +36,10 @@ const displayKeys = {
 } as { [key: string]: string | undefined }
 
 const getInstanceProperties = (wallet?: Provider) => Object.getOwnPropertyNames(Object.getPrototypeOf(wallet?.messageRunner || {}))
-	.filter(prop => !wallet?.messageRunner.getMethodMetadata(prop)?.unavailable && prop !== 'constructor' && prop !== 'getMethodMetadata')
+	.filter(prop => {
+		if (prop === 'constructor' || prop === 'getMethodMetadata' || !wallet) { return }
+		return !wallet.messageRunner.getMethodMetadata(prop)?.unavailable
+	})
 	.map(prop => ({
 		name: prop,
 		displayName: displayKeys[prop] || prop,
