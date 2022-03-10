@@ -8,7 +8,7 @@
 						<span>Block {{ block.node.height }}</span>
 					</h2>
 					<TransitionsManager>
-						<div v-if="blockData" style="text-align: end">
+						<div v-if="blockData" style="text-align: end; flex: 1 1 auto;">
 							<div>{{ blockData.txs?.length }} Transactions | {{ humanFileSize(blockData.block_size) }}</div>
 							<div><Date :timestamp="blockData.timestamp * 1000" /></div>
 						</div>
