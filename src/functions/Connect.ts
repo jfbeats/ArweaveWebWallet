@@ -89,7 +89,7 @@ function postMessage (message: any) {
 }
 
 export function connectRequest () {
-	windowRef.postMessage('arweave-wallet-connector:connect', '*')
+	windowRef.postMessage('arweave-app-extension:connect', '*')
 }
 
 export function navigateBack () {
