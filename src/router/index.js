@@ -125,7 +125,7 @@ const router = createRouter({
 	routes,
 	scrollBehavior: (to, from, savedPosition) => new Promise((resolve) => {
 		// todo https://github.com/vuejs/vue-router/issues/1620
-		if (to.params.walletId === from.params.walletId) { resolve() }
+		if (to.params.walletId && from.params.walletId && to.params.walletId === from.params.walletId) { resolve() }
 		const position = savedPosition || { top: 0 }
 		emitter.once('scrollHistory', () => resolve(position))
 	})
