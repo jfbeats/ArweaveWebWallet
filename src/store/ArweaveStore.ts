@@ -19,7 +19,7 @@ import type { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
 
 const ArweaveStore = reactive({
 	gatewayURL: null as null | string,
-	gatewayURLObject: null as null | URL,
+	bundlerURL: null as null | string,
 	wallets: {} as { [key: string]: ArweaveAccount },
 	txs: {} as { [key: string]: any },
 	uploads: {} as { [key: string]: { upload?: number } },
@@ -35,6 +35,7 @@ export const gatewayDefault = {
 	port: 443,
 	protocol: 'https'
 }
+export const bundlerDefault = 'https://node2.bundlr.network/'
 
 export function urlToSettings (url: string) {
 	if (!url.includes('://')) { url = 'https://' + url }
@@ -63,7 +64,6 @@ export function updateArweave (gateway: string | URL | ApiConfig) {
 	const settings = typeof gateway === 'string' ? urlToSettings(gateway) : gateway
 	arweave = settings ? Arweave.init(settings) : Arweave.init(gatewayDefault)
 	ArweaveStore.gatewayURL = settingsToUrl(arweave.getConfig().api)
-	ArweaveStore.gatewayURLObject = new URL(ArweaveStore.gatewayURL)
 }
 
 export function useWatchTx (txId: Ref<string | undefined>) {
@@ -170,7 +170,7 @@ export class ArweaveProvider extends ArweaveAccount implements Provider {
 		const anchor = arweave.utils.bufferTob64(crypto.getRandomValues(new Uint8Array(32))).slice(0, 32)
 		const bundleTx = createData(data, signer, { tags, anchor })
 		await bundleTx.sign(signer)
-		const res = await axios.post('https://node2.bundlr.network/tx', bundleTx.getRaw(), {
+		const res = await axios.post(ArweaveStore.bundlerURL + 'tx', bundleTx.getRaw(), {
 			headers: { "Content-Type": "application/octet-stream" },
 			maxBodyLength: Infinity,
 		})
@@ -542,6 +542,7 @@ export const currentBlock = currentBlockData.state
 
 function loadGatewaySettings () {
 	updateArweave(localStorage.getItem('gateway') || gatewayDefault)
+	ArweaveStore.bundlerURL = localStorage.getItem('gateway') || bundlerDefault
 }
 
 

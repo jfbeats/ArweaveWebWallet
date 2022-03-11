@@ -24,7 +24,7 @@
 								<h3>Transaction</h3>
 								<div class="flex-column">
 									<div>
-										<div v-if="isData"><a :href="ArweaveStore.gatewayURL + tx.id" target="_blank">{{ ArweaveStore.gatewayURLObject?.hostname }}</a></div>
+										<div v-if="isData"><a :href="ArweaveStore.gatewayURL + tx.id" target="_blank">{{ gatewayHostname }}</a></div>
 										<div v-if="tx.data?.type === 'application/x.arweave-manifest+json'"><a :href="ArweaveStore.gatewayURL + 'tx/' + tx.id + '/data.json'" target="_blank">Manifest</a></div>
 									</div>
 									<div class="secondary-text"><Address :address="tx.id">ID:&nbsp;</Address></div>
@@ -110,6 +110,8 @@ const queryStatus = handler.queryStatus
 const bundleId = computed(() => tx.value?.bundledIn?.id)
 const bundleHandler = useWatchTx(bundleId)
 const bundleTx = bundleHandler.state
+
+const gatewayHostname = computed(() => ArweaveStore.gatewayURL && new URL(ArweaveStore.gatewayURL).hostname)
 
 const statusId = computed(() => tx.value?.bundledIn?.id || props.txId)
 const status = getReactiveAsyncData({

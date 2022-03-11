@@ -13,10 +13,12 @@
 			<div class="group">
 				<p>Gateway</p>
 				<div class="flex-row">
-					<Input v-model="gateway" :actions="[gatewayAction]" :placeholder="ArweaveStore.gatewayURL" :icon="LogoArweave" style="flex:1 1 0;" />
+					<Input v-model="gateway" :actions="[gatewayAction]" :placeholder="ArweaveStore.gatewayURL" :icon="IconDownload" style="flex:1 1 0;" />
 				</div>
-			</div>
-			<div class="group">
+				<p>Bundler</p>
+				<div class="flex-row">
+					<Input v-model="bundler" :actions="[bundlerAction]" :placeholder="ArweaveStore.bundlerURL" :icon="IconUpload" style="flex:1 1 0;" />
+				</div>
 				<p>Currency</p>
 				<Select v-model="currentSetting" :options="redstoneOptions" :icon="currency.symbol" />
 			</div>
@@ -41,7 +43,7 @@ import Select from '@/components/atomic/Select.vue'
 import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import { Wallets } from '@/functions/Wallets'
-import ArweaveStore, { gatewayDefault, updateArweave } from '@/store/ArweaveStore'
+import ArweaveStore, { gatewayDefault, bundlerDefault, updateArweave } from '@/store/ArweaveStore'
 import { currency, redstoneOptions } from '@/store/CurrencyStore'
 import { ref, computed } from 'vue'
 
@@ -49,20 +51,35 @@ import LogoArweave from '@/assets/logos/arweave.svg?component'
 import LogoGithub from '@/assets/logos/socials/github.svg?component'
 import LogoDiscord from '@/assets/logos/socials/discord.svg?component'
 
+import IconDownload from '@/assets/icons/download.svg?component'
+import IconUpload from '@/assets/icons/upload.svg?component'
 import IconY from '@/assets/icons/y.svg?component'
 import IconX from '@/assets/icons/x.svg?component'
 
 const gateway = ref('')
 const setGateway = () => {
 	// TODO test gateway url return if fail
+	// TODO move from ArweaveStore to storage channel
 	gateway.value ? updateArweave(gateway.value) : updateArweave()
 	localStorage.setItem('gateway', gateway.value)
 	gateway.value = ''
 }
-
 const gatewayAction = computed(() => {
 	if (!gateway.value && ArweaveStore.gatewayURL.includes(gatewayDefault.host)) { return }
 	return { run: setGateway, icon: gateway.value ? IconY : IconX }
+})
+
+const bundler = ref('')
+const setBundler = () => {
+	// TODO move from ArweaveStore to storage channel
+	const url = new URL(bundler.value).href
+	ArweaveStore.bundlerURL = url
+	localStorage.setItem('bundler', url)
+	bundler.value = ''
+}
+const bundlerAction = computed(() => {
+	if (!bundler.value && ArweaveStore.bundlerURL.includes(bundlerDefault)) { return }
+	return { run: setBundler, icon: bundler.value ? IconY : IconX }
 })
 
 const currentSetting = computed({

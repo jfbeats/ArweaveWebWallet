@@ -4,7 +4,7 @@
 			<div class="column">
 				<GlobalSearch />
 				<div class="group">
-					<h2><span style="text-transform: capitalize;">{{ ArweaveStore.gatewayURLObject.hostname }}</span> Gateway State</h2>
+					<h2><span style="text-transform: capitalize;">{{ gatewayHostname }}</span> Gateway State</h2>
 					<div class="flex-column">
 						<div>Peers: {{ networkInfo?.peers ?? '...' }}</div>
 						<div>Queue: {{ networkInfo?.queue_length ?? '...' }}</div>
@@ -40,6 +40,9 @@ import { pendingList } from '@/store/BlockStore'
 import Link from '@/components/function/Link.vue'
 import GlobalSearch from '@/components/composed/GlobalSearch.vue'
 import BlockCarousel from '@/components/composed/BlockCarousel.vue'
+import { computed } from 'vue'
+
+const gatewayHostname = computed(() => ArweaveStore.gatewayURL && new URL(ArweaveStore.gatewayURL).hostname)
 </script>
 
 
