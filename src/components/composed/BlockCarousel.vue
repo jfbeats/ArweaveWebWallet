@@ -1,6 +1,6 @@
 <template>
 	<div class="block-carousel">
-		<Carousel v-model="index" :options="{ align: 'center', overscroll: true }" @start="start" @end="end" class="block-carousel">
+		<Carousel v-model="index" :options="{ align: 'center', overscroll: true, immediate: true }" @start="start" @end="end" class="block-carousel">
 			<div v-for="block in state" :key="block.node.id" class="block fade-list-item">
 				<BlockCard :block="block" class="box" />
 			</div>
@@ -22,7 +22,6 @@ const index = ref(undefined as undefined | number)
 const query = arweaveQueryBlocks({})
 const state = computed(() => query.state.value && [...query.state.value].reverse())
 watch(state, (state, oldState) => !oldState?.length && state?.length && (index.value = state.length - 1))
-query?.fetchQuery.query()
 
 const start = (val: IntersectionObserverEntry) => val.isIntersecting && query?.fetchQuery.query()
 const end = (val: IntersectionObserverEntry) => val.isIntersecting
@@ -36,6 +35,7 @@ const end = (val: IntersectionObserverEntry) => val.isIntersecting
 	justify-content: stretch;
 	flex-direction: column;
 	min-height: 500px;
+	width: 100%;
 }
 
 .carousel {

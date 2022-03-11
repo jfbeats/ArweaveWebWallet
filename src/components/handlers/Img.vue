@@ -1,5 +1,5 @@
 <template>
-	<Observer observe="resize" @resize="resize" class="img" :class="{ x, y }">
+	<Observer @resize="resize" class="img" :class="{ x, y }">
 		<div class="frame-scroller">
 			<img ref="imgRef" :src="src" @load="load" />
 		</div>
