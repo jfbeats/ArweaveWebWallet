@@ -98,6 +98,14 @@ onBeforeUnmount(() => observer && observer.disconnect())
 	scroll-snap-align: var(--position);
 }
 
+.carousel > :deep(.fade-list-leave-active) {
+	position: absolute !important;
+}
+
+.carousel > :deep(.fade-list-rise-leave-active) {
+	position: absolute !important;
+}
+
 .margin {
 	width: 100%;
 	display: inline-block;

@@ -53,7 +53,7 @@
 }
 
 .fade-list-leave-active {
-	position: absolute !important;
+	/*position: absolute !important;*/
 }
 
 .fade-list-rise-enter-from, .fade-list-rise-leave-to {
@@ -62,5 +62,5 @@
 }
 
 .fade-list-rise-leave-active {
-	position: absolute !important;
+	/*position: absolute !important;*/
 }

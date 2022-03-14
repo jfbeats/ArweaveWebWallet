@@ -19,8 +19,8 @@ export default ProfileStore
 
 
 export async function getArweaveId (address: string) {
-	if (!address || (ProfileStore.arweaveIdStatus[address] ??= {}).loading) { return }
-	if (!address.match(/^[a-z0-9_-]{43}$/i)) { return }
+	if ((ProfileStore.arweaveIdStatus[address] ??= {}).loading) { return }
+	if (!address || !address.match(/^[a-z0-9_-]{43}$/i)) { return }
 	ProfileStore.arweaveIdStatus[address].loading = true
 	await awaitEffect(() => InterfaceStore.windowVisible)
 

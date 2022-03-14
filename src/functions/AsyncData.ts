@@ -104,7 +104,7 @@ export function getQueryManager <T> (options: QueryManagerOptions<T>) {
 			if (options.awaitEffect) { await awaitEffect(() => options.awaitEffect?.()) }
 			const query = options.query()
 			query.then(resolve).catch(e => { queryStatus.error = e; reject(e) }).finally(() => queryStatus.running = false)
-			query.then(res => console.log(new Date(Date.now()).toLocaleTimeString() + '\n', { options, res }))
+			query.then(res => console.log(new Date(Date.now()).toLocaleTimeString() + '\n', options.name, { options, res }))
 		})
 		return queryStatus.promise
 	}

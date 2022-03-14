@@ -1,10 +1,10 @@
 <template>
 	<div class="global-search">
 		<div class="input-container">
-			<Input v-model="search" :actions="[searchAction]" placeholder="Search - username, address, transaction id" style="flex:1 1 0;" />
+			<Input v-model="search" :actions="[searchAction]" placeholder="Search - address, transaction id, username, app name" style="flex:1 1 0;" />
 		</div>
 		<TransitionsManager>
-			<div v-if="data.query?.length" class="results input-box">
+			<div v-if="search.length" class="results input-box">
 				<div class="query-list input-box flex-column">
 					<div v-if="wallet" class="flex-column">
 						<div class="secondary-text">User</div>
@@ -12,9 +12,7 @@
 						<div />
 					</div>
 					<div class="secondary-text">Transactions</div>
-					<div v-for="item in data.query" :key="item" class="result">
-						<TxCard :tx="item.node" :options="{ currentAddress: wallet?.key }" />
-					</div>
+					<List :query="topQuery" :component="TxCard" :component-props="{ options: { currentAddress: wallet?.key } }" />
 				</div>
 			</div>
 		</TransitionsManager>
@@ -27,7 +25,7 @@
 import Input from '@/components/atomic/Input.vue'
 import List from '@/components/layout/List.vue'
 import IconSearch from '@/assets/icons/search.svg?component'
-import { computed, reactive, ref, watch } from 'vue'
+import { computed } from 'vue'
 import { arweaveQuery, queryAggregator } from '@/store/ArweaveStore'
 import TxCard from '@/components/composed/TxCard.vue'
 import TransitionsManager from '@/components/visual/TransitionsManager.vue'
@@ -36,32 +34,28 @@ import { getAccountByAddress } from '@/functions/Wallets'
 import { useDebouncedRef } from '@/functions/UtilsVue'
 
 
-const search = useDebouncedRef('')
+const search = useDebouncedRef('', 1000)
 const isId = computed(() => search.value.match(/^[a-z0-9_-]{43}$/i))
 const searchAction = { run: () => {}, icon: IconSearch }
 
-let query: any
-const data = ref({} as any)
-const wallet = computed(() => isId.value && !data.value.idQuery?.state?.length && getAccountByAddress(search.value))
+const wallet = computed(() => isId.value && userTxQuery?.state?.value?.length && getAccountByAddress(search.value))
 
-watch(search, () => {
-	query = undefined
-	data.value = {}
-	if (isId.value) {
-		const idQuery = arweaveQuery({ ids: [search.value] })
-		data.value.idQuery = idQuery
-		query = queryAggregator([
-			idQuery,
-			arweaveQuery({ owners: [search.value] }),
-			arweaveQuery({ recipients: [search.value] }),
-		])
-	}
-	else if (search.value.length) { query = queryAggregator([
-		arweaveQuery({ tags: [{ name: 'App-Name', values: ['arweave-id'] }, { name: 'Name', values: [search.value] }] }),
-	])}
-	data.value.query = query?.state
-	query?.fetchQuery.query()
-})
+const userTxQuery = queryAggregator([
+	arweaveQuery(computed(() => isId.value ? { owners: [search.value] } : undefined), 'global search user'),
+	arweaveQuery(computed(() => isId.value ? { recipients: [search.value] } : undefined), 'global search user'),
+])
+
+const nameQuery = queryAggregator([
+	arweaveQuery(computed(() => !isId.value ? { tags: [{ name: 'App-Name', values: ['arweave-id'] }, { name: 'Name', values: [search.value] }] } : undefined)),
+	arweaveQuery(computed(() => !isId.value ? { tags: [{ name: 'App-Name', values: [search.value] }] } : undefined)),
+	arweaveQuery(computed(() => !isId.value && search.value.toLowerCase() !== search.value ? { tags: [{ name: 'App-Name', values: [search.value.toLowerCase()] }] } : undefined)),
+])
+
+const topQuery = queryAggregator([
+	arweaveQuery(computed(() => isId.value ? { ids: [search.value] } : undefined)),
+	userTxQuery,
+	nameQuery,
+])
 </script>
 
 
@@ -85,6 +79,7 @@ watch(search, () => {
 	border-top-right-radius: 0;
 	position: absolute;
 	width: 100%;
+	max-height: calc(var(--current-vh) * 0.8);
 	overflow: hidden;
 	z-index: 1;
 }
@@ -93,7 +88,8 @@ watch(search, () => {
 	border: 0;
 	border-radius: 0;
 	padding: var(--spacing);
-	/*padding-top: var(--border-radius);*/
+	max-height: calc(var(--current-vh) * 0.8);
+	overflow: auto;
 }
 
 .result {

@@ -241,8 +241,4 @@ watch(tx, (val, oldVal) => {
 .selector.inline {
 	min-height: var(--current-vh);
 }
-
-.verticalContent .selector.iframe-container {
-	min-height: 80vh;
-}
 </style>

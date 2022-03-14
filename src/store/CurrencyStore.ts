@@ -9,6 +9,7 @@ export const currency = getConversion()
 function getConversion () {
 	const settings = new ChannelRef('currency', undefined, { currency: 'USD', provider: 'redstone' }).state.value
 	const currentPrice = getAsyncData({
+		name: 'conversion rate',
 		existingState: toRef(settings, 'rate'),
 		timestamp: toRef(settings, 'timestamp'),
 		query: async () => {
@@ -32,6 +33,7 @@ function getConversion () {
 }
 
 export const { state: redstoneOptions } = getAsyncData({
+	name: 'currency options list',
 	query: async () => {
 		type currencyOptions = { value: { currency: string, provider: string }, text: string }[]
 		const options = [] as currencyOptions

@@ -68,6 +68,7 @@ export function updateArweave (gateway: string | URL | ApiConfig) {
 
 export function useWatchTx (txId: Ref<string | undefined>) {
 	return getReactiveAsyncData({
+		name: 'single tx data',
 		params: txId,
 		query: async (txId) => (await graphql().getTransactions({ ids: [txId] })).transactions.edges[0]?.node,
 		completed: (state: any) => state?.block,
@@ -95,6 +96,7 @@ export class ArweaveAccount implements Account {
 		else if (typeof this.init === 'object') { return this.init.data.arweave?.key }
 	}
 	#balance = getAsyncData({
+		name: 'balance',
 		awaitEffect: () => this.key,
 		query: async () => arweave.ar.winstonToAr(await arweave.wallets.getBalance(this.key!)),
 		seconds: 600,
@@ -280,7 +282,7 @@ export const graphql = () => arweaveGraphql((ArweaveStore.gatewayURL || 'https:/
 
 type arweaveQueryOptions = Parameters<ReturnType<typeof graphql>['getTransactions']>[0] | Ref<Parameters<ReturnType<typeof graphql>['getTransactions']>[0]>
 
-export function arweaveQuery (options: arweaveQueryOptions) { // todo rename to arweaveTransactions
+export function arweaveQuery (options: arweaveQueryOptions, name = 'tx list') { // todo rename to arweaveTransactions, fix changing query while loading
 	const optionsRef = isRef(options) ? options : ref(options)
 	const status = reactive({ completed: false, reset: 0 })
 	const data = ref([] as GQLTransactionEdge[])
@@ -288,14 +290,15 @@ export function arweaveQuery (options: arweaveQueryOptions) { // todo rename to 
 	const refreshEnabled = ref(false)
 	const refreshSwitch = ref(true) // todo
 	
-	watch(optionsRef, () => {
-		status.completed = false
+	watch(optionsRef, (val) => {
 		data.value = []
 		refreshEnabled.value = false
+		status.completed = false
 		status.reset++
 	}, { deep: true })
 	
 	const fetchQuery = getQueryManager({
+		name: name + ' fetch',
 		query: async () => {
 			if (optionsRef.value == null || status.completed) { return data.value }
 			let fulfilled = false
@@ -323,6 +326,7 @@ export function arweaveQuery (options: arweaveQueryOptions) { // todo rename to 
 	})
 	
 	const updateQuery = getAsyncData({
+		name: name + ' update',
 		awaitEffect: () => !fetchQuery.queryStatus.running && refreshEnabled.value,
 		query: async () => {
 			let requireSort = false
@@ -337,7 +341,7 @@ export function arweaveQuery (options: arweaveQueryOptions) { // todo rename to 
 				}
 				if (!results.transactions.pageInfo.hasNextPage) { status.completed = true; fulfilled = true }
 				results = results.transactions.edges
-				if (results.length < 10) { status.completed = true; fulfilled = true } // todo remove??
+				if (results.length < 10) { status.completed = true; fulfilled = true }
 				const resultsFiltered = []
 				for (const result of results) {
 					const matchingTx = data.value.find(el => el.node.id === result.node.id)
@@ -357,12 +361,12 @@ export function arweaveQuery (options: arweaveQueryOptions) { // todo rename to 
 		seconds: refresh,
 		existingState: data,
 		processResult: () => {},
-		completed: () => optionsRef.value?.block?.max || optionsRef.value?.bundledIn || !refreshSwitch.value
+		completed: () => optionsRef.value?.block?.max
+			|| optionsRef.value?.bundledIn || !refreshSwitch.value
+			|| optionsRef.value?.ids && data.value.length === (optionsRef.value?.ids.length || 1)
 	})
 	
-	const setRefresh = (b: any) => refreshSwitch.value = !!b
-	
-	return { state: updateQuery.state, fetchQuery, updateQuery, status, setRefresh }
+	return { state: updateQuery.state, fetchQuery, updateQuery, status, refreshSwitch }
 }
 
 
@@ -374,6 +378,7 @@ export function arweaveQueryBlocks (options: Parameters<ReturnType<typeof graphq
 	const refreshEnabled = ref(false)
 	
 	const fetchQuery = getQueryManager({
+		name: 'block list fetch',
 		query: async () => {
 			if (status.completed) { return data.value }
 			let results: any
@@ -391,6 +396,7 @@ export function arweaveQueryBlocks (options: Parameters<ReturnType<typeof graphq
 	})
 	
 	const updateQuery = getAsyncData({
+		name: 'block list update',
 		awaitEffect: () => !fetchQuery.queryStatus.running && refreshEnabled.value,
 		query: async () => {
 			let results = (await graphql().getBlocks({ ...options, height: { min: data.value[0].node.height + 1 }, sort: SortOrder.HeightAsc })).blocks.edges
@@ -411,10 +417,12 @@ export function queryAggregator (queries: ReturnType<typeof arweaveQuery>[]) {
 	const status = reactive({ completed: false, reset: 0 })
 	const data = ref([] as { node: any, cursor: string }[])
 	const refresh = 10
+	const refreshSwitch = ref(true) // todo
 	
 	let initial = [] as any[]
 	let lastAdded = [] as any[]
 	
+	watch(refreshSwitch, val => queries.forEach(q => q.refreshSwitch.value = val))
 	queries.map(query => {
 		watch(() => query.updateQuery.stateRef.value, state => {
 			if (!state) { return }
@@ -429,11 +437,13 @@ export function queryAggregator (queries: ReturnType<typeof arweaveQuery>[]) {
 			data.value = []
 			initial = []
 			lastAdded = []
+			status.completed = false
 			status.reset++
 		})
 	})
 	
 	const fetchQuery = getQueryManager({
+		name: 'aggregated fetch',
 		query: async () => {
 			let fulfilled = false
 			for (let i = 0; !fulfilled; i++) {
@@ -468,13 +478,14 @@ export function queryAggregator (queries: ReturnType<typeof arweaveQuery>[]) {
 	})
 	
 	const updateQuery = getAsyncData({
+		name: 'aggregated update',
 		query: async () => (await Promise.all(queries.map(query => query.updateQuery.getState()))).flat(),
 		seconds: refresh,
 		existingState: data,
 		processResult: () => {},
 	})
 	
-	return { state: updateQuery.state, fetchQuery, updateQuery, status }
+	return { state: updateQuery.state, fetchQuery, updateQuery, status, refreshSwitch }
 }
 
 
@@ -523,6 +534,7 @@ export function queryAggregator (queries: ReturnType<typeof arweaveQuery>[]) {
 
 
 const networkInfoData = getAsyncData({
+	name: 'network info',
 	query: () => arweave.network.getInfo(),
 	seconds: 10,
 })
@@ -531,6 +543,7 @@ export const networkInfo = networkInfoData.state
 
 
 export const currentBlockData = getAsyncData({
+	name: 'current block',
 	query: () => arweave.blocks.getCurrent(),
 	seconds: 60,
 	stale: (state) => networkInfoData.stateRef.value && state && networkInfoData.stateRef.value.height > state.height,
