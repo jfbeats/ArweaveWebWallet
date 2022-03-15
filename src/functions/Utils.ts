@@ -47,3 +47,8 @@ export function download (filename: string, text: string, contentType = 'applica
 	element.click()
 	document.body.removeChild(element)
 }
+
+export function generateUrl (url: string) {
+	if (!url.includes('://')) { url = 'https://' + url }
+	return new URL(url).href
+}

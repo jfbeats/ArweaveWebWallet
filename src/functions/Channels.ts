@@ -7,6 +7,8 @@ type PrefixTable = {
 	'connectionSettings:': ConnectionSettings
 	wallets: WalletDataInterface[]
 	currency: { rate?: string, currency: string, provider: string, timestamp?: number }
+	gateway: string
+	bundler: string
 }
 
 export class Channel <T extends keyof PrefixTable> { // Todo replace with ref version
@@ -62,7 +64,7 @@ export class ChannelRef <T extends keyof PrefixTable> {
 	private readonly stateChannel
 	private stopWrite?: WatchStopHandle
 	
-	constructor (prefix: T, instanceName = '', init: PrefixTable[T]) {
+	constructor (prefix: T, instanceName = '', init?: PrefixTable[T]) {
 		this.state = ref(init) as Ref<PrefixTable[T]>
 		this.stateChannel = prefix + instanceName
 		window.addEventListener('storage', this.storageListener)
@@ -100,7 +102,7 @@ export class ChannelRef <T extends keyof PrefixTable> {
 }
 
 const channelInstances = {} as { [key: string]: { channel: ChannelRef<any>, subscribers: number, scope: EffectScope } }
-export function useChannel <T extends keyof PrefixTable> (prefix: T, instanceName = '', init: PrefixTable[T]) { // todo use that composition function instead of direct channels
+export function useChannel <T extends keyof PrefixTable> (prefix: T, instanceName = '', init?: PrefixTable[T]) { // todo use that composition function instead of direct channels
 	const key = prefix + instanceName
 	
 	if (!channelInstances[key]) {

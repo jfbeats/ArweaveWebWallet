@@ -1,7 +1,7 @@
 <template>
 	<div class="connect flex-column">
 		<Carousel v-model="currentConnectorIndex" :options="{ align: 'start', overscroll: true }" class="connectors">
-			<div v-for="connector in connectors" :key="connector.session" class="connection-card-container  fade-list-item">
+			<div v-for="connector in connectors" :key="connector.session" class="connection-card-container fade-list-item">
 				<ConnectionCard :state="connector" class="box" />
 			</div>
 		</Carousel>
@@ -74,6 +74,9 @@ const currentConnectorIndex = ref(connectors.value.findIndex(value => value.orig
 
 .fade-list-leave-active {
 	position: absolute !important;
-	/* scroll-snap-align: none; */
+}
+
+.fade-list-rise-leave-active {
+	position: absolute !important;
 }
 </style>

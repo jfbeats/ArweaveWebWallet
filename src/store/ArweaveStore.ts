@@ -2,26 +2,27 @@ import Arweave from 'arweave'
 import Transaction from 'arweave/web/lib/transaction'
 import arweaveGraphql, { SortOrder } from 'arweave-graphql'
 import LogoArweave from '@/assets/logos/arweave.svg?component'
-import { download } from '@/functions/Utils'
+import { download, generateUrl } from '@/functions/Utils'
 import { getDecryptionKey, getSigningKey } from '@/functions/Crypto'
 import { exportTransaction, manageUpload } from '@/functions/Transactions'
+import { useChannel } from '@/functions/Channels'
 import { awaitEffect, getAsyncData, getReactiveAsyncData, getQueryManager } from '@/functions/AsyncData'
 import { ArweaveProviderInterface, ArweaveVerifier as ArweaveMessageVerifier } from 'arweave-wallet-connector/lib/ArweaveWebWallet'
 import { computed, isRef, reactive, ref, Ref, watch } from 'vue'
 import axios from 'axios'
 import type { WalletProxy } from '@/functions/Wallets'
 import type { TransactionEdge as GQLTransactionEdge, BlockEdge as GQLBlockEdge } from 'arweave-graphql'
-import type { ApiConfig } from 'arweave/web/lib/api'
 import type { TransactionInterface } from 'arweave/web/lib/transaction'
 import type { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
 
 
 
+export const gatewayDefault = 'https://arweave.net/'
+export const bundlerDefault = 'https://node2.bundlr.network/'
+
 const ArweaveStore = reactive({
-	gatewayURL: null as null | string,
-	bundlerURL: null as null | string,
-	wallets: {} as { [key: string]: ArweaveAccount },
-	txs: {} as { [key: string]: any },
+	gatewayURL: useChannel('gateway', undefined, gatewayDefault).state,
+	bundlerURL: useChannel('bundler', undefined, bundlerDefault).state,
 	uploads: {} as { [key: string]: { upload?: number } },
 })
 
@@ -30,15 +31,7 @@ export let arweave: Arweave
 
 
 
-export const gatewayDefault = {
-	host: 'arweave.net',
-	port: 443,
-	protocol: 'https'
-}
-export const bundlerDefault = 'https://node2.bundlr.network/'
-
 export function urlToSettings (url: string) {
-	if (!url.includes('://')) { url = 'https://' + url }
 	const obj = new URL(url)
 	const protocol = obj.protocol.replace(':', '')
 	const host = obj.hostname
@@ -46,24 +39,21 @@ export function urlToSettings (url: string) {
 	return { protocol, host, port }
 }
 
-export function settingsToUrl (settings: URL | ApiConfig) {
-	return `${settings.protocol}://${settings.host}:${settings.port}/`
-}
-
-export async function testGateway (gateway: string | URL | ApiConfig) {
-	const settings = typeof gateway === 'string' ? urlToSettings(gateway) : gateway
-	const arweaveTest = Arweave.init(settings)
-	try {
+export async function updateArweave (url?: string, sync?: boolean) {
+	url = url ? generateUrl(url) : gatewayDefault
+	const settings = urlToSettings(url)
+	if (!sync) {
+		const arweaveTest = Arweave.init(settings)
 		const net = await arweaveTest.network.getInfo()
-		if (net) { return true }
-	} catch (e) { }
-	return false
+		if (!net.network) { throw 'Invalid' }
+	}
+	arweave = Arweave.init(settings)
+	ArweaveStore.gatewayURL = url
 }
 
-export function updateArweave (gateway: string | URL | ApiConfig) {
-	const settings = typeof gateway === 'string' ? urlToSettings(gateway) : gateway
-	arweave = settings ? Arweave.init(settings) : Arweave.init(gatewayDefault)
-	ArweaveStore.gatewayURL = settingsToUrl(arweave.getConfig().api)
+export async function updateBundler (url?: string, sync?: boolean) {
+	url = url ? generateUrl(url) : bundlerDefault
+	ArweaveStore.bundlerURL = url
 }
 
 export function useWatchTx (txId: Ref<string | undefined>) {
@@ -554,15 +544,7 @@ export const currentBlock = currentBlockData.state
 
 
 function loadGatewaySettings () {
-	updateArweave(localStorage.getItem('gateway') || gatewayDefault)
-	ArweaveStore.bundlerURL = localStorage.getItem('gateway') || bundlerDefault
+	updateArweave(ArweaveStore.gatewayURL || gatewayDefault, true)
+	updateBundler(ArweaveStore.bundlerURL || bundlerDefault, true)
 }
-
-
-
 loadGatewaySettings()
-
-window.addEventListener('storage', (e) => {
-	if (e.newValue === e.oldValue) { return }
-	else if (e.key === 'gateway') { loadGatewaySettings() }
-})

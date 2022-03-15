@@ -67,6 +67,7 @@ export async function getFeeRange () {
 	const ids = await getPending(failedLastFeeRange)
 	if (ids.length <= blockSize) { return range }
 	const txs = await getMempool(failedLastFeeRange)
+	if (!txs) { throw 'failed to get pending transactions list' }
 	const fees = txs.map(tx => tx.fee.winston)
 	const sortedFees = fees.sort((a, b) => (+b) - (+a))
 	const nextBlock = sortedFees.slice(0, blockSize)

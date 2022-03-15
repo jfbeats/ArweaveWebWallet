@@ -36,15 +36,16 @@
 
 
 
-<script setup>
+<script setup lang="ts">
 import WalletOptions from '@/components/composed/WalletOptions.vue'
 import Input from '@/components/atomic/Input.vue'
 import Select from '@/components/atomic/Select.vue'
 import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import { Wallets } from '@/functions/Wallets'
-import ArweaveStore, { gatewayDefault, bundlerDefault, updateArweave } from '@/store/ArweaveStore'
+import ArweaveStore, { gatewayDefault, bundlerDefault, updateArweave, updateBundler } from '@/store/ArweaveStore'
 import { currency, redstoneOptions } from '@/store/CurrencyStore'
+import { createToast } from 'mosha-vue-toastify'
 import { ref, computed } from 'vue'
 
 import LogoArweave from '@/assets/logos/arweave.svg?component'
@@ -57,32 +58,28 @@ import IconY from '@/assets/icons/y.svg?component'
 import IconX from '@/assets/icons/x.svg?component'
 
 const gateway = ref('')
-const setGateway = () => {
-	// TODO test gateway url return if fail
-	// TODO move from ArweaveStore to storage channel
-	gateway.value ? updateArweave(gateway.value) : updateArweave()
-	localStorage.setItem('gateway', gateway.value)
+const setGateway = async () => {
+	try { await updateArweave(gateway.value) }
+	catch (e) { createToast('Invalid', { type: 'danger', showIcon: true }); throw e }
 	gateway.value = ''
 }
 const gatewayAction = computed(() => {
-	if (!gateway.value && ArweaveStore.gatewayURL.includes(gatewayDefault.host)) { return }
+	if (!gateway.value && ArweaveStore.gatewayURL === gatewayDefault) { return }
 	return { run: setGateway, icon: gateway.value ? IconY : IconX }
 })
 
 const bundler = ref('')
-const setBundler = () => {
-	// TODO move from ArweaveStore to storage channel
-	const url = new URL(bundler.value).href
-	ArweaveStore.bundlerURL = url
-	localStorage.setItem('bundler', url)
+const setBundler = async () => {
+	try { await updateBundler(bundler.value) }
+	catch (e) { createToast('Invalid', { type: 'danger', showIcon: true }); throw e }
 	bundler.value = ''
 }
 const bundlerAction = computed(() => {
-	if (!bundler.value && ArweaveStore.bundlerURL.includes(bundlerDefault)) { return }
+	if (!bundler.value && ArweaveStore.bundlerURL === bundlerDefault) { return }
 	return { run: setBundler, icon: bundler.value ? IconY : IconX }
 })
 
-const currentSetting = computed({
+const currentSetting = computed<{ currency: string, provider: string }>({
 	get () { return { currency: currency.settings.currency, provider: currency.settings.provider } },
 	set (value) {
 		currency.settings.currency = value.currency

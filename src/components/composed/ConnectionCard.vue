@@ -221,4 +221,12 @@ watch(() => Wallets.value.findIndex(wallet => wallet.id === currentId.value), se
 .icon {
 	opacity: var(--element-secondary-opacity);
 }
+
+.fade-list-leave-active {
+	position: absolute !important;
+}
+
+.fade-list-rise-leave-active {
+	position: absolute !important;
+}
 </style>
