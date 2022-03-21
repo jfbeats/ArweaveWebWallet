@@ -58,7 +58,7 @@ export async function updateBundler (url?: string, sync?: boolean) {
 
 export function useWatchTx (txId: Ref<string | undefined>) {
 	return getReactiveAsyncData({
-		name: 'single tx data',
+		name: 'single tx header',
 		params: txId,
 		query: async (txId) => (await graphql().getTransactions({ ids: [txId] })).transactions.edges[0]?.node,
 		completed: (state: any) => state?.block,

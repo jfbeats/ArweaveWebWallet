@@ -17,6 +17,7 @@ if (sessionStorage.getItem('type') === 'extension' || document.location.pathname
 	state.value.type = 'extension'
 	windowRef = window.parent
 } else if (origin?.split('://')[0] === 'ws') {
+	state.value.type = 'ws'
 	initWebSockets()
 } else if (window.opener) {
 	state.value.type = 'popup'

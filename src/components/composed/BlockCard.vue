@@ -45,7 +45,7 @@ const props = defineProps<{ block: any }>()
 const visible = ref(false)
 const txsQuery = arweaveQuery({ block: { min: props.block.node.height, max: props.block.node.height } })
 const blockData = getAsyncData({
-	name: 'single block data',
+	name: 'single block header',
 	awaitEffect: () => visible.value,
 	query: async () => arweave.blocks.get(props.block.node.id),
 	seconds: 10,

@@ -115,6 +115,7 @@ const gatewayHostname = computed(() => ArweaveStore.gatewayURL && new URL(Arweav
 
 const statusId = computed(() => tx.value?.bundledIn?.id || props.txId)
 const status = getReactiveAsyncData({
+	name: 'single tx status',
 	params: statusId,
 	query: async param => (await arweave.transactions.getStatus(param)).status,
 	completed: (state: any) => !statusId.value || tx.value?.block || state && state !== 404,
