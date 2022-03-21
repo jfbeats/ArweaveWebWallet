@@ -36,12 +36,13 @@
 
 
 
-<script setup>
+<script setup lang="ts">
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import DragOverlay from '@/components/atomic/DragOverlay.vue'
 import { SlickList, SlickItem } from 'vue-slicksort'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
-import { connectors, connectRequest, state } from '@/functions/Connect'
+import { state } from '@/functions/Channels'
+import { connectors, connectRequest } from '@/functions/Connect'
 import { Wallets } from '@/functions/Wallets'
 import { computed, toRef } from 'vue'
 import { useRoute } from 'vue-router'
@@ -54,7 +55,7 @@ import IconPlug from '@/assets/icons/plug.svg?component'
 
 const route = useRoute()
 const navTo = computed(() => route.matched[0]?.name === 'Wallet' ? null : 'TxList')
-const select = (wallet, navigate) => {
+const select = (wallet: Account, navigate: () => any) => {
 	emitter.emit('selectWallet', wallet?.key)
 	if (links.value) { return navigate() }
 }

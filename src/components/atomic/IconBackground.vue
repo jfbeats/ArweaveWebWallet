@@ -29,7 +29,7 @@ const props = defineProps(['icon', 'img'])
 }
 
 .page-logo.placeholder {
-	padding: var(--spacing);
+	padding: 16px;
 	opacity: 0.75;
 }
 </style>

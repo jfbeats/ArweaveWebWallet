@@ -1,6 +1,6 @@
 import { getDB } from '@/store/IndexedDB'
 import { Wallets } from '@/functions/Wallets'
-import { computed, reactive, watch } from 'vue'
+import { computed, reactive, Ref, watch } from 'vue'
 import { awaitEffect } from '@/functions/AsyncData'
 import { uuidV4 } from '@/functions/Utils'
 import { useChannel } from '@/functions/Channels'
@@ -25,18 +25,18 @@ export default class JsonRpc {
 	permissions
 	watchStop // todo collect scope instead
 
-	constructor (callbacks: (message: any) => void, state: ConnectorState) {
+	constructor (callbacks: (message: any) => void, state: Ref<ConnectorState>) {
 		this.callbacks = callbacks
 		this.state = state || reactive({})
-		this.state.messageQueue ??= []
-		this.stateWallet = computed(() => Wallets.value.find(w => w.id === this.state.walletId))
-		const permissionsChannel = useChannel('connectionSettings:', this.state.origin, {})
+		this.state.value.messageQueue ??= []
+		this.stateWallet = computed(() => Wallets.value.find(w => w.id === this.state.value.walletId))
+		const permissionsChannel = useChannel('connectionSettings:', this.state.value.origin, {})
 		this.permissions = computed(() => {
 			const uuid = this.stateWallet.value?.uuid
 			return permissionsChannel.state.value?.[uuid!]
 		})
-		this.watchStop = watch(() => [this.state.messageQueue, permissionsChannel.state.value], async () => {
-			for (const messageEntry of this.state.messageQueue) {
+		this.watchStop = watch(() => [this.state.value.messageQueue, permissionsChannel.state.value], async () => {
+			for (const messageEntry of this.state.value.messageQueue) {
 				if (!messageEntry || messageEntry.fulfilled || messageEntry.processing) { continue }
 				this.evalPermission(messageEntry)
 				if (messageEntry.status === 'accepted' || messageEntry.status === 'allowed') { this.runMessage(messageEntry) }
@@ -54,13 +54,13 @@ export default class JsonRpc {
 	
 	async pushMessage (message: unknown) {
 		await awaitEffect(() => this.stateWallet.value)
-		if (!this.isValidMessage(message)) { return }
-		if (this.state.messageQueue.find(m => m.id === message.id)) { return }
+		if (!this.isValidMessage(message)) { console.warn('invalid message', message); return }
+		if (this.state.value.messageQueue.find(m => m.id === message.id)) { console.warn('message already exist', message); return }
 		const uuid = uuidV4()
 		const storedMessage: StoredMessage = {
 			uuid,
-			origin: this.state.origin,
-			sessionId: '' + message.id + this.state.origin + this.state.session,
+			origin: this.state.value.origin,
+			sessionId: '' + message.id + this.state.value.origin + this.state.value.session,
 			timestamp: Date.now(),
 			status: undefined,
 			fulfilled: false,
@@ -76,7 +76,7 @@ export default class JsonRpc {
 			processing: false,
 		}
 		this.evalPermission(messageEntry)
-		if (await this.storeMessage(storedMessage)) { this.state.messageQueue.push(messageEntry) }
+		if (await this.storeMessage(storedMessage)) { this.state.value.messageQueue.push(messageEntry) }
 		if (!messageEntry.status && message.id != null) { return true }
 	}
 

@@ -1,5 +1,6 @@
 import { getCurrentScope, onScopeDispose, reactive, watch, ref, effectScope } from 'vue'
 import type { EffectScope, Ref, WatchStopHandle } from 'vue'
+import { useDataWrapper } from '@/functions/AsyncData'
 
 type PrefixTable = {
 	'connectorState:': InstanceState
@@ -11,52 +12,6 @@ type PrefixTable = {
 	bundler: string
 }
 
-export class Channel <T extends keyof PrefixTable> { // Todo replace with ref version
-	state
-	private readonly stateChannel
-	private stopWrite?: WatchStopHandle
-	
-	constructor (prefix: T, instanceName = '', init: Partial<PrefixTable[T]>) {
-		this.state = reactive(init)
-		this.stateChannel = prefix + instanceName
-		window.addEventListener('storage', this.storageListener)
-		if (!localStorage.getItem(this.stateChannel) && Object.keys(this.state).length) { this.writeState() }
-		this.update(localStorage.getItem(this.stateChannel))
-		if (getCurrentScope()) { onScopeDispose(() => this.destructor()) }
-	}
-	destructor = () => {
-		window.removeEventListener('storage', this.storageListener)
-		if (this.stopWrite) { this.stopWrite() }
-	}
-	
-	private writeState = () => {
-		const stateString = JSON.stringify(this.state)
-		if (stateString === localStorage.getItem(this.stateChannel)) { return }
-		localStorage.setItem(this.stateChannel, stateString)
-	}
-	private startWrite = () => this.stopWrite = watch(() => this.state, this.writeState, { deep: true })
-	private update = (val: string | null) => {
-		if (this.stopWrite) { this.stopWrite() }
-		if (val) { this.set(JSON.parse(val)) }
-		this.startWrite()
-	}
-	private storageListener = (e: StorageEvent) => {
-		if (e.key !== this.stateChannel || e.newValue === e.oldValue || !e.newValue) { return }
-		this.update(e.newValue)
-	}
-	set = (newState: PrefixTable[T]) => {
-		if (!newState) { return }
-		if (Array.isArray(this.state) && Array.isArray(newState)) { this.state.splice(0, this.state.length, ...newState) }
-		else if (typeof this.state === 'object' && typeof newState === 'object') {
-			for (const key in this.state) { !(key in newState) && delete this.state[key] }
-			Object.assign(this.state, newState)
-		}
-	}
-	deleteChannel = () => {
-		this.destructor()
-		localStorage.removeItem(this.stateChannel)
-	}
-}
 
 
 export class ChannelRef <T extends keyof PrefixTable> {
@@ -73,9 +28,9 @@ export class ChannelRef <T extends keyof PrefixTable> {
 			else if (this.state.value != null) { this.writeState() }
 		}
 		this.update(localStorage.getItem(this.stateChannel))
-		if (getCurrentScope()) { onScopeDispose(() => this.destructor()) }
+		if (getCurrentScope()) { onScopeDispose(() => this.stop()) }
 	}
-	destructor = () => {
+	stop = () => {
 		window.removeEventListener('storage', this.storageListener)
 		if (this.stopWrite) { this.stopWrite() }
 	}
@@ -96,13 +51,15 @@ export class ChannelRef <T extends keyof PrefixTable> {
 		this.update(e.newValue)
 	}
 	deleteChannel = () => {
-		this.destructor()
+		this.stop()
 		localStorage.removeItem(this.stateChannel)
 	}
 }
 
+
+
 const channelInstances = {} as { [key: string]: { channel: ChannelRef<any>, subscribers: number, scope: EffectScope } }
-export function useChannel <T extends keyof PrefixTable> (prefix: T, instanceName = '', init?: PrefixTable[T]) { // todo use that composition function instead of direct channels
+export function useChannel <T extends keyof PrefixTable> (prefix: T, instanceName = '', init?: PrefixTable[T]) {
 	const key = prefix + instanceName
 	
 	if (!channelInstances[key]) {
@@ -114,12 +71,15 @@ export function useChannel <T extends keyof PrefixTable> (prefix: T, instanceNam
 	
 	const stop = () => {
 		channelInstances[key].subscribers--
-		if (channelInstances[key].subscribers  > 0) { return }
+		if (channelInstances[key].subscribers > 0) { return }
 		channelInstances[key].scope.stop()
 		delete channelInstances[key]
 	}
+	const deleteChannel = () => {
+		channelInstances[key]?.channel?.deleteChannel()
+	}
 	if (getCurrentScope()) { onScopeDispose(stop) }
-	return { state: channelInstances[key].channel.state, stop }
+	return { state: channelInstances[key].channel.state, stop, deleteChannel } as ChannelRef<T>
 }
 
 
@@ -129,43 +89,43 @@ const origin = hash.get('origin') || undefined
 const session = hash.get('session') || undefined
 const appInfo = { name: hash.get('name') || undefined, logo: hash.get('logo') || undefined }
 const instance = origin + Math.random().toString().slice(2)
-const chPrefix = 'connectorState:'
-const sharedPrefix = 'sharedState:'
-const heartbeatPrefix = 'heartbeat:'
-const stateChannel = chPrefix + instance
-const { state, destructor } = new Channel(chPrefix, instance, { origin, session })
-const { states, closeChannels } = getChannels(chPrefix)
-const connectorChannels = getChannels(sharedPrefix)
+const { state, deleteChannel } = useChannel('connectorState:', instance, { origin, session })
+const { states } = getChannels('connectorState:')
+const connectorChannels = getChannels('sharedState:')
 
 export function initConnectorChannel () {
 	if (!origin) { throw 'Missing origin' }
-	const channel = new Channel(sharedPrefix, origin + session, {})
-	if (!channel.state.origin) { channel.set({ origin, session, appInfo, timestamp: Date.now(), messageQueue: [] }) }
-	return channel as Override<typeof channel, { state: ConnectorState }>
+	const channel = useChannel('sharedState:', origin + session)
+	if (!channel.state.value?.origin) { channel.state.value = { origin, session, appInfo, timestamp: Date.now(), messageQueue: [] } }
+	return channel
+}
+
+export function initWebSocketChannel () {
+	if (!origin) { throw 'Missing origin' }
+	const channel = useChannel('sharedState:', origin + session)
+	if (!channel.state.value?.walletId) { channel.state.value = { origin, session, appInfo, timestamp: Date.now(), messageQueue: [] } }
+	return channel
 }
 
 export { state, states, connectorChannels }
 
 
 
-
-
-
 function getChannels <T extends 'connectorState:' | 'sharedState:'> (prefix: T) {
-	const channels: { [key: string]: Channel<T> | undefined } = {}
-	const states: { [key: string]: Channel<T>['state'] } = reactive({})
-	const getInstanceNames = () => Object.entries(localStorage)
-		.filter(([key, value]) => key.slice(0, prefix.length) === prefix)
-		.map(([key, value]) => key.slice(prefix.length))
+	const channels: { [key: string]: ChannelRef<T> | undefined } = {}
+	const states: { [key: string]: PrefixTable[T] } = reactive({})
+	const getInstanceNames = () => Object.keys(localStorage)
+		.filter(key => key.slice(0, prefix.length) === prefix)
+		.map(key => key.slice(prefix.length))
 	const instantiate = async (name: string) => {
 		channels[name] = undefined
-		if (prefix === chPrefix && !(await heartbeat(name))) { close(name); return null }
+		if (prefix === 'connectorState:' && !(await heartbeat(name))) { close(name); return null }
 		if (!Object.keys(channels).includes(name)) { return null }
-		channels[name] = new Channel(prefix, name, {})
-		states[name] = channels[name]!.state
+		channels[name] = useChannel(prefix, name)
+		states[name] = channels[name]!.state as any
 	}
 	const close = (name: string) => {
-		channels[name]?.destructor()
+		channels[name]?.stop()
 		delete channels[name]
 		delete states[name]
 	}
@@ -191,7 +151,7 @@ function getChannels <T extends 'connectorState:' | 'sharedState:'> (prefix: T) 
 
 async function heartbeat (instanceName: string, timeout?: number) {
 	if (instanceName === instance) { return true }
-	const fullKey = heartbeatPrefix + instanceName + instance
+	const fullKey = 'heartbeat:' + instanceName + instance
 	const promise = new Promise(resolve => {
 		const heartbeatListener = async (e: StorageEvent) => {
 			if (e.key === fullKey && e.newValue) { heartbeatReturn(true) }
@@ -199,7 +159,7 @@ async function heartbeat (instanceName: string, timeout?: number) {
 		const heartbeatReturn = (result: boolean) => {
 			if (result) { clearTimeout(cleanupTimeout) }
 			setTimeout(() => localStorage.removeItem(fullKey), 1000)
-			if (!result) { localStorage.removeItem(chPrefix + instanceName) }
+			if (!result) { console.log('removed') ; localStorage.removeItem('connectorState:' + instanceName) }
 			window.removeEventListener('storage', heartbeatListener)
 			resolve(result)
 		}
@@ -213,8 +173,8 @@ async function heartbeat (instanceName: string, timeout?: number) {
 
 function cleanHeartbeats () {
 	for (const key in localStorage) {
-		if (key.slice(0, heartbeatPrefix.length) !== heartbeatPrefix) { continue }
-		const relatedChannel = chPrefix + key.slice(heartbeatPrefix.length)
+		if (key.slice(0, 'heartbeat:'.length) !== 'heartbeat:') { continue }
+		const relatedChannel = 'connectorState:' + key.slice('heartbeat:'.length)
 		if (localStorage.getItem(relatedChannel)) { continue }
 		localStorage.removeItem(key)
 	}
@@ -227,7 +187,7 @@ export function filterChannels (filter: object, object = states) {
 }
 
 function globalStorageListener (e: StorageEvent) {
-	const partialKey = heartbeatPrefix + instance
+	const partialKey = 'heartbeat:' + instance
 	if (e.key?.slice(0, partialKey.length) === partialKey && e.newValue === '') {
 		localStorage.setItem(e.key, 'ok')
 	}
@@ -242,21 +202,8 @@ export async function awaitStorageAccess () {
 	while (!await hasStorageAccess()) { await new Promise(resolve => setTimeout(resolve, 1000)) }
 }
 
-async function init () {
-	await awaitStorageAccess()
-	window.addEventListener('storage', globalStorageListener)
-}
-
-function close () {
-	window.removeEventListener('storage', globalStorageListener)
-	destructor()
-	closeChannels()
-	connectorChannels.closeChannels()
-	localStorage.removeItem(stateChannel)
-}
-
 
 
 cleanHeartbeats()
-init()
-window.addEventListener('beforeunload', close)
+window.addEventListener('storage', globalStorageListener)
+window.addEventListener('beforeunload', () => deleteChannel())

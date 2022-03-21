@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory, createWebHashHistory, START_LOCATION } from 'vue-router'
 import { Wallets, getWalletById } from '@/functions/Wallets'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
-import { state } from '@/functions/Connect'
+import { state } from '@/functions/Channels'
 import Wallet from '@/views/Wallet.vue'
 import TxList from '@/views/TxList.vue'
 import Send from '@/views/Send.vue'
@@ -110,9 +110,9 @@ const routes = [
 	{
 		path: '/:pathMatch(.*)*',
 		redirect: () => {
-			if (state.type === 'extension') { return { name: 'Connect' } }
-			if (state.type === 'iframe') { return { name: 'Connect' } }
-			if (state.type === 'popup') { return { name: 'Connect' } }
+			if (state.value.type === 'extension') { return { name: 'Connect' } }
+			if (state.value.type === 'iframe') { return { name: 'Connect' } }
+			if (state.value.type === 'popup') { return { name: 'Connect' } }
 			return Wallets.value[0]
 				? { name: 'TxList', params: { walletId: Wallets.value[0].id } }
 				: { name: 'Welcome' }

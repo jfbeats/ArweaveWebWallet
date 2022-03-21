@@ -11,13 +11,14 @@
 
 
 
-<script setup>
-import { state, states } from '@/functions/Channels'
+<script setup lang="ts">
+// @ts-ignore
 import { useRegisterSW } from 'virtual:pwa-register/vue'
+import { state, states } from '@/functions/Channels'
 import { ref, watch } from 'vue'
 
 const { needRefresh, updateServiceWorker } = useRegisterSW()
-let autoUpdateActive = state.type !== 'popup'
+let autoUpdateActive = state.value.type !== 'popup'
 setTimeout(() => autoUpdateActive = false, 10000)
 const updating = ref(false)
 const update = () => {

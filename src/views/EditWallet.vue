@@ -16,7 +16,8 @@ import Button from '@/components/atomic/Button.vue'
 import { computed } from 'vue'
 import { Wallets } from '@/functions/Wallets'
 import { useRoute } from 'vue-router'
-import { state, sharedState } from '@/functions/Connect'
+import { state } from '@/functions/Channels'
+import { sharedState } from '@/functions/Connect'
 
 const route = useRoute()
 const wallets = computed(() => {
