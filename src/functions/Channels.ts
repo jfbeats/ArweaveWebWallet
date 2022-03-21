@@ -58,7 +58,9 @@ export class ChannelRef <T extends keyof PrefixTable> {
 
 
 
+const step = ref(0)
 const channelInstances = {} as { [key: string]: { channel: ChannelRef<any>, subscribers: number, scope: EffectScope } }
+
 export function useChannel <T extends keyof PrefixTable> (prefix: T, instanceName = '', init?: PrefixTable[T]) {
 	const key = prefix + instanceName
 	
@@ -66,6 +68,7 @@ export function useChannel <T extends keyof PrefixTable> (prefix: T, instanceNam
 		const scope = effectScope(true)
 		const channel = scope.run(() => new ChannelRef(prefix, instanceName, init))!
 		channelInstances[key] = { channel, subscribers: 0, scope }
+		step.value++
 	}
 	channelInstances[key].subscribers++
 	
@@ -74,6 +77,7 @@ export function useChannel <T extends keyof PrefixTable> (prefix: T, instanceNam
 		if (channelInstances[key].subscribers > 0) { return }
 		channelInstances[key].scope.stop()
 		delete channelInstances[key]
+		step.value++
 	}
 	const deleteChannel = () => {
 		channelInstances[key]?.channel?.deleteChannel()
@@ -92,22 +96,7 @@ const instance = origin + Math.random().toString().slice(2)
 const { state, deleteChannel } = useChannel('connectorState:', instance, { origin, session })
 const { states } = getChannels('connectorState:')
 const connectorChannels = getChannels('sharedState:')
-
-export function initConnectorChannel () {
-	if (!origin) { throw 'Missing origin' }
-	const channel = useChannel('sharedState:', origin + session)
-	if (!channel.state.value?.origin) { channel.state.value = { origin, session, appInfo, timestamp: Date.now(), messageQueue: [] } }
-	return channel
-}
-
-export function initWebSocketChannel () {
-	if (!origin) { throw 'Missing origin' }
-	const channel = useChannel('sharedState:', origin + session)
-	if (!channel.state.value?.walletId) { channel.state.value = { origin, session, appInfo, timestamp: Date.now(), messageQueue: [] } }
-	return channel
-}
-
-export { state, states, connectorChannels }
+export { state, states, connectorChannels, appInfo }
 
 
 
@@ -142,6 +131,7 @@ function getChannels <T extends 'connectorState:' | 'sharedState:'> (prefix: T) 
 		window.removeEventListener('storage', storageListener)
 		for (const channel in channels) { close(channel) }
 	}
+	watch(step, () => setTimeout(storageListener))
 	window.addEventListener('storage', storageListener)
 	storageListener()
 	return { states, closeChannels }
@@ -159,7 +149,7 @@ async function heartbeat (instanceName: string, timeout?: number) {
 		const heartbeatReturn = (result: boolean) => {
 			if (result) { clearTimeout(cleanupTimeout) }
 			setTimeout(() => localStorage.removeItem(fullKey), 1000)
-			if (!result) { console.log('removed') ; localStorage.removeItem('connectorState:' + instanceName) }
+			if (!result) { localStorage.removeItem('connectorState:' + instanceName) }
 			window.removeEventListener('storage', heartbeatListener)
 			resolve(result)
 		}

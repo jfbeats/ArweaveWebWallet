@@ -1,7 +1,7 @@
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import ArweaveApp from "@zondax/ledger-arweave"
 import { arweave, ArweaveAccount, ArweaveMessageRunner, ArweaveProvider } from '@/store/ArweaveStore'
-import { ArweaveVerifier as ArweaveMessageVerifier } from 'arweave-wallet-connector/lib/ArweaveWebWallet'
+import { ArweaveVerifier as ArweaveMessageVerifier } from 'arweave-wallet-connector/lib/Arweave.js'
 import LogoLedger from '@/assets/logos/ledger.svg?component'
 import Transaction from 'arweave/web/lib/transaction'
 import { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
