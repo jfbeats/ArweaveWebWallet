@@ -32,13 +32,10 @@ if (sessionStorage.getItem('type') === 'extension' || document.location.pathname
 if (!state.value.type) { state.value.type = 'client' }
 if (state.value.type !== 'iframe') { localStorage.setItem('global', '1') }
 
-// if sharedState.link was active for a connection and iframe is unloaded, disconnect
-// only show connections when popup or iframe is active
-
 
 
 async function initConnector () {
-	if (!origin) { return }
+	if (!origin || origin === '*') { return }
 	await awaitStorageAccess()
 	if (!sharedState.value?.origin) { sharedState.value = { origin, session, appInfo, timestamp: Date.now(), messageQueue: [] } }
 	const postMessage = (message: any) => windowRef.postMessage({ ...message, jsonrpc: '2.0' }, origin)
@@ -90,7 +87,7 @@ async function initWebSockets () {
 	ws.addEventListener('open', () => console.log('New WS connection'))
 	ws.addEventListener('message', event => {
 		const message = JSON.parse(event.data.toString())
-		console.log(event.data)
+		console.log(message)
 		jsonRpc.pushMessage(message)
 	})
 	const connect = () => {
