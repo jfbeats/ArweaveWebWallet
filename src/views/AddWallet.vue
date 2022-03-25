@@ -15,7 +15,7 @@
 			<OverlayPrompt :options="popup" />
 		</div>
 		<div class="card" v-for="provider in hardwareProviders" :key="provider.metadata.name">
-			<h2 class="flex-row" style="align-items: center;"><Icon :icon="provider.metadata.icon" /><span>{{ provider.metadata.name }} Hardware Wallet</span></h2>
+			<h2 class="flex-row" style="align-items: center;"><Icon :icon="provider.metadata.icon" /><span>{{ provider.metadata.name }} Hardware Wallet (awaiting release)</span></h2>
 			<div class="flex-column">
 				<Button :disabled="!provider.metadata.isSupported" @click="importProvider(provider)" :icon="provider.metadata.icon" class="main">
 					{{ !provider.metadata.isSupported
