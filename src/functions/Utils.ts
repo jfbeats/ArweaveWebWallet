@@ -52,13 +52,3 @@ export function generateUrl (url: string) {
 	if (!url.includes('://')) { url = 'https://' + url }
 	return new URL(url).href
 }
-
-
-
-type ProvideResult<T> = T extends (...a: any) => any ? ReturnType<T> : never
-type ArrayToFunResult<C> = { [Property in keyof C]: ProvideResult<C[Property]> }
-class MixinBuilder<Base> {
-	constructor (public superclass: Base) { }
-	with<T extends readonly any[]> (...mixins: T) { return mixins.reduce((c, mixin) => mixin(c), this.superclass) as UnionToIntersection<ArrayToFunResult<T>[number]> & Base }
-}
-export function mix<Base extends ClassConstructor> (superclass: Base) { return new MixinBuilder(superclass) }

@@ -3,7 +3,8 @@ import Transaction from 'arweave/web/lib/transaction'
 import arweaveGraphql, { SortOrder } from 'arweave-graphql'
 import { WalletProxy, Wallet } from '@/providers/WalletProxy'
 import LogoArweave from '@/assets/logos/arweave.svg?component'
-import { download, generateUrl, mix } from '@/functions/Utils'
+import { Emitter, mix } from '@/functions/UtilsClass'
+import { download, generateUrl } from '@/functions/Utils'
 import { getDecryptionKey, getSigningKey } from '@/functions/Crypto'
 import { exportTransaction, manageUpload } from '@/functions/Transactions'
 import { useChannel } from '@/functions/Channels'
@@ -73,8 +74,8 @@ export async function fetchPublicKey (address: string) {
 
 
 
-export class ArweaveAccount implements Account {
-	constructor (private init: string | WalletDataInterface) {
+export class ArweaveAccount extends Emitter implements Account {
+	constructor (private init: string | WalletDataInterface) { super()
 		const received = arweaveQuery(computed(() => (this.key ? { recipients: [this.key] } : undefined)))
 		const sent = arweaveQuery(computed(() => (this.key ? { owners: [this.key] } : undefined )))
 		const all = queryAggregator([received, sent])
@@ -83,13 +84,13 @@ export class ArweaveAccount implements Account {
 			{ query: received, name: 'Received', color: 'var(--green)' },
 			{ query: sent, name: 'Sent', color: 'var(--red)' },
 		]
+		this.on('destructor', () => this.#balance.stop())
 	}
-	destructor () { this.#balance.stop() }
 	get metadata () { return {
 		name: 'Arweave Address',
 		icon: LogoArweave,
 	}}
-	#key = computed(() => typeof this.init === 'string' ? this.init : this.init.arweave?.key)
+	#key = computed(() => typeof this.init === 'string' ? this.init : this.init.data?.arweave?.key)
 	#balance = getAsyncData({
 		name: 'balance',
 		awaitEffect: () => this.key,
@@ -116,9 +117,8 @@ export class ArweaveProvider extends mix(ArweaveAccount).with(WalletProxy) imple
 		isSupported: true,
 		isProviderFor: (walletData) => !!walletData.jwk,
 		addImportData: async (walletData) => {
-			const address = await arweave.wallets.jwkToAddress(walletData.jwk as any)
-			walletData.arweave ??= {}
-			walletData.arweave.key = address
+			walletData.data ??= {}
+			walletData.data.arweave = { key: await arweave.wallets.jwkToAddress(walletData.jwk as any) }
 		},
 	}}
 	get metadata () { return {

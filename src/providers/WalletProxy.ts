@@ -13,15 +13,14 @@ export function WalletProxy <TBase extends ClassConstructor> (Base: TBase) {
 	return class WalletProxy extends Base {
 		#wallet: WalletDataInterface
 		#isEncrypted = computed(() => isEncrypted(this.#wallet.jwk))
-		constructor (...args: any[]) {
-			super(...args)
+		constructor (...args: any[]) { super(...args)
 			this.#wallet = args[0] as WalletDataInterface
-			if (!this.#wallet.uuid) { this.#wallet.uuid = uuidV4() }
-			if (!this.#wallet.jwk) { }
+			if (args[0].arweave) { this.data.arweave = args[0].arweave } // TODO remove - temporary conversion
+			;(this as any).on('destructor', () => this.#isEncrypted.effect.stop())
 		}
-		get data () { return this.#wallet } // TODO change to this.#wallet.data
 		get id () { return this.#wallet.id + '' }
-		get uuid () { return this.#wallet.uuid! }
+		get uuid () { this.#wallet.uuid ??= uuidV4(); return this.#wallet.uuid! }
+		get data () { this.#wallet.data ??= {}; return this.#wallet.data }
 		get hasPrivateKey () { return !!this.#wallet.jwk }
 		get isEncrypted () { return this.#isEncrypted.value }
 		async getPrivateKey (): Promise<JWKInterface> {

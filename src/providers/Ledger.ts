@@ -1,5 +1,5 @@
 import { WalletProxy, Wallet } from '@/providers/WalletProxy'
-import { mix } from '@/functions/Utils'
+import { mix } from '@/functions/UtilsClass'
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import ArweaveApp from "@zondax/ledger-arweave"
 import { arweave, ArweaveAccount, ArweaveMessageRunner, ArweaveProvider } from '@/store/ArweaveStore'
@@ -103,7 +103,8 @@ export class LedgerProvider extends mix(ArweaveAccount).with(WalletProxy) implem
 		isProviderFor: (walletData) => walletData.provider === 'ledger',
 		addImportData: async (walletData) => {
 			walletData.provider = 'ledger'
-			walletData.arweave = { key: await getAddress() }
+			walletData.data ??= {}
+			walletData.data.arweave = { key: await getAddress() }
 		},
 		verify: async () => getAddress(true),
 	}}
