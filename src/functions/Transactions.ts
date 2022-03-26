@@ -40,6 +40,7 @@ function readFile (file: File) {
 }
 
 export async function manageUpload (tx: Transaction) {
+	if (!navigator.onLine) { return exportTransaction(tx) }
 	if (!tx.chunks?.chunks?.length) { return arweave.transactions.post(tx) }
 	const uploader = await arweave.transactions.getUploader(tx)
 	const storageKey = 'uploader:' + tx.id
@@ -93,6 +94,7 @@ export function unpackTags <T extends boolean = false> (tags: { name: string, va
 }
 
 export async function exportTransaction (tx: Transaction) {
+	// if signed, don't track
 	// find if corresponding message in current connector queue
 	download('Transaction', JSON.stringify(tx))
 	// await for matching importTransaction before completing

@@ -1,8 +1,8 @@
-type ProviderName = keyof typeof import('@/functions/Wallets').ProviderRegistry
+type ProviderName = import('@/functions/Wallets').ProviderList
 type WalletDataInterface = {
 	id: string
 	uuid?: string
-	jwk?: import('arweave/web/lib/wallet').JWKInterface
+	jwk?: import('arweave/web/lib/wallet').JWKInterface | EncryptedContent
 	provider?: ProviderName
 } & {
 	[name in ProviderName]?: { key?: string }
@@ -12,8 +12,6 @@ interface Provider extends Account {
 	metadata: Metadata<this>
 	messageVerifier: any
 	messageRunner: MessageRunner
-	id: string
-	uuid: string
 	signTransaction?: (...args: any) => Promise<any>
 	bundle?: (...args: any) => Promise<any>
 	sign?: (data: ArrayBufferView, options: any) => Promise<ArrayBufferView>
@@ -44,7 +42,7 @@ type AccountMetadata = {
 type StaticMetadata = AccountMetadata & {
 	link?: string
 	isSupported: boolean
-	isProviderFor: (wallet: import('@/functions/Wallets').WalletProxy) => boolean
+	isProviderFor: (wallet: Partial<WalletDataInterface>) => boolean
 	addImportData: (data: Partial<WalletDataInterface>) => Promise<void>
 	verify?: () => any
 }

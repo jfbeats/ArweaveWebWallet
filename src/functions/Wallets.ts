@@ -2,60 +2,40 @@ import { ArweaveProvider, arweave, ArweaveAccount } from '@/store/ArweaveStore'
 import { LedgerProvider } from '@/providers/Ledger'
 import { ChannelRef } from '@/functions/Channels'
 import { useDataWrapper } from '@/functions/AsyncData'
-import { passwordEncrypt, passwordDecrypt, pkcs8ToJwk } from '@/functions/Crypto'
-import { uuidV4, download } from '@/functions/Utils'
+import { pkcs8ToJwk } from '@/functions/Crypto'
+import { download } from '@/functions/Utils'
 import { generateMnemonic as generateM, validateMnemonic as validateM } from 'bip39-web-crypto'
 // @ts-ignore
 import { getKeyPairFromMnemonic } from 'human-crypto-keys'
 // @ts-ignore
 import wordlist from 'bip39-web-crypto/src/wordlists/english.json'
 import type { JWKInterface } from 'arweave/web/lib/wallet'
+import type { Wallet } from '@/providers/WalletProxy'
 
 
 
-export const ProviderRegistry = {
+export type ProviderList = 'arweave' | 'ledger'
+export const ProviderRegistry: { [key in ProviderList]: any } = {
 	arweave: ArweaveProvider,
 	ledger: LedgerProvider,
-}
+} as const
 
 
 
-function selectProvider (wallet: WalletProxy) {
-	if (wallet.data.provider && ProviderRegistry[wallet.data.provider]) { return ProviderRegistry[wallet.data.provider] }
+function selectProvider (wallet: WalletDataInterface) {
+	if (wallet.provider && ProviderRegistry[wallet.provider]) { return ProviderRegistry[wallet.provider] }
 	for (const provider of Object.values(ProviderRegistry)) { if (provider.metadata.isProviderFor?.(wallet)) { return provider } }
 	return ProviderRegistry['arweave']
 }
 
 
 
-export class WalletProxy {
-	#wallet: WalletDataInterface
-	constructor (...args: any[]) {
-		const walletData = args[0] as WalletDataInterface
-		if (!walletData.uuid) { walletData.uuid = uuidV4() }
-		if (!walletData.jwk) {
-			const disabled = ['getPrivateKey'] as const
-			disabled.forEach(method => this[method] = undefined)
-		}
-		this.#wallet = walletData
-	}
-	get data () { return this.#wallet }
-	get id () { return this.#wallet.id + '' }
-	get uuid () { return this.#wallet.uuid! }
-	async getPrivateKey? (decrypt?: boolean): Promise<JWKInterface> {
-		return this.#wallet.jwk!
-	}
-}
-
-
-
-function walletFactory (wallet: WalletDataInterface): Provider {
-	const walletProxy = new WalletProxy(wallet)
-	const provider = selectProvider(walletProxy)
-	return new provider(walletProxy)
+function walletFactory (wallet: WalletDataInterface): Wallet {
+	const provider = selectProvider(wallet)
+	return new provider(wallet)
 }
 const WalletsData = new ChannelRef('wallets', undefined, []).state
-export const Wallets = useDataWrapper(WalletsData, 'id', walletFactory, (wallet) => { wallet.destructor?.() })
+export const Wallets = useDataWrapper(WalletsData, 'id', walletFactory, wallet => wallet.destructor?.())
 
 
 

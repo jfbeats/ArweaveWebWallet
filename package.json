@@ -6,8 +6,7 @@
 		"build": "vite build",
 		"serve": "vite build && vite preview",
 		"deploy": "npm run build && arkb deploy dist --wallet ../arweaveWallet.json --use-bundler http://bundler.arweave.net:10000",
-		"deploy-confirm": "npm run build && arkb deploy dist --wallet ../arweaveWallet.json --auto-confirm --use-bundler http://bundler.arweave.net:10000",
-		"graphql": "graphql-codegen --config codegen.yml"
+		"deploy-confirm": "npm run build && arkb deploy dist --wallet ../arweaveWallet.json --auto-confirm --use-bundler http://bundler.arweave.net:10000"
 	},
 	"dependencies": {
 		"@ledgerhq/hw-transport-webusb": "^6.7.0",

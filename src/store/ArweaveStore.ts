@@ -1,8 +1,9 @@
 import Arweave from 'arweave'
 import Transaction from 'arweave/web/lib/transaction'
 import arweaveGraphql, { SortOrder } from 'arweave-graphql'
+import { WalletProxy, Wallet } from '@/providers/WalletProxy'
 import LogoArweave from '@/assets/logos/arweave.svg?component'
-import { download, generateUrl } from '@/functions/Utils'
+import { download, generateUrl, mix } from '@/functions/Utils'
 import { getDecryptionKey, getSigningKey } from '@/functions/Crypto'
 import { exportTransaction, manageUpload } from '@/functions/Transactions'
 import { useChannel } from '@/functions/Channels'
@@ -10,7 +11,6 @@ import { awaitEffect, getAsyncData, getReactiveAsyncData, getQueryManager } from
 import { ArweaveProviderInterface, ArweaveVerifier as ArweaveMessageVerifier } from 'arweave-wallet-connector/lib/Arweave.js'
 import { computed, isRef, reactive, ref, Ref, watch } from 'vue'
 import axios from 'axios'
-import type { WalletProxy } from '@/functions/Wallets'
 import type { TransactionEdge as GQLTransactionEdge, BlockEdge as GQLBlockEdge } from 'arweave-graphql'
 import type { TransactionInterface } from 'arweave/web/lib/transaction'
 import type { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
@@ -68,33 +68,13 @@ export function useWatchTx (txId: Ref<string | undefined>) {
 
 export async function fetchPublicKey (address: string) {
 	const tx = (await graphql().getTransactions({ owners: [address] })).transactions.edges
-	return tx?.[0]?.node.owner.key
+	return tx?.[0]?.node.owner.key as string | undefined
 }
 
 
 
 export class ArweaveAccount implements Account {
-	get metadata () { return {
-		name: 'Arweave Address',
-		icon: LogoArweave,
-	}}
-	state = reactive({
-		key: undefined as undefined | string,
-	})
-	get key () {
-		if (typeof this.init === 'string') { return this.init }
-		else if (typeof this.init === 'object') { return this.init.data.arweave?.key }
-	}
-	#balance = getAsyncData({
-		name: 'balance',
-		awaitEffect: () => this.key,
-		query: async () => arweave.ar.winstonToAr(await arweave.wallets.getBalance(this.key!)),
-		seconds: 600,
-	})
-	get balance () { return this.#balance.state.value }
-	queries
-	
-	constructor (private init: string | WalletProxy) {
+	constructor (private init: string | WalletDataInterface) {
 		const received = arweaveQuery(computed(() => (this.key ? { recipients: [this.key] } : undefined)))
 		const sent = arweaveQuery(computed(() => (this.key ? { owners: [this.key] } : undefined )))
 		const all = queryAggregator([received, sent])
@@ -105,50 +85,60 @@ export class ArweaveAccount implements Account {
 		]
 	}
 	destructor () { this.#balance.stop() }
+	get metadata () { return {
+		name: 'Arweave Address',
+		icon: LogoArweave,
+	}}
+	#key = computed(() => typeof this.init === 'string' ? this.init : this.init.arweave?.key)
+	#balance = getAsyncData({
+		name: 'balance',
+		awaitEffect: () => this.key,
+		query: async () => arweave.ar.winstonToAr(await arweave.wallets.getBalance(this.key!)),
+		seconds: 600,
+	})
+	get key () { return this.#key.value }
+	get balance () { return this.#balance.state.value }
+	queries
 }
 
 
 
-export class ArweaveProvider extends ArweaveAccount implements Provider {
+export class ArweaveProvider extends mix(ArweaveAccount).with(WalletProxy) implements Wallet {
+	constructor (init: WalletDataInterface) {
+		super(init)
+		if (!this.data.arweave?.key && this.hasPrivateKey) { ArweaveProvider.metadata.addImportData(init) }
+		this.messageVerifier = new ArweaveMessageVerifier()
+		this.messageRunner = new ArweaveMessageRunner(this)
+	}
 	static get metadata (): StaticMetadata { return {
 		name: 'Arweave Address',
 		icon: LogoArweave,
 		isSupported: true,
-		isProviderFor: (walletProxy) => !!walletProxy.data.jwk,
+		isProviderFor: (walletData) => !!walletData.jwk,
 		addImportData: async (walletData) => {
-			const address = await arweave.wallets.jwkToAddress(walletData.jwk)
+			const address = await arweave.wallets.jwkToAddress(walletData.jwk as any)
 			walletData.arweave ??= {}
 			walletData.arweave.key = address
 		},
 	}}
 	get metadata () { return {
 		...ArweaveProvider.metadata,
-		name: this.#wallet.data.jwk ? 'Arweave Wallet' : 'Arweave Address',
+		name: this.hasPrivateKey ? 'Arweave Wallet' : 'Arweave Address',
 		methods: {
-			download: { unavailable: !this.#wallet.data.jwk },
-			signTransaction: { userIntent: !this.#wallet.data.jwk },
-			bundle: { unavailable: !this.#wallet.data.jwk },
-			sign: { unavailable: !this.#wallet.data.jwk },
-			decrypt: { unavailable: !this.#wallet.data.jwk },
+			download: { unavailable: !this.hasPrivateKey },
+			signTransaction: { userIntent: !this.hasPrivateKey },
+			bundle: { unavailable: !this.hasPrivateKey },
+			sign: { unavailable: !this.hasPrivateKey },
+			decrypt: { unavailable: !this.hasPrivateKey },
 		}
 	}}
-	#wallet: WalletProxy
 	messageVerifier: ArweaveMessageVerifier
 	messageRunner: ArweaveMessageRunner
-	constructor (init: WalletProxy) {
-		super(init)
-		if (!init.data.arweave?.key && init.data.jwk) { ArweaveProvider.metadata.addImportData(init.data) }
-		this.#wallet = init
-		this.messageVerifier = new ArweaveMessageVerifier()
-		this.messageRunner = new ArweaveMessageRunner(this)
-	}
-	get id () { return this.#wallet.id }
-	get uuid () { return this.#wallet.uuid }
 	async signTransaction (tx: Transaction, options?: SignatureOptions) {
 		// todo test balance
-		if (!this.#wallet.data.jwk) { return exportTransaction(tx) }
+		if (!this.hasPrivateKey) { return exportTransaction(tx) }
 		if (tx.owner && tx.owner !== await this.getPublicKey()) { throw 'error' }
-		await arweave.transactions.sign(tx, await this.#wallet.getPrivateKey!(), options)
+		await arweave.transactions.sign(tx, await this.getPrivateKey(), options)
 		return tx
 	}
 	async bundle (tx: Transaction, options?: object) {
@@ -158,7 +148,7 @@ export class ArweaveProvider extends ArweaveAccount implements Provider {
 			name: tag.get('name', { decode: true, string: true }),
 			value: tag.get('value', { decode: true, string: true })
 		}))
-		const signer = new signers.ArweaveSigner(await this.#wallet.getPrivateKey!())
+		const signer = new signers.ArweaveSigner(await this.getPrivateKey())
 		const anchor = arweave.utils.bufferTob64(crypto.getRandomValues(new Uint8Array(32))).slice(0, 32)
 		const bundleTx = createData(data, signer, { tags, anchor })
 		await bundleTx.sign(signer)
@@ -171,33 +161,32 @@ export class ArweaveProvider extends ArweaveAccount implements Provider {
 		throw new Error(res.status + '')
 	}
 	async sign (data: ArrayBufferView, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
-		const signingKey = await getSigningKey(await this.#wallet.getPrivateKey!() as JsonWebKey)
+		const signingKey = await getSigningKey(await this.getPrivateKey() as JsonWebKey)
 		const signed = await window.crypto.subtle.sign(options, signingKey, data)
 		return new Uint8Array(signed)
 	}
 	async decrypt (data: ArrayBufferView, options: Parameters<ArweaveProviderInterface['decrypt']>[1]) {
-		const decryptionKey = await getDecryptionKey(await this.#wallet.getPrivateKey!() as JsonWebKey)
+		const decryptionKey = await getDecryptionKey(await this.getPrivateKey() as JsonWebKey)
 		const decrypted = await window.crypto.subtle.decrypt(options, decryptionKey, data)
 		return new Uint8Array(decrypted)
 	}
 	async getPublicKey () {
-		if (this.#wallet.getPrivateKey) { return (await this.#wallet.getPrivateKey()).n }
-		await awaitEffect(() => this.key)
-		return fetchPublicKey(this.key!)
+		let result = undefined as string | undefined
+		if (this.hasPrivateKey && !this.isEncrypted) { result ||= (await this.getPrivateKey()).n }
+		await awaitEffect(() => this.key); result ||= await fetchPublicKey(this.key!)
+		if (this.hasPrivateKey) { result ||= (await this.getPrivateKey()).n }
+		return result
 	}
 	async download () {
 		await awaitEffect(() => this.key)
-		download(this.key!, JSON.stringify(await this.#wallet.getPrivateKey!()))
+		download(this.key!, JSON.stringify(await this.getPrivateKey()))
 	}
 }
 
 
 
 export class ArweaveMessageRunner implements MessageRunner, Partial<ArweaveProviderInterface> {
-	#wallet: ArweaveProvider
-	constructor (wallet: ArweaveProvider) {
-		this.#wallet = wallet
-	}
+	constructor (private wallet: ArweaveProvider) { }
 	getMethodMetadata (method: string) {
 		const map: { [keys in keyof this]?: keyof Metadata<ArweaveProvider>['methods'] } = {
 			signTransaction: 'signTransaction',
@@ -208,16 +197,16 @@ export class ArweaveMessageRunner implements MessageRunner, Partial<ArweaveProvi
 		}
 		const providerMethod = map[method as keyof this]
 		if (!providerMethod) { return {} }
-		const methodsMetadata = this.#wallet.metadata?.methods
+		const methodsMetadata = this.wallet.metadata?.methods
 		const result = methodsMetadata?.[providerMethod as keyof typeof methodsMetadata]
-		if (!result && this.#wallet[providerMethod as keyof typeof methodsMetadata]) { return {} }
+		if (!result && this.wallet[providerMethod as keyof typeof methodsMetadata]) { return {} }
 		return result || { unavailable: true }
 	}
 	async signTransaction (tx: TransactionInterface, options?: object) {
 		const txObject = new Transaction(tx)
 		// const fee = await getFeeRange()
 		// if (fee.default?.gt(txObject.reward)) { txObject.reward = fee.default.toString() }
-		await this.#wallet.signTransaction(txObject)
+		await this.wallet.signTransaction(txObject)
 		return {
 			id: txObject.id,
 			owner: txObject.owner,
@@ -231,12 +220,13 @@ export class ArweaveMessageRunner implements MessageRunner, Partial<ArweaveProvi
 		const txObject = new Transaction(tx)
 		let dispatchResult: Awaited<ReturnType<ArweaveProviderInterface['dispatch']>> | undefined
 		try {
-			const res = await this.#wallet.bundle(txObject)
+			const res = await this.wallet.bundle(txObject)
 			dispatchResult = { id: res.id, type: 'BUNDLED' }
 		} catch (e) { console.error(e) }
 		if (dispatchResult) { return dispatchResult }
 		try {
-			await this.#wallet.signTransaction(txObject)
+			// set fees
+			await this.wallet.signTransaction(txObject)
 			// manageUpload(txObject)
 			dispatchResult = { id: txObject.id, type: 'BASE' }
 		} catch (e) { console.error(e) }
@@ -244,16 +234,16 @@ export class ArweaveMessageRunner implements MessageRunner, Partial<ArweaveProvi
 		throw 'testing without base tx fallback'
 	}
 	async getPublicKey () {
-		const publicKey = await this.#wallet.getPublicKey()
+		const publicKey = await this.wallet.getPublicKey()
 		if (!publicKey) { throw 'error' }
 		return publicKey
 	}
 	async sign (message: ArrayBufferView, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
 		if (message.byteLength === 48) { throw 'error' }
-		return this.#wallet.sign!(message, options)
+		return this.wallet.sign!(message, options)
 	}
 	async decrypt (message: ArrayBufferView, options: Parameters<ArweaveProviderInterface['decrypt']>[1]) {
-		return this.#wallet.decrypt!(message, options)
+		return this.wallet.decrypt!(message, options)
 	}
 	async getArweaveConfig () {
 		const config = arweave.getConfig().api
