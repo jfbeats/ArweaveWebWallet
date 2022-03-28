@@ -1,9 +1,11 @@
 <template>
 	<div class="edit-wallet">
 		<h2>New Wallet{{ wallets.length > 1 ? 's' : '' }}</h2>
-		<div v-for="wallet in wallets" :key="wallet.id" class="card flex-column">
-			<WalletOptions class="wallet-options" :wallet="wallet" />
-			<Button v-if="state.type === 'popup' && !sharedState.walletId" @click="() => sharedState.walletId = wallet.id">Connect</Button>
+		<div class="flex-column">
+			<div v-for="wallet in wallets" :key="wallet.id" class="card">
+				<WalletOptions class="wallet-options" :wallet="wallet" />
+				<Button v-if="state.type === 'popup' && !sharedState.walletId" @click="() => sharedState.walletId = wallet.id">Connect</Button>
+			</div>
 		</div>
 	</div>
 </template>

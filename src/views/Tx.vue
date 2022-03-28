@@ -27,7 +27,7 @@
 										<div v-if="isData"><a :href="ArweaveStore.gatewayURL + tx.id" target="_blank">{{ gatewayHostname }}</a></div>
 										<div v-if="tx.data?.type === 'application/x.arweave-manifest+json'"><a :href="ArweaveStore.gatewayURL + 'tx/' + tx.id + '/data.json'" target="_blank">Manifest</a></div>
 									</div>
-									<div class="secondary-text"><Address :address="tx.id">ID:&nbsp;</Address></div>
+									<div class="secondary-text"><Address :tx="tx.id">ID:&nbsp;</Address></div>
 								</div>
 							</div>
 							
@@ -35,7 +35,7 @@
 								<h3>Bundle</h3>
 								<div class="flex-column">
 									<TxCard v-if="bundleTx" :tx="bundleTx" :options="{ space: true }" />
-									<div class="secondary-text"><Address :address="tx.bundledIn?.id">ID:&nbsp;</Address></div>
+									<div class="secondary-text"><Address :tx="tx.bundledIn?.id">ID:&nbsp;</Address></div>
 								</div>
 							</div>
 							
@@ -51,7 +51,7 @@
 								</div>
 								<div>{{ date }}</div>
 								<div class="spacer" />
-								<div class="secondary-text"><Address :address="tx.block.id">ID:&nbsp;</Address></div>
+								<div class="secondary-text"><Address :block="tx.block.id">ID:&nbsp;</Address></div>
 							</div>
 		
 							<div>

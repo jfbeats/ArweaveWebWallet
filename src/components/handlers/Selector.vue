@@ -2,7 +2,10 @@
 	<div v-if="data.handler === 'intent'" @click="data.intent = true" class="selector data-container min-height box" style="display: flex; justify-content: center; padding-top: 5em;">
 		<Button :icon="IconDownload">Load large file</Button>
 	</div>
-	<div v-else-if="data.handler === 'json' || data.handler === 'raw'" key="json" class="selector data-container min-height box">
+	<div v-else-if="data.handler === 'raw'" key="json" class="selector data-container min-height box">
+		<TransitionsManager>
+			<LoaderBlock v-if="!data.loaded" class="loader" />
+		</TransitionsManager>
 		<pre class="raw">{{ data.payload }}</pre>
 	</div>
 	<div v-else-if="data.handler" class="selector">
@@ -41,7 +44,7 @@ type Handler = {
 const props = defineProps(['tx'])
 
 const data = reactive({
-	handler: undefined as undefined | Handler | 'intent' | 'raw' | 'json',
+	handler: undefined as undefined | Handler | 'intent' | 'raw',
 	payload: undefined as any,
 	loaded: false,
 	intent: false,
@@ -63,6 +66,7 @@ const load = async () => {
 	}
 	if (tags['Content-Type'] === 'application/x.arweave-manifest+json' || tags['Content-Type'] === 'text/html' || tags['Content-Type'] === 'application/pdf') { return data.handler = { is: 'iframe', attrs: { src: gatewayLink.value, class: ['hover'] }, containerAttrs: { class: ['iframe-container', 'fixed-height'] } } }
 	if (tags['Content-Type']?.split('/')[0] === 'video') { data.loaded = true; return data.handler = { is: markRaw(Video), attrs: { tx: props.tx }, containerAttrs: { class: ['iframe-container'] } } }
+	if (tags['Content-Type']?.split('/')[0] === 'audio') { data.loaded = true; return data.handler = { is: markRaw(Video), attrs: { tx: props.tx }, containerAttrs: { class: ['iframe-container'] } } }
 	// if (tags['Content-Type']?.split('/')[0] === 'audio') { return data.handler = { is: 'iframe', attrs: { src: gatewayLink.value }, containerAttrs: { class: ['iframe-container', 'fixed-height'] } } }
 	if (props.tx.data.size > 104857600 && !data.intent) { return data.handler = 'intent' }
 	if (tags['Content-Type']?.split('/')[0] === 'image') { return data.handler = { is: markRaw(Img), attrs: { src: gatewayLink.value }, containerAttrs: { class: ['img-container'] } } }
@@ -70,15 +74,24 @@ const load = async () => {
 	else {
 		data.handler = 'raw'
 		try {
-			data.payload = (await arweave.api.get(props.tx.id)).data
-			if (data.payload[0] === "{") {
+			if (tags['Content-Type'] === 'application/gzip') { data.payload = await gzipDecompress(props.tx.id) }
+			else {
 				try {
-					data.payload = JSON.stringify(JSON.parse(data.payload), null, 2)
-					data.handler = 'json'
+					data.payload = (await arweave.api.get(props.tx.id)).data
+					if (data.payload[0] === "{") { try { data.payload = JSON.stringify(JSON.parse(data.payload), null, 2) } catch (e) { } }
 				} catch (e) { }
 			}
 		} catch (e) { }
 	}
+	data.loaded = true
+}
+
+async function gzipDecompress(tx: string) {
+	const res = (await arweave.api.get(tx, {responseType: 'blob'})).data
+	const ds = new DecompressionStream('gzip')
+	const decompressedStream = res.stream().pipeThrough(ds)
+	const blob = await new Response(decompressedStream).blob()
+	return blob.text()
 }
 
 watch(() => props.tx.id, () => {

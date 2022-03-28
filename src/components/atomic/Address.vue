@@ -2,7 +2,7 @@
 	<div class="address ellipsis">
 		<span class="address-tx ellipsis" @click="tools = !tools">
 			<slot />
-			<span class="text ellipsis">{{ address }}</span>
+			<span class="text ellipsis">{{ val }}</span>
 			<Icon :icon="IconVerify" v-if="arverify?.verified" class="arverify" />
 		</span>
 	</div>
@@ -16,12 +16,15 @@ import ProfileStore, { getArverify } from '@/store/ProfileStore'
 import { computed, watch, ref } from 'vue'
 import IconVerify from '@/assets/icons/verify.svg?component'
 
-const props = defineProps(['address', 'tx'])
+const props = defineProps<{
+	address?: string
+	tx?: string
+	block?: string
+}>()
+const val = computed(() => props.address || props.tx || props.block)
 
-const arverify = computed(() => ProfileStore.arverify[props.address])
-watch(() => props.address, async () => {
-	getArverify(props.address)
-}, { immediate: true })
+const arverify = computed(() => props.address && ProfileStore.arverify[props.address])
+watch(() => props.address, async () => props.address && getArverify(props.address), { immediate: true })
 
 const tools = ref(false)
 </script>

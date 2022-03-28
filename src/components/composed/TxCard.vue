@@ -135,7 +135,7 @@ const verticalElement = computed(() => InterfaceStore.breakpoints.verticalLayout
 }
 
 .address {
-	max-width: 200px;
+	max-width: Min(200px, 100%);
 	margin-inline-start: auto;
 }
 
