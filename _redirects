@@ -1,13 +1,13 @@
-/aws/* /favicon.ico
-/.aws/* /favicon.ico
-/paypal/* /favicon.ico
-/wp/* /favicon.ico
-/wp-admin/* /favicon.ico
-/wp-includes/* /favicon.ico
-/wp-content/* /favicon.ico
-/public/* /favicon.ico
-/.env /favicon.ico
-/search.php /favicon.ico
-/license.php /favicon.ico
+/aws/* /arweave.svg
+/.aws/* /arweave.svg
+/paypal/* /arweave.svg
+/wp/* /arweave.svg
+/wp-admin/* /arweave.svg
+/wp-includes/* /arweave.svg
+/wp-content/* /arweave.svg
+/public/* /arweave.svg
+/.env /arweave.svg
+/search.php /arweave.svg
+/license.php /arweave.svg
 
 /* /index.html 200
