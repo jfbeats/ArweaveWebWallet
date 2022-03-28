@@ -1,1 +1,13 @@
+/aws/* /favicon.ico
+/.aws/* /favicon.ico
+/paypal/* /favicon.ico
+/wp/* /favicon.ico
+/wp-admin/* /favicon.ico
+/wp-includes/* /favicon.ico
+/wp-content/* /favicon.ico
+/public/* /favicon.ico
+/.env /favicon.ico
+/search.php /favicon.ico
+/license.php /favicon.ico
+
 /* /index.html 200
