@@ -1,9 +1,11 @@
-export function findRoutePosition (name: string, arr: any[]) {
+import type { RouteRecordName } from 'vue-router'
+
+export function findRoutePosition (name:  RouteRecordName | Null, arr: any[]) {
 	const result = findRecursive(name, arr)
 	return result.found ? result : null
 }
 
-function findRecursive (name: string, arr: any[], position = 0, depth = 0): { found: boolean, position: number, depth: number } {
+function findRecursive (name:  RouteRecordName | Null, arr: any[], position = 0, depth = 0): { found: boolean, position: number, depth: number } {
 	for (const route of arr) {
 		if (route.name === name) { return { found: true, position, depth } }
 		position++
