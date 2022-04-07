@@ -31,7 +31,7 @@
 
 
 
-<script setup>
+<script setup lang="ts">
 import DragOverlay from '@/components/atomic/DragOverlay.vue'
 import InterfaceStore from '@/store/InterfaceStore'
 import { computed, ref, toRef, useAttrs } from 'vue'
@@ -51,10 +51,11 @@ const model = computed({
 })
 const focus = ref(0)
 const dragOverlay = toRef(InterfaceStore, 'dragOverlay')
-const handleFiles = (e) => {
+const handleFiles = (e: DragEvent | InputEvent) => {
 	if (attrs.disabled) { return }
 	if (e.dataTransfer?.files) { return emit('files', e.dataTransfer.files) }
-	if (e.target?.files) { return emit('files', e.target.files) }
+	const target = e.target as HTMLInputElement
+	if (target?.files) { return emit('files', target.files) }
 }
 const clearFiles = () => { emit('files', null) }
 const isFile = computed(() => typeof model.value === "object")
