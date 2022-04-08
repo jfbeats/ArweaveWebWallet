@@ -1,9 +1,10 @@
-import { ArweaveProvider, arweave, ArweaveAccount } from '@/store/ArweaveStore'
+import { arweave } from '@/store/ArweaveStore'
+import { ArweaveAccount, ArweaveProvider } from '@/providers/Arweave'
 import { LedgerProvider } from '@/providers/Ledger'
 import { ChannelRef } from '@/functions/Channels'
 import { useDataWrapper } from '@/functions/AsyncData'
 import { pkcs8ToJwk } from '@/functions/Crypto'
-import { download } from '@/functions/Utils'
+import { download } from '@/functions/File'
 import { generateMnemonic as generateM, validateMnemonic as validateM } from 'bip39-web-crypto'
 // @ts-ignore
 import { getKeyPairFromMnemonic } from 'human-crypto-keys'
@@ -15,17 +16,16 @@ import type { Wallet } from '@/providers/WalletProxy'
 
 
 export type ProviderList = 'arweave' | 'ledger'
-export const ProviderRegistry: { [key in ProviderList]: any } = {
-	arweave: ArweaveProvider,
-	ledger: LedgerProvider,
-} as const
+export const softwareProviders = [ArweaveProvider] as const
+export const hardwareProviders = [LedgerProvider] as const
+export const providers = [...hardwareProviders, ...softwareProviders] as const
 
 
 
 function selectProvider (wallet: WalletDataInterface) {
-	if (wallet.provider && ProviderRegistry[wallet.provider]) { return ProviderRegistry[wallet.provider] }
-	for (const provider of Object.values(ProviderRegistry)) { if (provider.metadata.isProviderFor?.(wallet)) { return provider } }
-	return ProviderRegistry['arweave']
+	for (const provider of providers) { if (provider.metadata.id === wallet.provider) { return provider } }
+	for (const provider of providers) { if (provider.metadata.isProviderFor?.(wallet)) { return provider } }
+	return ArweaveProvider
 }
 
 
@@ -44,52 +44,46 @@ export function getWalletById (walletId?: any) {
 }
 
 export function getAccountByAddress (address: string): Account {
-	return Wallets.value.find(wallet => wallet.key == address)
-		|| new ArweaveAccount(address)
+	return Wallets.value.find(wallet => wallet.key == address) || new ArweaveAccount(address)
 }
 
-export async function generateMnemonic () {
-	return generateM(undefined, undefined, wordlist)
-}
+export async function generateMnemonic () { return generateM(undefined, undefined, wordlist) }
+export async function validateMnemonic (mnemonic: string) { return validateM(mnemonic, wordlist) }
 
-export async function validateMnemonic (mnemonic: string) {
-	return validateM(mnemonic, wordlist)
-}
-
-export async function addMnemonic (mnemonic: string) {
+export async function addMnemonic (mnemonic: string): Promise<WalletDataInterface> {
 	let keyPair = await getKeyPairFromMnemonic(mnemonic, { id: 'rsa', modulusLength: 4096 }, { privateKeyFormat: 'pkcs8-der' })
 	const jwk = await pkcs8ToJwk(keyPair.privateKey)
 	console.info('generated wallet')
 	return addWallet(jwk as JWKInterface)
 }
 
-export async function addWallet (jwkObj: JWKInterface) {
+export async function addWallet (jwkObj: JWKInterface): Promise<WalletDataInterface> { // todo use addProvider(ArweaveProvider) instead, gen jwk when missing
 	const jwk = jwkObj || await arweave.wallets.generate()
 	const jwkString = JSON.stringify(jwk)
 	const existing = WalletsData.value.find(w => JSON.stringify(w.jwk) === jwkString)
-	if (existing) { return existing.id }
+	if (existing) { return existing }
 	const key = await arweave.wallets.jwkToAddress(jwk) as string
 	if (!jwkObj) { download(key, jwkString) }
-	const wallet = { id: getNewId(), jwk }
-	WalletsData.value.push(wallet)
-	return wallet.id
+	const walletData: WalletDataInterface = { id: getNewId(), jwk }
+	WalletsData.value.push(walletData)
+	return walletData
 }
 
-export async function addAddress (addressSource: any) {
+export async function addAddress (addressSource: any): Promise<WalletDataInterface> { // todo make provider specific
 	let key = typeof addressSource === 'string' && addressSource
 	key ||= addressSource.key
 	key ||= await addressSource.getActiveAddress?.()
-	if (!key) { return }
-	const wallet = { id: getNewId(), arweave: { key } }
-	WalletsData.value.push(wallet)
-	return wallet.id
+	if (!key) { throw 'no address found' }
+	const walletData: WalletDataInterface = { id: getNewId(), data: { arweave: { key } } }
+	WalletsData.value.push(walletData)
+	return walletData
 }
 
-export async function addProvider (provider: Provider) {
-	const walletData = { id: getNewId() } // todo same but with jwk for arweave provider
+export async function addProvider (provider: Provider): Promise<WalletDataInterface> { // todo deduplicate
+	const walletData: WalletDataInterface = { id: getNewId() }
 	await provider.metadata.addImportData(walletData)
-	WalletsData.value.push(walletData) // todo if not already present
-	return walletData.id
+	WalletsData.value.push(walletData)
+	return walletData
 }
 
 export function deleteWallet (wallet: WalletDataInterface) {
@@ -100,4 +94,16 @@ function getNewId () {
 	let i = 0
 	while (WalletsData.value.find(w => +w.id === i)) { i++ }
 	return i + ''
+}
+
+
+
+export function getMethodMetadata(provider?: Wallet, runnerMethod?: string): MethodMetadata {
+	if (!provider || !runnerMethod) { return {} }
+	const providerMethod = provider.messageRunner.methodMap[runnerMethod as keyof typeof provider.messageRunner]
+	if (!providerMethod) { return {} }
+	const methodsMetadata = provider.metadata?.methods
+	const result = methodsMetadata?.[providerMethod as keyof typeof methodsMetadata]
+	if (!result && provider[providerMethod as keyof typeof methodsMetadata]) { return {} }
+	return result || { unavailable: true }
 }

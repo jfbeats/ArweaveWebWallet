@@ -38,16 +38,6 @@ function hsl2rgb (h: number, s: number, b: number) {
 	return [s2[~~h % 6] * 255, s2[(h | 16) % 6] * 255, s2[(h | 8) % 6] * 255]
 }
 
-export function download (filename: string, text: string, contentType = 'application/json') {
-	const element = document.createElement('a')
-	element.setAttribute('href', `data:${contentType};charset=utf-8,${encodeURIComponent(text)}`)
-	element.setAttribute('download', filename)
-	element.style.display = 'none'
-	document.body.appendChild(element)
-	element.click()
-	document.body.removeChild(element)
-}
-
 export function generateUrl (url: string) {
 	if (!url.includes('://')) { url = 'https://' + url }
 	return new URL(url).href

@@ -10,7 +10,7 @@ type WalletDataInterface = {
 interface Provider extends Account {
 	metadata: Metadata<this>
 	messageVerifier: any
-	messageRunner: MessageRunner
+	messageRunner: MessageRunner<this>
 	signTransaction?: (...args: any) => Promise<any>
 	bundle?: (...args: any) => Promise<any>
 	sign?: (data: ArrayBufferView, options: any) => Promise<ArrayBufferView>
@@ -20,30 +20,36 @@ interface Provider extends Account {
 }
 
 interface Account {
-	metadata: AccountMetadata
+	metadata: DisplayMetadata
 	key?: string
 	balance?: string
 	queries: { query: any, name: string, color: string }[]
 	destructor?: () => any
 }
 
-interface MessageRunner {
-	getMethodMetadata: (method: string) => MethodMetadata | undefined
+interface MessageRunner<T> {
+	get methodMap(): MethodMap<this, T>
 }
 
 
 
-type AccountMetadata = {
+type DisplayMetadata = {
 	name: string
 	icon: import('vue').FunctionalComponent<import('vue').SVGAttributes, {}>
+	color?: string
 }
 
-type StaticMetadata = AccountMetadata & {
+type ProviderMetadata = DisplayMetadata & {
+	id: string
 	link?: string
-	isSupported: boolean
-	isProviderFor: (wallet: Partial<WalletDataInterface>) => boolean
+	disabled?: boolean
 	addImportData: (data: Partial<WalletDataInterface>) => Promise<void>
-	verify?: () => any
+	isProviderFor?: (wallet: Partial<WalletDataInterface>) => boolean
+	verify?: () => any // todo change to actions
+}
+
+type Metadata <T> = ProviderMetadata & {
+	methods: { [keys in keyof T]?: MethodMetadata }
 }
 
 type MethodMetadata = {
@@ -52,6 +58,4 @@ type MethodMetadata = {
 	userIntent?: boolean
 }
 
-type Metadata <T> = StaticMetadata & {
-	methods: { [keys in keyof T]?: MethodMetadata }
-}
+type MethodMap <T, U> = { [keys in keyof T]?: keyof U}

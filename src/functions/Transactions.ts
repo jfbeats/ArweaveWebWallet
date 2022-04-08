@@ -1,10 +1,10 @@
 import ArweaveStore, { arweave } from '@/store/ArweaveStore'
-import { getPending, getMempool } from '@/store/BlockStore'
-import BigNumber from 'bignumber.js'
-import { CreateTransactionInterface } from 'arweave/web'
-import Transaction from 'arweave/web/lib/transaction'
-import { download } from '@/functions/Utils'
+import { getMempool, getPending } from '@/store/BlockStore'
+import { exportTransaction } from '@/functions/File'
 import { createToast } from 'mosha-vue-toastify'
+import BigNumber from 'bignumber.js'
+import type Transaction from 'arweave/web/lib/transaction'
+import type { CreateTransactionInterface } from 'arweave/web'
 
 export type TxParams = {
 	target?: string
@@ -91,11 +91,4 @@ export function unpackTags <T extends boolean = false> (tags: { name: string, va
 		: (tag: typeof tags[0]) => result[options?.lowercase ? tag.name.toLowerCase() : tag.name] ??= tag.value
 	tags.forEach(set)
 	return result as { [key:string]: (T extends true ? string[] : string) }
-}
-
-export async function exportTransaction (tx: Transaction) {
-	// if signed, don't track
-	// find if corresponding message in current connector queue
-	download('Transaction', JSON.stringify(tx))
-	// await for matching importTransaction before completing
 }

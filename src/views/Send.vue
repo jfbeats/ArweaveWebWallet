@@ -84,7 +84,7 @@
 
 
 
-<script setup>
+<script setup lang="ts">
 import InputAddress from '@/components/atomic/InputAddress.vue';
 import InputAr from '@/components/atomic/InputAr.vue'
 import InputData from '@/components/atomic/InputData.vue'
@@ -105,10 +105,10 @@ const props = defineProps(['wallet', 'model'])
 const setMax = async () => {
 	const balance = new BigNumber(props.wallet.balance)
 	await awaitEffect(() => txFee.value)
-	props.model.quantity = balance.minus(txFee.value).toString()
+	props.model.quantity = balance.minus(txFee.value!).toString()
 }
 
-const filesAdded = (files) => {
+const filesAdded = (files: FileList) => { // todo go through droppedFiles
 	let contentTypeTag = props.model.tags.find(row => row.items[0].value === 'Content-Type')
 	props.model.data = files ? files[0] : ''
 	if (props.model.data && props.model.data.type) {
@@ -135,7 +135,7 @@ const txSize = computed(() => {
 	const data = props.model.data
 	return data.size || data.length || '0'
 })
-const txFee = ref(null)
+const txFee = ref(null as null | string)
 
 const getTagsFromSchema = (tagsSchema) => {
 	const result = []

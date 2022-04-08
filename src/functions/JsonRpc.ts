@@ -1,5 +1,5 @@
 import { getDB } from '@/store/IndexedDB'
-import { Wallets } from '@/functions/Wallets'
+import { Wallets, getMethodMetadata } from '@/functions/Wallets'
 import { computed, reactive, Ref, watch } from 'vue'
 import { awaitEffect } from '@/functions/AsyncData'
 import { uuidV4 } from '@/functions/Utils'
@@ -90,7 +90,7 @@ export default class JsonRpc {
 			const message = await getMessage(messageEntry)
 			if (!this.isValidMessage(message)) { throw new Error('message changed and is not valid anymore') }
 			const runner = this.stateWallet.value?.messageRunner
-			if (runner.getMethodMetadata(message.method)?.skip) { return }
+			if (getMethodMetadata(this.stateWallet.value, message.method)?.skip) { return }
 			const result = await (runner as any)[message.method!]?.(...(message.params || []))
 			messageEntry.fulfilled = true
 			await this.updateMessage(messageEntry)
@@ -111,7 +111,7 @@ export default class JsonRpc {
 		if (typeof method !== 'string') { id != null && this.callbacks({ ...getError('request'), id }); return false }
 		if (!this.stateWallet.value?.messageVerifier[method]) { id != null && this.callbacks({ ...getError('method', { method }), id }); return false }
 		if (!(this.stateWallet.value?.messageRunner as any)[method]) { id != null && this.callbacks({ ...getError('method', { method }), id }); return false }
-		if (this.stateWallet.value?.messageRunner.getMethodMetadata(method)?.unavailable) { id != null && this.callbacks({ ...getError('method', { method }), id }); return false }
+		if (getMethodMetadata(this.stateWallet.value, method)?.unavailable) { id != null && this.callbacks({ ...getError('method', { method }), id }); return false }
 		if (params != null && !Array.isArray(params)) { id != null && this.callbacks({ ...getError('params', { type: 'Params must be sent as an array', method, params }), id }); return false }
 		if (!this.stateWallet.value?.messageVerifier[method](...(message.params || []))) { id != null && this.callbacks({ ...getError('params', { type: 'Type error', method, params }), id }); return false }
 		return true

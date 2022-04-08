@@ -18,11 +18,12 @@
 
 <script setup lang="ts">
 import Button from '@/components/atomic/Button.vue'
-import { getWalletById } from '@/functions/Wallets'
+import { getMethodMetadata, getWalletById } from '@/functions/Wallets'
 import { computed, ref, watch } from 'vue'
 import IconConnection from '@/assets/icons/connection.svg?component'
 import { useChannel } from '@/functions/Channels'
 import TransitionsManager from '@/components/visual/TransitionsManager.vue'
+import type { Wallet } from '@/providers/WalletProxy'
 
 const props = defineProps<{ state: ConnectorState, walletId?: string }>()
 
@@ -35,15 +36,15 @@ const displayKeys = {
 	getArweaveConfig: 'Share arweave gateway configuration',
 } as { [key: string]: string | undefined }
 
-const getInstanceProperties = (wallet?: Provider) => Object.getOwnPropertyNames(Object.getPrototypeOf(wallet?.messageRunner || {}))
+const getInstanceProperties = (wallet?: Wallet) => Object.getOwnPropertyNames(Object.getPrototypeOf(wallet?.messageRunner || {}))
 	.filter(prop => {
-		if (prop === 'constructor' || prop === 'getMethodMetadata' || !wallet) { return }
-		return !wallet.messageRunner.getMethodMetadata(prop)?.unavailable
+		if (prop === 'constructor' || prop === 'methodMap' || !wallet) { return }
+		return !getMethodMetadata(wallet, prop)?.unavailable
 	})
 	.map(prop => ({
 		name: prop,
 		displayName: displayKeys[prop] || prop,
-		disabled: wallet?.messageRunner.getMethodMetadata(prop)?.userIntent
+		disabled: getMethodMetadata(wallet, prop)?.userIntent
 	}))
 const wallet = computed(() => getWalletById(props.walletId))
 const methods = computed(() => [...getInstanceProperties(wallet.value)]) // 'connect' in here?

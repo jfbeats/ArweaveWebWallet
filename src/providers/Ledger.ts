@@ -2,11 +2,12 @@ import { WalletProxy, Wallet } from '@/providers/WalletProxy'
 import { mix } from '@/functions/UtilsClass'
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import ArweaveApp from "@zondax/ledger-arweave"
-import { arweave, ArweaveAccount, ArweaveMessageRunner, ArweaveProvider } from '@/store/ArweaveStore'
+import { ArweaveAccount, ArweaveMessageRunner } from '@/providers/Arweave'
+import { arweave } from '@/store/ArweaveStore'
 import { ArweaveVerifier as ArweaveMessageVerifier } from 'arweave-wallet-connector/lib/Arweave.js'
 import LogoLedger from '@/assets/logos/ledger.svg?component'
-import Transaction from 'arweave/web/lib/transaction'
-import { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
+import type Transaction from 'arweave/web/lib/transaction'
+import type { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
 
 
 
@@ -94,13 +95,12 @@ export class LedgerProvider extends mix(ArweaveAccount).with(WalletProxy) implem
 		this.messageVerifier = new ArweaveMessageVerifier()
 		this.messageRunner = new ArweaveMessageRunner(this as any)
 	}
-	static get metadata (): StaticMetadata { return {
+	static get metadata (): ProviderMetadata { return {
+		id: 'ledger',
 		name: 'Ledger',
 		icon: LogoLedger,
 		link: 'https://shop.ledger.com?r=1a60a479b0af',
-		// @ts-ignore
-		isSupported: !!window.navigator.usb,
-		isProviderFor: (walletData) => walletData.provider === 'ledger',
+		disabled: !window.navigator.usb,
 		addImportData: async (walletData) => {
 			walletData.provider = 'ledger'
 			walletData.data ??= {}
@@ -108,7 +108,7 @@ export class LedgerProvider extends mix(ArweaveAccount).with(WalletProxy) implem
 		},
 		verify: async () => getAddress(true),
 	}}
-	get metadata (): Metadata<ArweaveProvider> { return {
+	get metadata () { return {
 		...LedgerProvider.metadata,
 		methods: {
 			signTransaction: { userIntent: true },

@@ -6,7 +6,7 @@
 				<span>Key file</span>
 			</h2>
 			<div class="flex-column">
-				<InputData v-model="passphraseInput" @files="importFile" :disabled="isCreatingWallet" placeholder="Import passphrase or key file" />
+				<InputData v-model="passphraseInput" @files="files => importKeyfiles(files)" :disabled="isCreatingWallet" placeholder="Import passphrase or key file" />
 				<div />
 				<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create()" :disabled="passphraseInput.length && !isPassphrase" :icon="LogoArweave" class="main">Create new wallet</Button>
 				<Button v-else-if="isCreatingWallet" :disabled="createdWallet == null" @click="goToCreatedWallet" :icon="createdWallet == null ? 'loader' : ''" class="main">{{ createdWallet == null ? 'Generating, write down the passphrase' : 'Passphrase saved? Click here to proceed' }}</Button>
@@ -17,10 +17,8 @@
 		<div class="card" v-for="provider in hardwareProviders" :key="provider.metadata.name">
 			<h2 class="flex-row" style="align-items: center;"><Icon :icon="provider.metadata.icon" /><span>{{ provider.metadata.name }} Hardware Wallet (awaiting release)</span></h2>
 			<div class="flex-column">
-				<Button :disabled="!provider.metadata.isSupported" @click="importProvider(provider)" :icon="provider.metadata.icon" class="main">
-					{{ !provider.metadata.isSupported
-						? `${provider.metadata.name} not supported for this browser`
-						: `Connect with ${provider.metadata.name}` }}
+				<Button :disabled="provider.metadata.disabled" @click="importProvider(provider)" :icon="provider.metadata.icon" class="main">
+					{{ provider.metadata.disabled ? `${provider.metadata.name} not supported for this browser` : `Connect with ${provider.metadata.name}` }}
 				</Button>
 				<div class="flex-row">
 					<Button :icon="IconVerify" @click="provider.metadata.verify">Verify address</Button>
@@ -45,10 +43,9 @@ import InputAddress from '@/components/atomic/InputAddress.vue';
 import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
-import { LedgerProvider } from '@/providers/Ledger'
-import { arweave } from '@/store/ArweaveStore'
-import { addWallet, addAddress, generateMnemonic, validateMnemonic, addMnemonic, addProvider } from '@/functions/Wallets'
-import { computed, reactive, ref } from 'vue'
+import { hardwareProviders, addAddress, addMnemonic, addProvider, generateMnemonic, validateMnemonic } from '@/functions/Wallets'
+import { importKeyfiles } from '@/functions/File'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import LogoArweave from '@/assets/logos/arweave.svg?component'
@@ -64,24 +61,25 @@ const popup = ref(undefined as undefined | object)
 const isPassphrase = computed(() => passphraseInput.value.trim().split(/\s+/g).length >= 12)
 const isCreatingWallet = ref(false)
 const isGeneratingWallet = ref(false)
-const createdWallet = ref(null as null | string)
+const createdWallet = ref(null as null | WalletDataInterface)
 const create = async () => {
 	isCreatingWallet.value = true
 	passphraseInput.value = await generateMnemonic()
-	const id = addMnemonic(passphraseInput.value)
-	setTimeout(async () => createdWallet.value = await id, 10000)
+	const walletData = addMnemonic(passphraseInput.value)
+	setTimeout(async () => createdWallet.value = await walletData, 10000)
 }
 const goToCreatedWallet = () => {
-	router.push({ name: 'EditWallet', query: { wallet: createdWallet.value } })
+	if (!createdWallet.value) { return }
+	router.push({ name: 'EditWallet', query: { wallet: createdWallet.value.id } })
 }
 const importPassphrase = async () => {
 	isGeneratingWallet.value = true
-	const id = addMnemonic(passphraseInput.value)
+	const walletData = addMnemonic(passphraseInput.value)
 	popup.value = {
 		icon: 'loader',
 		message: 'importing',
 	}
-	router.push({ name: 'EditWallet', query: { wallet: await id } })
+	router.push({ name: 'EditWallet', query: { wallet: (await walletData).id } })
 }
 const confirmPassphrase = async () => {
 	if (await validateMnemonic(passphraseInput.value)) { return importPassphrase() }
@@ -93,19 +91,13 @@ const confirmPassphrase = async () => {
 		]
 	}
 }
-const importFile = async (file: File[]) => {
-	if (!file) { return }
-	const id = await addWallet(JSON.parse(await file[0].text()))
-	router.push({ name: 'EditWallet', query: { wallet: id } })
-}
 const importProvider = async (provider: Provider) => {
-	const id = await addProvider(provider)
-	router.push({ name: 'EditWallet', query: { wallet: id } })
+	const walletData = await addProvider(provider)
+	router.push({ name: 'EditWallet', query: { wallet: walletData.id } })
 }
-const hardwareProviders = [LedgerProvider]
 const importAddressOnlyAction = { icon: IconAddBox, run: async () => {
-	const id = await addAddress(targetInput.value)
-	router.push({ name: 'EditWallet', query: { wallet: id } })
+	const walletData = await addAddress(targetInput.value)
+	router.push({ name: 'EditWallet', query: { wallet: walletData.id } })
 }}
 </script>
 

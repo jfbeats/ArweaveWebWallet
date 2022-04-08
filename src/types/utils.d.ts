@@ -1,6 +1,7 @@
 type AnyFunction<A = any> = (...args: any[]) => A
 type ClassConstructor<T = {}> = new (...args: any[]) => T
 type MixinType<T extends AnyFunction> = InstanceType<ReturnType<T>>
+type Null = null | undefined
 
 type Override<T, U> = Omit<T, keyof U> & U
 

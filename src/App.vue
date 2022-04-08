@@ -1,7 +1,7 @@
 <template>
 	<div class="app" :class="{ verticalLayout, verticalContent, hasToolbar }">
-		<Toolbar v-if="hasToolbar" class="box no-scrollbar" @drop.prevent="droppedFiles" />
-		<router-view v-slot="{ Component }" @drop.prevent="droppedFiles">
+		<Toolbar v-if="hasToolbar" class="box no-scrollbar" @drop.prevent="e => dropped(e.dataTransfer.files)" />
+		<router-view v-slot="{ Component }" @drop.prevent="e => dropped(e.dataTransfer.files)">
 			<div class="router">
 				<TransitionsManager :vector="$route.meta.transition?.nameLayout" :axis="verticalLayout ? 'x' : 'y'">
 					<component :is="Component" />
@@ -18,16 +18,16 @@
 
 
 
-<script setup>
+<script setup lang="ts">
 import Toolbar from '@/components/composed/Toolbar.vue'
 import UpdateAvailable from '@/components/function/UpdateAvailable.vue'
 import TransitionsManager from '@/components/visual/TransitionsManager.vue'
 import { Wallets } from '@/functions/Wallets'
 import InterfaceStore from '@/store/InterfaceStore'
-import { addWallet } from '@/functions/Wallets'
 import { findRoutePosition } from '@/router/Utils'
 import { useRoute, useRouter } from 'vue-router'
 import { toRef } from 'vue'
+import { dropped } from '@/functions/File'
 
 const router = useRouter()
 const route = useRoute()
@@ -43,27 +43,13 @@ router.afterEach((to, from) => {
 		to: findRoutePosition(to.name, routes),
 		from: findRoutePosition(from.name, routes)
 	}
-	to.meta.transition = {}
-	to.meta.transition.param = param
-	to.meta.transition.nameLayout = param.to.position - param.from.position
+	to.meta.transition = { param, nameLayout: (param.to?.position || 0) - (param.from?.position || 0) }
 	if (to.params.walletId && from.params.walletId && to.params.walletId !== from.params.walletId) {
 		const toWallet = Wallets.value.findIndex(el => el.id == to.params.walletId)
 		const fromWallet = Wallets.value.findIndex(el => el.id == from.params.walletId)
-		to.meta.transition.nameWallet = toWallet - fromWallet
+		;(to.meta.transition as any).nameWallet = toWallet - fromWallet
 	}
 })
-
-const droppedFiles = async (e) => {
-	const walletPromises = []
-	for (const file of e.dataTransfer.files) {
-		const walletPromise = addWallet(JSON.parse(await file.text()))
-		walletPromises.push(walletPromise)
-	}
-	const ids = (await Promise.all(walletPromises)).filter(e => e !== null).map(e => e.id)
-	if (ids.length > 0) {
-		router.push({ name: 'EditWallet', query: { wallet: ids } })
-	}
-}
 </script>
 
 
@@ -85,6 +71,7 @@ const droppedFiles = async (e) => {
 	width: 100vw;
 	height: 100%;
 	z-index: -10;
+	/* noinspection CssUnknownTarget */
 	background: url("@/assets/background.svg") no-repeat center center;
 	background-size: cover;
 }
