@@ -1,6 +1,6 @@
 <template>
-	<div class="welcome">
-		<div class="flex-column" style="align-items: center;">
+	<div class="welcome flex-column">
+		<div class="main flex-column">
 			<transition name="slide-down" appear>
 				<div class="column">
 					<div class="logo-background">
@@ -16,7 +16,6 @@
 					</div>
 				</div>
 			</transition>
-			<div class="spacer" />
 		</div>
 		<TravellingBlocks />
 	</div>
@@ -25,8 +24,8 @@
 
 
 <script setup>
-import ArweaveOutlineLogo from '@/assets/logos/arweaveOutline.svg?component'
 import TravellingBlocks from '@/components/visual/TravellingBlocks.vue'
+import ArweaveOutlineLogo from '@/assets/logos/arweaveOutline.svg?component'
 
 const description = import.meta.env.VITE_DESCRIPTION
 const title = import.meta.env.VITE_TITLE
@@ -36,18 +35,29 @@ const title = import.meta.env.VITE_TITLE
 
 <style scoped>
 .welcome {
-	--fixed-spacing: min(92px, 50vw);
-	--spacing: min(var(--fixed-spacing), min(16vw, 7vh));
 	width: 100%;
 	min-height: var(--current-vh);
-	padding: var(--fixed-spacing);
-	padding-top: var(--spacing);
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	justify-content: space-around;
 	background: #111;
 	position: relative;
+}
+
+.main {
+	--fixed-spacing: min(92px, 50vw);
+	--spacing: min(var(--fixed-spacing), min(16vw, 7vh));
+	padding: var(--fixed-spacing);
+	padding-top: var(--spacing);
+	padding-bottom: 0;
+	flex: 1 1 auto;
+	align-items: center;
+	justify-content: center;
+}
+
+.travelling-blocks {
+	width: 100%;
+	height: 200px;
 }
 
 .column {
@@ -67,7 +77,6 @@ const title = import.meta.env.VITE_TITLE
 }
 
 .content {
-	flex: 1 1 auto;
 	display: flex;
 	justify-content: center;
 	text-align: center;

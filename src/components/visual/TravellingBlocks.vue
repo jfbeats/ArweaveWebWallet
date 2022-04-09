@@ -1,9 +1,8 @@
 <template>
-	<div class="travelling-blocks">
-		<div class="footer">
-			<div class="bubbles">
-				<div class="bubble" v-for="n in nbBlocks" :key="n" :style="`--size:${5 + Math.random() * 2}rem; --distance:${120 + Math.random() * 100}px; --position:${Math.random() * 100}%; --time:${4 + Math.random() * 18}s; --delay:${-1 * (4 + Math.random() * 2)}s;`" />
-			</div>
+	<Observer class="travelling-blocks" @resize="resize">
+		<div class="bubbles">
+			<div class="base" />
+			<div class="bubble" v-for="n in nbBlocks" :key="n" :style="getStyle()" />
 		</div>
 		<svg style="position:fixed;">
 			<defs>
@@ -15,92 +14,87 @@
 				</filter>
 			</defs>
 		</svg>
-	</div>
+	</Observer>
 </template>
 
 
 
-<script setup>
-import InterfaceStore from '@/store/InterfaceStore'
-import { computed } from 'vue'
+<script setup lang="ts">
+import Observer from '@/components/function/Observer.vue'
+import { computed, ref } from 'vue'
 
-const nbBlocks = computed(() => Math.floor(InterfaceStore.windowWidth / 60))
+const containerSize = ref(undefined as undefined | ResizeObserverEntry)
+const nbBlocks = computed(() => Math.floor((containerSize.value?.contentRect.width || 0) / 60))
+
+const resize = (size: ResizeObserverEntry) => (containerSize.value = size) && console.log(size)
+const getStyle = () => {
+	const range = containerSize.value?.contentRect.height || 0
+	return `
+		--size:${(1.7 + Math.random() * 0.5) * 100}%;
+		--distance:${range * 0.5 + range * 0.5 * Math.random()}px;
+		--position:${Math.random() * 100}%;
+		--time:${4 + Math.random() * 18}s;
+		--delay:${-1 * (4 + Math.random() * 2)}s;
+	`
+}
 </script>
 
 
 
 <style scoped>
 .travelling-blocks {
-	position: absolute;
-	height: 100%;
-	width: 100%;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	pointer-events: none;
-}
-
-.footer {
-	opacity: 0.8;
-	overflow: hidden;
 	position: relative;
-	width: 100%;
-	height: 100%;
-	/*display: flex;*/
-	/*flex-direction: column;*/
-	/*align-items: center;*/
-	/*justify-content: flex-end;*/
+	pointer-events: none;
+	opacity: 0.8;
 }
 
 .bubbles {
+	height: 100%;
+	width: 100%;
 	position: absolute;
 	bottom: 0;
-	height: 2rem;
-	width: 100%;
-	background: #ffffff;
+	overflow: clip;
 	filter: url("#blob");
 }
 
-.bubble {
+.base {
+	width: 100%;
+	height: 2rem;
 	position: absolute;
-	left: var(--position, 50%);
-	animation: bubble-size var(--time, 4s) ease-in infinite var(--delay, 0s),
-		bubble-move var(--time, 4s) ease-in infinite var(--delay, 0s),
-		bubble-opacity var(--time, 4s) ease-in infinite var(--delay, 0s);
-	transform: translate(-50%, 100%);
+	bottom: 0;
+	background: #ffffff;
 }
 
-@keyframes bubble-size {
-	0%,
-	50% {
-		width: var(--size, 4rem);
-		height: var(--size, 4rem);
-		border-radius: 50%;
-	}
-	100% {
-		width: 3.5rem;
-		height: 3.5rem;
-		border-radius: 0;
-	}
+.bubble {
+	width: 3.5rem;
+	height: 3.5rem;
+	position: absolute;
+	bottom: 0;
+	background: #ffffff;
+	border-radius: 16%;
+	left: var(--position);
+	animation: bubble-move var(--time) ease-in infinite var(--delay),
+		bubble-opacity var(--time) ease-in infinite var(--delay);
 }
 
 @keyframes bubble-opacity {
-	0%,
-	90% {
-		background: #ffffff;
+	0% {
+		opacity: 0;
+	}
+	10%, 90% {
+		opacity: 1;
 	}
 	100% {
-		background: #ffffff00;
+		opacity: 0;
 	}
 }
 
 @keyframes bubble-move {
 	0% {
-		bottom: -20px;
+		transform: translate(-50%, 100%) scale(var(--size));
 	}
 	100% {
-		bottom: var(--distance, 10rem);
+		transform: translate(-50%, calc(100% - var(--distance))) scale(100%);
 	}
 }
 </style>
