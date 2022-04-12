@@ -124,6 +124,26 @@ export function awaitEffect (effect: () => any) {
 
 
 
+export function computedAsync <T> (query: () => T | Promise<T>) {
+	const state = ref() as Ref<T | undefined>
+	const request = ref(-1)
+	const feedback = ref(-2)
+	let n = 0
+	watchEffect(async () => {
+		request.value = n
+		if (feedback.value !== request.value) { return }
+		const currentN = ++n
+		const result = await query()
+		if (currentN === n) { state.value = result }
+	})
+	return computed(() => {
+		feedback.value = request.value
+		return state.value
+	})
+}
+
+
+
 export function useDataWrapper <
 	SourceType extends { [key in Id]: string },
 	RuntimeType,

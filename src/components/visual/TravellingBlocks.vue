@@ -26,7 +26,7 @@ import { computed, ref } from 'vue'
 const containerSize = ref(undefined as undefined | ResizeObserverEntry)
 const nbBlocks = computed(() => Math.floor((containerSize.value?.contentRect.width || 0) / 60))
 
-const resize = (size: ResizeObserverEntry) => (containerSize.value = size) && console.log(size)
+const resize = (size: ResizeObserverEntry) => containerSize.value = size
 const getStyle = () => {
 	const range = containerSize.value?.contentRect.height || 0
 	return `
