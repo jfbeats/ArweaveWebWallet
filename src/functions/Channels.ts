@@ -10,6 +10,7 @@ type PrefixTable = {
 	currency: { rate?: string, currency: string, provider: string, timestamp?: number }
 	gateway: string
 	bundler: string
+	scannerCamera: string
 }
 
 

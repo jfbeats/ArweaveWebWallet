@@ -104,6 +104,7 @@ router.afterEach((to, from) => {
 #viewport {
 	position: fixed;
 	top: 0;
+	z-index: 100;
 }
 
 .router,

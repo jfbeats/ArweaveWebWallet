@@ -1,5 +1,5 @@
 type Action = {
-	icon: any
-	name: string
-	run: Function
+	icon?: any
+	name?: string
+	run?: Function
 }
