@@ -5,7 +5,7 @@
 				<ConnectionCard :state="connector" class="box" />
 			</div>
 		</Carousel>
-		<div class="bottom-info secondary-text" style="opacity: 0.0; pointer-events: none;">
+		<div class="bottom-info secondary-text" style="opacity: 0.0; pointer-events: none; touch-action: none;">
 			<div>All Channels {{ Object.keys(states).length }}</div>
 			<div v-for="(extState, name) in states" :key="name">{{ extState }}</div>
 		</div>

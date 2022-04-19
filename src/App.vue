@@ -133,6 +133,7 @@ router.afterEach((to, from) => {
 
 .overlay {
 	pointer-events: none;
+	touch-action: none;
 	position: fixed;
 	width: 100%;
 	height: 100%;

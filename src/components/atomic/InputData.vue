@@ -152,10 +152,12 @@ textarea {
 
 .passthrough {
 	pointer-events: none;
+	touch-action: none;
 }
 
 .not-passthrough {
 	pointer-events: auto;
+	touch-action: auto;
 }
 
 /* extract */

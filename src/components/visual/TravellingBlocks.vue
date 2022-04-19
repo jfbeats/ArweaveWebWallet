@@ -45,6 +45,7 @@ const getStyle = () => {
 .travelling-blocks {
 	position: relative;
 	pointer-events: none;
+	touch-action: none;
 	opacity: 0.8;
 }
 

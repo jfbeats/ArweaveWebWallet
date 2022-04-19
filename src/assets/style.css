@@ -99,10 +99,12 @@ a.reset {
 
 #viewport {
 	pointer-events: none;
+	touch-action: none;
 }
 
 #viewport>* {
-	pointer-events: all;
+	pointer-events: auto;
+	touch-action: auto;
 }
 
 *, *:before, *:after {

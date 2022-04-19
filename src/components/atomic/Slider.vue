@@ -107,6 +107,7 @@ const thumbPosition = computed(() => new BigNumber(model.value).dividedBy(range.
 	right: 0;
 	bottom: 0;
 	pointer-events: none;
+	touch-action: none;
 	fill: var(--color);
 	opacity: 0.2;
 	transition: var(--transition);

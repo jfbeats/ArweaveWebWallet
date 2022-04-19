@@ -18,6 +18,7 @@ const dragOverlay = computed(() => InterfaceStore.dragOverlay)
 <style scoped>
 .dragOverlay {
 	pointer-events: none;
+	touch-action: none;
 	position: absolute;
 	background-image: radial-gradient(circle at center, #333, #222);
 	background-position: center;

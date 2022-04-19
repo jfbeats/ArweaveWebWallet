@@ -41,6 +41,7 @@ const focus = ref(false)
 	position: absolute;
 	opacity: var(--element-secondary-opacity);
 	pointer-events: none;
+	touch-action: none;
 }
 
 .focus .icon {
