@@ -3,7 +3,9 @@
 		<TransitionsManager appear>
 			<div class="scanner">
 				<video ref="video" class="video"></video>
-				<ActionsRow :actions="actions" />
+				<div class="actions-row-container">
+					<ActionsRow :actions="actions" />
+				</div>
 			</div>
 		</TransitionsManager>
 	</teleport>
@@ -61,23 +63,31 @@ onBeforeUnmount(stopScanner)
 	position: fixed;
 	inset: 0;
 	overflow: hidden;
-	border-radius: var(--border-radius);
 	display: flex;
 	background: #000;
 }
 
 .video {
 	width: 100%;
+	height: 100%;
+	object-fit: cover;
 }
 
-.actions-row {
+.actions-row-container {
 	position: absolute;
 	z-index: 10;
 	bottom: 0;
+	left: 0;
 	right: 0;
+	display: flex;
+	justify-content: center;
+}
+
+.actions-row {
 	font-size: 2em;
 	padding: var(--spacing);
 	background: #00000066;
 	border-top-left-radius: var(--border-radius);
+	border-top-right-radius: var(--border-radius);
 }
 </style>
