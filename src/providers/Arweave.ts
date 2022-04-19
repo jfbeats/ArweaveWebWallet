@@ -5,6 +5,7 @@ import { Emitter, mix } from '@/functions/UtilsClass'
 import { download, exportTransaction } from '@/functions/File'
 import { awaitEffect, getAsyncData } from '@/functions/AsyncData'
 import { getDecryptionKey, getSigningKey } from '@/functions/Crypto'
+import { manageUpload } from '@/functions/Transactions'
 import Transaction from 'arweave/web/lib/transaction'
 import { computed } from 'vue'
 import axios from 'axios'
@@ -173,7 +174,7 @@ export class ArweaveMessageRunner implements MessageRunner<ArweaveProvider>, Par
 		try {
 			// set fees
 			await this.wallet.signTransaction(txObject)
-			// manageUpload(txObject)
+			manageUpload(txObject)
 			dispatchResult = { id: txObject.id, type: 'BASE' }
 		} catch (e) { console.error(e) }
 		if (dispatchResult) { return dispatchResult }
