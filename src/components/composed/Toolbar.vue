@@ -25,7 +25,7 @@
 				<router-link class="icon control" :class="{ verticalLayout }" to="/settings" aria-label="Settings">
 					<IconSettings class="small" alt="Settings" />
 				</router-link>
-				<div v-if="state.type === 'extension'" class="icon control" :class="{ verticalLayout }" @click="connectRequest">
+				<div v-if="state.type === 'extension'" class="icon control" :class="{ verticalLayout }" @click="() => postMessageExtension('connect')">
 					<IconPlug class="small" alt="plug" />
 				</div>
 			</div>
@@ -42,7 +42,7 @@ import DragOverlay from '@/components/atomic/DragOverlay.vue'
 import { SlickList, SlickItem } from 'vue-slicksort'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import { state } from '@/functions/Channels'
-import { connectors, connectRequest } from '@/functions/Connect'
+import { connectors, postMessageExtension } from '@/functions/Connect'
 import { Wallets } from '@/functions/Wallets'
 import { computed, toRef } from 'vue'
 import { useRoute } from 'vue-router'

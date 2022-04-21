@@ -12,8 +12,6 @@
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import Input from '@/components/atomic/Input.vue'
 import Scanner from '@/components/function/Scanner.vue'
-import QrScanner from 'qr-scanner'
-import { computedAsync } from '@/functions/AsyncData'
 import { computed, ref } from 'vue'
 
 import IconPerson from '@/assets/icons/person.svg?component'
@@ -28,7 +26,6 @@ const model = computed({
 })
 
 const maskAddress = (address: string) => { return address.match(/^[a-z0-9_-]{0,43}$/i) }
-const hasCamera = computedAsync(async () => await QrScanner.hasCamera())
 const scanning = ref(false)
 const scanningResult = (result?: string) => {
 	scanning.value = false
@@ -39,7 +36,7 @@ const scanningResult = (result?: string) => {
 
 const actions = computed<Action[]>(() => {
 	const result: Action[] = []
-	if (hasCamera.value) { result.push({ icon: IconQR, run: () => scanning.value = true }) }
+	if (Scanner.hasCamera.value) { result.push({ icon: IconQR, run: () => scanning.value = true }) }
 	if (props.actions) { result.push(...props.actions) }
 	return result
 })

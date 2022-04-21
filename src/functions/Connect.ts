@@ -102,9 +102,9 @@ async function initWebSockets () {
 }
 
 
-
-export function connectRequest () {
-	windowRef.postMessage('arweave-app-extension:connect', '*')
+export function postMessageExtension (message: 'connect' | 'permissions') {
+	if (state.value.type !== 'extension') { return }
+	windowRef.postMessage('arweave-app-extension:' + message, '*')
 }
 
 export function navigateBack () {

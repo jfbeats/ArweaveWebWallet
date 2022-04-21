@@ -13,15 +13,30 @@
 
 
 
+<script lang="ts">
+import { computedAsync } from '@/functions/AsyncData'
+import QrScanner from 'qr-scanner'
+
+const hasCamera = computedAsync(async () => {
+	try { return !!(await QrScanner.listCameras(false)).length }
+	catch (e) { return false }
+})
+
+export default { hasCamera }
+</script>
+
+
+
 <script setup lang="ts">
 import ActionsRow from '@/components/atomic/ActionsRow.vue'
-import QrScanner from 'qr-scanner'
+import TransitionsManager from '@/components/visual/TransitionsManager.vue'
+import { useChannel } from '@/functions/Channels'
+import { postMessageExtension } from '@/functions/Connect'
+import { createToast } from 'mosha-vue-toastify'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 
 import IconSwap from '@/assets/icons/swap.svg?component'
 import IconX from '@/assets/icons/x.svg?component'
-import TransitionsManager from '@/components/visual/TransitionsManager.vue'
-import { useChannel } from '@/functions/Channels'
 
 const emit = defineEmits<{
 	(e: 'result', value?: string): void
@@ -38,14 +53,19 @@ const actions: Action[] = [
 
 const startScanner = async () => {
 	if (!video.value) { return console.error('failed to start scanner') }
-	cameras = await QrScanner.listCameras()
+	cameras = await QrScanner.listCameras(true)
 	qrScanner = new QrScanner(video.value, result => emit('result', result))
 	if (scannerCamera.value != null) { qrScanner.setCamera(scannerCamera.value) }
-	qrScanner.start()
+	qrScanner.start().catch(() => {
+		postMessageExtension('permissions')
+		emit('result', undefined)
+		createToast('Unable to access camera', { type: 'danger', showIcon: true })
+	})
 }
 const stopScanner = () => { qrScanner?.destroy() }
 
 const switchCamera = async () => {
+	cameras = await QrScanner.listCameras(true)
 	const nextId = (cameras.findIndex(c => c.id === scannerCamera.value) + 1) % cameras.length
 	scannerCamera.value = cameras[nextId].id
 	qrScanner.setCamera(scannerCamera.value)
