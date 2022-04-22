@@ -51,7 +51,16 @@ const actions: Action[] = [
 	{ icon: IconX, run: () => emit('result', undefined) }
 ]
 
-const startScanner = async () => {
+const switchCamera = async () => {
+	cameras = await QrScanner.listCameras(true)
+	const nextId = (cameras.findIndex(c => c.id === scannerCamera.value) + 1) % cameras.length
+	scannerCamera.value = cameras[nextId].id
+	qrScanner.setCamera(scannerCamera.value)
+	console.log(cameras, nextId)
+}
+
+onMounted(async () => {
+	const beforeUnmount = new Promise<void>(res => onBeforeUnmount(res))
 	if (!video.value) { return console.error('failed to start scanner') }
 	cameras = await QrScanner.listCameras(true)
 	qrScanner = new QrScanner(video.value, result => emit('result', result))
@@ -61,19 +70,9 @@ const startScanner = async () => {
 		emit('result', undefined)
 		createToast('Unable to access camera', { type: 'danger', showIcon: true })
 	})
-}
-const stopScanner = () => { qrScanner?.destroy() }
-
-const switchCamera = async () => {
-	cameras = await QrScanner.listCameras(true)
-	const nextId = (cameras.findIndex(c => c.id === scannerCamera.value) + 1) % cameras.length
-	scannerCamera.value = cameras[nextId].id
-	qrScanner.setCamera(scannerCamera.value)
-	console.log(cameras, nextId)
-}
-
-onMounted(startScanner)
-onBeforeUnmount(stopScanner)
+	await beforeUnmount
+	qrScanner.destroy()
+})
 </script>
 
 
