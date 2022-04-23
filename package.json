@@ -25,6 +25,7 @@
 		"qr-scanner": "^1.4.1",
 		"smartweave": "^0.4.45",
 		"stream-browserify": "^3.0.0",
+		"tippy.js": "^6.3.7",
 		"typescript-is": "^0.19.0",
 		"uuid": "^8.3.2",
 		"vue": "^3.2.24",

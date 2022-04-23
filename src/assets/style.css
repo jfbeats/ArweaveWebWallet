@@ -49,6 +49,10 @@
 html {
 	box-sizing: border-box;
 	background-color: #0f0f0f;
+	font-family: Avenir, Helvetica, Arial, sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	color: #eee;
 }
 
 body {
@@ -88,13 +92,6 @@ a {
 a.reset {
 	color: inherit;
 	text-decoration: none;
-}
-
-#app {
-	font-family: Avenir, Helvetica, Arial, sans-serif;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	color: #eee;
 }
 
 #viewport {
