@@ -17,13 +17,14 @@ import tippy, { animateFill, Props } from 'tippy.js'
 import 'tippy.js/dist/tippy.css'
 import 'tippy.js/dist/backdrop.css'
 import 'tippy.js/animations/shift-away.css'
-import { computed, onBeforeUnmount, onMounted, ref, watchEffect } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, useSlots, watchEffect } from 'vue'
 
 const props = defineProps<{
 	content?: any
 	interactive?: boolean
 	placement?: Props['placement']
 }>()
+const slots = useSlots()
 
 const settings: Partial<Props> = {
 	animateFill: true,
@@ -37,9 +38,10 @@ const contentEl = ref(null as null | HTMLElement)
 let tooltip: ReturnType<typeof tippy>[0]
 
 const setProps = () => tooltip.setProps({
+	trigger: props.content || slots.content ? 'mouseenter focus' : 'manual',
+	popperOptions: { modifiers: [{ name: 'flip', options: { padding: 48 } }] },
 	...(props || []),
 	content: contentEl.value!,
-	popperOptions: { modifiers: [{ name: 'flip', options: { padding: 48 } }] },
 })
 
 onMounted(async () => {
@@ -52,14 +54,6 @@ onMounted(async () => {
 
 const padding = computed(() => props.content ? 'var(--spacing)' : '0')
 </script>
-
-
-
-<style scoped>
-.content {
-	/*padding: v-bind(padding);*/
-}
-</style>
 
 
 
