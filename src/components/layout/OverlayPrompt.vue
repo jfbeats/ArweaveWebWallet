@@ -1,6 +1,6 @@
 <template>
 	<TransitionsManager>
-		<component :is="options.action ? 'button' : 'div'" v-if="options" :key="options.message || options.action?.name" class="overlay-prompt flex-column" :class="{ inline: options.inline }" @click="options.action?.run">
+		<component :is="options.action ? 'button' : 'div'" v-if="options" :key="options.message || options.action?.name" class="overlay-prompt flex-column" :class="{ inline }" @click="options.action?.run">
 			<div style="flex:1 1 auto; display:flex; flex-direction:column; align-items:center; justify-content:space-evenly; margin-bottom:var(--spacing);">
 				<Icon v-if="options.icon || options.action?.icon" :icon="options.icon || options.action?.icon" style="font-size: 4em;" />
 				<slot />
@@ -26,8 +26,8 @@ const props = defineProps<{
 		message?: string
 		action?: Action
 		actions?: Action[]
-		inline?: boolean
 	}
+	inline?: boolean
 }>()
 </script>
 

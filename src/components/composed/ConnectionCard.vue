@@ -27,7 +27,7 @@
 										<transition-group name="fade-list">
 											<div class="fade-list-item" key="0" :style="{ padding: 0, border: 0, outline: '0.5px solid var(--border)' }"/>
 											<div v-if="connectionFeed?.length === 0 && state.walletId && state.walletId === currentId" class="status fade-list-item" key="1">Connected</div>
-											<OverlayPrompt v-if="currentId !== state.walletId" :options="connectOptions" class="fade-list-item" key="2">
+											<OverlayPrompt v-if="currentId !== state.walletId" :options="connectOptions" :inline="true" class="fade-list-item" key="2">
 												<ProfilePreview v-if="currentWallet" :wallet="currentWallet" />
 											</OverlayPrompt>
 <!--												stay logged in here -->
@@ -121,7 +121,6 @@ const selectWallet = () => {
 
 const connectOptions = computed(() => ({
 	actions: [{ name: props.state.walletId ? 'Switch' : 'Connect', icon: IconY, run: connect }],
-	inline: true,
 }))
 
 

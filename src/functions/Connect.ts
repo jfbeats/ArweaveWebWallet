@@ -102,9 +102,19 @@ async function initWebSockets () {
 }
 
 
-export function postMessageExtension (message: 'connect' | 'permissions') {
+
+export async function postMessageExtension (message: 'connect' | 'permissions' | 'state') {
 	if (state.value.type !== 'extension') { return }
 	windowRef.postMessage('arweave-app-extension:' + message, '*')
+	if (message !== 'state') { return }
+	return new Promise<{ origin: string }>(res => {
+		const listener = (e: any) => {
+			if (e.source !== windowRef || typeof e.data !== 'object' || typeof e.data.origin !== 'string') { return }
+			res(e.data)
+			window.removeEventListener('message', listener)
+		}
+		window.addEventListener('message', listener)
+	})
 }
 
 export function navigateBack () {
