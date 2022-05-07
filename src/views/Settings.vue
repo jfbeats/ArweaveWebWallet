@@ -46,7 +46,7 @@ import Icon from '@/components/atomic/Icon.vue'
 import { Wallets } from '@/functions/Wallets'
 import ArweaveStore, { gatewayDefault, bundlerDefault, updateArweave, updateBundler } from '@/store/ArweaveStore'
 import { currency, redstoneOptions } from '@/store/CurrencyStore'
-import { createToast } from 'mosha-vue-toastify'
+import { notify } from '@/store/NotificationStore'
 import { ref, computed } from 'vue'
 
 import LogoArweave from '@/assets/logos/arweave.svg?component'
@@ -61,7 +61,7 @@ import IconX from '@/assets/icons/x.svg?component'
 const gateway = ref('')
 const setGateway = async () => {
 	try { await updateArweave(gateway.value) }
-	catch (e) { createToast('Invalid', { type: 'danger', showIcon: true }); throw e }
+	catch (e) { notify.error('Invalid'); throw e }
 	gateway.value = ''
 }
 const gatewayAction = computed(() => {
@@ -72,7 +72,7 @@ const gatewayAction = computed(() => {
 const bundler = ref('')
 const setBundler = async () => {
 	try { await updateBundler(bundler.value) }
-	catch (e) { createToast('Invalid', { type: 'danger', showIcon: true }); throw e }
+	catch (e) { notify.error('Invalid'); throw e }
 	bundler.value = ''
 }
 const bundlerAction = computed(() => {

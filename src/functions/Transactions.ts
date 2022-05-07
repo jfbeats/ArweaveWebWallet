@@ -1,7 +1,7 @@
 import ArweaveStore, { arweave } from '@/store/ArweaveStore'
 import { getMempool, getPending } from '@/store/BlockStore'
 import { exportTransaction } from '@/functions/File'
-import { createToast } from 'mosha-vue-toastify'
+import { notify } from '@/store/NotificationStore'
 import BigNumber from 'bignumber.js'
 import type Transaction from 'arweave/web/lib/transaction'
 import type { CreateTransactionInterface } from 'arweave/web'
@@ -74,7 +74,7 @@ export async function getFeeRange () {
 	const nextBlock = sortedFees.slice(0, blockSize)
 	range.max = (new BigNumber(nextBlock[0])).plus('1')
 	if (txs.length < (ids.length / 4)) {
-		createToast('Unable to estimate optimal transaction fee', { type: 'warning', showIcon: true })
+		notify.warn('Unable to estimate optimal transaction fee')
 		failedLastFeeRange = true
 		return range
 	}

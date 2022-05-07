@@ -32,7 +32,7 @@ import ActionsRow from '@/components/atomic/ActionsRow.vue'
 import TransitionsManager from '@/components/visual/TransitionsManager.vue'
 import { useChannel } from '@/functions/Channels'
 import { postMessageExtension } from '@/functions/Connect'
-import { createToast } from 'mosha-vue-toastify'
+import { notify } from '@/store/NotificationStore'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 
 import IconSwap from '@/assets/icons/swap.svg?component'
@@ -68,7 +68,7 @@ onMounted(async () => {
 	qrScanner.start().catch(() => {
 		postMessageExtension('permissions')
 		emit('result', undefined)
-		createToast('Unable to access camera', { type: 'danger', showIcon: true })
+		notify.error('Unable to access camera')
 	})
 	await beforeUnmount
 	qrScanner.destroy()

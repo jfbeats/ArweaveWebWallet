@@ -98,7 +98,7 @@ import BigNumber from 'bignumber.js'
 import { computed, markRaw, reactive, ref, watch } from 'vue'
 import IconNorthEast from '@/assets/icons/north_east.svg?component'
 import IconLabel from '@/assets/icons/label.svg?component'
-import { createToast } from 'mosha-vue-toastify'
+import { notify } from '@/store/NotificationStore'
 
 const props = defineProps(['wallet', 'model'])
 
@@ -203,10 +203,10 @@ const postTx = async () => {
 		await props.wallet.signTransaction(tx)
 		manageUpload(tx)
 		resetForm()
-		createToast('Transaction sent', { type: 'success', showIcon: true })
-	} catch (e) {
+		notify.log('Transaction sent')
+	} catch (e: any) {
 		console.error(e)
-		createToast(e, { type: 'danger', showIcon: true })
+		notify.error(e)
 	}
 	loading.value = false
 }

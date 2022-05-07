@@ -59,7 +59,6 @@ import WalletTabs from '@/components/composed/WalletTabs.vue'
 import Tabs from '@/components/atomic/Tabs.vue'
 import IconBackground from '@/components/atomic/IconBackground.vue'
 import Icon from '@/components/atomic/Icon.vue'
-import Notification from '@/components/composed/Notification.vue'
 import PermissionCard from '@/components/composed/PermissionCard.vue'
 import PermissionSettings from '@/components/composed/PermissionSettings.vue'
 import TransitionsManager from '@/components/visual/TransitionsManager.vue'
@@ -205,12 +204,6 @@ watch(() => Wallets.value.findIndex(wallet => wallet.id === currentId.value), se
 .content > * > * {
 	background: var(--background);
 	width: 100%;
-}
-
-.notification {
-	/*width: 100%;*/
-	/*padding: var(--spacing);*/
-	/*border-bottom: 0.5px solid var(--border);*/
 }
 
 .icon-background {
