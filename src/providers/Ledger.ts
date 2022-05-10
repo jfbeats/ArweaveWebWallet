@@ -1,6 +1,8 @@
 import { WalletProxy, Wallet } from '@/providers/WalletProxy'
 import { mix } from '@/functions/UtilsClass'
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
+import TransportWebHID from "@ledgerhq/hw-transport-webhid"
+// import TransportWebBLE from "@ledgerhq/hw-transport-web-ble"
 import ArweaveApp from "@zondax/ledger-arweave"
 import { ArweaveAccount, ArweaveMessageRunner } from '@/providers/Arweave'
 import { arweave } from '@/store/ArweaveStore'
@@ -11,9 +13,30 @@ import type { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
 
 
 
+const transports = [TransportWebHID, TransportWebUSB]
+let selectedTransport: any
+
 async function getTransport () {
-	console.info(`Trying to connect via WebUSB...`)
-	return TransportWebUSB.create()
+	if (selectedTransport) { return selectedTransport.create() }
+	console.info(`Trying to connect`)
+	for (const transport of transports) {
+		if (await transport.isSupported()) {
+			try {
+				const currentTransport = await transport.create()
+				selectedTransport = transport
+				return currentTransport
+			} catch (e) { console.error(e) }
+		}
+	}
+	throw 'getTransport failed'
+}
+
+function handleResponse (response: any) {
+	if (response.returnCode !== ArweaveApp.ErrorCode.NoError) {
+		throw `Error [${response.returnCode}] ${response.errorMessage}`
+	} else {
+		console.info(`App Version ${response.major}.${response.minor}.${response.patch}`, response)
+	}
 }
 
 async function getVersion () {
@@ -23,11 +46,7 @@ async function getVersion () {
 		const app = new ArweaveApp(transport)
 		console.info("Requesting version")
 		response = await app.getVersion()
-		if (response.returnCode !== ArweaveApp.ErrorCode.NoError) {
-			console.error(`Error [${response.returnCode}] ${response.errorMessage}`)
-		} else {
-			console.info(`App Version ${response.major}.${response.minor}.${response.patch}`, response)
-		}
+		handleResponse(response)
 	} finally { await transport.close() }
 	return response
 }
@@ -40,11 +59,7 @@ async function getAppInfo () {
 		console.info("Requesting app info")
 		// @ts-ignore
 		response = await app.appInfo()
-		if (response.returnCode !== ArweaveApp.ErrorCode.NoError) {
-			console.error(`Error [${response.returnCode}] ${response.errorMessage}`)
-		} else {
-			console.info("Response received!", response)
-		}
+		handleResponse(response)
 	} finally { await transport.close() }
 	return response
 }
@@ -56,11 +71,7 @@ async function getInfo (request = false) {
 		const app = new ArweaveApp(transport)
 		console.info("Requesting address")
 		response = request ? await app.showAddress() : await app.getAddress()
-		if (response.returnCode !== ArweaveApp.ErrorCode.NoError) {
-			console.error(`Error [${response.returnCode}] ${response.errorMessage}`)
-		} else {
-			console.info("Response received!", response)
-		}
+		handleResponse(response)
 	} finally { await transport.close() }
 	return response
 }
@@ -75,6 +86,7 @@ async function sign (tx: Transaction) {
 		const addr = await app.getAddress()
 		tx.owner = addr.owner
 		const response = await app.sign(tx)
+		handleResponse(response)
 		const id = await arweave.crypto.hash(response.signature)
 		const sigjs = {
 			owner: addr.owner,
@@ -100,7 +112,7 @@ export class LedgerProvider extends mix(ArweaveAccount).with(WalletProxy) implem
 		name: 'Ledger',
 		icon: LogoLedger,
 		link: 'https://shop.ledger.com?r=1a60a479b0af',
-		disabled: !window.navigator.usb,
+		disabled: !window.navigator.usb, // todo change to async computed and test all transports
 		addImportData: async (walletData) => {
 			walletData.provider = 'ledger'
 			walletData.data ??= {}
@@ -118,7 +130,7 @@ export class LedgerProvider extends mix(ArweaveAccount).with(WalletProxy) implem
 	messageVerifier: ArweaveMessageVerifier
 	messageRunner: ArweaveMessageRunner
 	async signTransaction (tx: Transaction, options: SignatureOptions) {
-		if (this.key !== await getAddress()) { throw new Error('Wrong account') } // todo getting wrong account error while ledger does not have the app opened
+		if (this.key !== await getAddress()) { throw new Error('Wrong account: using ' + this.key + ' but current device is ' + await getAddress()) }
 		if (tx.owner && tx.owner !== await this.getPublicKey()) { throw 'error' }
 		return sign(tx)
 	}
