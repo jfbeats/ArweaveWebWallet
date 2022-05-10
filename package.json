@@ -9,7 +9,7 @@
 		"deploy-confirm": "npm run build && arkb deploy dist --wallet ../arweaveWallet.json --auto-confirm --use-bundler http://bundler.arweave.net:10000"
 	},
 	"dependencies": {
-		"@ledgerhq/hw-transport-webusb": "^6.7.0",
+		"@ledgerhq/hw-transport-webusb": "^6.27.1",
 		"@zondax/ledger-arweave": "^1.0.0",
 		"arverify": "^0.0.11",
 		"arweave": "^1.10.23",
