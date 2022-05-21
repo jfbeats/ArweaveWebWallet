@@ -29,15 +29,10 @@
 
 
 <script setup lang="ts">
-import Select from '@/components/atomic/Select.vue'
-import Button from '@/components/atomic/Button.vue'
 import ArweaveStore, { currentBlock, networkInfo } from '@/store/ArweaveStore'
-import LogoArweave from '@/assets/logos/arweave.svg?component'
 import { humanFileSize } from '@/functions/Utils'
-import Date from '@/components/atomic/Date.vue'
 import Amount from '@/components/composed/Amount.vue'
 import { pendingList } from '@/store/BlockStore'
-import Link from '@/components/function/Link.vue'
 import GlobalSearch from '@/components/composed/GlobalSearch.vue'
 import BlockCarousel from '@/components/composed/BlockCarousel.vue'
 import { computed } from 'vue'
