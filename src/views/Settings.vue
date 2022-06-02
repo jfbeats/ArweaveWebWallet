@@ -11,16 +11,21 @@
 			</div>
 			<h2>App Settings</h2>
 			<div class="group">
-				<p>Gateway</p>
-				<div class="flex-row">
+				<SettingItem name="Install" v-if="PWA.installState" description="Use this website as an application that can be added to your home screen" row="true">
+					<Button @click="() => PWA.install()">{{ PWA.installState }}</Button>
+				</SettingItem>
+<!--				<SettingItem name="Notifications">-->
+<!--				-->
+<!--				</SettingItem>-->
+				<SettingItem name="Gateway" description="URL of the service used to access network data">
 					<Input v-model="gateway" :actions="[gatewayAction]" :placeholder="ArweaveStore.gatewayURL" :icon="IconDownload" style="flex:1 1 0;" />
-				</div>
-				<p>Bundler</p>
-				<div class="flex-row">
+				</SettingItem>
+				<SettingItem name="Bundler" description="URL of the service used to submit data to the network">
 					<Input v-model="bundler" :actions="[bundlerAction]" :placeholder="ArweaveStore.bundlerURL" :icon="IconUpload" style="flex:1 1 0;" />
-				</div>
-				<p>Currency</p>
-				<Select v-model="currentSetting" :options="redstoneOptions" :icon="currency.symbol" />
+				</SettingItem>
+				<SettingItem name="Currency">
+					<Select v-model="currentSetting" :options="redstoneOptions" :icon="currency.symbol" />
+				</SettingItem>
 			</div>
 			<h2>Links</h2>
 			<div class="group">
@@ -39,10 +44,12 @@
 
 <script setup lang="ts">
 import WalletOptions from '@/components/composed/WalletOptions.vue'
+import SettingItem from '@/components/composed/SettingItem.vue'
 import Input from '@/components/atomic/Input.vue'
 import Select from '@/components/atomic/Select.vue'
 import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
+import { PWA } from '@/pwa'
 import { Wallets } from '@/functions/Wallets'
 import ArweaveStore, { gatewayDefault, bundlerDefault, updateArweave, updateBundler } from '@/store/ArweaveStore'
 import { currency, redstoneOptions } from '@/store/CurrencyStore'

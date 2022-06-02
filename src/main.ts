@@ -7,8 +7,8 @@ import '@/assets/animations.css'
 import '@/assets/style.css'
 import 'mosha-vue-toastify/dist/style.css'
 
-import SW from '@/functions/sw'
-SW.registration.then(r => setInterval(() => r.update(), 60 * 60 * 1000))
+import { PWA } from '@/pwa'
+PWA.registration.then((r: any) => setInterval(() => r.update(), 60 * 60 * 1000))
 
 const app = createApp(App)
 app.use(router, Slicksort)

@@ -28,6 +28,10 @@ export default (env: any): Partial<VitePWAOptions> => ({
 				sizes: '512x512',
 				purpose: 'monochrome any',
 			}
-		]
+		],
+		related_applications: [{
+			platform: 'webapp',
+			url: 'https://arweave.app/manifest.webmanifest'
+		}]
 	}
 })
