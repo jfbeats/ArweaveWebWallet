@@ -6,17 +6,12 @@
 	</div>
 </template>
 
-<script>
+<script setup lang="ts">
 import TokenCard from '@/components/composed/TokenCard.vue'
 import SmartweaveStore from '@/store/SmartweaveStore'
+import { Wallet } from '@/providers/WalletProxy'
 
-export default {
-	components: { TokenCard },
-	props: ['wallet'],
-	setup () {
-		return { SmartweaveStore }
-	}
-}
+const props = defineProps<{ wallet: Wallet }>()
 </script>
 
 <style scoped>

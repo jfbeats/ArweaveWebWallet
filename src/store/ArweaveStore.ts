@@ -40,6 +40,7 @@ export async function updateArweave (url?: string, sync?: boolean) {
 	}
 	arweave = Arweave.init(settings)
 	ArweaveStore.gatewayURL = url
+	// todo if network name is different, clear all cache
 }
 
 export async function updateBundler (url?: string, sync?: boolean) {
