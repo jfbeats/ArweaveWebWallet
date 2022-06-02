@@ -8,7 +8,8 @@ export default (env: any): Partial<VitePWAOptions> => ({
 		theme_color: env.VITE_BACKGROUND,
 		background_color: env.VITE_BACKGROUND,
 		display: 'standalone',
-		start_url: '.',
+		scope: '/',
+		start_url: '/',
 		icons: [
 			{
 				src: 'arweave.svg',
