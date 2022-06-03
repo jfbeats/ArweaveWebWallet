@@ -8,10 +8,6 @@
 				<ConnectionCard :state="connector" class="box" />
 			</div>
 		</Carousel>
-		<div class="bottom-info secondary-text" style="opacity: 0.0; pointer-events: none; touch-action: none;">
-			<div>All Channels {{ Object.keys(states).length }}</div>
-			<div v-for="(extState, name) in states" :key="name">{{ extState }}</div>
-		</div>
 	</div>
 </template>
 
@@ -21,9 +17,9 @@
 import Carousel from '@/components/layout/Carousel.vue'
 import ConnectionCard from '@/components/composed/ConnectionCard.vue'
 import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
-import { state, states } from '@/functions/Channels'
+import { state } from '@/functions/Channels'
 import { connectors, postMessageExtension } from '@/functions/Connect'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import IconPlug from '@/assets/icons/plug.svg?component'
 
@@ -35,13 +31,16 @@ const connectPrompt = computed(() => ({
 	}
 }))
 
-const currentConnectorIndex = ref(connectors.value.findIndex(connector => connector.origin === state.value.origin && connector.session === state.value.session))
+const currentConnectorIndex = ref(connectors.value.findIndex(connector => connector.origin === state.value.origin))
 const extensionOrigin = ref()
 postMessageExtension('state').then(res => {
 	if (!res) { return }
 	extensionOrigin.value = res.origin
-	if (currentConnectorIndex.value !== -1) { return }
-	currentConnectorIndex.value = connectors.value.findIndex(connector => connector.origin === res.origin)
+	watch(() => connectors.value, () => {
+		const index = connectors.value.findIndex(connector => connector.origin === extensionOrigin.value)
+		if (index < 0 && currentConnectorIndex.value >= 0) { return currentConnectorIndex.value = index }
+		if (currentConnectorIndex.value < 0) { return setTimeout(() => currentConnectorIndex.value = index) }
+	}, { immediate: true })
 })
 </script>
 

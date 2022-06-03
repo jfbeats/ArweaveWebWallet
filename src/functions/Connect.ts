@@ -37,7 +37,8 @@ if (state.value.type !== 'iframe') { localStorage.setItem('global', '1') }
 async function initConnector () {
 	if (!origin || origin === '*') { return }
 	await awaitStorageAccess()
-	if (!sharedState.value?.origin) { sharedState.value = { origin, session, appInfo, timestamp: Date.now(), messageQueue: [] } }
+	if (!sharedState.value?.origin) { sharedState.value = { origin, session, appInfo, timestamp: Date.now(), messageQueue: [], links: {} } }
+	sharedState.value.links[state.value.type!] = true
 	const postMessage = (message: any) => windowRef.postMessage({ ...message, jsonrpc: '2.0' }, origin)
 	const jsonRpc = new JsonRpc(postMessage, sharedState)
 	window.addEventListener('message', async (e) => {
@@ -80,7 +81,8 @@ async function initConnector () {
 
 async function initWebSockets () {
 	if (!origin) { return }
-	if (!sharedState.value?.walletId) { sharedState.value = { origin, session, appInfo, timestamp: Date.now(), messageQueue: [] } }
+	if (!sharedState.value?.walletId) { sharedState.value = { origin, session, appInfo, timestamp: Date.now(), messageQueue: [], links: {} } }
+	sharedState.value.links[state.value.type!] = true
 	const ws = new WebSocket(origin)
 	const postMessage = (message: any) => ws.send(JSON.stringify({ ...message, jsonrpc: '2.0' }))
 	const jsonRpc = new JsonRpc(postMessage, sharedState)
@@ -103,10 +105,32 @@ async function initWebSockets () {
 
 
 
-export async function postMessageExtension (message: 'connect' | 'permissions' | 'state') {
+export async function postMessageExtension (message: 'connect' | 'permissions' | 'state' | 'close') {
 	if (state.value.type !== 'extension') { return }
+	if (message === 'connect') { return postMessageExtensionConnect() }
 	windowRef.postMessage('arweave-app-extension:' + message, '*')
-	if (message !== 'state') { return }
+	if (message === 'state') { return postMessageExtensionState() }
+}
+
+async function postMessageExtensionConnect () {
+	const state = await postMessageExtension('state')
+	if (!state) { return }
+	return new Promise<void>((res, rej) => {
+		windowRef.postMessage('arweave-app-extension:' + 'connect', '*')
+		const snapshot = connectors.value.filter(connector => connector.origin === state.origin)
+		const stop = watch(() => connectors.value, () => {
+			const diff = connectors.value.filter(connector => connector.origin === state.origin && !snapshot.includes(connector))
+			if (diff.find(connector => connector.links.popup)) { postMessageExtension('close') }
+		}, { deep: true, immediate: true })
+		setTimeout(() => {
+			stop()
+			res()
+			// rej() if script wasn't already injected and no new connection appeared
+		}, 10000)
+	})
+}
+
+async function postMessageExtensionState () {
 	return new Promise<{ origin: string }>(res => {
 		const listener = (e: any) => {
 			if (e.source !== windowRef || typeof e.data !== 'object' || typeof e.data.origin !== 'string') { return }

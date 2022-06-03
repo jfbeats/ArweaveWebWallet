@@ -25,7 +25,7 @@
 				<router-link class="icon control" :class="{ verticalLayout }" to="/settings" aria-label="Settings">
 					<IconSettings class="small" alt="Settings" />
 				</router-link>
-				<div v-if="state.type === 'extension'" class="icon control" :class="{ verticalLayout }" @click="() => postMessageExtension('connect')">
+				<div v-if="state.type === 'extension'" class="icon control" :class="{ verticalLayout }" @click="postMessageExtensionConnect">
 					<IconPlug class="small" alt="plug" />
 				</div>
 			</div>
@@ -45,7 +45,7 @@ import { state } from '@/functions/Channels'
 import { connectors, postMessageExtension } from '@/functions/Connect'
 import { Wallets } from '@/functions/Wallets'
 import { computed, toRef } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 import IconConnection from '@/assets/icons/connection.svg?component'
 import IconAddBox from '@/assets/icons/add_box.svg?component'
@@ -54,6 +54,7 @@ import IconSearch from '@/assets/icons/search.svg?component'
 import IconPlug from '@/assets/icons/plug.svg?component'
 
 const route = useRoute()
+const router = useRouter()
 const navTo = computed(() => route.matched[0]?.name === 'Wallet' ? null : 'TxList')
 const select = (wallet: Account, navigate: () => any) => {
 	emitter.emit('selectWallet', wallet?.key)
@@ -66,6 +67,10 @@ const verticalLayout = toRef(InterfaceStore.breakpoints, 'verticalLayout')
 const axis = computed(() => verticalLayout.value ? 'x' : 'y')
 const links = toRef(InterfaceStore.toolbar, 'links')
 const haptic = () => navigator.vibrate?.(10)
+const postMessageExtensionConnect = async () => {
+	postMessageExtension('connect')
+	router.push('Connect')
+}
 </script>
 
 

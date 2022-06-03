@@ -36,6 +36,7 @@ type ConnectorState = {
 	appInfo?: { name?: string, logo?: string}
 	walletId?: string | false
 	link?: boolean
+	links: { [keys in NonNullable<InstanceState['type']>]?: any }
 }
 
 type ConnectionSettings = { [uuid: string]: { [method: string]: boolean } } | undefined
