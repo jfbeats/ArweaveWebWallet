@@ -92,6 +92,7 @@ onBeforeUnmount(() => observer && observer.disconnect())
 
 .carousel > :deep(*) {
 	line-height: var(--line-height);
+	vertical-align: bottom;
 }
 
 .carousel > :deep(*:not(.margin)) {

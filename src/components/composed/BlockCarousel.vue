@@ -64,7 +64,6 @@ const end = (val: IntersectionObserverEntry) => val.isIntersecting
 	/*padding: 0;*/
 	display: inline-flex;
 	flex-direction: column;
-	vertical-align: bottom;
 }
 
 .box {
