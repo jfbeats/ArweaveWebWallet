@@ -1,14 +1,6 @@
 <template>
 	<div class="settings">
 		<div class="column">
-			<h2>Wallet Settings</h2>
-			<div class="flex-column">
-				<template v-for="wallet in Wallets" :key="wallet.id">
-					<WalletOptions class="wallet-options" :wallet="wallet" />
-					<div></div>
-				</template>
-				<Button v-if="!Wallets.length" style="font-size:1.5em; background:var(--background3);" @click="$router.push({ name: 'AddWallet' })" icon="+" />
-			</div>
 			<h2>App Settings</h2>
 			<div class="group">
 				<SettingItem name="Install" v-if="PWA.installState" description="Use this website as an application that can be added to your home screen" row="true">
@@ -27,12 +19,21 @@
 					<Select v-model="currentSetting" :options="redstoneOptions" :icon="currency.symbol" />
 				</SettingItem>
 			</div>
+			<h2>Wallet Settings</h2>
+			<div class="flex-column">
+				<template v-for="wallet in Wallets" :key="wallet.id">
+					<WalletOptions class="wallet-options" :wallet="wallet" />
+					<div></div>
+				</template>
+				<Button v-if="!Wallets.length" style="font-size:1.5em; background:var(--background3);" @click="$router.push({ name: 'AddWallet' })" icon="+" />
+			</div>
 			<h2>Links</h2>
 			<div class="group">
-				<p v-if="isUser"><a href="https://discord.gg/W6VybRqwBP"><Icon :icon="LogoDiscord" style="vertical-align: text-top;" /> Discord</a> - Send feedback, questions or talk about anything</p>
-				<p><a href="https://github.com/jfbeats/ArweaveWebWallet"><Icon :icon="LogoGithub" style="vertical-align: text-top;" /> ArweaveWebWallet</a> - Source code</p>
-				<p><a href="https://jfbeats.github.io/ArweaveWalletConnector"><Icon :icon="LogoGithub" style="vertical-align: text-top;" /> ArweaveWalletConnector</a> - Integrate the universal connector to use web wallets like arweave.app inside your own applications</p>
-				<p><a href="https://arwiki.wiki" target="_blank"><Icon :icon="LogoArweave" style="vertical-align: text-top;" /> Arwiki</a> - Information about Arweave</p>
+				<SettingItem v-if="Wallets.length" :icon="LogoDiscord" name="Discord" description="Send feedback, questions or talk about anything" href="https://discord.gg/W6VybRqwBP" />
+				<SettingItem :icon="LogoGithub" name="Github | Web Wallet" description="Source code" href="https://github.com/jfbeats/ArweaveWebWallet" />
+				<SettingItem :icon="LogoGithub" name="Github | Wallet Connector" description="Integrate the universal connector to use web wallets like arweave.app inside your own applications" href="https://jfbeats.github.io/ArweaveWalletConnector" />
+				<SettingItem :icon="IconText" name="Arwiki" description="Wiki on the Arweave protocol" href="https://arwiki.wiki" />
+				<SettingItem :icon="IconText" name="Guide" description="How to get started using the wallet" href="https://docs.arweave.org/info/wallets/arweave-wallet" />
 			</div>
 			Version: Alpha
 			<!-- Todo version history -->
@@ -48,7 +49,6 @@ import SettingItem from '@/components/composed/SettingItem.vue'
 import Input from '@/components/atomic/Input.vue'
 import Select from '@/components/atomic/Select.vue'
 import Button from '@/components/atomic/Button.vue'
-import Icon from '@/components/atomic/Icon.vue'
 import { PWA } from '@/pwa'
 import { Wallets } from '@/functions/Wallets'
 import ArweaveStore, { gatewayDefault, bundlerDefault, updateArweave, updateBundler } from '@/store/ArweaveStore'
@@ -56,9 +56,9 @@ import { currency, redstoneOptions } from '@/store/CurrencyStore'
 import { notify } from '@/store/NotificationStore'
 import { ref, computed } from 'vue'
 
-import LogoArweave from '@/assets/logos/arweave.svg?component'
 import LogoGithub from '@/assets/logos/socials/github.svg?component'
 import LogoDiscord from '@/assets/logos/socials/discord.svg?component'
+import IconText from '@/assets/icons/text.svg?component'
 
 import IconDownload from '@/assets/icons/download.svg?component'
 import IconUpload from '@/assets/icons/upload.svg?component'
@@ -94,10 +94,6 @@ const currentSetting = computed<{ currency: string, provider: string }>({
 		currency.settings.provider = value.provider
 	}
 })
-
-const isUser = computed(() => Wallets.value.length)
-
-const amount = ref('')
 </script>
 
 
@@ -123,9 +119,5 @@ const amount = ref('')
 
 .wallet-options {
 	border-radius: var(--border-radius);
-}
-
-a {
-	text-decoration: none;
 }
 </style>

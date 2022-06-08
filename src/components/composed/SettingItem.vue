@@ -1,7 +1,12 @@
 <template>
 	<div class="setting-item" :class="{ 'flex-row': row }">
 		<div>
-			<div v-if="name" class="name">{{ name }}</div>
+			<Link :to="href">
+				<div v-if="name" class="name">
+					<Icon v-if="icon" :icon="icon" style="margin-inline-end: 1em"/>
+					<div>{{ name }}</div>
+				</div>
+			</Link>
 			<div v-if="!row" class="content">
 				<slot />
 			</div>
@@ -16,11 +21,19 @@
 
 
 <script setup lang="ts">
+import Icon from '@/components/atomic/Icon.vue'
+import Link from '@/components/function/Link.vue'
+import { computed } from 'vue'
+
 const props = defineProps<{
 	name?: string
 	description?: string
 	row?: any
+	href?: string
+	icon?: any
 }>()
+
+const gap = computed(() => !props.href && '0.8rem')
 </script>
 
 
@@ -32,10 +45,12 @@ const props = defineProps<{
 }
 
 .name {
-	margin-bottom: 0.8rem;
+	margin-bottom: v-bind(gap);
+	display: flex;
+	align-items: center;
 }
 
 .content {
-	margin-bottom: 0.8rem;
+	margin-bottom: v-bind(gap);
 }
 </style>

@@ -48,6 +48,7 @@ watch(() => props.icon, () => key.value++, { deep: true })
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	vertical-align: text-top;
 	transition: 0.3s ease;
 }
 
