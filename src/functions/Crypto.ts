@@ -1,8 +1,10 @@
-export function isEncrypted(val: any): val is EncryptedContent { return typeof val.ciphertext === 'string' && typeof val.iv === 'string' && typeof val.derivationSettings === 'object' }
+export function isEncrypted(val: any): val is EncryptedContent { return typeof val.ciphertext === 'string' && typeof val.derivationSettings === 'object' }
 
 function getDerivationSettings (): DerivationSettings {
+	const iv = window.crypto.getRandomValues(new Uint8Array(12))
 	const salt = window.crypto.getRandomValues(new Uint8Array(16))
 	return {
+		iv: decode(iv),
 		salt: decode(salt),
 		importAlgorithm: 'PBKDF2',
 		derivationAlgorithm: { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
@@ -20,16 +22,15 @@ export async function passwordEncrypt (password: string, content: any): Promise<
 	if (isEncrypted(content)) { throw 'content is already encrypted' }
 	const derivationSettings = getDerivationSettings()
 	const derivedKey = await deriveKey(password, derivationSettings)
-	const iv = window.crypto.getRandomValues(new Uint8Array(12))
-	const ciphertext = await window.crypto.subtle.encrypt({ name: derivationSettings.derivedKeyAlgorithm.name, iv }, derivedKey, encode(JSON.stringify(content))) as Uint8Array
-	return { ciphertext: decode(ciphertext), iv: decode(iv), derivationSettings }
+	const ciphertext = await window.crypto.subtle.encrypt({ name: derivationSettings.derivedKeyAlgorithm.name, iv: encode(derivationSettings.iv) }, derivedKey, encode(JSON.stringify(content))) as Uint8Array
+	return { ciphertext: decode(ciphertext), derivationSettings }
 }
 
 export async function passwordDecrypt (password: string, encrypted: EncryptedContent): Promise<any> {
 	if (!isEncrypted(encrypted)) { throw 'content is already decrypted' }
-	const { ciphertext, iv, derivationSettings } = encrypted
+	const { ciphertext, derivationSettings } = encrypted
 	const derivedKey = await deriveKey(password, derivationSettings)
-	const encoded = await window.crypto.subtle.decrypt({ name: derivationSettings.derivedKeyAlgorithm.name, iv: encode(iv) }, derivedKey, encode(ciphertext))
+	const encoded = await window.crypto.subtle.decrypt({ name: derivationSettings.derivedKeyAlgorithm.name, iv: encode(derivationSettings.iv) }, derivedKey, encode(ciphertext))
 	return JSON.parse(decode(encoded))
 }
 
@@ -47,14 +48,14 @@ export async function getSigningKey (key: JsonWebKey) {
 	const jwk = { ...key }
 	delete jwk.key_ops
 	delete jwk.alg
-	return window.crypto.subtle.importKey('jwk', jwk, { name: 'RSA-PSS', hash: 'SHA-256', }, false, ['sign'])
+	return window.crypto.subtle.importKey('jwk', jwk, { name: 'RSA-PSS', hash: 'SHA-256' }, false, ['sign'])
 }
 
 export async function getDecryptionKey (key: JsonWebKey) {
 	const jwk = { ...key }
 	delete jwk.key_ops
 	delete jwk.alg
-	return window.crypto.subtle.importKey('jwk', jwk, { name: 'RSA-OAEP', hash: 'SHA-256', }, false, ['decrypt'])
+	return window.crypto.subtle.importKey('jwk', jwk, { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['decrypt'])
 }
 
 
