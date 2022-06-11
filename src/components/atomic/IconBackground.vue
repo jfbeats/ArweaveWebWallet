@@ -21,6 +21,7 @@ const props = defineProps(['icon', 'img'])
 	overflow: hidden;
 	width: 64px;
 	height: 64px;
+	display: flex;
 }
 
 .page-logo {
