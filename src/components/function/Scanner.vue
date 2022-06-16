@@ -1,14 +1,10 @@
 <template>
-	<teleport to="#viewport">
-		<TransitionsManager appear>
-			<div class="scanner">
-				<video ref="video" class="video"></video>
-				<div class="actions-row-container">
-					<ActionsRow :actions="actions" />
-				</div>
-			</div>
-		</TransitionsManager>
-	</teleport>
+	<div class="scanner">
+		<video ref="video" class="video"></video>
+		<div class="actions-row-container">
+			<ActionsRow :actions="actions" />
+		</div>
+	</div>
 </template>
 
 
@@ -29,11 +25,11 @@ export default { hasCamera }
 
 <script setup lang="ts">
 import ActionsRow from '@/components/atomic/ActionsRow.vue'
-import TransitionsManager from '@/components/visual/TransitionsManager.vue'
 import { useChannel } from '@/functions/Channels'
 import { postMessageExtension } from '@/functions/Connect'
 import { notify } from '@/store/NotificationStore'
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { awaitEffect } from '@/functions/AsyncData'
+import { onUnmounted, onMounted, ref, inject } from 'vue'
 
 import IconSwap from '@/assets/icons/swap.svg?component'
 import IconX from '@/assets/icons/x.svg?component'
@@ -41,6 +37,7 @@ import IconX from '@/assets/icons/x.svg?component'
 const emit = defineEmits<{
 	(e: 'result', value?: string): void
 }>()
+const parentTransitionState = inject('transitionState', null as any)
 
 const video = ref(null as null | HTMLVideoElement)
 const scannerCamera = useChannel('scannerCamera').state
@@ -60,7 +57,7 @@ const switchCamera = async () => {
 }
 
 onMounted(async () => {
-	const beforeUnmount = new Promise<void>(res => onBeforeUnmount(res))
+	const unmount = new Promise<void>(res => onUnmounted(res))
 	if (!video.value) { return console.error('failed to start scanner') }
 	cameras = await QrScanner.listCameras(true)
 	qrScanner = new QrScanner(video.value, result => emit('result', result))
@@ -70,7 +67,8 @@ onMounted(async () => {
 		emit('result', undefined)
 		notify.error('Unable to access camera')
 	})
-	await beforeUnmount
+	await unmount
+	await awaitEffect(() => !parentTransitionState?.leave)
 	qrScanner.destroy()
 })
 </script>
@@ -79,8 +77,6 @@ onMounted(async () => {
 
 <style scoped>
 .scanner {
-	position: fixed;
-	inset: 0;
 	overflow: hidden;
 	display: flex;
 	background: #000;

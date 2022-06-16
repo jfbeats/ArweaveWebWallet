@@ -14,10 +14,12 @@ const props = defineProps<{
 	once?: boolean
 	onIntersection?: any
 	onResize?: any
+	onMutation?: any
 }>()
 const emit = defineEmits<{
 	(e: 'intersection', value: IntersectionObserverEntry): void
 	(e: 'resize', value: ResizeObserverEntry): void
+	(e: 'mutation', value: MutationRecord): void
 }>()
 
 const observed = ref(null)
@@ -40,6 +42,16 @@ if (props.onResize) {
 	})
 	const unobserve = () => observed.value && resizeObserver.unobserve(observed.value)
 	onMounted(() => resizeObserver.observe(observed.value!))
+	onBeforeUnmount(unobserve)
+}
+
+if (props.onMutation) {
+	const mutationObserver = new MutationObserver((entries) => {
+		emit('mutation', entries[0])
+		if (props.once) { unobserve() }
+	})
+	const unobserve = () => observed.value && mutationObserver.disconnect()
+	onMounted(() => mutationObserver.observe(observed.value!, { childList: true, attributes: true, subtree: true }))
 	onBeforeUnmount(unobserve)
 }
 </script>

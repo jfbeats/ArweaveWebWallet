@@ -3,7 +3,9 @@
 		<Input v-model.trim="model" :icon="IconPerson" placeholder="Address" :mask="maskAddress" :actions="actions" :disabled="disabled" :id="id"/>
 		<AddressIcon class="address-icon" :address="model"/>
 	</div>
-	<Scanner v-if="scanning" @result="scanningResult" />
+	<Viewport>
+		<Scanner v-if="scanning" @result="scanningResult" />
+	</Viewport>
 </template>
 
 
@@ -11,6 +13,7 @@
 <script setup lang="ts">
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import Input from '@/components/atomic/Input.vue'
+import Viewport from '@/components/layout/Viewport.vue'
 import Scanner from '@/components/function/Scanner.vue'
 import { computed, ref } from 'vue'
 

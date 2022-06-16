@@ -22,11 +22,11 @@ const name = computed<string>(() => {
 })
 
 const parentTransitionState = inject('transitionState', null as null | typeof transitionState)
-const transitionState = reactive({ running: false, enter: false, leave: false, })
+const transitionState = reactive({ running: false, enter: false, leave: false })
 const providedState = reactive({})
 watch(() => [transitionState, parentTransitionState], () => {
 	transitionState.running = transitionState.enter || transitionState.leave // @ts-ignore
-	for (const key in transitionState) { providedState[key] = transitionState[key] || parentTransitionState?.[key] }
-}, { immediate:true, deep: true })
+	for (const key in transitionState) { providedState[key] = transitionState[key] || parentTransitionState?.[key] || false }
+}, { immediate: true, deep: true })
 provide('transitionState', readonly(providedState))
 </script>
