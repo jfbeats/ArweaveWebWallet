@@ -23,10 +23,8 @@
 							<div>
 								<h3>Transaction</h3>
 								<div class="flex-column">
-									<div>
-										<div v-if="isData"><a :href="ArweaveStore.gatewayURL + tx.id" target="_blank">{{ gatewayHostname }}</a></div>
-										<div v-if="tx.data?.type === 'application/x.arweave-manifest+json'"><a :href="ArweaveStore.gatewayURL + 'tx/' + tx.id + '/data.json'" target="_blank">Manifest</a></div>
-									</div>
+									<div v-if="isData"><a :href="ArweaveStore.gatewayURL + tx.id" target="_blank">{{ gatewayHostname }}</a></div>
+									<div v-if="tx.data?.type === 'application/x.arweave-manifest+json'"><a :href="ArweaveStore.gatewayURL + 'tx/' + tx.id + '/data.json'" target="_blank">Manifest</a></div>
 									<div class="secondary-text"><Address :tx="tx.id">ID:&nbsp;</Address></div>
 								</div>
 							</div>
