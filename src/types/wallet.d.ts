@@ -5,6 +5,10 @@ type WalletDataInterface = {
 	jwk?: import('arweave/web/lib/wallet').JWKInterface | EncryptedContent
 	provider?: ProviderName
 	data?: { [name in ProviderName]?: { key?: string } }
+	settings?: {
+		sync?: boolean
+		securityLevel?: 'always' | 'inactivity' | 'disabled'
+	}
 }
 
 interface Provider extends Account {

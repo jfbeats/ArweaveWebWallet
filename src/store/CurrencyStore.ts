@@ -1,4 +1,4 @@
-import { ChannelRef } from '@/functions/Channels'
+import { useChannel } from '@/functions/Channels'
 import { getAsyncData } from '@/functions/AsyncData'
 import axios from 'axios'
 import { computed, reactive, Ref, toRef, watch } from 'vue'
@@ -7,7 +7,7 @@ import { computed, reactive, Ref, toRef, watch } from 'vue'
 export const currency = getConversion()
 
 function getConversion () {
-	const settings = new ChannelRef('currency', undefined, { currency: 'USD', provider: 'redstone' }).state.value
+	const settings = useChannel('currency', undefined, { currency: 'USD', provider: 'redstone' }).state.value
 	const currentPrice = getAsyncData({
 		name: 'conversion rate',
 		existingState: toRef(settings, 'rate'),

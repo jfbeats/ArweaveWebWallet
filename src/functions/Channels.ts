@@ -11,11 +11,13 @@ type PrefixTable = {
 	gateway: string
 	bundler: string
 	scannerCamera: string
+	pwdTest?: EncryptedContent
+	pwdTestLock?: number
 }
 
 
 
-export class ChannelRef <T extends keyof PrefixTable> {
+class ChannelRef <T extends keyof PrefixTable> {
 	state
 	private readonly stateChannel
 	private stopWrite?: WatchStopHandle
@@ -85,6 +87,37 @@ export function useChannel <T extends keyof PrefixTable> (prefix: T, instanceNam
 	}
 	if (getCurrentScope()) { onScopeDispose(stop) }
 	return { state: channelInstances[key].channel.state, stop, deleteChannel } as ChannelRef<T>
+}
+
+
+
+export function useLock (channel: Ref<number | undefined>) {
+	let timer: any
+	const verify = () => {
+		return new Promise<void>(res => {
+			const value = channel.value
+			setTimeout(() => (channel.value !== value) && res(), 1100)
+			setTimeout(() => {
+				if (channel.value === value) { setTimeout(() => { channel.value = 0; res() }, 2000) }
+				else { res() }
+			}, 3000)
+		})
+	}
+	const lock = async () => {
+		if (timer || channel.value) {
+			await verify()
+			throw 'Already locked'
+		}
+		channel.value = 1
+		timer = setInterval(() => channel.value!++, 1000)
+	}
+	const unlock = () => {
+		if (!timer || !channel.value) { throw 'Already unlocked' }
+		clearInterval(timer)
+		channel.value = 0
+		timer = undefined
+	}
+	return { lock, unlock }
 }
 
 

@@ -1,7 +1,7 @@
 import { arweave } from '@/store/ArweaveStore'
 import { ArweaveAccount, ArweaveProvider } from '@/providers/Arweave'
 import { LedgerProvider } from '@/providers/Ledger'
-import { ChannelRef } from '@/functions/Channels'
+import { useChannel } from '@/functions/Channels'
 import { useDataWrapper } from '@/functions/AsyncData'
 import { pkcs8ToJwk } from '@/functions/Crypto'
 import { download } from '@/functions/File'
@@ -34,7 +34,7 @@ function walletFactory (wallet: WalletDataInterface): Wallet {
 	const provider = selectProvider(wallet)
 	return new provider(wallet)
 }
-const WalletsData = new ChannelRef('wallets', undefined, []).state
+const WalletsData = useChannel('wallets', undefined, []).state
 export const Wallets = useDataWrapper(WalletsData, 'id', walletFactory, wallet => wallet.destructor?.())
 
 

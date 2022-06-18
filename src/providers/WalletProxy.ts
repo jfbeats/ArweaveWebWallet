@@ -1,5 +1,6 @@
 import { uuidV4 } from '@/functions/Utils'
-import { isEncrypted, passwordDecrypt, passwordEncrypt } from '@/functions/Crypto'
+import { isEncrypted } from '@/functions/Crypto'
+import { requestPrivateKey } from '@/functions/Password'
 import { JWKInterface } from 'arweave/web/lib/wallet'
 import { computed } from 'vue'
 
@@ -19,15 +20,14 @@ export function WalletProxy <TBase extends ClassConstructor> (Base: TBase) {
 			;(this as any).on('destructor', () => this.#isEncrypted.effect.stop())
 		}
 		get id () { return this.#wallet.id + '' }
-		get uuid () { this.#wallet.uuid ??= uuidV4(); return this.#wallet.uuid! }
-		get data () { this.#wallet.data ??= {}; return this.#wallet.data }
+		get uuid () { return this.#wallet.uuid ??= uuidV4() }
+		get data () { return this.#wallet.data ??= {} }
+		get settings () { return this.#wallet.settings ??= {} }
 		get hasPrivateKey () { return !!this.#wallet.jwk }
 		get isEncrypted () { return this.#isEncrypted.value }
 		async getPrivateKey (): Promise<JWKInterface> {
 			if (!isEncrypted(this.#wallet.jwk!)) { return this.#wallet.jwk! }
-			return passwordDecrypt('pass', this.#wallet.jwk)
+			return requestPrivateKey(this as any)
 		}
-		async encryptPrivateKey (password: string) { this.#wallet.jwk = await passwordEncrypt(password, this.#wallet.jwk) }
-		async decryptPrivateKey (password: string) { this.#wallet.jwk = await passwordDecrypt(password, this.#wallet.jwk as any) }
 	}
 }
