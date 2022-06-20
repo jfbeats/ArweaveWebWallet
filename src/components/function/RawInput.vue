@@ -5,16 +5,19 @@
 
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, useAttrs, onMounted } from 'vue'
 
 const props = defineProps(['modelValue'])
 const emit = defineEmits(['update:modelValue'])
+const attrs = useAttrs()
+const input = ref(undefined as undefined | HTMLInputElement)
 
 const model = computed({
 	get () { return props.modelValue },
 	set (value) { emit('update:modelValue', value) }
 })
-const input = ref(undefined as undefined | HTMLInputElement)
+
+// remove background color added by browser built-in style autofill
 const hasAutofill = ref(false)
 const handleAutofill = (e: AnimationEvent) => {
 	if (e.animationName.includes('onAutofill')) { hasAutofill.value = true }
@@ -23,6 +26,11 @@ const handleAutofill = (e: AnimationEvent) => {
 const handleChange = () => {
 	if (hasAutofill.value) { setTimeout(() => input.value && (input.value.value = input.value.value)) }
 }
+
+onMounted(() => {
+	// always autofocus
+	if ('autofocus' in attrs && attrs.autofocus !== undefined) { setTimeout(() => input.value?.focus()) }
+})
 </script>
 
 

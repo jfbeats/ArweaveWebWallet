@@ -11,8 +11,8 @@ type PrefixTable = {
 	gateway: string
 	bundler: string
 	scannerCamera: string
-	pwdTest?: EncryptedContent
-	pwdTestLock?: number
+	pwdTest: EncryptedContent | null
+	pwdTestLock: number
 }
 
 
@@ -46,7 +46,7 @@ class ChannelRef <T extends keyof PrefixTable> {
 	private startWrite = () => this.stopWrite = watch(this.state, this.writeState, { deep: true })
 	private update = (val: string | null) => {
 		if (this.stopWrite) { this.stopWrite() }
-		if (val) { this.state.value = JSON.parse(val) }
+		if (val) { this.state.value = JSON.parse(val) } // todo catch, parsing fails when val === undefined
 		this.startWrite()
 	}
 	private storageListener = (e: StorageEvent) => {

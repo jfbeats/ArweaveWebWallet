@@ -1,7 +1,7 @@
 <template>
 	<div class="input input-box" :class="{ focus }">
 		<Icon v-if="icon" :icon="icon" />
-		<RawInput class="text" v-model="model" @keyup.enter="runLastAction" :placeholder="placeholder" @focus="focus = true" @blur="focus = false" :disabled="disabled" :id="id" />
+		<RawInput class="text" v-model="model" @keyup.enter="runLastAction" :placeholder="placeholder" @focus="focus = true" @blur="focus = false" v-bind="$attrs" />
 		<ActionsRow :actions="props.actions" />
 	</div>
 </template>
@@ -14,7 +14,7 @@ import RawInput from '@/components/function/RawInput.vue'
 import ActionsRow from '@/components/atomic/ActionsRow.vue'
 import { computed, ref, watch } from 'vue'
 
-const props = defineProps(['modelValue', 'icon', 'placeholder', 'actions', 'autocomplete', 'mask', 'disabled', 'id'])
+const props = defineProps(['modelValue', 'icon', 'placeholder', 'actions', 'autocomplete', 'mask'])
 const emit = defineEmits(['update:modelValue'])
 
 const model = computed({
@@ -27,6 +27,20 @@ watch(() => model.value, (newVal, oldVal) => {
 	if (!props.mask(newVal)) { model.value = oldVal }
 })
 const runLastAction = () => props.actions?.[props.actions.length - 1]?.run?.()
+</script>
+
+
+
+<script lang="ts">
+export default {
+	inheritAttrs: false,
+	methods: {
+		getScopeAttrs () {
+			const scopeAttr = (this as any).$parent.$options.__scopeId
+			return scopeAttr ? { [scopeAttr]: '' } : {}
+		}
+	}
+}
 </script>
 
 

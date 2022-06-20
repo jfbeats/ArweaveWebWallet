@@ -22,7 +22,7 @@
 <!--			<div>-->
 <!--				<h2>Security</h2>-->
 <!--				<SettingItem name="Password" description="Used to encrypt selected wallets">-->
-<!--					<Input v-model="password" :actions="[passwordAction]" />-->
+<!--					<Input v-model="password" type="password" :placeholder="hasPassword ? 'Change password or delete' : 'Create a new password'" :actions="[passwordAction]" />-->
 <!--				</SettingItem>-->
 <!--				<SettingItem name="Stay unlocked" description="Time to wait before requiring the password again">-->
 <!--					<Select />-->
@@ -64,7 +64,7 @@ import Select from '@/components/atomic/Select.vue'
 import Button from '@/components/atomic/Button.vue'
 import { PWA } from '@/pwa'
 import { Wallets } from '@/functions/Wallets'
-import { setPassword } from '@/functions/Password'
+import { hasPassword, setPassword } from '@/functions/Password'
 import ArweaveStore, { gatewayDefault, bundlerDefault, updateArweave, updateBundler } from '@/store/ArweaveStore'
 import { currency, redstoneOptions } from '@/store/CurrencyStore'
 import { notify } from '@/store/NotificationStore'
@@ -110,7 +110,10 @@ const currentSetting = computed<{ currency: string, provider: string }>({
 })
 
 const password = ref('')
-const passwordAction = computed(() => ({ run: () => setPassword(password.value), icon: IconY }))
+const passwordAction = computed(() => ({
+	run: async () => await setPassword(password.value) && (password.value = ''),
+	icon: hasPassword.value && !password.value ? IconX : IconY
+}))
 </script>
 
 

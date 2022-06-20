@@ -25,57 +25,62 @@ export async function testPassword (password?: string): Promise<void> {
 
 export async function updateEncryption () {
 	await pwdTestLock.lock()
-	const password = await requestPassword({ reason: 'Password change' })
-	const promises = WalletsData.value
-	.filter(wallet => wallet.settings?.securityLevel && wallet.settings.securityLevel !== 'disabled')
-	.filter(wallet => wallet.jwk && !isEncrypted(wallet.jwk))
-	.map(async wallet => ({
-		uuid: getWalletById(wallet.id)?.uuid,
-		jwk: await passwordEncrypt(password, wallet.jwk)
-	}))
-	const wallets = await Promise.all(promises)
-	wallets.forEach(wallet => WalletsData.value.find(data => data.uuid === wallet.uuid)!.jwk = wallet.jwk)
-	pwdTestLock.unlock()
-}
-
-export async function setPassword (password: string, oldPassword?: string): Promise<void> {
-	await pwdTestLock.lock()
-	let wallets = [] as any[]
-	if (pwdTest.value) {
-		if (oldPassword) { await testPassword(oldPassword) }
-		oldPassword ??= await requestPassword({ reason: 'Password change' })
+	try {
+		const password = await requestPassword({ reason: 'encrypt' })
 		const promises = WalletsData.value
-		.filter(wallet => wallet.jwk && isEncrypted(wallet.jwk))
+		.filter(wallet => wallet.settings?.securityLevel && wallet.settings.securityLevel !== 'disabled')
+		.filter(wallet => wallet.jwk && !isEncrypted(wallet.jwk))
 		.map(async wallet => ({
 			uuid: getWalletById(wallet.id)?.uuid,
-			jwk: await passwordDecrypt(oldPassword!, wallet.jwk as any)
+			jwk: await passwordEncrypt(password, wallet.jwk)
 		}))
-		wallets = await Promise.all(promises)
-	}
-	if (password) {
-		const unencrypted = WalletsData.value
-		.filter(wallet => wallet.jwk && !isEncrypted(wallet.jwk))
-		.filter(wallet => wallet.settings?.securityLevel && wallet.settings.securityLevel !== 'disabled')
-		.map(wallet => ({
-			uuid: getWalletById(wallet.id)?.uuid,
-			jwk: wallet.jwk
-		}))
-		wallets = [...wallets, ...unencrypted]
-		const encryptedContent = await passwordEncrypt(password, 'valid')
-		pwdTest.value = encryptedContent
-		wallets = await Promise.all(wallets.map(async wallet => wallet.jwk = await passwordEncrypt(password, wallet.jwk)))
-	} else {
-		pwdTest.value = undefined // test proper handling by storage channel
-	}
-	wallets.forEach(wallet => WalletsData.value.find(data => data.uuid === wallet.uuid)!.jwk = wallet.jwk)
-	pwdTestLock.unlock()
+		const wallets = await Promise.all(promises)
+		wallets.forEach(wallet => WalletsData.value.find(data => data.uuid === wallet.uuid)!.jwk = wallet.jwk)
+	} finally { pwdTestLock.unlock() }
+}
+
+export async function setPassword (password: string): Promise<true> {
+	await pwdTestLock.lock()
+	try {
+		let wallets = [] as any[]
+		if (pwdTest.value) {
+			const oldPassword = await requestPassword({ reason: 'change', match: password })
+			const promises = WalletsData.value
+			.filter(wallet => wallet.jwk && isEncrypted(wallet.jwk))
+			.map(async wallet => ({
+				uuid: getWalletById(wallet.id)?.uuid,
+				jwk: await passwordDecrypt(oldPassword!, wallet.jwk as any)
+			}))
+			wallets = await Promise.all(promises)
+		}
+		if (password) {
+			if (!pwdTest.value) { await requestPassword({ reason: 'match', match: password }) }
+			const unencrypted = WalletsData.value
+			.filter(wallet => wallet.jwk && !isEncrypted(wallet.jwk))
+			.filter(wallet => wallet.settings?.securityLevel && wallet.settings.securityLevel !== 'disabled')
+			.map(wallet => ({
+				uuid: getWalletById(wallet.id)?.uuid,
+				jwk: wallet.jwk
+			}))
+			wallets = [...wallets, ...unencrypted]
+			const encryptedContent = await passwordEncrypt(password, 'valid')
+			pwdTest.value = encryptedContent
+			wallets = await Promise.all(wallets.map(async wallet => wallet.jwk = await passwordEncrypt(password, wallet.jwk)))
+		} else {
+			pwdTest.value = null
+		}
+		wallets.forEach(wallet => WalletsData.value.find(data => data.uuid === wallet.uuid)!.jwk = wallet.jwk)
+	} finally { pwdTestLock.unlock() }
+	return true
 }
 
 
 
-type PasswordRequest = {
-	info: { reason: string }
+export type PasswordRequest = {
+	reason: 'encrypt' | 'decrypt' | 'change' | 'match'
 	resolve: (arg: string) => void
+	reject: (e?: string) => void
+	match?: string
 }
 export const emitter = mitt<{ password: PasswordRequest }>()
 const privateCache = {} as { [uuid: string]: JWKInterface }
@@ -106,7 +111,7 @@ export async function requestPrivateKey (wallet: Wallet): Promise<JWKInterface> 
 		const cache = getCache(wallet.uuid)
 		if (cache) { currentPrivateKey = cache; return true }
 	}
-	const password = await requestPassword({ reason: 'Decrypt wallet' }, inCache)
+	const password = await requestPassword({ reason: 'decrypt' }, inCache)
 	if (!currentPrivateKey) { currentPrivateKey = await setCache(wallet.uuid, password) }
 	return currentPrivateKey!
 }
@@ -123,11 +128,11 @@ const runQueue = getQueryManager({
 	}
 })
 
-async function requestPassword (info: PasswordRequest['info'], invalidate?: () => Promise<any>) { // handle no password set
-	return new Promise<string>(resolve => {
+async function requestPassword (request: Omit<PasswordRequest, 'resolve' | 'reject'>, invalidate?: () => Promise<any>) {
+	return new Promise<string>((resolve, reject) => {
 		const req = async () => {
 			if (invalidate && await invalidate()) { return }
-			emitter.emit('password', { info, resolve })
+			emitter.emit('password', { ...request , resolve, reject })
 		}
 		requestPasswordQueue.push(req)
 		runQueue.query()

@@ -1,10 +1,10 @@
 <template>
 	<TransitionsManager>
 		<component :is="options.action ? 'button' : 'div'" v-if="options" :key="options.message || options.action?.name" class="overlay-prompt flex-column" :class="{ inline }" @click="options.action?.run">
-			<div style="flex:1 1 auto; display:flex; flex-direction:column; align-items:center; justify-content:space-evenly; margin-bottom:var(--spacing);">
+			<div class="content flex-column">
 				<Icon v-if="options.icon || options.action?.icon" :icon="options.icon || options.action?.icon" style="font-size: 4em;" />
 				<slot />
-				{{ options.message || options.action?.name }}
+				<div v-if="options.message || options.action?.name">{{ options.message || options.action?.name }}</div>
 			</div>
 			<div v-if="options.actions?.length" class="actions-container flex-row">
 				<Button v-for="action in options.actions" :key="action.name" @click="action.run">{{ action.name }}</Button>
@@ -37,7 +37,6 @@ const props = defineProps<{
 .overlay-prompt {
 	background: inherit;
 	border-radius: inherit;
-	position: absolute;
 	width: 100%;
 	z-index: 10;
 	align-items: center;
@@ -45,9 +44,19 @@ const props = defineProps<{
 }
 
 .overlay-prompt:not(.inline) {
+	position: absolute;
 	height: 100%;
 	inset: 0;
 	padding: inherit;
+}
+
+.content {
+	flex:1 1 auto;
+	display:flex;
+	flex-direction:column;
+	align-items:center;
+	justify-content:space-evenly;
+	/*margin-bottom:var(--spacing);*/
 }
 
 .actions-container {
