@@ -5,7 +5,7 @@
 				<AddressIcon :address="address" />
 			</button>
 		</TransitionsManager>
-		<button v-if="exit" class="exit" type="button" @click="$emit('exit')">
+		<button v-if="onExit" class="exit" type="button" @click="$emit('exit')">
 			<div class="exit-background" />
 			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
 				<path d="M0 0h24v24H0V0z" fill="none" />
@@ -23,7 +23,7 @@ import TransitionsManager from '@/components/visual/TransitionsManager.vue'
 import { computed } from 'vue'
 import { getWalletById } from '@/functions/Wallets'
 
-const props = defineProps({ modelValue: String, exit: Boolean, active: Boolean })
+const props = defineProps({ modelValue: String, onExit: Function, active: Boolean })
 const emit = defineEmits(['update:modelValue', 'selectWallet', 'exit'])
 
 const model = computed<string | undefined>({

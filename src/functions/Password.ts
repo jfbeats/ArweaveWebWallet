@@ -9,6 +9,16 @@ import { getWalletById } from '@/functions/Wallets'
 
 
 
+export type PasswordRequest = {
+	reason: 'encrypt' | 'decrypt' | 'change' | 'match'
+	resolve: (arg: string) => void
+	reject: (e?: string) => void
+	match?: string
+	wallet?: Wallet
+}
+
+
+
 const pwdTest = useChannel('pwdTest').state
 const pwdTestLock = useLock(useChannel('pwdTestLock').state)
 export const hasPassword = computed(() => pwdTest.value)
@@ -76,12 +86,6 @@ export async function setPassword (password: string): Promise<true> {
 
 
 
-export type PasswordRequest = {
-	reason: 'encrypt' | 'decrypt' | 'change' | 'match'
-	resolve: (arg: string) => void
-	reject: (e?: string) => void
-	match?: string
-}
 export const emitter = mitt<{ password: PasswordRequest }>()
 const privateCache = {} as { [uuid: string]: JWKInterface }
 
@@ -111,7 +115,7 @@ export async function requestPrivateKey (wallet: Wallet): Promise<JWKInterface> 
 		const cache = getCache(wallet.uuid)
 		if (cache) { currentPrivateKey = cache; return true }
 	}
-	const password = await requestPassword({ reason: 'decrypt' }, inCache)
+	const password = await requestPassword({ reason: 'decrypt', wallet }, inCache)
 	if (!currentPrivateKey) { currentPrivateKey = await setCache(wallet.uuid, password) }
 	return currentPrivateKey!
 }
@@ -123,18 +127,20 @@ const runQueue = getQueryManager({
 	query: async () => {
 		while (requestPasswordQueue.length) {
 			const item = requestPasswordQueue.splice(0, 1)[0]
-			await item()
+			try { await item() } catch (e) {}
 		}
 	}
 })
 
 async function requestPassword (request: Omit<PasswordRequest, 'resolve' | 'reject'>, invalidate?: () => Promise<any>) {
-	return new Promise<string>((resolve, reject) => {
-		const req = async () => {
-			if (invalidate && await invalidate()) { return }
-			emitter.emit('password', { ...request , resolve, reject })
-		}
-		requestPasswordQueue.push(req)
-		runQueue.query()
-	})
+	let controls: { resolve: PasswordRequest['resolve'], reject: PasswordRequest['reject']}
+	const promise = new Promise<string>((resolve, reject) => controls = { resolve, reject })
+	const query = async () => {
+		if (invalidate && await invalidate()) { return }
+		emitter.emit('password', { ...request , ...controls })
+		await promise
+	}
+	requestPasswordQueue.push(query)
+	runQueue.query()
+	return promise
 }

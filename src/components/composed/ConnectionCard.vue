@@ -10,7 +10,7 @@
 					</div>
 					<Icon v-if="navigateBackAvailable(state.origin, state.session)" :icon="IconLaunch" />
 				</button>
-				<WalletSelector v-model="state.walletId" :exit="true" :active="!selectActive" @selectWallet="selectWallet" @exit="disconnect" />
+				<WalletSelector v-model="state.walletId" :active="!selectActive" @selectWallet="selectWallet" @exit="disconnect" />
 			</div>
 			<Tabs :tabs="tabs" v-model="currentTab" :disabled="!currentId" />
 		</template>

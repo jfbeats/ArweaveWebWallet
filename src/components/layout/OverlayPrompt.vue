@@ -35,7 +35,6 @@ const props = defineProps<{
 
 <style scoped>
 .overlay-prompt {
-	background: inherit;
 	border-radius: inherit;
 	width: 100%;
 	z-index: 10;
@@ -44,6 +43,7 @@ const props = defineProps<{
 }
 
 .overlay-prompt:not(.inline) {
+	background: inherit;
 	position: absolute;
 	height: 100%;
 	inset: 0;

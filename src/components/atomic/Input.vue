@@ -1,8 +1,10 @@
 <template>
-	<div class="input input-box" :class="{ focus }">
-		<Icon v-if="icon" :icon="icon" />
-		<RawInput class="text" v-model="model" @keyup.enter="runLastAction" :placeholder="placeholder" @focus="focus = true" @blur="focus = false" v-bind="$attrs" />
-		<ActionsRow :actions="props.actions" />
+	<div class="input">
+		<div class="input-box" :class="{ focus }">
+			<Icon v-if="icon" :icon="icon" />
+			<RawInput class="text" v-model="model" @keyup.enter="runLastAction" :placeholder="placeholder" @focus="focus = true" @blur="focus = false" v-bind="$attrs" />
+			<ActionsRow :actions="props.actions" />
+		</div>
 	</div>
 </template>
 
@@ -48,9 +50,18 @@ export default {
 <style scoped>
 .input {
 	height: 3.5em;
+	background: transparent;
+	border-radius: var(--border-radius);
+}
+
+.input-box {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	flex: 1 1 0;
+	height: 100%;
+	width: 100%;
+	border-radius: inherit;
 }
 
 .icon {
