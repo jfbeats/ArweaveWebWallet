@@ -66,10 +66,7 @@ router.afterEach((to, from) => {
 	content: "";
 	display: block;
 	position: fixed;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	right: 0;
+	inset: 0;
 	width: 100vw;
 	height: 100%;
 	z-index: -10;

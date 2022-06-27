@@ -1,5 +1,5 @@
 <template>
-	<Viewport>
+	<Viewport :background="true">
 		<div v-if="passwordRequest" class="password">
 			<div class="card">
 				<div class="background" />
@@ -60,8 +60,6 @@ watch(passwordRequest, () => {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: #00000088;
-	backdrop-filter: blur(5px);
 }
 
 .card {

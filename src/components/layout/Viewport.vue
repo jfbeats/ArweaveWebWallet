@@ -1,5 +1,8 @@
 <template>
 	<teleport to="#viewport" v-if="active">
+		<TransitionsManager>
+			<div v-if="hasContent && background" class="background" />
+		</TransitionsManager>
 		<Observer @mutation="setVector" class="container">
 			<TransitionsManager appear :vector="vector">
 				<slot />
@@ -13,12 +16,14 @@
 <script setup lang="ts">
 import TransitionsManager from '@/components/visual/TransitionsManager.vue'
 import Observer from '@/components/function/Observer.vue'
-import { onMounted, ref, useSlots } from 'vue'
+import { computed, onMounted, ref, useSlots } from 'vue'
 
+const props = defineProps<{ background?: any }>()
 const slots = useSlots()
 const active = ref(false)
 const vector = ref(0)
-const setVector = () => vector.value = slots.default?.()?.[0]?.key != null ? -1 : 1
+const hasContent = computed(() => slots.default?.()?.[0]?.key != null)
+const setVector = () => vector.value = hasContent.value ? -1 : 1
 setVector()
 
 onMounted(() => active.value = true)
@@ -28,6 +33,12 @@ onMounted(() => active.value = true)
 
 <style scoped>
 .container > :deep(*) {
+	position: fixed;
+	inset: 0;
+}
+
+.background {
+	background: #00000088;
 	position: fixed;
 	inset: 0;
 }
