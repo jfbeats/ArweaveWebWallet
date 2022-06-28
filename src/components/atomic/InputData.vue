@@ -3,24 +3,20 @@
 		<textarea v-show="!isFile" v-model="model" @focus="focus = 1" @blur="focus = 0" :disabled="disabled" :id="id" :placeholder="placeholder"></textarea>
 		<transition name="fade">
 			<div v-if="!model && !dragOverlay" class="overlay passthrough">
-				<div class="big-icon-container">
-					<IconText class="img" />
-				</div>
+				<Icon :icon="IconText" class="big-icon-container img" />
 				<div class="spacer" />
 				<div class="big-icon-container not-passthrough">
 					<label for="file-picker" class="file-picker-label">
-						<IconDrop class="img" />
+						<Icon :icon="IconDrop" class="img" style="width: 100%; height: 100%;" />
 					</label>
 					<input type="file" id="file-picker" class="file-input" @change="handleFiles" :disabled="disabled" />
 				</div>
 			</div>
 			<div v-else-if="isFile" class="overlay">
-				<div class="big-icon-container focus">
-					<IconCloud class="img" />
-				</div>
+				<Icon :icon="IconCloud" class="big-icon-container focus" />
 				<button class="clear" @click="clearFiles" type="button">
 					<div class="icon-container">
-						<IconX class="icon no-select" draggable="false" />
+						<Icon :icon="IconX" class="iconX no-select" draggable="false" />
 					</div>
 				</button>
 			</div>
@@ -33,6 +29,7 @@
 
 <script setup lang="ts">
 import DragOverlay from '@/components/atomic/DragOverlay.vue'
+import Icon from '@/components/atomic/Icon.vue'
 import InterfaceStore from '@/store/InterfaceStore'
 import { computed, ref, toRef, useAttrs } from 'vue'
 
@@ -126,8 +123,6 @@ textarea {
 }
 
 .img {
-	width: 100%;
-	height: 100%;
 	opacity: 0.2;
 	transition: 0.3s ease;
 }
@@ -172,7 +167,7 @@ textarea {
 	justify-content: center;
 }
 
-.icon {
+.iconX {
 	height: 1.4em;
 	width: 1.4em;
 	object-fit: contain;
@@ -186,7 +181,7 @@ textarea {
 	transition: 0.3s ease;
 }
 
-.focus .icon,
+.focus .iconX,
 .focus .symbol {
 	opacity: 1;
 }

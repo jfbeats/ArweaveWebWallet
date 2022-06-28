@@ -1,6 +1,6 @@
 <template>
 	<div class="tx-icon" :class="{ isPending }" :style="styleObject">
-		<component :is="icon" class="tx-svg" />
+		<Icon :icon="icon" class="tx-svg" />
 		<transition name="fade">
 			<Icon v-if="isPending || uploadProgress" icon="loader" :progress="uploadProgress" class="loader" />
 		</transition>

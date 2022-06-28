@@ -101,8 +101,11 @@ onMounted(async () => {
 .actions-row {
 	font-size: 2em;
 	padding: var(--spacing);
+	padding-top: 0;
 	background: #00000066;
+	backdrop-filter: blur(10px);
 	border-top-left-radius: var(--border-radius);
 	border-top-right-radius: var(--border-radius);
+	border: 1px solid #ffffff22;
 }
 </style>

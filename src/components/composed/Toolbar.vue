@@ -3,7 +3,7 @@
 		<SlickList class="wallets" :axis="axis" :lockAxis="axis" v-model:list="Wallets" :pressDelay="150" helperClass="dragging" dir="ltr" @sort-start="haptic">
 			<SlickItem v-for="(wallet, i) in Wallets" :index="i" :key="wallet.key" draggable="false" class="drag-container">
 				<router-link :to="{ name: navTo, params: { walletId: wallet.id }, query: { ...$route.query } }" custom v-slot="{ href, navigate }">
-					<button type="button" class="icon wallet" :href="href" @click="select(wallet, navigate)" :class="{ active: wallet.id == selected && links, accent: !links, verticalLayout }" draggable="false" @dragstart.prevent>
+					<button type="button" class="item wallet" :href="href" @click="select(wallet, navigate)" :class="{ active: wallet.id == selected && links, accent: !links, verticalLayout }" draggable="false" @dragstart.prevent>
 						<AddressIcon class="profile" :address="wallet.key" />
 					</button>
 				</router-link>
@@ -12,21 +12,21 @@
 		<transition name="fade-fast">
 			<div class="controls" v-if="links">
 				<transition name="fade-fast">
-					<router-link v-if="connectors.length" class="icon control" :class="{ verticalLayout }" to="/connect" aria-label="Add Wallet">
-						<IconConnection class="small" alt="Connections" />
+					<router-link v-if="connectors.length" class="item control" :class="{ verticalLayout }" to="/connect" aria-label="Add Wallet">
+						<Icon :icon="IconConnection" class="small" alt="Connections" />
 					</router-link>
 				</transition>
-				<router-link class="icon control" :class="{ verticalLayout }" to="/explore" aria-label="Explore">
-					<IconSearch class="small" alt="Explore" />
+				<router-link class="item control" :class="{ verticalLayout }" to="/explore" aria-label="Explore">
+					<Icon :icon="IconSearch" class="small" alt="Explore" />
 				</router-link>
-				<router-link class="icon control" :class="{ verticalLayout }" to="/add" aria-label="Add Wallet">
-					<IconAddBox class="small" alt="Add Wallet" />
+				<router-link class="item control" :class="{ verticalLayout }" to="/add" aria-label="Add Wallet">
+					<Icon :icon="IconAddBox" class="small" alt="Add Wallet" />
 				</router-link>
-				<router-link class="icon control" :class="{ verticalLayout }" to="/settings" aria-label="Settings">
-					<IconSettings class="small" alt="Settings" />
+				<router-link class="item control" :class="{ verticalLayout }" to="/settings" aria-label="Settings">
+					<Icon :icon="IconSettings" class="small" alt="Settings" />
 				</router-link>
-				<div v-if="state.type === 'extension'" class="icon control" :class="{ verticalLayout }" @click="postMessageExtensionConnect">
-					<IconPlug class="small" alt="plug" />
+				<div v-if="state.type === 'extension'" class="item control" :class="{ verticalLayout }" @click="postMessageExtensionConnect">
+					<Icon :icon="IconPlug" class="small" alt="plug" />
 				</div>
 			</div>
 		</transition>
@@ -39,6 +39,7 @@
 <script setup lang="ts">
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import DragOverlay from '@/components/atomic/DragOverlay.vue'
+import Icon from '@/components/atomic/Icon.vue'
 import { SlickList, SlickItem } from 'vue-slicksort'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import { state } from '@/functions/Channels'
@@ -94,7 +95,7 @@ const postMessageExtensionConnect = async () => {
 	height: calc(var(--toolbar-size) - var(--toolbar-spacing));
 }
 
-.icon {
+.item {
 	position: relative;
 	padding: calc(var(--toolbar-spacing) / 2);
 	flex: 1 1 0;
@@ -141,33 +142,33 @@ const postMessageExtensionConnect = async () => {
 	height: 24px;
 }
 
-.icon:hover {
+.item:hover {
 	opacity: 1;
 }
 
-.icon.active,
-.icon.accent,
-.icon.router-link-active {
+.item.active,
+.item.accent,
+.item.router-link-active {
 	opacity: 1;
 }
 
-.dragging .icon {
+.dragging .item {
 	opacity: 1;
 }
 
-.dragging .icon > * {
+.dragging .item > * {
 	transform: translateX(calc(100% + var(--toolbar-spacing) * 2));
 }
 
-[dir="rtl"] .dragging .icon > * {
+[dir="rtl"] .dragging .item > * {
 	transform: translateX(calc(-100% - var(--toolbar-spacing) * 2));
 }
 
-.dragging .icon.verticalLayout > * {
+.dragging .item.verticalLayout > * {
 	transform: translateY(calc(100% + var(--toolbar-spacing) * 2));
 }
 
-.icon::before {
+.item::before {
 	--weight: 2px;
 	--length: calc(100% - var(--toolbar-spacing));
 	--offset: calc(var(--toolbar-spacing) / 2);
@@ -184,30 +185,30 @@ const postMessageExtensionConnect = async () => {
 	transition: 0.2s ease;
 }
 
-.icon.active::before,
-.icon.router-link-active::before {
+.item.active::before,
+.item.router-link-active::before {
 	opacity: 1;
 }
 
-.dragging .icon::before {
+.dragging .item::before {
 	--offset: 0;
 	--distance: calc(var(--toolbar-spacing) / -2);
 	--length: 100%;
 }
 
-.icon.verticalLayout::before {
+.item.verticalLayout::before {
 	top: var(--distance);
 	left: var(--offset);
 	width: var(--length);
 	height: var(--weight);
 }
 
-[dir="rtl"] .icon::before {
+[dir="rtl"] .item::before {
 	left: unset;
 	right: var(--distance);
 }
 
-[dir="rtl"] .icon.verticalLayout::before {
+[dir="rtl"] .item.verticalLayout::before {
 	left: unset;
 	right: var(--offset);
 }

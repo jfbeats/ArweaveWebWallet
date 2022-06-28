@@ -21,8 +21,12 @@ export type PasswordRequest = {
 
 const pwdTest = useChannel('pwdTest').state
 const pwdTestLock = useLock(useChannel('pwdTestLock').state)
-export const hasPassword = computed(() => pwdTest.value)
 const WalletsData = useChannel('wallets', undefined, []).state
+const requireUpdate = computed(() => WalletsData.value
+	.filter(wallet => wallet.settings?.securityLevel && wallet.settings.securityLevel !== 'disabled')
+	.filter(wallet => wallet.jwk && !isEncrypted(wallet.jwk)))
+export const hasPassword = computed(() => pwdTest.value)
+export const hasUpdate = computed(() => requireUpdate.value.length)
 
 
 
@@ -37,10 +41,7 @@ export async function updateEncryption () {
 	await pwdTestLock.lock()
 	try {
 		const password = await requestPassword({ reason: 'encrypt' })
-		const promises = WalletsData.value
-		.filter(wallet => wallet.settings?.securityLevel && wallet.settings.securityLevel !== 'disabled')
-		.filter(wallet => wallet.jwk && !isEncrypted(wallet.jwk))
-		.map(async wallet => ({
+		const promises = requireUpdate.value.map(async wallet => ({
 			uuid: getWalletById(wallet.id)?.uuid,
 			jwk: await passwordEncrypt(password, wallet.jwk)
 		}))
@@ -65,10 +66,7 @@ export async function setPassword (password: string): Promise<true> {
 		}
 		if (password) {
 			if (!pwdTest.value) { await requestPassword({ reason: 'match', match: password }) }
-			const unencrypted = WalletsData.value
-			.filter(wallet => wallet.jwk && !isEncrypted(wallet.jwk))
-			.filter(wallet => wallet.settings?.securityLevel && wallet.settings.securityLevel !== 'disabled')
-			.map(wallet => ({
+			const unencrypted = requireUpdate.value.map(wallet => ({
 				uuid: getWalletById(wallet.id)?.uuid,
 				jwk: wallet.jwk
 			}))

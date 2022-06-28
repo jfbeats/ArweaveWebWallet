@@ -4,7 +4,7 @@
 			<!-- TODO Autocomplete local addrs -->
 			<label for="target">
 				<h2 class="heading flex-row">
-					<IconNorthEast class="img" />
+					<Icon :icon="IconNorthEast" />
 					<span>Send</span>
 				</h2>
 			</label>
@@ -91,14 +91,16 @@ import InputData from '@/components/atomic/InputData.vue'
 import InputGrid from '@/components/atomic/InputGrid.vue'
 import SendFee from '@/components/composed/SendFee.vue'
 import Button from '@/components/atomic/Button.vue'
+import Icon from '@/components/atomic/Icon.vue'
 import { buildTransaction, manageUpload } from '@/functions/Transactions'
 import { awaitEffect } from '@/functions/AsyncData'
 import { addressHashToColor, addressToHash } from '@/functions/Utils'
+import { notify } from '@/store/NotificationStore'
 import BigNumber from 'bignumber.js'
 import { computed, markRaw, reactive, ref, watch } from 'vue'
+
 import IconNorthEast from '@/assets/icons/north_east.svg?component'
 import IconLabel from '@/assets/icons/label.svg?component'
-import { notify } from '@/store/NotificationStore'
 
 const props = defineProps(['wallet', 'model'])
 
@@ -246,10 +248,6 @@ const submitStyle = computed(() => ({
 
 .validation {
 	color: var(--orange);
-}
-
-.img {
-	height: 1em;
 }
 
 .secondary {

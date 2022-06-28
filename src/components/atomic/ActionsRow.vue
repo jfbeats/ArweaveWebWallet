@@ -36,6 +36,6 @@ const actionsComputed = computed(() => props.actions?.filter((action: any) => ac
 }
 
 .icon {
-	width: 2em;
+	margin: var(--spacing);
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
 	<span class="icon">
 		<transition name="fade-fast" mode="out-in">
-			<component v-if="component" :is="component" :key="key" />
+			<component v-if="component" :is="component" :key="key" fill="currentColor" />
 			<svg v-else-if="iconData == 'loader'" class="loader" height="100" width="100" viewBox="0 0 100 100" :class="{ spin: progress == null }">
 				<circle stroke="#ffffff22" :stroke-width="thickness" fill="transparent" :r="normalizedRadius" :cx="50" :cy="50" />
 				<circle stroke="currentColor" :stroke-dasharray="circumference + ' ' + circumference" :style="{ strokeDashoffset }" :stroke-width="thickness" stroke-linecap="round" fill="transparent" :r="normalizedRadius" :cx="50" :cy="50" @animationiteration="finishAnimation = false" :class="{ spin: progress == null || finishAnimation }" />
@@ -48,7 +48,6 @@ watch(() => props.icon, () => key.value++, { deep: true })
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	vertical-align: text-top;
 	transition: 0.3s ease;
 }
 

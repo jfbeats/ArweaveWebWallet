@@ -2,7 +2,7 @@
 	<div class="address-icon no-select">
 		<transition name="fade-fast">
 			<Identicon class="identicon" v-if="isValid && address" :address="address" alt="wallet logo" draggable="false" @dragstart.prevent />
-			<IconCloud v-else class="identicon cloud" draggable="false" @dragstart.prevent />
+			<Icon :icon="IconCloud" v-else class="identicon cloud" draggable="false" @dragstart.prevent />
 		</transition>
 		<transition :name="hasTransition ? 'fade-fast' : null">
 			<img class="image" v-if="isValid && arweaveId?.Image" v-show="loaded" @load="loaded = true" :src="ArweaveStore.gatewayURL + arweaveId?.Image" alt="wallet profile picture" draggable="false" @dragstart.prevent />
@@ -13,10 +13,12 @@
 
 
 <script setup>
-import ArweaveStore from '@/store/ArweaveStore'
 import Identicon from '@/components/atomic/Identicon.vue'
+import Icon from '@/components/atomic/Icon.vue'
+import ArweaveStore from '@/store/ArweaveStore'
 import ProfileStore, { getArweaveId } from '@/store/ProfileStore'
 import { computed, watch, ref } from 'vue'
+
 import IconCloud from '@/assets/icons/cloud.svg?component'
 
 const props = defineProps(['address'])

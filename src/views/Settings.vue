@@ -28,16 +28,7 @@
 <!--					<Select />-->
 <!--				</SettingItem>-->
 <!--			</div>-->
-			<div>
-				<h2>Wallets</h2>
-				<div class="flex-column">
-					<template v-for="wallet in Wallets" :key="wallet.id">
-						<WalletOptions class="wallet-options" :wallet="wallet" />
-						<div></div>
-					</template>
-				</div>
-				<Button v-if="!Wallets.length" style="font-size:1.5em; background:var(--background3);" @click="$router.push({ name: 'AddWallet' })" icon="+" />
-			</div>
+			<WalletsOptions />
 			<div>
 				<h2>Links</h2>
 				<SettingItem v-if="Wallets.length" :icon="LogoDiscord" name="Discord" description="Send feedback, questions or talk about anything" href="https://discord.gg/W6VybRqwBP" />
@@ -57,7 +48,7 @@
 
 
 <script setup lang="ts">
-import WalletOptions from '@/components/composed/WalletOptions.vue'
+import WalletsOptions from '@/components/composed/WalletsOptions.vue'
 import SettingItem from '@/components/composed/SettingItem.vue'
 import Input from '@/components/atomic/Input.vue'
 import Select from '@/components/atomic/Select.vue'
