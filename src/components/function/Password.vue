@@ -2,7 +2,9 @@
 	<Viewport :background="true">
 		<div v-if="passwordRequest" class="password">
 			<div class="card">
-				<div class="background" />
+				<div class="background">
+					<SecurityVisual class="background-content" />
+				</div>
 				<div class="content flex-column">
 					<div class="flex-row" style="justify-content: space-between;">
 						<div></div>
@@ -10,7 +12,7 @@
 					</div>
 					<div class="flex-column">
 						<Input v-if="passwordRequest.match" v-model="passwordMatch" type="password" placeholder="Confirm new password" :actions="passwordRequest.reason === 'match' ? [passwordAction] : undefined" :autofocus="passwordRequest.match ? 'true' : undefined" />
-						<Input v-if="passwordRequest.reason !== 'match'" v-model="password" type="password" :placeholder="passwordRequest.match ? 'Current password' : 'Password'" :actions="[passwordAction]" :autofocus="passwordRequest.match ? undefined : 'true'" />
+						<Input v-if="passwordRequest.reason !== 'match'" v-model="password" type="password" :placeholder="passwordRequest.match ? 'Old password' : 'Password'" :actions="[passwordAction]" :autofocus="passwordRequest.match ? undefined : 'true'" />
 					</div>
 				</div>
 			</div>
@@ -23,6 +25,7 @@
 <script setup lang="ts">
 import Viewport from '@/components/layout/Viewport.vue'
 import Input from '@/components/atomic/Input.vue'
+import SecurityVisual from '@/components/visual/SecurityVisual.vue'
 import { emitter, testPassword, PasswordRequest } from '@/functions/Password'
 import { notify } from '@/store/NotificationStore'
 import { computed, ref, watch } from 'vue'
@@ -66,16 +69,21 @@ watch(passwordRequest, () => {
 	height: 400px;
 	display: flex;
 	overflow: hidden;
+	background: var(--background);
 }
 
 .background {
 	position: absolute;
 	border-radius: inherit;
+	opacity: 0.5;
 	inset: 0;
-	/*background: url("@/assets/visual/security.jpg") no-repeat center center;*/
-	background-size: cover;
-	filter: saturate(0) contrast(0.7) brightness(0.3);
-	top: -100px;
+	display: flex;
+	justify-content: center;
+}
+
+.background-content {
+	position: absolute;
+	height: 90%;
 }
 
 .content {
