@@ -1,6 +1,6 @@
 <template>
 	<div class="select input-box" :class="{ focus }">
-		<Icon v-if="icon" :icon="icon" style="left:0;" />
+		<Icon v-if="currentIcon" :icon="currentIcon" style="left:0;" />
 		<select class="text" v-model="model" :placeholder="placeholder" @focus="focus = true" @blur="focus = false">
 			<option v-for="option in options" :key="option" :value="option.value">{{ option.text }}</option>
 		</select>
@@ -22,6 +22,7 @@ const model = computed({
 	set (value) { emit('update:modelValue', value) }
 })
 const focus = ref(false)
+const currentIcon = computed(() => props.icon || props.options?.find(op => op.value === model.value)?.icon)
 </script>
 
 
