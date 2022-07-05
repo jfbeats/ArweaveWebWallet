@@ -1,18 +1,24 @@
+import Notification from '@/components/composed/Notification.vue'
 import { getDB } from '@/store/IndexedDB'
-import { createToast } from 'mosha-vue-toastify'
-import { reactive, ref } from 'vue'
+import { createToast, withProps } from 'mosha-vue-toastify'
+import { reactive, Ref, ref } from 'vue'
 
-type NotificationData = NotificationOptions & { title: string, onClose?: () => void }
+type NotificationData = NotificationOptions & {
+	title: string
+	onClose?: () => void
+	ref: Ref
+}
 type Notify = string | NotificationData
-const toastType = { log: 'success', warn: 'warning', error: 'danger' } as const
+const toastType = { log: 'success', warn: 'warning', error: 'danger', confirm: 'warning' } as const
 
 const log = (notify: Notify, push?: boolean) => createNotification('log', notify, push)
 const warn = (notify: Notify, push?: boolean) => createNotification('warn', notify, push)
 const error = (notify: Notify, push?: boolean) => createNotification('error', notify, push)
+const confirm = (notify: Notify, push?: boolean) => createNotification('confirm', notify, push)
 
 
 
-async function createNotification (type: keyof typeof toastType, notify: Notify, push?: boolean) {
+function createNotification (type: keyof typeof toastType, notify: Notify, push?: boolean) {
 	const data = (typeof notify === 'object') ? notify : { title: notify } as NotificationData
 	const { title, ...options } = data
 	options.timestamp ??= Date.now()
@@ -21,20 +27,37 @@ async function createNotification (type: keyof typeof toastType, notify: Notify,
 	options.data ??= {}
 	options.data.type = type
 	
+	
 	const isVisible = document.visibilityState === 'visible'
 	const doNotification = window.Notification && Notification.permission === 'granted' && !isVisible && push
 	
+	if (type === 'confirm') {
+		options.requireInteraction = true
+	}
+	let actions
+	let close = () => {}
+	const promise = new Promise<boolean>(res => {
+		actions = [{ name: 'accept', run: () => res(true) }]
+		close = () => res(false)
+	})
+	const toastSettings = { title, description: options.body }
+	const props = { data: { ...toastSettings, actions } }
+	const toastContent = type !== 'confirm' ? toastSettings : withProps(Notification, props)
+	
 	const notification = doNotification ? new Notification(title, options) : undefined
-	const toast = !doNotification ? createToast({ title, description: options.body }, {
+	const toast = !doNotification ? createToast(toastContent, {
 		type: toastType[type],
 		showIcon: true,
-		onClose: () => { notification?.close(); options.onClose?.() },
+		onClose: () => { options.onClose?.(); close() },
 		timeout: options.requireInteraction ? -1 : 5000
 	}) : undefined
 	
-	notification?.addEventListener('close', () => { toast?.close(); options.onClose?.() })
+	notification?.addEventListener('close', () => { options.onClose?.(); close() })
 	
-	if (push) { await pushNotification(data) }
+	if (push) { pushNotification(data) }
+	
+	promise.then(() => { toast?.close(); notification?.close() })
+	return { promise, close }
 }
 
 
@@ -81,7 +104,7 @@ function getManager (origin: string) { // use queryManager
 
 
 
-export const notify = { log, warn, error }
+export const notify = { log, warn, error, confirm }
 
 export const notificationPermission = ref(window.Notification?.permission)
 navigator.permissions?.query?.({ name: 'notifications' }).then(status => status.addEventListener('change', () => notificationPermission.value = window.Notification.permission))

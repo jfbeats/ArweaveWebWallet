@@ -1,15 +1,14 @@
 <template>
-	<div class="notification" :class="{ expanded: data.expanded }">
+	<div class="notification expanded">
 		<div class="flex-row">
 			<div class="flex-row" style="flex: 1 1 0;">
-				<IconBackground :icon="data.icon || IconNotification" :img="data.img" />
 				<div class="content">
 					<Date v-if="data.expanded" class="secondary-text" :timestamp="data.timestamp" />
 					<div class="title">{{ data.title }}</div>
 					<div class="secondary-text">
-						<slot />
+						{{ data.description }}
 					</div>
-					<ActionsList v-if="data.expanded" :actions="data.actions"/>
+					<ActionsList :actions="data.actions"/>
 				</div>
 			</div>
 			<Expand v-model="data.expanded" />
@@ -20,11 +19,9 @@
 
 
 <script setup>
-import IconBackground from '@/components/atomic/IconBackground.vue'
 import Date from '@/components/atomic/Date.vue'
 import Expand from '@/components/atomic/Expand.vue'
 import ActionsList from '@/components/composed/ActionsList.vue';
-import IconNotification from '@/assets/icons/notification.svg?component'
 
 const props = defineProps(['data'])
 </script>
