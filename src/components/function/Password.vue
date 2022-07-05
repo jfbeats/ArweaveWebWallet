@@ -15,6 +15,7 @@
 						<Input v-if="passwordRequest.reason !== 'match'" v-model="password" type="password" :placeholder="passwordRequest.match ? 'Old password' : 'Password'" :actions="[passwordAction]" :autofocus="passwordRequest.match ? undefined : 'true'" />
 					</div>
 				</div>
+<!--				todo make sure you have a working backup of your wallets before encrypting, you will not be able to restore them if you forget your password -->
 			</div>
 		</div>
 	</Viewport>

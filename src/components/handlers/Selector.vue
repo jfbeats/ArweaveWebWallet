@@ -89,8 +89,9 @@ async function load () {
 		try { if (tags['Content-Type'] === 'application/gzip') { data.payload ??= await gzipDecompress(props.tx.id) } } catch (e) { console.error(e) }
 		try { data.payload ??= (await arweave.api.get(props.tx.id)).data } catch (e) { }
 		try { data.payload ??= await arweave.transactions.getData(props.tx.id, { decode: true, string: true }) } catch (e) { }
-		if (data.payload[0] === '{' || data.payload[0] === '[') { try { data.payload = JSON.stringify(JSON.parse(data.payload), null, 2); rawWhiteSpace.value = 'pre' } catch (e) { } }
+		if (data.payload?.[0] === '{' || data.payload?.[0] === '[') { try { data.payload = JSON.stringify(JSON.parse(data.payload), null, 2); rawWhiteSpace.value = 'pre' } catch (e) { } }
 		data.loaded = true
+		// todo implement retries
 	}
 }
 
