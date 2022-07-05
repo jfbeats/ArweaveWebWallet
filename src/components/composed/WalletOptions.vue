@@ -6,8 +6,11 @@
 				<WalletInfo :wallet="wallet" />
 			</div>
 		</div>
-		<div class="content">
-			<div class="bottom flex-row">
+		<div class="content flex-column">
+<!--			<div class="flex-row">-->
+<!--				<Select v-if="wallet.hasPrivateKey" v-model="wallet.settings.securityLevel" :options="securityOptions" />-->
+<!--			</div>-->
+			<div class="flex-row">
 				<Button v-if="wallet.download && !wallet.metadata.methods.download?.unavailable" :icon="IconDownload" @click="() => wallet.download()">Download</Button>
 				<Button :icon="IconX" @click="deleteWallet(wallet)">Delete</Button>
 			</div>
@@ -21,13 +24,24 @@
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import WalletInfo from '@/components/composed/WalletInfo.vue'
 import Button from '@/components/atomic/Button.vue'
+import Select from '@/components/atomic/Select.vue'
 import { deleteWallet } from '@/functions/Wallets'
+import { Wallet } from '@/providers/WalletProxy'
+
 import IconDownload from '@/assets/icons/download.svg?component'
 import IconX from '@/assets/icons/x.svg?component'
+import IconLock from '@/assets/icons/lock.svg?component'
+import IconUnlock from '@/assets/icons/unlock.svg?component'
 
 const props = defineProps<{
-	wallet: Provider
+	wallet: Wallet
 }>()
+
+const securityOptions = [
+	{ value: undefined, text: 'Unencrypted', icon: IconUnlock },
+	{ value: 'inactivity', text: 'Encrypted - Lock when away', icon: IconLock },
+	{ value: 'always', text: 'Encrypted - Always locked', icon: IconLock },
+]
 </script>
 
 

@@ -10,7 +10,7 @@ import { getWalletById } from '@/functions/Wallets'
 
 
 export type PasswordRequest = {
-	reason: 'encrypt' | 'decrypt' | 'change' | 'match'
+	reason: 'get' | 'update' | 'change' | 'match'
 	resolve: (arg: string) => void
 	reject: (e?: string) => void
 	match?: string
@@ -22,11 +22,12 @@ export type PasswordRequest = {
 const pwdTest = useChannel('pwdTest').state
 const pwdTestLock = useLock(useChannel('pwdTestLock').state)
 const WalletsData = useChannel('wallets', undefined, []).state
-const requireUpdate = computed(() => WalletsData.value
-	.filter(wallet => wallet.settings?.securityLevel && wallet.settings.securityLevel !== 'disabled')
-	.filter(wallet => wallet.jwk && !isEncrypted(wallet.jwk)))
+const requireEncryption = computed(() => WalletsData.value
+	.filter(wallet => wallet.jwk && !isEncrypted(wallet.jwk) && wallet.settings?.securityLevel))
+const requireDecryption = computed(() => WalletsData.value
+	.filter(wallet => wallet.jwk && isEncrypted(wallet.jwk) && !wallet.settings?.securityLevel))
 export const hasPassword = computed(() => pwdTest.value)
-export const hasUpdate = computed(() => requireUpdate.value.length)
+export const hasUpdate = computed(() => requireEncryption.value.length + requireDecryption.value.length)
 
 
 
@@ -40,12 +41,17 @@ export async function testPassword (password?: string): Promise<void> {
 export async function updateEncryption () {
 	await pwdTestLock.lock()
 	try {
-		const password = await requestPassword({ reason: 'encrypt' })
-		const promises = requireUpdate.value.map(async wallet => ({
-			uuid: getWalletById(wallet.id)?.uuid,
-			jwk: await passwordEncrypt(password, wallet.jwk)
-		}))
-		const wallets = await Promise.all(promises)
+		const password = await requestPassword({ reason: 'update' })
+		const wallets = await Promise.all([
+			...requireEncryption.value.map(async wallet => ({
+				uuid: getWalletById(wallet.id)?.uuid,
+				jwk: await passwordEncrypt(password, wallet.jwk)
+			})),
+			...requireDecryption.value.map(async wallet => ({
+				uuid: getWalletById(wallet.id)?.uuid,
+				jwk: await passwordDecrypt(password, wallet.jwk as any)
+			}))
+		])
 		wallets.forEach(wallet => WalletsData.value.find(data => data.uuid === wallet.uuid)!.jwk = wallet.jwk)
 	} finally { pwdTestLock.unlock() }
 }
@@ -66,14 +72,14 @@ export async function setPassword (password: string): Promise<true> {
 		}
 		if (password) {
 			if (!pwdTest.value) { await requestPassword({ reason: 'match', match: password }) }
-			const unencrypted = requireUpdate.value.map(wallet => ({
+			const unencrypted = requireEncryption.value.map(wallet => ({
 				uuid: getWalletById(wallet.id)?.uuid,
 				jwk: wallet.jwk
 			}))
 			wallets = [...wallets, ...unencrypted]
+			wallets = await Promise.all(wallets.map(async wallet => wallet.jwk = await passwordEncrypt(password, wallet.jwk)))
 			const encryptedContent = await passwordEncrypt(password, 'valid')
 			pwdTest.value = encryptedContent
-			wallets = await Promise.all(wallets.map(async wallet => wallet.jwk = await passwordEncrypt(password, wallet.jwk)))
 		} else {
 			pwdTest.value = null
 		}
@@ -113,7 +119,7 @@ export async function requestPrivateKey (wallet: Wallet): Promise<JWKInterface> 
 		const cache = getCache(wallet.uuid)
 		if (cache) { currentPrivateKey = cache; return true }
 	}
-	const password = await requestPassword({ reason: 'decrypt', wallet }, inCache)
+	const password = await requestPassword({ reason: 'get', wallet }, inCache)
 	if (!currentPrivateKey) { currentPrivateKey = await setCache(wallet.uuid, password) }
 	return currentPrivateKey!
 }

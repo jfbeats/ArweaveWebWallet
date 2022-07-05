@@ -2,10 +2,11 @@
 	<div>
 		<div class="flex-row" style="justify-content: space-between; align-items: baseline">
 			<h2>Wallet{{ selectedWallets.length > 1 ? 's' : '' }}</h2>
-			<div class="update-message" v-if="hasUpdate">
+			<Link class="update-message" v-if="hasUpdate" @click="updateEncryption" :disabled="!hasPassword">
 				<Icon :icon="IconWarning" style="vertical-align: text-top" />
-				<span> Update encryption</span>
-			</div>
+				<span v-if="hasPassword"> Click to update encryption</span>
+				<span v-else> Create a new password to encrypt selected wallets</span>
+			</Link>
 		</div>
 		<div class="flex-column">
 			<template v-for="wallet in selectedWallets" :key="wallet.id">
@@ -14,7 +15,7 @@
 				<div></div>
 			</template>
 		</div>
-		<Button v-if="!Wallets.length" style="font-size:1.5em; background:var(--background3);" @click="$router.push({ name: 'AddWallet' })" icon="+" />
+		<Button v-if="!Wallets.length" style="font-size:1.5em; background:var(--background3); width: 100%;" @click="$router.push({ name: 'AddWallet' })" icon="+" />
 	</div>
 </template>
 
@@ -27,11 +28,13 @@ import Icon from '@/components/atomic/Icon.vue'
 import { Wallets } from '@/functions/Wallets'
 import { state } from '@/functions/Channels'
 import { sharedState } from '@/functions/Connect'
-import { hasUpdate } from '@/functions/Password'
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { hasPassword, hasUpdate, updateEncryption } from '@/functions/Password'
+import { computed, watch } from 'vue'
+import { onBeforeRouteLeave, useRoute } from 'vue-router'
 
 import IconWarning from '@/assets/icons/shield_warning.svg?component'
+import Link from '@/components/function/Link.vue'
+import { notify } from '@/store/NotificationStore'
 
 const route = useRoute()
 
@@ -42,6 +45,13 @@ const selectedWallets = computed(() => {
 	return Wallets.value.filter(wallet => editWalletArray.includes(wallet.id + ''))
 })
 const canConnect = computed(() => ['popup', 'iframe', 'ws'].includes(state.value.type!) && !sharedState.value.walletId)
+
+onBeforeRouteLeave(() => {
+	if (!hasUpdate.value) { return }
+	const { promise, close } = notify.confirm('exit?')
+	watch(hasUpdate, value => value && close())
+	return promise
+})
 </script>
 
 

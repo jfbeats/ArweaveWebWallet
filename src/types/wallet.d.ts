@@ -7,7 +7,7 @@ type WalletDataInterface = {
 	data?: { [name in ProviderName]?: { key?: string } }
 	settings?: {
 		sync?: boolean
-		securityLevel?: 'always' | 'inactivity' | 'disabled'
+		securityLevel?: 'always' | 'inactivity' | undefined
 	}
 }
 
