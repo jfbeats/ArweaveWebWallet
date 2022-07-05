@@ -41,6 +41,7 @@ export const { state: redstoneOptions } = getAsyncData({
 		const message = ' Redstone Finance'
 		options.push({ value: { currency: 'USD', provider: 'redstone' }, text: 'USD' + message })
 		for (const key in res) {
+			try { new Intl.NumberFormat([...navigator.languages], { style: 'currency', currency: key }) } catch (e) { continue }
 			if (res[key].tags?.includes('currencies')) { options.push({ value: { currency: key, provider: 'redstone' }, text: key + message }) }
 		}
 		return options
