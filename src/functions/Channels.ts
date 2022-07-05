@@ -17,59 +17,65 @@ type PrefixTable = {
 
 
 
-class ChannelRef <T extends keyof PrefixTable> {
-	state
-	private readonly stateChannel
-	private stopWrite?: WatchStopHandle
+function ChannelRef <T extends keyof PrefixTable> (prefix: T, instanceName = '', init?: PrefixTable[T], writeInit?: boolean) {
+	let stopWrite: WatchStopHandle
+	let state = ref(init) as Ref<PrefixTable[T]> // todo can be undefined if no init
+	let stateChannel = prefix + instanceName
 	
-	constructor (prefix: T, instanceName = '', init?: PrefixTable[T]) {
-		this.state = ref(init) as Ref<PrefixTable[T]>
-		this.stateChannel = prefix + instanceName
-		window.addEventListener('storage', this.storageListener)
-		if (!localStorage.getItem(this.stateChannel)) {
-			if (typeof this.state.value === 'object' && Object.keys(this.state).length) { this.writeState() }
-			else if (this.state.value != null) { this.writeState() }
+	const writeState = () => {
+		if (state.value === undefined) {
+			localStorage.removeItem(stateChannel)
+			return update()
 		}
-		this.update(localStorage.getItem(this.stateChannel))
-		if (getCurrentScope()) { onScopeDispose(() => this.stop()) }
+		const stateString = JSON.stringify(state.value)
+		if (stateString === localStorage.getItem(stateChannel)) { return }
+		localStorage.setItem(stateChannel, stateString)
 	}
-	stop = () => {
-		window.removeEventListener('storage', this.storageListener)
-		if (this.stopWrite) { this.stopWrite() }
+	const startWrite = () => stopWrite = watch(state, writeState, { deep: true })
+	const update = (val?: string | null) => {
+		if (stopWrite) { stopWrite() }
+		if (val == undefined || val === 'undefined') {
+			if (init === undefined) { startWrite(); return }
+			val = JSON.stringify(init)
+		}
+		state.value = JSON.parse(val)
+		startWrite()
+	}
+	const storageListener = (e: StorageEvent) => {
+		if (e.key !== stateChannel || e.newValue === e.oldValue || !e.newValue) { return }
+		update(e.newValue)
+	}
+	const stop = () => {
+		window.removeEventListener('storage', storageListener)
+		if (stopWrite) { stopWrite() }
+	}
+	const deleteChannel = () => {
+		stop()
+		localStorage.removeItem(stateChannel)
 	}
 	
-	private writeState = () => {
-		const stateString = JSON.stringify(this.state.value)
-		if (stateString === localStorage.getItem(this.stateChannel)) { return }
-		localStorage.setItem(this.stateChannel, stateString)
+	window.addEventListener('storage', storageListener)
+	if (writeInit && !localStorage.getItem(stateChannel)) {
+		if (typeof state.value === 'object' && Object.keys(state).length) { writeState() }
+		else if (state.value !== undefined) { writeState() }
 	}
-	private startWrite = () => this.stopWrite = watch(this.state, this.writeState, { deep: true })
-	private update = (val: string | null) => {
-		if (this.stopWrite) { this.stopWrite() }
-		if (val) { this.state.value = JSON.parse(val) } // todo catch, parsing fails when val === undefined
-		this.startWrite()
-	}
-	private storageListener = (e: StorageEvent) => {
-		if (e.key !== this.stateChannel || e.newValue === e.oldValue || !e.newValue) { return }
-		this.update(e.newValue)
-	}
-	deleteChannel = () => {
-		this.stop()
-		localStorage.removeItem(this.stateChannel)
-	}
+	update(localStorage.getItem(stateChannel))
+	if (getCurrentScope()) { onScopeDispose(() => stop()) }
+	
+	return { state, stop, deleteChannel }
 }
 
 
 
 const step = ref(0)
-const channelInstances = {} as { [key: string]: { channel: ChannelRef<any>, subscribers: number, scope: EffectScope } }
+const channelInstances = {} as { [key: string]: { channel: ReturnType<typeof ChannelRef>, subscribers: number, scope: EffectScope } }
 
-export function useChannel <T extends keyof PrefixTable> (prefix: T, instanceName = '', init?: PrefixTable[T]) {
+export function useChannel <T extends keyof PrefixTable> (prefix: T, instanceName = '', init?: PrefixTable[T], writeInit?: boolean) {
 	const key = prefix + instanceName
 	
 	if (!channelInstances[key]) {
 		const scope = effectScope(true)
-		const channel = scope.run(() => new ChannelRef(prefix, instanceName, init))!
+		const channel = scope.run(() => ChannelRef(prefix, instanceName, init, writeInit))!
 		channelInstances[key] = { channel, subscribers: 0, scope }
 		step.value++
 	}
@@ -86,7 +92,7 @@ export function useChannel <T extends keyof PrefixTable> (prefix: T, instanceNam
 		channelInstances[key]?.channel?.deleteChannel()
 	}
 	if (getCurrentScope()) { onScopeDispose(stop) }
-	return { state: channelInstances[key].channel.state, stop, deleteChannel } as ChannelRef<T>
+	return { state: channelInstances[key].channel.state, stop, deleteChannel } as ReturnType<typeof ChannelRef<T>>
 }
 
 
@@ -127,7 +133,7 @@ const origin = hash.get('origin') || undefined
 const session = hash.get('session') || undefined
 const appInfo = { name: hash.get('name') || undefined, logo: hash.get('logo') || undefined }
 const instance = origin + Math.random().toString().slice(2)
-const { state, deleteChannel } = useChannel('connectorState:', instance, { origin, session })
+const { state, deleteChannel } = useChannel('connectorState:', instance, { origin, session }, true)
 const { states } = getChannels('connectorState:')
 const connectorChannels = getChannels('sharedState:')
 export { state, states, connectorChannels, appInfo }
@@ -135,7 +141,7 @@ export { state, states, connectorChannels, appInfo }
 
 
 function getChannels <T extends 'connectorState:' | 'sharedState:'> (prefix: T) {
-	const channels: { [key: string]: ChannelRef<T> | undefined } = {}
+	const channels: { [key: string]: ReturnType<typeof ChannelRef<T>> | undefined } = {}
 	const states: { [key: string]: PrefixTable[T] } = reactive({})
 	const getInstanceNames = () => Object.keys(localStorage)
 		.filter(key => key.slice(0, prefix.length) === prefix)

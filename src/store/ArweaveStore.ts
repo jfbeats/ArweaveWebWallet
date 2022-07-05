@@ -11,6 +11,9 @@ import { isRef, reactive, ref, Ref, watch } from 'vue'
 export const gatewayDefault = 'https://arweave.net/'
 export const bundlerDefault = 'https://node2.bundlr.network/'
 
+if (localStorage.getItem('gateway') === JSON.stringify(gatewayDefault)) { localStorage.removeItem('gateway') } // todo remove, temp conversion
+if (localStorage.getItem('bundler') === JSON.stringify(bundlerDefault)) { localStorage.removeItem('bundler') } // todo remove, temp conversion
+
 const ArweaveStore = reactive({
 	gatewayURL: useChannel('gateway', undefined, gatewayDefault).state,
 	bundlerURL: useChannel('bundler', undefined, bundlerDefault).state,
@@ -33,19 +36,19 @@ export function urlToSettings (url: string) {
 export async function updateArweave (url?: string, sync?: boolean) {
 	url = url ? generateUrl(url) : gatewayDefault
 	const settings = urlToSettings(url)
-	if (!sync) {
+	if (!sync && url !== gatewayDefault) {
 		const arweaveTest = Arweave.init(settings)
 		const net = await arweaveTest.network.getInfo()
 		if (!net.network) { throw 'Invalid' }
 	}
 	arweave = Arweave.init(settings)
-	ArweaveStore.gatewayURL = url
+	ArweaveStore.gatewayURL = url !== gatewayDefault ? url : undefined as any
 	// todo if network name is different, clear all cache
 }
 
 export async function updateBundler (url?: string, sync?: boolean) {
 	url = url ? generateUrl(url) : bundlerDefault
-	ArweaveStore.bundlerURL = url
+	ArweaveStore.bundlerURL = url !== bundlerDefault ? url : undefined as any
 }
 
 export function useWatchTx (txId: Ref<string | undefined>) {
