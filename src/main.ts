@@ -1,10 +1,11 @@
+import '@/assets/animations.css'
+import '@/assets/style.css'
+import '@/store/Analytics'
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 // @ts-ignore
 import { plugin as Slicksort } from 'vue-slicksort'
-import '@/assets/animations.css'
-import '@/assets/style.css'
 import 'mosha-vue-toastify/dist/style.css'
 
 import { PWA } from '@/pwa'
