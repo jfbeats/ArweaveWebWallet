@@ -3,7 +3,7 @@ import { watch } from 'vue'
 
 
 
-type EventType = 'account' | 'connect' | 'connector' | 'tx' | 'affiliate' | 'error'
+type EventType = 'app' | 'account' | 'connect' | 'connector' | 'tx' | 'affiliate' | 'error'
 
 
 

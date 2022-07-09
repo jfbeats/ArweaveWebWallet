@@ -1,5 +1,6 @@
 import { useRegisterSW } from 'virtual:pwa-register/vue'
 import { reactive } from 'vue'
+import { track } from '@/store/Analytics'
 
 
 
@@ -25,7 +26,9 @@ async function install () {
 	if (!PWA.installPrompt) { throw 'Install unavailable' }
 	PWA.installPrompt.prompt()
 	const { outcome } = await PWA.installPrompt.userChoice
-	if (outcome === 'accepted') { PWA.installState = 'installed' }
+	if (outcome !== 'accepted') { return }
+	PWA.installState = 'installed'
+	track.event('app', 'Install')
 }
 
 
