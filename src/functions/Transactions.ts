@@ -2,6 +2,7 @@ import ArweaveStore, { arweave } from '@/store/ArweaveStore'
 import { getMempool, getPending } from '@/store/BlockStore'
 import { exportTransaction } from '@/functions/File'
 import { notify } from '@/store/NotificationStore'
+import { track } from '@/store/Analytics'
 import BigNumber from 'bignumber.js'
 import type Transaction from 'arweave/web/lib/transaction'
 import type { CreateTransactionInterface } from 'arweave/web'
@@ -54,6 +55,8 @@ export async function manageUpload (tx: Transaction) {
 	}
 	localStorage.removeItem(storageKey)
 	setTimeout(() => delete ArweaveStore.uploads[tx.id], 1000)
+	notify.log('Transaction sent')
+	track.event('tx', 'Sent')
 	return uploader.lastResponseStatus
 }
 

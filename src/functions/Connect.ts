@@ -3,6 +3,7 @@ import JsonRpc from '@/functions/JsonRpc'
 import { watch, watchEffect, computed, ref, Ref } from 'vue'
 import { getWalletById } from '@/functions/Wallets'
 import InterfaceStore from '@/store/InterfaceStore'
+import { track } from '@/store/Analytics'
 
 let windowRef: Window
 const { origin, session } = state.value
@@ -64,7 +65,10 @@ async function initConnector () {
 		const keepPopup = computed(() => !sharedState.value.link)
 		watch(keepPopup, () => postMessage({ method: 'keepPopup', params: keepPopup.value }), { immediate: true })
 	}
-	watch(() => sharedState.value.walletId, (id) => id === false ? disconnect() : connect())
+	watch(() => sharedState.value.walletId, (id, oldId) => {
+		id === false ? disconnect() : connect()
+		if (id && !oldId) { track.event('connect', sharedState.value.origin) }
+	})
 	watchEffect(() => {
 		const linkedState = Object.entries(filterChannels({ origin, session, type: state.value.type === 'popup' ? 'iframe' : 'popup' }))[0]?.[1]
 		if (linkedState) {

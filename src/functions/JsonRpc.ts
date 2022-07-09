@@ -4,6 +4,7 @@ import { computed, reactive, Ref, watch } from 'vue'
 import { awaitEffect } from '@/functions/AsyncData'
 import { uuidV4 } from '@/functions/Utils'
 import { useChannel } from '@/functions/Channels'
+import { track } from '@/store/Analytics'
 
 const errors = {
 	rejected: { code: 0, message: 'Rejected' },
@@ -95,6 +96,7 @@ export default class JsonRpc {
 			messageEntry.fulfilled = true
 			await this.updateMessage(messageEntry)
 			if (id != null) { this.callbacks({ result, id }) }
+			track.event('connector', message.method)
 		} catch (e) {
 			// todo ledger transaction not removed on error
 			messageEntry.status = 'error'

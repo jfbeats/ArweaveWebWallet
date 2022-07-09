@@ -205,7 +205,6 @@ const postTx = async () => {
 		await props.wallet.signTransaction(tx)
 		manageUpload(tx)
 		resetForm()
-		notify.log('Transaction sent')
 	} catch (e: any) {
 		console.error(e)
 		notify.error(e)

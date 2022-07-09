@@ -27,7 +27,7 @@
 				</Button>
 				<div class="flex-row">
 					<Button :icon="IconVerify" @click="provider.metadata.verify">Verify address</Button>
-					<a :href="provider.metadata.link" target="_blank" class="reset">
+					<a :href="provider.metadata.link" target="_blank" class="reset" @click="() => track.event('affiliate', provider.metadata.link)">
 						<Button :icon="IconLaunch">Purchase | affiliate link</Button>
 					</a>
 				</div>
@@ -50,6 +50,7 @@ import Icon from '@/components/atomic/Icon.vue'
 import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
 import { hardwareProviders, addAddress, addMnemonic, addProvider, generateMnemonic, validateMnemonic } from '@/functions/Wallets'
 import { importKeyfiles } from '@/functions/File'
+import { track } from '@/store/Analytics'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -72,6 +73,7 @@ const create = async () => {
 	passphraseInput.value = await generateMnemonic()
 	const walletData = addMnemonic(passphraseInput.value)
 	setTimeout(async () => createdWallet.value = await walletData, 10000)
+	track.event('account', 'Create')
 }
 const goToCreatedWallet = () => {
 	if (!createdWallet.value) { return }
@@ -85,6 +87,7 @@ const importPassphrase = async () => {
 		message: 'importing',
 	}
 	router.push({ name: 'EditWallet', query: { wallet: (await walletData).id } })
+	track.event('account', 'Import')
 }
 const confirmPassphrase = async () => {
 	if (await validateMnemonic(passphraseInput.value)) { return importPassphrase() }
@@ -99,10 +102,12 @@ const confirmPassphrase = async () => {
 const importProvider = async (provider: Provider) => {
 	const walletData = await addProvider(provider)
 	router.push({ name: 'EditWallet', query: { wallet: walletData.id } })
+	track.event('account', 'Import ' + provider.metadata.name)
 }
 const importAddressOnlyAction = { icon: IconAddBox, run: async () => {
 	const walletData = await addAddress(targetInput.value)
 	router.push({ name: 'EditWallet', query: { wallet: walletData.id } })
+	track.event('account', 'Watch')
 }}
 </script>
 
