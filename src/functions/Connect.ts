@@ -66,8 +66,11 @@ async function initConnector () {
 		watch(keepPopup, () => postMessage({ method: 'keepPopup', params: keepPopup.value }), { immediate: true })
 	}
 	watch(() => sharedState.value.walletId, (id, oldId) => {
-		id === false ? disconnect() : connect()
-		if (id && !oldId) { track.event('connect', sharedState.value.origin) }
+		if (id === false) { return disconnect() }
+		if (!id) { return }
+		connect()
+		if (!sharedState.value.connected) { track.event('connect', sharedState.value.origin) }
+		sharedState.value.connected = true
 	})
 	watchEffect(() => {
 		const linkedState = Object.entries(filterChannels({ origin, session, type: state.value.type === 'popup' ? 'iframe' : 'popup' }))[0]?.[1]
