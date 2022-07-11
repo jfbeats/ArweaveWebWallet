@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, createWebHashHistory, START_LOCATION } from 'vue-router'
+import { createRouter, createWebHistory, createWebHashHistory, START_LOCATION, RouterOptions } from 'vue-router'
 import { Wallets, getWalletById } from '@/functions/Wallets'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
 import { state } from '@/functions/Channels'
@@ -7,7 +7,7 @@ import TxList from '@/views/TxList.vue'
 import Send from '@/views/Send.vue'
 import Tokens from '@/views/Tokens.vue'
 
-const routes = [
+const routes: RouterOptions['routes'] = [
 	{
 		name: 'Wallet',
 		path: '/wallet/:walletId(\\d+)',
@@ -32,7 +32,7 @@ const routes = [
 			},
 			{
 				name: 'TxList',
-				path: 'tx-list',
+				path: 'tx-list/:queryName?',
 				component: TxList,
 				meta: { title: 'Transactions' },
 				props: (route) => ({ wallet: getWalletById(route.params.walletId) }),
@@ -95,12 +95,6 @@ const routes = [
 		name: 'Settings',
 		component: () => import('@/views/Settings.vue'),
 		meta: { title: 'Settings' },
-	},
-	{
-		path: '/demo',
-		redirect: () => {
-			return { name: 'Welcome' }
-		}
 	},
 	{
 		path: '/connector',

@@ -1,32 +1,25 @@
 <template>
-	<div v-if="queryName" class="tabs">
-		<router-link class="tab" v-for="tab in tabs" :key="tab.name" :to="{ query: { ...$route.query, [queryName]: tab.name.toLowerCase() } }" :style="{ '--color': tab.color }" :class="{ active: isActive(tab) }" replace>{{ tab.name }}</router-link>
-	</div>
-	<div v-else class="tabs">
-		<button type="button" class="tab" v-for="tab in tabs" :key="tab.name" :style="{ '--color': tab.color }" :class="{ active: model === tab.name }" @click="model = tab.name" :disabled="disabled">{{ tab.name }}</button>
+	<div class="tabs">
+		<button type="button" class="tab" v-for="tab in tabs" :key="tab.name" :style="{ '--color': tab.color }" :class="{ active: model?.toLowerCase() === tab.name.toLowerCase() }" @click="model = tab.name" :disabled="disabled">{{ tab.name }}</button>
 	</div>
 </template>
 
 
 
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
-import { useRoute } from 'vue-router'
 
-const props = defineProps(['queryName', 'tabs', 'modelValue', 'disabled'])
+const props = defineProps<{
+	tabs: { name: string, color: string }[]
+	modelValue: string
+	disabled?: boolean
+}>()
 const emit = defineEmits(['update:modelValue'])
 
-const model = computed({
+const model = computed<string>({
 	get () { return props.modelValue },
 	set (value) { emit('update:modelValue', value) }
 })
-const route = useRoute()
-const isActive = (tab) => {
-	const currentQuery = route.query[props.queryName]
-	return currentQuery
-		? currentQuery === tab.name.toLowerCase()
-		: props.tabs.indexOf(tab) === 0
-}
 </script>
 
 

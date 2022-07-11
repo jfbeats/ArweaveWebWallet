@@ -2,7 +2,7 @@
 	<nav class="toolbar" id="nav">
 		<SlickList class="wallets" :axis="axis" :lockAxis="axis" v-model:list="Wallets" :pressDelay="150" helperClass="dragging" dir="ltr" @sort-start="haptic">
 			<SlickItem v-for="(wallet, i) in Wallets" :index="i" :key="wallet.key" draggable="false" class="drag-container">
-				<router-link :to="{ name: navTo, params: { walletId: wallet.id }, query: { ...$route.query } }" custom v-slot="{ href, navigate }">
+				<router-link :to="{ name: navTo, params: { ...$route.params, walletId: wallet.id } }" custom v-slot="{ href, navigate }">
 					<button type="button" class="item wallet" :href="href" @click="select(wallet, navigate)" :class="{ active: wallet.id == selected && links, accent: !links, verticalLayout }" draggable="false" @dragstart.prevent>
 						<AddressIcon class="profile" :address="wallet.key" />
 					</button>

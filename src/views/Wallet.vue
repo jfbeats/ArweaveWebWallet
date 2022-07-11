@@ -6,12 +6,12 @@
 					<div class="user-info flex-column" :key="wallet.key">
 						<Balance :wallet="wallet" />
 						<div class="actions">
-							<Action v-for="action in actions" :key="action.name" :to="{ name: action.name, query: { ...$route.query } }" :icon="action.icon" replace>{{ action.text }}</Action>
+							<Action v-for="action in actions" :key="action.name" :to="{ name: action.name }" :icon="action.icon" replace>{{ action.text }}</Action>
 						</div>
 					</div>
 				</template>
 				<template #right>
-					<div :key="contentKey" class="router-view">
+					<div :key="route.name + route.params.walletId" class="router-view">
 						<component :is="Component" />
 					</div>
 				</template>
@@ -22,7 +22,7 @@
 
 
 
-<script setup>
+<script setup lang="ts">
 import FoldingLayout from '@/components/layout/FoldingLayout.vue'
 import Balance from '@/components/composed/Balance.vue'
 import Action from '@/components/atomic/Action.vue'
@@ -31,12 +31,15 @@ import { toRef, computed } from 'vue'
 import { useRoute } from 'vue-router'
 
 import IconNorthEast from '@/assets/icons/north_east.svg?component'
+import IconSouthWest from '@/assets/icons/south_west.svg?component'
 import IconSwap from '@/assets/icons/swap.svg?component'
 import IconCircle from '@/assets/icons/cloud_circle.svg?component'
 
 const props = defineProps({ wallet: Object })
+
 const actions = [
 	{ name: 'Send', icon: IconNorthEast, text: 'Send' },
+	// { name: 'Send', icon: IconSouthWest, text: 'Receive' },
 	{ name: 'TxList', icon: IconSwap, text: 'Transactions' },
 	// { name: 'Tokens', icon: IconCircle, text: 'Tokens' },
 ]
@@ -44,7 +47,6 @@ const verticalLayout = toRef(InterfaceStore.breakpoints, 'verticalLayout')
 const route = useRoute()
 const contentTransitionFactor = computed(() => route.meta.transition?.nameWallet || route.meta.transition?.nameLayout)
 const contentTransitionAxis = computed(() => route.meta.transition?.nameWallet && verticalLayout.value ? 'x' : 'y' || 'y')
-const contentKey = computed(() => route.path.split('/').join(''))
 </script>
 
 

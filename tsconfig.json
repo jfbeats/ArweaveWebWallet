@@ -5,6 +5,7 @@
 			"@/*": ["src/*"]
 		},
 		"target": "esnext",
+		"types": ["vite/client"],
 		"module": "esnext",
 		"moduleResolution": "node",
 		"importHelpers": true,
