@@ -99,26 +99,19 @@ export function useChannel <T extends keyof PrefixTable> (prefix: T, instanceNam
 
 export function useLock (channel: Ref<number | undefined>) {
 	let timer: any
-	const verify = () => {
-		return new Promise<void>(res => {
-			const value = channel.value
-			setTimeout(() => (channel.value !== value) && res(), 1100)
-			setTimeout(() => {
-				if (channel.value === value) { setTimeout(() => { channel.value = 0; res() }, 2000) }
-				else { res() }
-			}, 3000)
-		})
-	}
+	const isUsed = () => new Promise<boolean>(async res => {
+		let hasChanged = false
+		const stop = watch(channel, () => { hasChanged = true; res(true) })
+		await new Promise(res => setTimeout(res, 1000))
+		if (!hasChanged) { channel.value = 0; setTimeout(() => res(false)) }
+		stop()
+	})
 	const lock = async () => {
-		if (timer || channel.value) {
-			await verify()
-			throw 'Already locked'
-		}
+		if (timer || channel.value && await isUsed()) { throw 'Feature already in use' }
 		channel.value = 1
 		timer = setInterval(() => channel.value!++, 1000)
 	}
 	const unlock = () => {
-		if (!timer || !channel.value) { throw 'Already unlocked' }
 		clearInterval(timer)
 		channel.value = 0
 		timer = undefined
