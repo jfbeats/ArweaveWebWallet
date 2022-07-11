@@ -1,8 +1,3 @@
-import { Wallets } from '@/functions/Wallets'
-import { watch } from 'vue'
-
-
-
 type EventType = 'app' | 'account' | 'connect' | 'connector' | 'tx' | 'affiliate' | 'error'
 
 
@@ -89,9 +84,3 @@ function init () {
 }
 
 export const track = init()
-
-
-
-watch(Wallets, (value, oldValue) => {
-	if (oldValue.length === 0 && value.length === 1) { track.event('account', 'First') }
-})

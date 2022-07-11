@@ -65,7 +65,7 @@ async function initConnector () {
 		const keepPopup = computed(() => !sharedState.value.link)
 		watch(keepPopup, () => postMessage({ method: 'keepPopup', params: keepPopup.value }), { immediate: true })
 	}
-	watch(() => sharedState.value.walletId, (id, oldId) => {
+	watch(() => sharedState.value.walletId, id => {
 		if (id === false) { return disconnect() }
 		if (!id) { return }
 		connect()
