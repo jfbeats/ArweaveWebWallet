@@ -48,7 +48,7 @@ import InputAddress from '@/components/atomic/InputAddress.vue';
 import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
-import { hardwareProviders, addAddress, addMnemonic, addProvider, generateMnemonic, validateMnemonic, Wallets } from '@/functions/Wallets'
+import { hardwareProviders, addAddress, addMnemonic, addProvider, generateMnemonic, validateMnemonic } from '@/functions/Wallets'
 import { importKeyfiles } from '@/functions/File'
 import { track } from '@/store/Analytics'
 import { computed, ref } from 'vue'
@@ -68,22 +68,19 @@ const isPassphrase = computed(() => passphraseInput.value.trim().split(/\s+/g).l
 const isCreatingWallet = ref(false)
 const isGeneratingWallet = ref(false)
 const createdWallet = ref(null as null | WalletDataInterface)
-const trackEvent = (value: string) => {
-	if (!Wallets.value.length) { track.event('account', 'First') }
-	track.event('account', value)
-}
 const create = async () => {
+	track.account('Create')
 	isCreatingWallet.value = true
 	passphraseInput.value = await generateMnemonic()
 	const walletData = addMnemonic(passphraseInput.value)
 	setTimeout(async () => createdWallet.value = await walletData, 10000)
-	trackEvent('Create')
 }
 const goToCreatedWallet = () => {
 	if (!createdWallet.value) { return }
 	router.push({ name: 'EditWallet', query: { wallet: createdWallet.value.id } })
 }
 const importPassphrase = async () => {
+	track.account('Import')
 	isGeneratingWallet.value = true
 	const walletData = addMnemonic(passphraseInput.value)
 	popup.value = {
@@ -91,7 +88,6 @@ const importPassphrase = async () => {
 		message: 'importing',
 	}
 	router.push({ name: 'EditWallet', query: { wallet: (await walletData).id } })
-	trackEvent('Import')
 }
 const confirmPassphrase = async () => {
 	if (await validateMnemonic(passphraseInput.value)) { return importPassphrase() }
@@ -104,14 +100,14 @@ const confirmPassphrase = async () => {
 	}
 }
 const importProvider = async (provider: Provider) => {
+	track.account('Import ' + provider.metadata.name)
 	const walletData = await addProvider(provider)
 	router.push({ name: 'EditWallet', query: { wallet: walletData.id } })
-	trackEvent('Import ' + provider.metadata.name)
 }
 const importAddressOnlyAction = { icon: IconAddBox, run: async () => {
+	track.account('Watch')
 	const walletData = await addAddress(targetInput.value)
 	router.push({ name: 'EditWallet', query: { wallet: walletData.id } })
-	trackEvent('Watch')
 }}
 </script>
 

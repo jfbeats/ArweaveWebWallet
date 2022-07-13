@@ -1,4 +1,10 @@
+import { Wallets } from '@/functions/Wallets'
+import { useChannel } from '@/functions/Channels'
+
+
+
 type EventType = 'app' | 'account' | 'connect' | 'connector' | 'tx' | 'affiliate' | 'error'
+const eventRecords = useChannel('events').state
 
 
 
@@ -80,7 +86,15 @@ function init () {
 		update()
 	}
 	
-	return { event }
+	const account = (value: string) => {
+		if (!Wallets.value.length && !eventRecords.value.firstAccount) {
+			eventRecords.value.firstAccount = true
+			event('account', 'First')
+		}
+		event('account', value)
+	}
+	
+	return { event, account }
 }
 
 export const track = init()

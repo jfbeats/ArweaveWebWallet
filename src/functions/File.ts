@@ -1,6 +1,7 @@
 import { addWallet } from '@/functions/Wallets'
 import router from '@/router'
 import Transaction from 'arweave/web/lib/transaction'
+import { track } from '@/store/Analytics'
 
 
 
@@ -13,6 +14,7 @@ export async function dropped (files: FileList) {
 }
 
 export async function importKeyfiles (files: FileList) {
+	track.account('Import')
 	const walletPromises = []
 	for (const file of files) {
 		// detect type

@@ -13,6 +13,7 @@ type PrefixTable = {
 	scannerCamera: string
 	pwdTest: EncryptedContent | null
 	pwdTestLock: number
+	events: { [key: string]: any }
 }
 
 
