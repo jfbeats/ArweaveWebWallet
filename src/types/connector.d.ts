@@ -26,6 +26,7 @@ type InstanceState = {
 	origin?: string
 	session?: string
 	type?: 'extension' | 'ws' | 'popup' | 'iframe' | 'client'
+	updating?: boolean
 }
 
 type ConnectorState = {

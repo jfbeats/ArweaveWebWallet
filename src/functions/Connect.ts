@@ -58,7 +58,7 @@ async function initConnector () {
 	const disconnect = () => { deleteChannel(); postMessage({ method: 'disconnect' }) }
 	if (state.value.type === 'iframe') {
 		InterfaceStore.toolbar.enabled = false
-		window.addEventListener('beforeunload', () => disconnect())
+		window.addEventListener('beforeunload', () => !state.value.updating && disconnect())
 	}
 	if (state.value.type === 'popup') {
 		if (!sharedState.value.walletId) { InterfaceStore.toolbar.enabled = false }
@@ -73,12 +73,12 @@ async function initConnector () {
 		sharedState.value.connected = true
 	})
 	watchEffect(() => {
-		const linkedState = Object.entries(filterChannels({ origin, session, type: state.value.type === 'popup' ? 'iframe' : 'popup' }))[0]?.[1]
-		if (linkedState) {
+		const linkedState = () => Object.entries(filterChannels({ origin, session, type: state.value.type === 'popup' ? 'iframe' : 'popup' }))[0]?.[1]
+		if (linkedState()) {
 			sharedState.value.link = true
 			postMessage({ method: 'usePopup', params: false })
 		}
-		const disconnectCondition = () => !linkedState && state.value.type === 'iframe' && sharedState.value.link && (sharedState.value.walletId == null || sharedState.value.walletId === false)
+		const disconnectCondition = () => !state.value.updating && !linkedState() && state.value.type === 'iframe' && sharedState.value.link && (sharedState.value.walletId == null || sharedState.value.walletId === false)
 		if (disconnectCondition()) { setTimeout(() => disconnectCondition() && disconnect(), 500) }
 	})
 	postMessage({ method: 'ready' })
