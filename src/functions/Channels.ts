@@ -3,8 +3,8 @@ import type { EffectScope, Ref, WatchStopHandle } from 'vue'
 import { useDataWrapper } from '@/functions/AsyncData'
 
 type PrefixTable = {
-	'connectorState:': InstanceState
-	'sharedState:': ConnectorState
+	'instanceState:': InstanceState
+	'sharedState:': SharedState
 	'connectionSettings:': ConnectionSettings
 	wallets: WalletDataInterface[]
 	currency: { rate?: string, currency: string, provider: string, timestamp?: number }
@@ -127,14 +127,14 @@ const origin = hash.get('origin') || undefined
 const session = hash.get('session') || undefined
 const appInfo = { name: hash.get('name') || undefined, logo: hash.get('logo') || undefined }
 const instance = origin + Math.random().toString().slice(2)
-const { state, deleteChannel } = useChannel('connectorState:', instance, { origin, session }, true)
-const { states } = getChannels('connectorState:')
+const { state, deleteChannel } = useChannel('instanceState:', instance, { origin, session }, true)
+const { states } = getChannels('instanceState:')
 const connectorChannels = getChannels('sharedState:')
 export { state, states, connectorChannels, appInfo }
 
 
 
-function getChannels <T extends 'connectorState:' | 'sharedState:'> (prefix: T) {
+function getChannels <T extends 'instanceState:' | 'sharedState:'> (prefix: T) {
 	const channels: { [key: string]: ReturnType<typeof ChannelRef<T>> | undefined } = {}
 	const states: { [key: string]: PrefixTable[T] } = reactive({})
 	const getInstanceNames = () => Object.keys(localStorage)
@@ -142,7 +142,7 @@ function getChannels <T extends 'connectorState:' | 'sharedState:'> (prefix: T) 
 		.map(key => key.slice(prefix.length))
 	const instantiate = async (name: string) => {
 		channels[name] = undefined
-		if (prefix === 'connectorState:' && !(await heartbeat(name))) { close(name); return null }
+		if (prefix === 'instanceState:' && !(await heartbeat(name))) { close(name); return null }
 		if (!Object.keys(channels).includes(name)) { return null }
 		channels[name] = useChannel(prefix, name)
 		states[name] = channels[name]!.state as any
@@ -183,7 +183,7 @@ async function heartbeat (instanceName: string, timeout?: number) {
 		const heartbeatReturn = (result: boolean) => {
 			if (result) { clearTimeout(cleanupTimeout) }
 			setTimeout(() => localStorage.removeItem(fullKey), 1000)
-			if (!result) { localStorage.removeItem('connectorState:' + instanceName) }
+			if (!result) { localStorage.removeItem('instanceState:' + instanceName) }
 			window.removeEventListener('storage', heartbeatListener)
 			resolve(result)
 		}
@@ -198,7 +198,7 @@ async function heartbeat (instanceName: string, timeout?: number) {
 function cleanHeartbeats () {
 	for (const key in localStorage) {
 		if (key.slice(0, 'heartbeat:'.length) !== 'heartbeat:') { continue }
-		const relatedChannel = 'connectorState:' + key.slice('heartbeat:'.length)
+		const relatedChannel = 'instanceState:' + key.slice('heartbeat:'.length)
 		if (localStorage.getItem(relatedChannel)) { continue }
 		localStorage.removeItem(key)
 	}

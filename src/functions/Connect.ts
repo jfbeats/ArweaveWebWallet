@@ -1,15 +1,43 @@
-import { state, connectorChannels, filterChannels, awaitStorageAccess, useChannel, appInfo } from '@/functions/Channels'
+import { state, connectorChannels, filterChannels, awaitStorageAccess, useChannel, appInfo, states } from '@/functions/Channels'
 import JsonRpc from '@/functions/JsonRpc'
-import { watch, watchEffect, computed, ref, Ref } from 'vue'
+import { watch, watchEffect, computed, reactive, effectScope } from 'vue'
 import { getWalletById } from '@/functions/Wallets'
+import { useDataWrapper } from '@/functions/AsyncData'
 import InterfaceStore from '@/store/InterfaceStore'
 import { track } from '@/store/Analytics'
 
 let windowRef: Window
 const { origin, session } = state.value
 export const { state: sharedState, deleteChannel } = useChannel('sharedState:', '' + origin + session)
-export const connectors = computed(() => Object.values(connectorChannels.states)
-	.filter(val => val.walletId !== false).sort((a, b) => a.timestamp! - b.timestamp!))
+const connectorsData = computed(() => Object.values(connectorChannels.states)
+	.filter(val => val.walletId !== false).sort((a, b) => a.timestamp - b.timestamp))
+
+function buildConnector (origin: string): ConnectorState {
+	const scope = effectScope(true)
+	return scope.run(() => {
+		const sharedStates = computed(() => connectorsData.value.filter(c => c.origin === origin))
+		const instanceStates = computed(() => Object.values(states).filter(c => c.origin === origin))
+		const updateWallets = (walletId?: SharedState['walletId']) => {
+			if (walletId === undefined) { walletId = sharedStates.value[0]?.walletId }
+			sharedStates.value.forEach(c => c.walletId !== walletId && (c.walletId = walletId))
+			return sharedStates.value[0]?.walletId
+		}
+		const walletId = computed({ get: () => updateWallets(), set: id => updateWallets(id) })
+		const messageQueue = computed(() => sharedStates.value
+			.map(c => c.messageQueue).flat().sort((a, b) => a.timestamp - b.timestamp))
+		const appInfo = computed(() => sharedStates.value.find(c => c.appInfo)?.appInfo)
+		const destructor = () => scope.stop()
+		return reactive({ origin, sharedStates, instanceStates, walletId, messageQueue, appInfo, destructor })
+	})!
+}
+
+const origins = computed(() => {
+	const result = [] as string[]
+	connectorsData.value.forEach(c => !result.includes(c.origin) && result.push(c.origin))
+	return result
+})
+
+export const connectors = useDataWrapper(origins, (x) => typeof x === 'string' ? x : x.origin, buildConnector, (c) => c.destructor())
 
 
 
@@ -44,8 +72,12 @@ async function initConnector () {
 	const jsonRpc = new JsonRpc(postMessage, sharedState)
 	window.addEventListener('message', async (e) => {
 		if (e.source !== windowRef || e.origin !== origin) { return }
+		if (e.data?.method === 'connect') { return }
+		if (e.data?.method === 'disconnect') {
+			sharedState.value.walletId = false
+			postMessage({ id: e.data?.id })
+		}
 		const prompt = await jsonRpc.pushMessage(e.data)
-		console.log(prompt, state.value.type, sharedState.value.link)
 		if (prompt && state.value.type === 'iframe' && sharedState.value.link) { postMessage({ method: 'showIframe', params: true }) }
 	})
 	const connect = () => {
@@ -55,10 +87,22 @@ async function initConnector () {
 		if (!wallet) { return }
 		postMessage({ method: 'connect', params: wallet.key })
 	}
-	const disconnect = () => { deleteChannel(); postMessage({ method: 'disconnect' }) }
+	const disconnect = () => {
+		const sameOrigin = connectors.value.find(c => c.origin === origin)
+		if (sameOrigin) { sameOrigin.walletId = false }
+		deleteChannel()
+		postMessage({ method: 'usePopup', params: true })
+		postMessage({ method: 'disconnect' })
+	}
 	if (state.value.type === 'iframe') {
 		InterfaceStore.toolbar.enabled = false
-		window.addEventListener('beforeunload', () => !state.value.updating && disconnect())
+		// todo send disconnect when iframe is dead and popup is getting closed
+		// can also watch connector.instanceStates.length and disconnect once it falls to 0
+		const hasOtherInstance = () => {
+			const sameOrigin = connectors.value.find(c => c.origin === origin)
+			return sameOrigin?.sharedStates && sameOrigin?.sharedStates.length > 1
+		}
+		window.addEventListener('beforeunload', () => !state.value.updating && hasOtherInstance() ? deleteChannel() : disconnect())
 	}
 	if (state.value.type === 'popup') {
 		if (!sharedState.value.walletId) { InterfaceStore.toolbar.enabled = false }
@@ -124,9 +168,9 @@ async function postMessageExtensionConnect () {
 	if (!state) { return }
 	return new Promise<void>((res, rej) => {
 		windowRef.postMessage('arweave-app-extension:' + 'connect', '*')
-		const snapshot = connectors.value.filter(connector => connector.origin === state.origin)
-		const stop = watch(() => connectors.value, () => {
-			const diff = connectors.value.filter(connector => connector.origin === state.origin && !snapshot.includes(connector))
+		const snapshot = connectorsData.value.filter(connector => connector.origin === state.origin)
+		const stop = watch(() => connectorsData.value, () => {
+			const diff = connectorsData.value.filter(connector => connector.origin === state.origin && !snapshot.includes(connector))
 			if (diff.find(connector => connector.links.popup)) { postMessageExtension('close') }
 		}, { deep: true, immediate: true })
 		setTimeout(() => {

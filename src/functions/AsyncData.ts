@@ -144,13 +144,9 @@ export function computedAsync <T> (query: () => T | Promise<T>) {
 
 
 
-export function useDataWrapper <
-	SourceType extends { [key in Id]: string },
-	RuntimeType,
-	Id extends string,
-> (
+export function useDataWrapper <SourceType, RuntimeType> (
 	source: Ref<SourceType[]>,
-	key: Id,
+	identify: (item: SourceType | RuntimeType) => string,
 	constructor: (source: SourceType) => RuntimeType,
 	destructor?: (runtime: RuntimeType) => any,
 ) {
@@ -158,22 +154,22 @@ export function useDataWrapper <
 	return computed<RuntimeType[]>({
 		get () {
 			const runtimeData = Object.keys(Store)
-			const sourceData = source.value.map(w => w[key] + '')
+			const sourceData = source.value.map(w => identify(w))
 			for (const id of [...runtimeData, ...sourceData]) {
 				if (runtimeData.includes(id) && !sourceData.includes(id)) {
 					destructor?.(Store[id])
 					delete Store[id]
 				}
 				if (!runtimeData.includes(id) && sourceData.includes(id)) {
-					const sourceEntry = source.value.find(w => w[key] == id)!
+					const sourceEntry = source.value.find(w => identify(w) == id)!
 					Store[id] = constructor(sourceEntry)
 				}
 			}
-			return Object.entries(Store).sort((a, b) => source.value.findIndex(s => s[key] == a[0]) - source.value.findIndex(s => s[key] == b[0])).map(e => e[1])
+			return Object.entries(Store).sort((a, b) => source.value.findIndex(s => identify(s) == a[0]) - source.value.findIndex(s => identify(s) == b[0])).map(e => e[1])
 		},
 		set (value) {
-			source.value = source.value.filter(s => value.find(r => r === Store[s[key]]))
-			.sort((a, b) => value.findIndex(r => r === Store[a[key]]) - value.findIndex(r => r === Store[b[key]]))
+			source.value = source.value.filter(s => value.find(r => r === Store[identify(s)]))
+			.sort((a, b) => value.findIndex(r => r === Store[identify(a)]) - value.findIndex(r => r === Store[identify(b)]))
 		}
 	})
 }

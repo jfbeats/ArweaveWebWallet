@@ -46,7 +46,6 @@ const otherInstance = computed(() => Object.values(states).find(s => !s.origin |
 watch(needRefresh, needed => needed && !otherInstance.value && autoUpdateActive && triggerUpdate(), { immediate: true })
 watch(() => state.value.updating, val => val && update(), { immediate: true })
 const close = () => { needRefresh.value = false }
-console.log('test')
 </script>
 
 

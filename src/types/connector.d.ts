@@ -17,6 +17,7 @@ type StoredMessage = Omit<Message, 'id'> & {
 
 type MessageEntry = Omit<Message, 'params'> & {
 	uuid: string
+	timestamp: number
 	status: Status
 	fulfilled: boolean
 	processing: boolean
@@ -29,7 +30,7 @@ type InstanceState = {
 	updating?: boolean
 }
 
-type ConnectorState = {
+type SharedState = {
 	origin: string
 	session?: string
 	messageQueue: MessageEntry[]
@@ -39,6 +40,16 @@ type ConnectorState = {
 	link?: boolean
 	links: { [keys in NonNullable<InstanceState['type']>]?: any }
 	connected?: boolean
+}
+
+type ConnectorState = {
+	origin: string
+	sharedStates: SharedState[]
+	instanceStates: InstanceState[]
+	messageQueue: MessageEntry[]
+	appInfo?: { name?: string, logo?: string}
+	walletId?: string | false
+	destructor: () => void
 }
 
 type ConnectionSettings = { [uuid: string]: { [method: string]: boolean } } | undefined

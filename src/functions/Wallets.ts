@@ -35,7 +35,7 @@ function walletFactory (wallet: WalletDataInterface): Wallet {
 	return new provider(wallet)
 }
 const WalletsData = useChannel('wallets', undefined, []).state
-export const Wallets = useDataWrapper(WalletsData, 'id', walletFactory, wallet => wallet.destructor?.())
+export const Wallets = useDataWrapper(WalletsData, (w) => w.id, walletFactory, wallet => wallet.destructor?.())
 
 
 

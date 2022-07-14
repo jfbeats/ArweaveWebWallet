@@ -26,7 +26,7 @@ export default class JsonRpc {
 	permissions
 	watchStop // todo collect scope instead
 
-	constructor (callbacks: (message: any) => void, state: Ref<ConnectorState>) {
+	constructor (callbacks: (message: any) => void, state: Ref<SharedState>) {
 		this.callbacks = callbacks
 		this.state = state || reactive({})
 		this.state.value.messageQueue ??= []
@@ -58,11 +58,12 @@ export default class JsonRpc {
 		if (!this.isValidMessage(message)) { console.warn('invalid message', message); return }
 		if (this.state.value.messageQueue.find(m => m.id === message.id)) { console.warn('message already exist', message); return }
 		const uuid = uuidV4()
+		const timestamp = Date.now()
 		const storedMessage: StoredMessage = {
 			uuid,
 			origin: this.state.value.origin,
 			sessionId: '' + message.id + this.state.value.origin + this.state.value.session,
-			timestamp: Date.now(),
+			timestamp,
 			status: undefined,
 			fulfilled: false,
 			method: message.method,
@@ -71,6 +72,7 @@ export default class JsonRpc {
 		const messageEntry: MessageEntry = {
 			uuid,
 			id: message.id,
+			timestamp,
 			method: message.method,
 			status: undefined,
 			fulfilled: false,
