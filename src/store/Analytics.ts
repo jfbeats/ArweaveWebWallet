@@ -4,7 +4,7 @@ import { useChannel } from '@/functions/Channels'
 
 
 type EventType = 'app' | 'account' | 'connect' | 'connector' | 'tx' | 'affiliate' | 'error'
-const eventRecords = useChannel('events').state
+const eventRecords = useChannel('events', undefined, {}).state
 
 
 
