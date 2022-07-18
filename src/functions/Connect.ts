@@ -1,6 +1,6 @@
-import { state, connectorChannels, filterChannels, awaitStorageAccess, useChannel, appInfo, states } from '@/functions/Channels'
+import { state, connectorChannels, awaitStorageAccess, useChannel, appInfo, states } from '@/functions/Channels'
 import JsonRpc from '@/functions/JsonRpc'
-import { watch, watchEffect, computed, reactive, effectScope } from 'vue'
+import { watch, watchEffect, computed, reactive, effectScope, Ref } from 'vue'
 import { getWalletById } from '@/functions/Wallets'
 import { useDataWrapper } from '@/functions/AsyncData'
 import InterfaceStore from '@/store/InterfaceStore'
@@ -9,14 +9,14 @@ import { track } from '@/store/Analytics'
 let windowRef: Window
 const { origin, session } = state.value
 export const { state: sharedState, deleteChannel } = useChannel('sharedState:', '' + origin + session)
-const connectorsData = computed(() => Object.values(connectorChannels.states)
+const connectorsData = computed(() => connectorChannels.states.value
 	.filter(val => val.walletId !== false).sort((a, b) => a.timestamp - b.timestamp))
 
 function buildConnector (origin: string): ConnectorState {
 	const scope = effectScope(true)
 	return scope.run(() => {
 		const sharedStates = computed(() => connectorsData.value.filter(c => c.origin === origin))
-		const instanceStates = computed(() => Object.values(states).filter(c => c.origin === origin))
+		const instanceStates = computed(() => states.value.filter(c => c.origin === origin))
 		const updateWallets = (walletId?: SharedState['walletId']) => {
 			if (walletId === undefined) { walletId = sharedStates.value[0]?.walletId }
 			sharedStates.value.forEach(c => c.walletId !== walletId && (c.walletId = walletId))
@@ -37,7 +37,8 @@ const origins = computed(() => {
 	return result
 })
 
-export const connectors = useDataWrapper(origins, (x) => typeof x === 'string' ? x : x.origin, buildConnector, (c) => c.destructor())
+export const connectors = useDataWrapper(origins, x => x, buildConnector, c => c.destructor())
+export const connector = computed(() => connectors.value.find(c => c.origin === origin))
 
 
 
@@ -63,12 +64,19 @@ if (state.value.type !== 'iframe') { localStorage.setItem('global', '1') }
 
 
 
-async function initConnector () {
-	if (!origin || origin === '*') { return }
-	await awaitStorageAccess()
+function initSharedState (state: Ref): state is Ref<SharedState> {
+	if (!origin || origin === '*') { return false }
 	if (!sharedState.value?.origin) { sharedState.value = { origin, session, appInfo, timestamp: Date.now(), messageQueue: [], links: {} } }
+	return true
+}
+
+
+
+async function initConnector () {
+	await awaitStorageAccess()
+	if (!initSharedState(sharedState)) { return }
 	sharedState.value.links[state.value.type!] = true
-	const postMessage = (message: any) => windowRef.postMessage({ ...message, jsonrpc: '2.0' }, origin)
+	const postMessage = (message: any) => windowRef.postMessage({ ...message, jsonrpc: '2.0' }, origin!)
 	const jsonRpc = new JsonRpc(postMessage, sharedState)
 	window.addEventListener('message', async (e) => {
 		if (e.source !== windowRef || e.origin !== origin) { return }
@@ -88,26 +96,22 @@ async function initConnector () {
 		postMessage({ method: 'connect', params: wallet.key })
 	}
 	const disconnect = () => {
-		const sameOrigin = connectors.value.find(c => c.origin === origin)
-		if (sameOrigin) { sameOrigin.walletId = false }
+		if (connector.value) { connector.value.walletId = false }
 		deleteChannel()
 		postMessage({ method: 'usePopup', params: true })
 		postMessage({ method: 'disconnect' })
 	}
 	if (state.value.type === 'iframe') {
 		InterfaceStore.toolbar.enabled = false
-		// todo send disconnect when iframe is dead and popup is getting closed
-		// can also watch connector.instanceStates.length and disconnect once it falls to 0
-		const hasOtherInstance = () => {
-			const sameOrigin = connectors.value.find(c => c.origin === origin)
-			return sameOrigin?.sharedStates && sameOrigin?.sharedStates.length > 1
-		}
-		window.addEventListener('beforeunload', () => !state.value.updating && hasOtherInstance() ? deleteChannel() : disconnect())
+		window.addEventListener('beforeunload', () => !state.value.updating && connector.value
+			&& (connector.value.sharedStates.length > 1 ? deleteChannel() : disconnect()))
 	}
 	if (state.value.type === 'popup') {
 		if (!sharedState.value.walletId) { InterfaceStore.toolbar.enabled = false }
 		const keepPopup = computed(() => !sharedState.value.link)
 		watch(keepPopup, () => postMessage({ method: 'keepPopup', params: keepPopup.value }), { immediate: true })
+		window.addEventListener('beforeunload', () => !state.value.updating && !sharedState.value.links?.iframe
+			&& connector.value && (connector.value.sharedStates.length > 1 ? deleteChannel() : disconnect()))
 	}
 	watch(() => sharedState.value.walletId, id => {
 		if (id === false) { return disconnect() }
@@ -117,13 +121,15 @@ async function initConnector () {
 		sharedState.value.connected = true
 	})
 	watchEffect(() => {
-		const linkedState = () => Object.entries(filterChannels({ origin, session, type: state.value.type === 'popup' ? 'iframe' : 'popup' }))[0]?.[1]
+		const linkedState = () => sharedState.value.links.popup && sharedState.value.links.iframe
 		if (linkedState()) {
 			sharedState.value.link = true
 			postMessage({ method: 'usePopup', params: false })
 		}
-		const disconnectCondition = () => !state.value.updating && !linkedState() && state.value.type === 'iframe' && sharedState.value.link && (sharedState.value.walletId == null || sharedState.value.walletId === false)
-		if (disconnectCondition()) { setTimeout(() => disconnectCondition() && disconnect(), 500) }
+		if (state.value.type === 'iframe') {
+			const disconnectCondition = () => !state.value.updating && !linkedState() && sharedState.value.link && (sharedState.value.walletId == null || sharedState.value.walletId === false)
+			if (disconnectCondition()) { setTimeout(() => disconnectCondition() && disconnect(), 500) }
+		}
 	})
 	postMessage({ method: 'ready' })
 }
@@ -131,10 +137,9 @@ async function initConnector () {
 
 
 async function initWebSockets () {
-	if (!origin) { return }
-	if (!sharedState.value?.walletId) { sharedState.value = { origin, session, appInfo, timestamp: Date.now(), messageQueue: [], links: {} } }
+	if (!initSharedState(sharedState)) { return }
 	sharedState.value.links[state.value.type!] = true
-	const ws = new WebSocket(origin)
+	const ws = new WebSocket(origin!)
 	const postMessage = (message: any) => ws.send(JSON.stringify({ ...message, jsonrpc: '2.0' }))
 	const jsonRpc = new JsonRpc(postMessage, sharedState)
 	ws.addEventListener('open', () => console.log('New WS connection'))

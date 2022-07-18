@@ -1,4 +1,4 @@
-import { reactive, computed, effectScope, isRef, Ref, ref, watch, watchEffect, WatchStopHandle, WritableComputedRef, toRef, toRefs } from 'vue'
+import { reactive, computed, effectScope, isRef, Ref, ref, watch, watchEffect, WatchStopHandle, WritableComputedRef, shallowReactive } from 'vue'
 import InterfaceStore from '@/store/InterfaceStore'
 
 
@@ -144,32 +144,51 @@ export function computedAsync <T> (query: () => T | Promise<T>) {
 
 
 
+function isPromise <T> (param: T | Promise<T>): param is Promise<T> {
+	return typeof param === 'object' && typeof (param as any).then === 'function'
+}
+
+
+
 export function useDataWrapper <SourceType, RuntimeType> (
 	source: Ref<SourceType[]>,
-	identify: (item: SourceType | RuntimeType) => string,
-	constructor: (source: SourceType) => RuntimeType,
+	identify: (item: SourceType) => string,
+	constructor: (source: SourceType) => RuntimeType | Promise<RuntimeType>,
 	destructor?: (runtime: RuntimeType) => any,
 ) {
-	const Store: { [id: string]: RuntimeType } = {}
+	type StoreEntry = { id: string, promise: Promise<RuntimeType>, runtimeItem?: RuntimeType }
+	const Store = ref([]) as Ref<StoreEntry[]>
 	return computed<RuntimeType[]>({
 		get () {
-			const runtimeData = Object.keys(Store)
-			const sourceData = source.value.map(w => identify(w))
+			const runtimeData = Store.value.map(r => r.id)
+			const sourceData = source.value.map(s => identify(s))
 			for (const id of [...runtimeData, ...sourceData]) {
 				if (runtimeData.includes(id) && !sourceData.includes(id)) {
-					destructor?.(Store[id])
-					delete Store[id]
+					const index = Store.value.findIndex(r => r.id === id)!
+					Store.value[index].promise.then(runtimeItem => destructor?.(runtimeItem))
+					Store.value.splice(index, 1)
 				}
 				if (!runtimeData.includes(id) && sourceData.includes(id)) {
-					const sourceEntry = source.value.find(w => identify(w) == id)!
-					Store[id] = constructor(sourceEntry)
+					const sourceEntry = source.value.find(w => identify(w) === id)!
+					const runtimeItem = constructor(sourceEntry)
+					if (isPromise(runtimeItem)) {
+						const storeEntry: StoreEntry = shallowReactive({ id, promise: runtimeItem.then(runtimeItem => storeEntry.runtimeItem = runtimeItem) })
+						Store.value.push(storeEntry)
+					} else {
+						const storeEntry: StoreEntry = shallowReactive({ id, promise: Promise.resolve(runtimeItem), runtimeItem })
+						Store.value.push(storeEntry)
+					}
 				}
 			}
-			return Object.entries(Store).sort((a, b) => source.value.findIndex(s => identify(s) == a[0]) - source.value.findIndex(s => identify(s) == b[0])).map(e => e[1])
+			Store.value = Store.value.sort((a, b) => source.value.findIndex(s => identify(s) === a.id) - source.value.findIndex(s => identify(s) === b.id))
+			return Store.value.map(r => r.runtimeItem).filter(r => r !== undefined) as RuntimeType[]
 		},
 		set (value) {
-			source.value = source.value.filter(s => value.find(r => r === Store[identify(s)]))
-			.sort((a, b) => value.findIndex(r => r === Store[identify(a)]) - value.findIndex(r => r === Store[identify(b)]))
+			source.value = source.value.filter(s => {
+				const storeEntry = Store.value.find(r => identify(s) === r.id)
+				if (!storeEntry) { return }
+				return !storeEntry.runtimeItem || value.find(r => r === storeEntry.runtimeItem)
+			}).sort((a, b) => value.findIndex(r => r === Store.value.find(s => s.id === identify(a))?.runtimeItem) - value.findIndex(r => r === Store.value.find(s => s.id === identify(b))?.runtimeItem))
 		}
 	})
 }

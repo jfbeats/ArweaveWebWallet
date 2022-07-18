@@ -1,4 +1,4 @@
-import { getCurrentScope, onScopeDispose, reactive, watch, ref, effectScope } from 'vue'
+import { getCurrentScope, onScopeDispose, watch, ref, effectScope, computed } from 'vue'
 import type { EffectScope, Ref, WatchStopHandle } from 'vue'
 import { useDataWrapper } from '@/functions/AsyncData'
 
@@ -16,11 +16,15 @@ type PrefixTable = {
 	events: { [key: string]: any }
 }
 
+type DefaultValue <T extends keyof PrefixTable> = PrefixTable[T] | undefined
+type ChannelState <T extends keyof PrefixTable, U extends DefaultValue<T> | undefined> = U extends PrefixTable[T] ? Ref<PrefixTable[T]> : U extends undefined ? Ref<PrefixTable[T] | undefined> : never
+type Result <T extends keyof PrefixTable, U extends DefaultValue<T>> = { state: ChannelState<T, U>, stop: () => void, deleteChannel: () => void }
 
 
-function ChannelRef <T extends keyof PrefixTable> (prefix: T, instanceName = '', init?: PrefixTable[T], writeInit?: boolean) {
+
+function ChannelRef <T extends keyof PrefixTable, U extends DefaultValue<T> = undefined> (prefix: T, instanceName = '', init?: U, writeInit?: boolean): Result<T, U> {
 	let stopWrite: WatchStopHandle
-	let state = ref(init) as Ref<PrefixTable[T]> // todo can be undefined if no init
+	let state = ref(init) as ChannelState<T, U>
 	let stateChannel = prefix + instanceName
 	
 	const writeState = () => {
@@ -44,16 +48,13 @@ function ChannelRef <T extends keyof PrefixTable> (prefix: T, instanceName = '',
 	}
 	const storageListener = (e: StorageEvent) => {
 		if (e.key !== stateChannel || e.newValue === e.oldValue || !e.newValue) { return }
-		update(e.newValue)
+		update(localStorage.getItem(stateChannel))
 	}
 	const stop = () => {
 		window.removeEventListener('storage', storageListener)
 		if (stopWrite) { stopWrite() }
 	}
-	const deleteChannel = () => {
-		stop()
-		localStorage.removeItem(stateChannel)
-	}
+	const deleteChannel = () => { stop(); localStorage.removeItem(stateChannel) }
 	
 	window.addEventListener('storage', storageListener)
 	if (writeInit && !localStorage.getItem(stateChannel)) {
@@ -68,17 +69,15 @@ function ChannelRef <T extends keyof PrefixTable> (prefix: T, instanceName = '',
 
 
 
-const step = ref(0)
-const channelInstances = {} as { [key: string]: { channel: ReturnType<typeof ChannelRef>, subscribers: number, scope: EffectScope } }
+const channelInstances = {} as { [key: string]: { channel: ReturnType<typeof ChannelRef<any, any>>, subscribers: number, scope: EffectScope } }
 
-export function useChannel <T extends keyof PrefixTable> (prefix: T, instanceName = '', init?: PrefixTable[T], writeInit?: boolean) {
+export function useChannel <T extends keyof PrefixTable, U extends DefaultValue<T> = undefined> (prefix: T, instanceName = '', init?: U, writeInit?: boolean): Result<T, U> {
 	const key = prefix + instanceName
 	
 	if (!channelInstances[key]) {
 		const scope = effectScope(true)
 		const channel = scope.run(() => ChannelRef(prefix, instanceName, init, writeInit))!
 		channelInstances[key] = { channel, subscribers: 0, scope }
-		step.value++
 	}
 	channelInstances[key].subscribers++
 	
@@ -87,13 +86,26 @@ export function useChannel <T extends keyof PrefixTable> (prefix: T, instanceNam
 		if (channelInstances[key].subscribers > 0) { return }
 		channelInstances[key].scope.stop()
 		delete channelInstances[key]
-		step.value++
 	}
 	const deleteChannel = () => {
 		channelInstances[key]?.channel?.deleteChannel()
 	}
 	if (getCurrentScope()) { onScopeDispose(stop) }
-	return { state: channelInstances[key].channel.state, stop, deleteChannel } as ReturnType<typeof ChannelRef<T>>
+	return { state: channelInstances[key].channel.state, stop, deleteChannel } as Result<T, U>
+}
+
+
+
+function getChannels <T extends 'instanceState:' | 'sharedState:'> (prefix: T) {
+	const closeChannels = () => wrapper.value.forEach(ch => ch?.stop())
+	const instantiate = async (name: string) => {
+		if (prefix === 'instanceState:' && !(await heartbeat(name))) { return }
+		return useChannel(prefix, name)
+	}
+	const instances = computed(() => storageKeys.value.filter(key => key.slice(0, prefix.length) === prefix).map(key => key.slice(prefix.length)).filter(channel => channel !== instance))
+	const wrapper = useDataWrapper(instances, item => item, instantiate, channel => channel?.stop())
+	const states = computed(() => wrapper.value.filter(ch => ch?.state.value).map(ch => ch!.state.value!))
+	return { states, closeChannels }
 }
 
 
@@ -127,49 +139,11 @@ const origin = hash.get('origin') || undefined
 const session = hash.get('session') || undefined
 const appInfo = { name: hash.get('name') || undefined, logo: hash.get('logo') || undefined }
 const instance = origin + Math.random().toString().slice(2)
+const storageKeys = ref(Object.keys(localStorage)) as Ref<string[]>
 const { state, deleteChannel } = useChannel('instanceState:', instance, { origin, session }, true)
 const { states } = getChannels('instanceState:')
 const connectorChannels = getChannels('sharedState:')
 export { state, states, connectorChannels, appInfo }
-
-
-
-function getChannels <T extends 'instanceState:' | 'sharedState:'> (prefix: T) {
-	const channels: { [key: string]: ReturnType<typeof ChannelRef<T>> | undefined } = {}
-	const states: { [key: string]: PrefixTable[T] } = reactive({})
-	const getInstanceNames = () => Object.keys(localStorage)
-		.filter(key => key.slice(0, prefix.length) === prefix)
-		.map(key => key.slice(prefix.length))
-	const instantiate = async (name: string) => {
-		channels[name] = undefined
-		if (prefix === 'instanceState:' && !(await heartbeat(name))) { close(name); return null }
-		if (!Object.keys(channels).includes(name)) { return null }
-		channels[name] = useChannel(prefix, name)
-		states[name] = channels[name]!.state as any
-	}
-	const close = (name: string) => {
-		channels[name]?.stop()
-		delete channels[name]
-		delete states[name]
-	}
-	const storageListener = () => {
-		const runningChannels = Object.keys(channels)
-		const storageChannels = getInstanceNames()
-		for (const channel of [...runningChannels, ...storageChannels]) {
-			if (runningChannels.includes(channel) && storageChannels.includes(channel)) { continue }
-			else if (storageChannels.includes(channel) && channel !== instance) { instantiate(channel) }
-			else if (runningChannels.includes(channel)) { close(channel) }
-		}
-	}
-	const closeChannels = () => {
-		window.removeEventListener('storage', storageListener)
-		for (const channel in channels) { close(channel) }
-	}
-	watch(step, () => setTimeout(storageListener))
-	window.addEventListener('storage', storageListener)
-	storageListener()
-	return { states, closeChannels }
-}
 
 
 
@@ -204,17 +178,10 @@ function cleanHeartbeats () {
 	}
 }
 
-export function filterChannels (filter: object, object = states) {
-	const filterFunction = ([key, state]: [string, any]) => typeof filter === 'function' ? filter(state)
-		: !Object.entries(filter || {}).find(([key, value]) => state[key] !== value)
-	return Object.fromEntries(Object.entries(object).filter(filterFunction))
-}
-
 function globalStorageListener (e: StorageEvent) {
 	const partialKey = 'heartbeat:' + instance
-	if (e.key?.slice(0, partialKey.length) === partialKey && e.newValue === '') {
-		localStorage.setItem(e.key, 'ok')
-	}
+	if (e.key?.slice(0, partialKey.length) === partialKey && e.newValue === '') { localStorage.setItem(e.key, 'ok') }
+	storageKeys.value = Object.keys(localStorage)
 }
 
 export async function hasStorageAccess () {

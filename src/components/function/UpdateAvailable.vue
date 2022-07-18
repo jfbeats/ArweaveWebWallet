@@ -24,6 +24,7 @@ setTimeout(() => autoUpdateActive = false, 10000)
 const overlay = ref(false)
 const update = async () => {
 	overlay.value = true
+	await new Promise(res => setTimeout(res))
 	if (state.value.origin) {
 		const urlInfo = { origin: state.value.origin, session: state.value.session! }
 		const url = new URL(location.href)
@@ -39,10 +40,10 @@ const triggerUpdate = async () => {
 		updateServiceWorker(false).then(res)
 		setTimeout(res, 1000)
 	})
-	for (const key in states) { states[key].updating = true }
+	states.value.forEach(state => state.updating = true)
 	state.value.updating = true
 }
-const otherInstance = computed(() => Object.values(states).find(s => !s.origin || s.origin !== state.value.origin && s.session !== state.value.session))
+const otherInstance = computed(() => states.value.find(s => !s.origin || s.origin !== state.value.origin && s.session !== state.value.session))
 watch(needRefresh, needed => needed && !otherInstance.value && autoUpdateActive && triggerUpdate(), { immediate: true })
 watch(() => state.value.updating, val => val && update(), { immediate: true })
 const close = () => { needRefresh.value = false }
