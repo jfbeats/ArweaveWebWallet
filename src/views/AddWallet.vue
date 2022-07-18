@@ -69,18 +69,17 @@ const isCreatingWallet = ref(false)
 const isGeneratingWallet = ref(false)
 const createdWallet = ref(null as null | WalletDataInterface)
 const create = async () => {
-	track.account('Create')
 	isCreatingWallet.value = true
 	passphraseInput.value = await generateMnemonic()
 	const walletData = addMnemonic(passphraseInput.value)
 	setTimeout(async () => createdWallet.value = await walletData, 10000)
+	track.account('Create')
 }
 const goToCreatedWallet = () => {
 	if (!createdWallet.value) { return }
 	router.push({ name: 'EditWallet', query: { wallet: createdWallet.value.id } })
 }
 const importPassphrase = async () => {
-	track.account('Import')
 	isGeneratingWallet.value = true
 	const walletData = addMnemonic(passphraseInput.value)
 	popup.value = {
@@ -88,6 +87,7 @@ const importPassphrase = async () => {
 		message: 'importing',
 	}
 	router.push({ name: 'EditWallet', query: { wallet: (await walletData).id } })
+	track.account('Import')
 }
 const confirmPassphrase = async () => {
 	if (await validateMnemonic(passphraseInput.value)) { return importPassphrase() }
@@ -100,14 +100,14 @@ const confirmPassphrase = async () => {
 	}
 }
 const importProvider = async (provider: Provider) => {
-	track.account('Import ' + provider.metadata.name)
 	const walletData = await addProvider(provider)
 	router.push({ name: 'EditWallet', query: { wallet: walletData.id } })
+	track.account('Import ' + provider.metadata.name)
 }
 const importAddressOnlyAction = { icon: IconAddBox, run: async () => {
-	track.account('Watch')
 	const walletData = await addAddress(targetInput.value)
 	router.push({ name: 'EditWallet', query: { wallet: walletData.id } })
+	track.account('Watch')
 }}
 </script>
 

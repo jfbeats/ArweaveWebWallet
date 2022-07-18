@@ -40,7 +40,7 @@ function init () {
 		history,
 	} = window
 	
-	const root = 'https://analytics.arweave.duckdns.org'
+	const root = 'https://an.arweave.duckdns.org'
 	const website = isMain ? '69deda3b-740e-49f8-aceb-f4bfa3455029'
 		: isLocalhost ? '59437916-9c3e-4945-a25c-9a1ccdf520a9'
 		: '8a399a1f-dbce-4ceb-b1d7-6882f50a55b9'
@@ -86,8 +86,10 @@ function init () {
 		update()
 	}
 	
+	let walletsLength: number
+	setTimeout(() => walletsLength = Wallets.value.length)
 	const account = (value: string) => {
-		if (!Wallets.value.length && !eventRecords.value.firstAccount) {
+		if (!walletsLength && !eventRecords.value.firstAccount) {
 			eventRecords.value.firstAccount = true
 			event('account', 'First')
 		}
