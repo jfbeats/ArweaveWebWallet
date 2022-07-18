@@ -31,11 +31,11 @@
 			<WalletsOptions />
 			<div>
 				<h2>Links</h2>
-				<SettingItem v-if="Wallets.length" :icon="LogoDiscord" name="Discord" description="Send feedback, questions or talk about anything" href="https://discord.gg/W6VybRqwBP" />
-				<SettingItem :icon="LogoGithub" name="Github | Web Wallet" description="Source code" href="https://github.com/jfbeats/ArweaveWebWallet" />
-				<SettingItem :icon="LogoGithub" name="Github | Wallet Connector" description="Integrate the universal connector to use web wallets like arweave.app inside your own applications" href="https://jfbeats.github.io/ArweaveWalletConnector" />
-				<SettingItem :icon="IconText" name="Arwiki" description="Wiki on the Arweave protocol" href="https://arwiki.wiki" />
-				<SettingItem :icon="IconText" name="Guide" description="How to get started using the wallet" href="https://docs.arweave.org/info/wallets/arweave-wallet" />
+				<Links />
+			</div>
+			<div>
+				<h2>Browser Extensions</h2>
+				<LinksExtension />
 			</div>
 			<div>
 				<h2>Version Alpha</h2>
@@ -53,17 +53,14 @@ import SettingItem from '@/components/composed/SettingItem.vue'
 import Input from '@/components/atomic/Input.vue'
 import Select from '@/components/atomic/Select.vue'
 import Button from '@/components/atomic/Button.vue'
+import Links from '@/components/composed/Links.vue'
+import LinksExtension from '@/components/composed/LinksExtension.vue'
 import { PWA } from '@/pwa'
-import { Wallets } from '@/functions/Wallets'
 import { hasPassword, setPassword } from '@/functions/Password'
-import ArweaveStore, { gatewayDefault, bundlerDefault, updateArweave, updateBundler } from '@/store/ArweaveStore'
+import ArweaveStore, { bundlerDefault, gatewayDefault, updateArweave, updateBundler } from '@/store/ArweaveStore'
 import { currency, redstoneOptions } from '@/store/CurrencyStore'
 import { notify } from '@/store/NotificationStore'
-import { ref, computed } from 'vue'
-
-import LogoGithub from '@/assets/logos/socials/github.svg?component'
-import LogoDiscord from '@/assets/logos/socials/discord.svg?component'
-import IconText from '@/assets/icons/text.svg?component'
+import { computed, ref } from 'vue'
 
 import IconDownload from '@/assets/icons/download.svg?component'
 import IconUpload from '@/assets/icons/upload.svg?component'
