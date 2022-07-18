@@ -166,10 +166,12 @@ export class ArweaveMessageRunner implements MessageRunner<ArweaveProvider>, Par
 		// todo do not store large data in indexeddb
 		const txObject = new Transaction(tx)
 		let dispatchResult: Awaited<ReturnType<ArweaveProviderInterface['dispatch']>> | undefined
-		try {
-			const res = await this.wallet.bundle(txObject)
-			dispatchResult = { id: res.id, type: 'BUNDLED' }
-		} catch (e) { console.error(e) }
+		if (!txObject.quantity || txObject.quantity === '0') {
+			try {
+				const res = await this.wallet.bundle(txObject)
+				dispatchResult = { id: res.id, type: 'BUNDLED' }
+			} catch (e) { console.error(e) }
+		}
 		if (dispatchResult) { return dispatchResult }
 		try {
 			// set fees
@@ -178,7 +180,7 @@ export class ArweaveMessageRunner implements MessageRunner<ArweaveProvider>, Par
 			dispatchResult = { id: txObject.id, type: 'BASE' }
 		} catch (e) { console.error(e) }
 		if (dispatchResult) { return dispatchResult }
-		throw 'testing without base tx fallback'
+		throw 'error'
 	}
 	async getPublicKey () {
 		const publicKey = await this.wallet.getPublicKey()
@@ -187,10 +189,10 @@ export class ArweaveMessageRunner implements MessageRunner<ArweaveProvider>, Par
 	}
 	async sign (message: ArrayBufferView, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
 		if (message.byteLength === 48) { throw 'error' }
-		return this.wallet.sign!(message, options)
+		return this.wallet.sign(message, options)
 	}
 	async decrypt (message: ArrayBufferView, options: Parameters<ArweaveProviderInterface['decrypt']>[1]) {
-		return this.wallet.decrypt!(message, options)
+		return this.wallet.decrypt(message, options)
 	}
 	async getArweaveConfig () {
 		const config = arweave.getConfig().api
