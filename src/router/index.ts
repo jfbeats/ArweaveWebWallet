@@ -25,10 +25,7 @@ const routes: RouterOptions['routes'] = [
 				path: 'send',
 				component: Send,
 				meta: { title: 'Send' },
-				props: (route) => ({
-					wallet: getWalletById(route.params.walletId),
-					model: InterfaceStore.wallet.send
-				}),
+				props: (route) => ({ wallet: getWalletById(route.params.walletId) }),
 			},
 			{
 				name: 'TxList',

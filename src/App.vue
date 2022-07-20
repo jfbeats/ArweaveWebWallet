@@ -1,7 +1,7 @@
 <template>
 	<div class="app" :class="{ verticalLayout, verticalContent, hasToolbar }">
-		<Toolbar v-if="hasToolbar" class="box no-scrollbar" @drop.prevent="e => dropped(e.dataTransfer.files)" />
-		<router-view v-slot="{ Component }" @drop.prevent="e => dropped(e.dataTransfer.files)">
+		<Toolbar v-if="hasToolbar" class="box no-scrollbar" />
+		<router-view v-slot="{ Component }">
 			<div class="router">
 				<TransitionsManager :vector="$route.meta.transition?.nameLayout" :axis="verticalLayout ? 'x' : 'y'">
 					<component :is="Component" />
@@ -29,7 +29,6 @@ import InterfaceStore from '@/store/InterfaceStore'
 import { findRoutePosition } from '@/router/Utils'
 import { useRoute, useRouter } from 'vue-router'
 import { toRef } from 'vue'
-import { dropped } from '@/functions/File'
 
 const router = useRouter()
 const route = useRoute()

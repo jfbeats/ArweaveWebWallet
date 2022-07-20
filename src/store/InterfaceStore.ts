@@ -1,4 +1,4 @@
-import { reactive, watch } from 'vue'
+import { markRaw, reactive, watch } from 'vue'
 import mitt from 'mitt'
 
 import logoArweaveBlack from '@/assets/logos/arweaveBlack.svg?url'
@@ -17,15 +17,9 @@ const InterfaceStore = reactive({
 	},
 	sticky: false,
 	dragOverlay: false,
-	wallet: {
-		send: {
-			target: '',
-			quantity: '',
-			data: '',
-			tags: [],
-		},
-	},
 })
+
+
 
 export const emitter = mitt()
 emitter.once = (eventName, handler) => {

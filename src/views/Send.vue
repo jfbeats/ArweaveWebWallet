@@ -8,7 +8,7 @@
 					<span>Send</span>
 				</h2>
 			</label>
-			<InputAddress v-model="model.target" id="target" />
+			<InputAddress v-model="form.target" id="target" />
 			<div class="row bottom flex-row">
 				<div>
 					<transition name="slide-up">
@@ -22,7 +22,7 @@
 					<span>Amount</span>
 				</h3>
 			</label>
-			<InputAr v-model="model.quantity" id="quantity" />
+			<InputAr v-model="form.quantity" id="quantity" />
 			<div class="row bottom flex-row">
 				<div>
 					<transition name="slide-up">
@@ -37,7 +37,7 @@
 					<span>Data</span>
 				</h3>
 			</label>
-			<InputData v-model="model.data" @files="filesAdded" id="data" />
+			<InputData v-model="form.data" @files="dropped" id="data" />
 			<div class="row bottom flex-row">
 				<div>
 					<transition name="slide-up">
@@ -52,12 +52,12 @@
 						<span>Tags</span>
 					</h3>
 				</label>
-				<div v-if="!model.tags.length">
+				<div v-if="!form.tags.length">
 					<button type="button" class="secondary" @click="addTag()" id="add-tag">Add</button>
 				</div>
 			</div>
-			<InputGrid :schema="model.tags" />
-			<div v-if="model.tags.length" class="row bottom flex-row">
+			<InputGrid :schema="form.tags" />
+			<div v-if="form.tags.length" class="row bottom flex-row">
 				<div>
 					<transition name="slide-up">
 						<div v-if="validation.tags" class="validation">{{ validation.tags }}</div>
@@ -67,7 +67,7 @@
 			</div>
 
 			<div class="row flex-row" style="align-items:flex-end; margin-top:3em;">
-				<SendFee :size="txSize" :target="model.target" @update="fee => txFee = fee" />
+				<SendFee :size="txSize" :target="form.target" @update="fee => txFee = fee" />
 				<Button @click="postTx" :style="submitStyle" :disabled="loading || !txFee || !wallet.signTransaction" :icon="IconNorthEast">Submit</Button>
 			</div>
 			<div>
@@ -92,6 +92,9 @@ import InputGrid from '@/components/atomic/InputGrid.vue'
 import SendFee from '@/components/composed/SendFee.vue'
 import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
+import { Wallet } from '@/providers/WalletProxy'
+import { dropped } from '@/functions/File'
+import { form, addTag, getTagsFromSchema, reset } from '@/store/FormSend'
 import { buildTransaction, manageUpload } from '@/functions/Transactions'
 import { awaitEffect } from '@/functions/AsyncData'
 import { addressHashToColor, addressToHash } from '@/functions/Utils'
@@ -100,70 +103,42 @@ import BigNumber from 'bignumber.js'
 import { computed, markRaw, reactive, ref, watch } from 'vue'
 
 import IconNorthEast from '@/assets/icons/north_east.svg?component'
-import IconLabel from '@/assets/icons/label.svg?component'
 
-const props = defineProps(['wallet', 'model'])
+const props = defineProps<{ wallet: Wallet }>()
 
 const setMax = async () => {
 	const balance = new BigNumber(props.wallet.balance)
 	await awaitEffect(() => txFee.value)
-	props.model.quantity = balance.minus(txFee.value!).toString()
+	form.quantity = balance.minus(txFee.value!).toString()
 }
-
-const filesAdded = (files: FileList) => { // todo go through droppedFiles
-	let contentTypeTag = props.model.tags.find(row => row.items[0].value === 'Content-Type')
-	props.model.data = files ? files[0] : ''
-	if (props.model.data && props.model.data.type) {
-		if (!contentTypeTag) {
-			contentTypeTag = tagSchema('Content-Type')
-			addTag(contentTypeTag)
-		}
-		contentTypeTag.items[1].value = props.model.data.type
-	} else {
-		const index = props.model.tags.indexOf(contentTypeTag)
-		props.model.tags.splice(index, 1)
-	}
-}
-
-const tagSchema = (name, value) => ({
-	items: [
-		{ name: 'Tag', value: name || '', icon: markRaw(IconLabel) },
-		{ name: 'Value', value: value || '' }
-	], deletable: true, key: Math.random()
-})
-const addTag = (tag) => props.model.tags.push(tag || tagSchema())
 
 const txSize = computed(() => {
-	const data = props.model.data
+	const data = form.data
 	return data.size || data.length || '0'
 })
 const txFee = ref(null as null | string)
 
-const getTagsFromSchema = (tagsSchema) => {
-	const result = []
-	for (const row of tagsSchema) { result.push({ name: row.items[0].value, value: row.items[1].value }) }
-	return result
-}
-
 const loading = ref(false)
-const validation = reactive({ target: '', quantity: '', data: '', tags: '' })
 
-const isValid = () => {
-	for (const key in validation) { validation[key] = '' }
+const validation: { [key in keyof typeof form | 'global']?: string } = reactive({})
+
+function isValid () {
+	for (const key in validation) { delete validation[key as keyof typeof validation] }
 	let result = true
-	if (!props.model.data && !(props.model.quantity > 0)) {
+	const quantity = new BigNumber(form.quantity || 0)
+	if (!form.data && !quantity.gt(0)) {
 		validation.global = "A transaction must at least have data, or an address and amount"
 		return
 	}
-	const balance = new BigNumber(props.wallet.balance)
-	if (balance.minus(txFee.value).minus(props.model.quantity || 0) < 0) {
-		if (props.model.quantity > 0) {
+	const balance = new BigNumber(props.wallet.balance!)
+	if (balance.minus(txFee.value || 0).minus(quantity).lt(0)) {
+		if (quantity.gt(0)) {
 			validation.quantity = "Current balance too low"; result = false
 		} else {
 			validation.data = "Current balance too low"; result = false
 		}
 	}
-	const tags = getTagsFromSchema(props.model.tags)
+	const tags = getTagsFromSchema(form.tags)
 	let tagLength = 0
 	for (const tag of tags) {
 		tagLength += tag.name.length + tag.value.length
@@ -174,21 +149,13 @@ const isValid = () => {
 			validation.tags = "Tags can't be empty"; result = false
 		}
 	}
-	if (props.model.target.length && props.model.target.length < 43) {
+	if (form.target.length && form.target.length < 43) {
 		validation.target = "Invalid address"; result = false
 	}
-	if (!props.model.target.length && props.model.quantity > 0) {
+	if (!form.target.length && quantity.gt(0)) {
 		validation.target = "An address must be specified to send AR"; result = false
 	}
 	return result
-}
-
-const resetForm = () => {
-	props.model.target = ''
-	props.model.quantity = ''
-	props.model.data = ''
-	props.model.tags = []
-	// TODO reset the fee slider
 }
 
 const postTx = async () => {
@@ -196,15 +163,15 @@ const postTx = async () => {
 	loading.value = true
 	try {
 		const tx = await buildTransaction({
-			target: props.model.target,
-			ar: props.model.quantity,
+			target: form.target,
+			ar: form.quantity,
 			arReward: txFee.value,
-			tags: getTagsFromSchema(props.model.tags),
-			data: props.model.data,
+			tags: getTagsFromSchema(form.tags),
+			data: form.data,
 		})
 		await props.wallet.signTransaction(tx)
 		manageUpload(tx)
-		resetForm()
+		reset()
 	} catch (e: any) {
 		console.error(e)
 		notify.error(e)

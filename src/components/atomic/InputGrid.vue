@@ -16,16 +16,28 @@
 
 
 
-<script setup>
+<script setup lang="ts">
 import RawInput from '@/components/function/RawInput.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import IconX from '@/assets/icons/x.svg?component'
 import { ref } from 'vue'
 
-const props = defineProps(['schema', 'disabled'])
+export type TagField = {
+	name: string
+	value: string
+	icon?: any
+}
+
+export type TagSchema = {
+	items: TagField[]
+	deletable: true
+	key: any
+}
+
+const props = defineProps<{ schema: TagSchema[], disabled?: boolean }>()
 
 const focus = ref(0)
-const removeRow = (index) => props.schema.splice(index, 1)
+const removeRow = (index: number) => props.schema.splice(index, 1)
 </script>
 
 

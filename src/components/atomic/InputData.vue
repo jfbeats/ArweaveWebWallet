@@ -9,7 +9,7 @@
 					<label for="file-picker" class="file-picker-label">
 						<Icon :icon="IconDrop" class="img" style="width: 100%; height: 100%;" />
 					</label>
-					<input type="file" id="file-picker" class="file-input" @change="handleFiles" :disabled="disabled" />
+					<input type="file" id="file-picker" class="file-input" @change="handleFiles" :disabled="disabled" multiple />
 				</div>
 			</div>
 			<div v-else-if="isFile" class="overlay">
@@ -38,10 +38,19 @@ import IconDrop from '@/assets/icons/drop.svg?component'
 import IconCloud from '@/assets/icons/cloud.svg?component'
 import IconX from '@/assets/icons/x.svg?component'
 
-const props = defineProps(['modelValue', 'disabled', 'id', 'placeholder'])
-const emit = defineEmits(['update:modelValue', 'files'])
+const props = defineProps<{
+	modelValue: string
+	disabled?: boolean
+	id?: string
+	placeholder?: string
+}>()
+const emit = defineEmits<{
+	(e: 'update:modelValue', value: string): void
+	(e: 'files', files?: Event): void
+}>()
 const attrs = useAttrs()
 
+// todo add icon for showDirectoryPicker()
 const model = computed({
 	get () { return props.modelValue },
 	set (value) { emit('update:modelValue', value) }
@@ -50,11 +59,9 @@ const focus = ref(0)
 const dragOverlay = toRef(InterfaceStore, 'dragOverlay')
 const handleFiles = (e: DragEvent | InputEvent) => {
 	if (attrs.disabled) { return }
-	if (e.dataTransfer?.files) { return emit('files', e.dataTransfer.files) }
-	const target = e.target as HTMLInputElement
-	if (target?.files) { return emit('files', target.files) }
+	return emit('files', e)
 }
-const clearFiles = () => { emit('files', null) }
+const clearFiles = () => { emit('files') }
 const isFile = computed(() => typeof model.value === "object")
 </script>
 
