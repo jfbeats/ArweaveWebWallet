@@ -103,7 +103,7 @@ textarea {
 }
 
 .spacer {
-	width: 1px;
+	width: 0.5px;
 	height: 56px;
 	margin: 0 var(--spacing);
 	background: #ffffff18;

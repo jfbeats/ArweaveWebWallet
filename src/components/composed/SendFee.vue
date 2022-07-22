@@ -11,7 +11,7 @@
 
 
 
-<script setup>
+<script setup lang="ts">
 import Slider from '@/components/atomic/Slider.vue'
 import Amount from '@/components/composed/Amount.vue'
 import ArweaveStore, { arweave } from '@/store/ArweaveStore'

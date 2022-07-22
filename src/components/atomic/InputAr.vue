@@ -93,7 +93,7 @@ watch(() => model2.value, (newVal, oldVal) => {
 }
 
 .spacer {
-	width: 1px;
+	width: 0.5px;
 	height: 1.2em;
 	background: #ffffff18;
 	transition: 0.3s ease;
