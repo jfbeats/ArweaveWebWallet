@@ -116,7 +116,7 @@ export function arweaveQuery (options: arweaveQueryOptions, name = 'tx list') { 
 				if (firstFetch) { setTimeout(() => refreshEnabled.value = true, refresh * 1000) }
 			}
 			catch (e) { console.error(e); await new Promise<void>(res => setTimeout(() => res(), 10000)); throw e }
-			return results
+			return results as Awaited<ReturnType<ReturnType<typeof graphql>['getTransactions']>>['transactions']['edges']
 		},
 	})
 	
@@ -161,7 +161,12 @@ export function arweaveQuery (options: arweaveQueryOptions, name = 'tx list') { 
 			|| optionsRef.value?.ids && data.value.length === (optionsRef.value?.ids.length || 1)
 	})
 	
-	return { state: updateQuery.state, fetchQuery, updateQuery, status, refreshSwitch }
+	const fetchAll = async () => {
+		while (!status.completed) { await fetchQuery.query() }
+		return data
+	}
+	
+	return { state: updateQuery.state, fetchQuery, updateQuery, status, refreshSwitch, fetchAll }
 }
 
 
