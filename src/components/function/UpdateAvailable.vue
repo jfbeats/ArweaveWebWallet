@@ -33,8 +33,11 @@ const update = async () => {
 	}
 	location.reload()
 }
+let updating = false
 const triggerUpdate = async () => {
 	overlay.value = true
+	if (updating) { return }
+	updating = true
 	track.event('app', 'Update')
 	await new Promise(res => {
 		updateServiceWorker(false).then(res)
