@@ -11,6 +11,15 @@
 					</label>
 					<input type="file" id="file-picker" class="file-input" @change="handleFiles" :disabled="disabled" multiple />
 				</div>
+<!--				<template v-if="showDirectoryPicker || hasDirectoryInput">-->
+<!--					<div class="spacer" />-->
+<!--					<div class="big-icon-container not-passthrough" @click="() => showDirectoryPicker && handleDirectoryPicker()">-->
+<!--						<label for="directory-picker" class="file-picker-label">-->
+<!--							<Icon :icon="IconFolder" class="img" style="width: 100%; height: 100%;" />-->
+<!--						</label>-->
+<!--						<input v-if="!showDirectoryPicker" type="file" id="directory-picker" class="file-input" @change="handleFiles" :disabled="disabled" webkitdirectory directory multiple />-->
+<!--					</div>-->
+<!--				</template>-->
 			</div>
 			<div v-else-if="isFile" class="overlay">
 				<Icon :icon="IconCloud" class="big-icon-container focus" />
@@ -35,6 +44,7 @@ import { computed, ref, toRef, useAttrs } from 'vue'
 
 import IconText from '@/assets/icons/text.svg?component'
 import IconDrop from '@/assets/icons/drop.svg?component'
+import IconFolder from '@/assets/icons/folder.svg?component'
 import IconCloud from '@/assets/icons/cloud.svg?component'
 import IconX from '@/assets/icons/x.svg?component'
 
@@ -46,18 +56,36 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{
 	(e: 'update:modelValue', value: string): void
-	(e: 'files', files?: Event): void
+	(e: 'files', files?: DragEvent | InputEvent | FileSystemDirectoryHandle): void
 }>()
 const attrs = useAttrs()
 
-// todo add icon for showDirectoryPicker()
 const model = computed({
 	get () { return props.modelValue },
 	set (value) { emit('update:modelValue', value) }
 })
 const focus = ref(0)
 const dragOverlay = toRef(InterfaceStore, 'dragOverlay')
-const handleFiles = (e: DragEvent | InputEvent) => {
+const hasDirectoryInput = testDirectoryPicker()
+function testDirectoryPicker() {
+	const elem = document.createElement('input')
+	const dir = 'directory'
+	const domPrefixes = [ "", "moz", "o", "ms", "webkit" ]
+	elem.type = 'file'
+	for (const prefix in domPrefixes) {
+		if (domPrefixes[prefix] + dir in elem) {
+			return true
+		}
+	}
+	return false
+}
+const showDirectoryPicker = (window as any).showDirectoryPicker as Function | undefined
+const handleDirectoryPicker = async () => {
+	if (attrs.disabled || !showDirectoryPicker) { return }
+	const files = await showDirectoryPicker?.() as FileSystemDirectoryHandle
+	handleFiles(files)
+}
+const handleFiles = (e: DragEvent | InputEvent | FileSystemDirectoryHandle) => {
 	if (attrs.disabled) { return }
 	return emit('files', e)
 }

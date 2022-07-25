@@ -3,7 +3,7 @@
 		<div class="column flex-column">
 			<div>
 				<h2>App Settings</h2>
-				<SettingItem name="Install" v-if="PWA.installState" description="Use this website as an application that can be added to your home screen" row="true">
+				<SettingItem name="Install" v-if="PWA.installState" description="Use this website as an application that can also be added to your home screen" row="true">
 					<Button @click="() => PWA.install()">{{ PWA.installState }}</Button>
 				</SettingItem>
 <!--				<SettingItem name="Notifications">-->

@@ -37,7 +37,7 @@
 					<span>Data</span>
 				</h3>
 			</label>
-			<InputData v-model="form.data" @files="dropped" id="data" />
+			<InputData v-model="form.data" @files="files => dropped(files, 'data')" id="data" />
 			<div class="row bottom flex-row">
 				<div>
 					<transition name="slide-up">
@@ -67,8 +67,8 @@
 			</div>
 
 			<div class="row flex-row" style="align-items:flex-end; margin-top:3em;">
-				<SendFee :size="txSize" :target="form.target" @update="fee => txFee = fee" />
-				<Button @click="postTx" :style="submitStyle" :disabled="loading || !txFee || !wallet.signTransaction" :icon="IconNorthEast">Submit</Button>
+				<SendFee :size="txSize" :target="form.target" @update="fee => form.txFee = fee" />
+				<Button @click="postTx" :style="submitStyle" :disabled="loading || !form.txFee || !wallet.signTransaction" :icon="IconNorthEast">Submit</Button>
 			</div>
 			<div>
 				<transition name="slide-up">
@@ -78,7 +78,6 @@
 				</transition>
 			</div>
 		</form>
-		<!-- TODO QR -->
 	</div>
 </template>
 
@@ -94,11 +93,9 @@ import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import { Wallet } from '@/providers/WalletProxy'
 import { dropped } from '@/functions/File'
-import { form, addTag, getTagsFromSchema, reset } from '@/store/FormSend'
-import { buildTransaction, manageUpload } from '@/functions/Transactions'
+import { form, addTag, getTagsFromSchema, submit } from '@/store/FormSend'
 import { awaitEffect } from '@/functions/AsyncData'
 import { addressHashToColor, addressToHash } from '@/functions/Utils'
-import { notify } from '@/store/NotificationStore'
 import BigNumber from 'bignumber.js'
 import { computed, markRaw, reactive, ref, watch } from 'vue'
 
@@ -108,15 +105,14 @@ const props = defineProps<{ wallet: Wallet }>()
 
 const setMax = async () => {
 	const balance = new BigNumber(props.wallet.balance)
-	await awaitEffect(() => txFee.value)
-	form.quantity = balance.minus(txFee.value!).toString()
+	await awaitEffect(() => form.txFee)
+	form.quantity = balance.minus(form.txFee!).toString()
 }
 
 const txSize = computed(() => {
 	const data = form.data
 	return data.size || data.length || '0'
 })
-const txFee = ref(null as null | string)
 
 const loading = ref(false)
 
@@ -131,7 +127,7 @@ function isValid () {
 		return
 	}
 	const balance = new BigNumber(props.wallet.balance!)
-	if (balance.minus(txFee.value || 0).minus(quantity).lt(0)) {
+	if (balance.minus(form.txFee || 0).minus(quantity).lt(0)) {
 		if (quantity.gt(0)) {
 			validation.quantity = "Current balance too low"; result = false
 		} else {
@@ -161,21 +157,7 @@ function isValid () {
 const postTx = async () => {
 	if (loading.value || !isValid()) { return }
 	loading.value = true
-	try {
-		const tx = await buildTransaction({
-			target: form.target,
-			ar: form.quantity,
-			arReward: txFee.value,
-			tags: getTagsFromSchema(form.tags),
-			data: form.data,
-		})
-		await props.wallet.signTransaction(tx)
-		manageUpload(tx)
-		reset()
-	} catch (e: any) {
-		console.error(e)
-		notify.error(e)
-	}
+	submit(props.wallet)
 	loading.value = false
 }
 

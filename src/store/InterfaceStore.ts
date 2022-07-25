@@ -1,4 +1,4 @@
-import { markRaw, reactive, watch } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import mitt from 'mitt'
 
 import logoArweaveBlack from '@/assets/logos/arweaveBlack.svg?url'
@@ -45,12 +45,35 @@ window.addEventListener('resize', updateWindowSize)
 
 document.addEventListener('visibilitychange', () => InterfaceStore.windowVisible = !document.hidden)
 
-let dragCount = 0
-document.addEventListener('dragenter', (e) => { e.preventDefault(); if (e.dataTransfer.types[0] == 'Files') { InterfaceStore.dragOverlay = !!++dragCount } }, true)
-document.addEventListener('dragleave', (e) => { e.preventDefault(); if (e.dataTransfer.types[0] == 'Files') { InterfaceStore.dragOverlay = !!--dragCount } }, true)
-document.addEventListener('dragend', (e) => { e.preventDefault(); dragCount = 0; InterfaceStore.dragOverlay = false; }, true)
-document.addEventListener('dragover', (e) => { e.preventDefault() }, true)
-document.addEventListener('drop', (e) => { e.preventDefault(); dragCount = 0; InterfaceStore.dragOverlay = false; }, true)
+
+
+const dragCount = ref(0)
+export const isDragging = ref(false)
+export const isDraggingFromOutside = ref(false)
+export const draggingContent = ref(undefined as undefined | DragEvent)
+
+window.addEventListener('dragenter', (e) => { e.preventDefault(); dragStart(e); dragCount.value++ }, true)
+window.addEventListener('dragleave', (e) => { e.preventDefault(); dragCount.value-- }, true)
+window.addEventListener('dragend', (e) => { e.preventDefault(); dragCount.value = 0 }, true)
+window.addEventListener('dragover', (e) => { e.preventDefault() }, true)
+window.addEventListener('drop', (e) => { e.preventDefault(); dragCount.value = 0 }, true)
+
+watch(dragCount, v => {
+	InterfaceStore.dragOverlay = !!v // todo replace InterfaceStore.dragOverlay
+	isDragging.value = !!v
+	if (!v) { setTimeout(() => {
+		isDraggingFromOutside.value = false
+		draggingContent.value = undefined
+	})}
+})
+
+function dragStart (e: DragEvent) {
+	if (dragCount.value) { return }
+	if (!document.hasFocus()) { isDraggingFromOutside.value = true }
+	draggingContent.value = e
+}
+
+
 
 if (navigator.appVersion.indexOf("Win") != -1 || navigator.appVersion.indexOf('Macintosh') != -1) {
 	document.documentElement.classList.add('styleScroll')

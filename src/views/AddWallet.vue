@@ -6,7 +6,7 @@
 				<span>Key file</span>
 			</h2>
 			<div class="flex-column">
-				<InputData v-model="passphraseInput" @files="files => droppedKeyfiles(files)" :disabled="isCreatingWallet" placeholder="Import passphrase or key file" />
+				<InputData v-model="passphraseInput" @files="files => dropped(files, 'keyfile')" :disabled="isCreatingWallet" placeholder="Import passphrase or key file" />
 				<div />
 				<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create()" :disabled="passphraseInput.length && !isPassphrase" :icon="LogoArweave" class="main">Create new wallet</Button>
 				<Button v-else-if="isCreatingWallet" :disabled="createdWallet == null" @click="goToCreatedWallet" :icon="createdWallet == null ? 'loader' : ''" class="main">{{ createdWallet == null ? 'Generating, write down the passphrase' : 'Passphrase saved? Click here to proceed' }}</Button>
@@ -49,7 +49,7 @@ import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
 import { hardwareProviders, addAddress, addMnemonic, addProvider, generateMnemonic, validateMnemonic } from '@/functions/Wallets'
-import { droppedKeyfiles } from '@/functions/File'
+import { dropped } from '@/functions/File'
 import { track } from '@/store/Analytics'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'

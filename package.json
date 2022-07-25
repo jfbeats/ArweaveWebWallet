@@ -17,6 +17,7 @@
 		"@ledgerhq/hw-transport-web-ble": "^6.27.1",
 		"@ledgerhq/hw-transport-webhid": "^6.27.1",
 		"@ledgerhq/hw-transport-webusb": "^6.27.1",
+		"@supercharge/promise-pool": "^2.3.0",
 		"@zondax/ledger-arweave": "^1.0.0",
 		"arverify": "^0.0.11",
 		"arweave": "^1.10.23",

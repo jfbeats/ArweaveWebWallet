@@ -1,9 +1,11 @@
 import { markRaw, reactive } from 'vue'
+import { buildTransaction, manageUpload } from '@/functions/Transactions'
+import { notify } from '@/store/NotificationStore'
 import { TagField, TagSchema } from '@/components/atomic/InputGrid.vue'
 import type { FileWithPath } from 'file-selector'
+import type { Wallet } from '@/providers/WalletProxy'
 
 import IconLabel from '@/assets/icons/label.svg?component'
-
 
 
 
@@ -12,6 +14,7 @@ export const form = reactive({
 	quantity: '',
 	data: '' as string | FileWithPath,
 	tags: [] as TagSchema[],
+	txFee: null as null | string,
 })
 const init = { ...form }
 
@@ -38,7 +41,9 @@ export function addFiles (files: FileWithPath[]) {
 	let data: string | FileWithPath = ''
 	let type: string = ''
 	if (files.length > 1) {
-	
+		notify.warn('Directory upload available soon, only using the first file for now')
+		data = files[0]
+		type = files[0].type
 	} else if (files.length) {
 		data = files[0]
 		type = files[0].type
@@ -54,6 +59,25 @@ export function addFiles (files: FileWithPath[]) {
 	} else {
 		const index = form.tags.indexOf(contentTypeTag!)
 		if (index !== -1) { form.tags.splice(index, 1) }
+	}
+}
+
+export async function submit (wallet: Wallet) {
+	try {
+		if (!form.txFee) { return notify.error('Transaction fee not set') }
+		const tx = await buildTransaction({
+			target: form.target,
+			ar: form.quantity,
+			arReward: form.txFee,
+			tags: getTagsFromSchema(form.tags),
+			data: form.data,
+		})
+		await wallet.signTransaction(tx)
+		manageUpload(tx)
+		reset()
+	} catch (e: any) {
+		console.error(e)
+		notify.error(e)
 	}
 }
 
