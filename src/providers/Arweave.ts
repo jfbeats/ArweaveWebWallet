@@ -140,7 +140,7 @@ export class ArweaveProvider extends mix(ArweaveAccount).with(WalletProxy) imple
 
 
 
-export class ArweaveMessageRunner implements MessageRunner<ArweaveProvider>, Partial<ArweaveProviderInterface> {
+export class ArweaveMessageRunner implements MessageRunner<ArweaveProvider>, ArweaveProviderInterface {
 	constructor (private wallet: ArweaveProvider) { }
 	get methodMap () { return {
 		signTransaction: 'signTransaction',
