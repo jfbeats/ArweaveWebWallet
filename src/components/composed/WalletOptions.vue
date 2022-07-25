@@ -7,8 +7,8 @@
 			</div>
 		</div>
 		<div class="content flex-column">
-<!--			<div class="flex-row">-->
-<!--				<Select v-if="wallet.hasPrivateKey" v-model="wallet.settings.securityLevel" :options="securityOptions" />-->
+<!--			<div v-if="wallet.hasPrivateKey" class="flex-row">-->
+<!--				<Select v-model="wallet.settings.securityLevel" :options="securityOptions" />-->
 <!--			</div>-->
 			<div class="flex-row">
 				<Button v-if="wallet.download && !wallet.metadata.methods.download?.unavailable" :icon="IconDownload" @click="() => wallet.download()">Download</Button>
