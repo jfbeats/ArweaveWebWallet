@@ -96,15 +96,15 @@ export class ArweaveProvider extends mix(ArweaveAccount).with(WalletProxy) imple
 		return tx
 	}
 	async bundle (tx: Transaction, options?: object) {
-		const { createData, signers } = await import('@/../scripts/bundle')
+		const { createData, signers } = await import('@/../scripts/arbundles')
+		const signer = new signers.ArweaveSigner(await this.getPrivateKey())
+		const anchor = arweave.utils.bufferTob64(crypto.getRandomValues(new Uint8Array(32))).slice(0, 32)
 		const data = tx.get('data', { decode: true, string: false })
 		const tags = tx.tags.map(tag => ({
 			name: tag.get('name', { decode: true, string: true }),
 			value: tag.get('value', { decode: true, string: true })
 		}))
-		const signer = new signers.ArweaveSigner(await this.getPrivateKey())
-		const anchor = arweave.utils.bufferTob64(crypto.getRandomValues(new Uint8Array(32))).slice(0, 32)
-		const bundleTx = createData(data, signer, { tags, anchor })
+		const bundleTx = createData(data, signer, { tags, anchor, target: tx.target })
 		await bundleTx.sign(signer)
 		const res = await axios.post(ArweaveStore.bundlerURL + 'tx', bundleTx.getRaw(), {
 			headers: { 'Content-Type': 'application/octet-stream' },
