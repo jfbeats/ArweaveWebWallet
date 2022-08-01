@@ -3,7 +3,6 @@ import { buildTransaction, manageUpload } from '@/functions/Transactions'
 import { notify } from '@/store/NotificationStore'
 import { TagField, TagSchema } from '@/components/atomic/InputGrid.vue'
 import type { FileWithPath } from 'file-selector'
-import type { Wallet } from '@/providers/WalletProxy'
 
 import IconLabel from '@/assets/icons/label.svg?component'
 

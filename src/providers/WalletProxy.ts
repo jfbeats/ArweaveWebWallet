@@ -6,10 +6,6 @@ import { computed } from 'vue'
 
 
 
-export type Wallet = Provider & MixinType<typeof WalletProxy>
-
-
-
 export function WalletProxy <TBase extends ClassConstructor> (Base: TBase) {
 	return class WalletProxy extends Base {
 		#wallet: WalletDataInterface

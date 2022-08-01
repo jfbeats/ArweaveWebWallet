@@ -4,7 +4,6 @@ import { computed } from 'vue'
 import { JWKInterface } from 'arweave/web/lib/wallet'
 import mitt from 'mitt'
 import { getQueryManager } from '@/functions/AsyncData'
-import { Wallet } from '@/providers/WalletProxy'
 import { getWalletById } from '@/functions/Wallets'
 
 

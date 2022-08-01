@@ -9,7 +9,6 @@
 <script setup lang="ts">
 import TokenCard from '@/components/composed/TokenCard.vue'
 import SmartweaveStore from '@/store/SmartweaveStore'
-import { Wallet } from '@/providers/WalletProxy'
 
 const props = defineProps<{ wallet: Wallet }>()
 </script>

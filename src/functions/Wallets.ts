@@ -11,11 +11,11 @@ import { getKeyPairFromMnemonic } from 'human-crypto-keys'
 // @ts-ignore
 import wordlist from 'bip39-web-crypto/src/wordlists/english.json'
 import type { JWKInterface } from 'arweave/web/lib/wallet'
-import type { Wallet } from '@/providers/WalletProxy'
 
 
 
 export type ProviderList = 'arweave' | 'ledger'
+export type AnyProvider = Union<InstanceType<typeof providers[number]>>
 export const softwareProviders = [ArweaveProvider] as const
 export const hardwareProviders = [LedgerProvider] as const
 export const providers = [...hardwareProviders, ...softwareProviders] as const
@@ -32,7 +32,7 @@ function selectProvider (wallet: WalletDataInterface) {
 
 function walletFactory (wallet: WalletDataInterface): Wallet {
 	const provider = selectProvider(wallet)
-	return new provider(wallet)
+	return new provider(wallet) as Wallet
 }
 const WalletsData = useChannel('wallets', undefined, []).state
 export const Wallets = useDataWrapper(WalletsData, (w) => w.id, walletFactory, wallet => wallet.destructor?.())

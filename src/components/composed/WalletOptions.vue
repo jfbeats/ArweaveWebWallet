@@ -26,7 +26,6 @@ import WalletInfo from '@/components/composed/WalletInfo.vue'
 import Button from '@/components/atomic/Button.vue'
 import Select from '@/components/atomic/Select.vue'
 import { deleteWallet } from '@/functions/Wallets'
-import { Wallet } from '@/providers/WalletProxy'
 
 import IconDownload from '@/assets/icons/download.svg?component'
 import IconX from '@/assets/icons/x.svg?component'

@@ -1,4 +1,4 @@
-import { Wallet, WalletProxy } from '@/providers/WalletProxy'
+import { WalletProxy } from '@/providers/WalletProxy'
 import ArweaveStore, { arweave, arweaveQuery, fetchPublicKey, queryAggregator } from '@/store/ArweaveStore'
 import { ArweaveVerifier as ArweaveMessageVerifier } from 'arweave-wallet-connector/lib/Arweave'
 import { Emitter, mix } from '@/functions/UtilsClass'
@@ -65,7 +65,7 @@ export class ArweaveAccount extends Emitter implements Account {
 
 
 
-export class ArweaveProvider extends mix(ArweaveAccount).with(WalletProxy) implements Wallet {
+export class ArweaveProvider extends mix(ArweaveAccount).with(WalletProxy) implements Provider {
 	constructor (init: WalletDataInterface) {
 		super(init)
 		if (!this.data.arweave?.key && this.hasPrivateKey) { ArweaveProvider.metadata.addImportData(init) }
@@ -73,7 +73,7 @@ export class ArweaveProvider extends mix(ArweaveAccount).with(WalletProxy) imple
 		this.messageRunner = new ArweaveMessageRunner(this)
 	}
 	static get metadata () { return providerMetadata }
-	get metadata () {
+	get metadata (): InstanceMetadata<ArweaveProvider> {
 		return {
 			...ArweaveProvider.metadata,
 			name: this.hasPrivateKey ? 'Arweave wallet' : ArweaveProvider.metadata.name,
@@ -140,7 +140,7 @@ export class ArweaveProvider extends mix(ArweaveAccount).with(WalletProxy) imple
 
 
 
-export class ArweaveMessageRunner implements MessageRunner<ArweaveProvider>, ArweaveProviderInterface {
+export class ArweaveMessageRunner implements MessageRunner<ArweaveProviderInterface, ArweaveProvider> {
 	constructor (private wallet: ArweaveProvider) { }
 	get methodMap () { return {
 		signTransaction: 'signTransaction',
@@ -149,8 +149,8 @@ export class ArweaveMessageRunner implements MessageRunner<ArweaveProvider>, Arw
 		sign: 'sign',
 		decrypt: 'decrypt',
 	} as const }
-	async signTransaction (tx: TransactionInterface, options?: object) {
-		const txObject = new Transaction(tx)
+	async signTransaction (tx: Parameters<ArweaveProviderInterface['signTransaction']>[0], options?: Parameters<ArweaveProviderInterface['signTransaction']>[1]) {
+		const txObject = new Transaction(tx as TransactionInterface)
 		// const fee = await getFeeRange()
 		// if (fee.default?.gt(txObject.reward)) { txObject.reward = fee.default.toString() }
 		await this.wallet.signTransaction(txObject)
@@ -162,9 +162,9 @@ export class ArweaveMessageRunner implements MessageRunner<ArweaveProvider>, Arw
 			reward: txObject.reward
 		}
 	}
-	async dispatch (tx: TransactionInterface, options?: object) {
+	async dispatch (tx: Parameters<ArweaveProviderInterface['signTransaction']>[0], options?: Parameters<ArweaveProviderInterface['signTransaction']>[1]) {
 		// todo do not store large data in indexeddb
-		const txObject = new Transaction(tx)
+		const txObject = new Transaction(tx as TransactionInterface)
 		let dispatchResult: Awaited<ReturnType<ArweaveProviderInterface['dispatch']>> | undefined
 		if (!txObject.quantity || txObject.quantity === '0') {
 			try {
