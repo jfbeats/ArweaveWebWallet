@@ -4,23 +4,13 @@ import { exportTransaction, FileWithPath, readFile } from '@/functions/File'
 import { notify } from '@/store/NotificationStore'
 import { track } from '@/store/Analytics'
 import BigNumber from 'bignumber.js'
+import { PromisePool } from '@supercharge/promise-pool'
 import type Transaction from 'arweave/web/lib/transaction'
 import type { CreateTransactionInterface } from 'arweave/web'
-import { PromisePool } from '@supercharge/promise-pool'
 
-export type TxParams = {
-	target?: string
-	quantity?: string
-	ar?: string
-	winston?: string
-	reward?: string
-	arReward?: string
-	winstonReward?: string
-	tags?: { name: string, value: string }[]
-	data?: string | File
-}
 
-export async function buildTransaction (tx: TxParams) {
+
+export async function buildTransaction (tx: ArTxParams) {
 	const txSettings = {} as Partial<CreateTransactionInterface>
 	txSettings.target = tx.target || ''
 	txSettings.quantity = tx.quantity || tx.winston || (tx.ar ? arweave.ar.arToWinston(tx.ar) : '0')
