@@ -1,4 +1,4 @@
-export function isEncrypted (val: any): val is EncryptedContent { return Array.isArray(val.ciphertext) && typeof val.derivationSettings === 'object' }
+export function isEncrypted (val: any): val is EncryptedContent { return val && typeof val === 'object' && Array.isArray(val.ciphertext) && typeof val.derivationSettings === 'object' }
 
 function getDerivationSettings (): DerivationSettings {
 	const iv = window.crypto.getRandomValues(new Uint8Array(12))
