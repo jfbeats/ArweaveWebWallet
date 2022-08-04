@@ -6,13 +6,16 @@ type ArTxParams = {
 	reward?: string
 	arReward?: string
 	winstonReward?: string
-	tags?: { name: string, value: string }[]
-	data?: string | File
+	tags?: Tag[]
+	data?: import('arweave/web').CreateTransactionInterface['data'] | string
 }
 
 type ArDataItemParams = {
 	data: Uint8Array | string
-	tags?: { name: string, value: string }[]
+	tags?: Tag[]
 	target?: string
-	sign?: boolean
+	path?: string
+	// deduplicate?: string
 }
+
+type Tag = { name: string, value: string, key?: string }

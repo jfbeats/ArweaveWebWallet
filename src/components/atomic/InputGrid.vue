@@ -1,10 +1,10 @@
 <template>
-	<div v-if="schema.length > 0" class="input-grid input-box" :class="{ focus }">
+	<div v-if="schema && schema.length > 0" class="input-grid input-box" :class="{ focus }">
 		<div v-for="(row, index) in schema" :key="row.key" class="row">
 			<div class="inputs">
 				<div v-for="(input, inputIndex) in row.items" :key="row.key + input.name" class="input" :class="{ flip: row.items.length == 2 && inputIndex == 1 }">
 					<Icon v-if="input.icon" :icon="input.icon" />
-					<RawInput v-model="input.value" v-bind="input.attrs" class="text" :placeholder="input.name" @focus="focus = (index + 1) * (inputIndex + 1)" @blur="focus = 0" :disabled="disabled" />
+					<RawInput v-model="input.value" v-bind="input.attrs" class="text" :placeholder="input.name" @focus="focus = (index + 1) * (inputIndex + 1)" @blur="focus = 0" />
 				</div>
 			</div>
 			<button v-if="row.deletable" class="remove" @click="removeRow(index)" type="button">
@@ -20,24 +20,37 @@
 import RawInput from '@/components/function/RawInput.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import IconX from '@/assets/icons/x.svg?component'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 export type TagField = {
 	name: string
 	value: string
 	icon?: any
+	attrs?: { [key: string]: any }
 }
 
 export type TagSchema = {
 	items: TagField[]
-	deletable: true
+	deletable: boolean
 	key: any
+	stop?: () => void
 }
 
-const props = defineProps<{ schema: TagSchema[], disabled?: boolean }>()
+const props = defineProps<{
+	modelValue: TagSchema[]
+	disabled?: boolean
+}>()
+const emit = defineEmits<{
+	(e: 'update:modelValue', value: TagSchema[]): void
+}>()
+
+const schema = computed<TagSchema[]>({
+	get () { return props.modelValue },
+	set (value) { emit('update:modelValue', value) }
+})
 
 const focus = ref(0)
-const removeRow = (index: number) => props.schema.splice(index, 1)
+const removeRow = (index: number) => schema.value = schema.value.filter((_, i) => i !== index)
 </script>
 
 

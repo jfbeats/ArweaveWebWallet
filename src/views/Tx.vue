@@ -10,7 +10,7 @@
 			<template #left>
 				<div class="meta flex-column">
 					<div class="box" style="padding: 0;">
-						<div class="box-padding flex-column" :style="[tagsSchema.length && 'padding-bottom: 0']">
+						<div class="box-padding flex-column" :style="[tx.tags.length && 'padding-bottom: 0']">
 							<TxCard :tx="tx" :options="{ half: true }" />
 							
 							<ProfilePreview v-if="tx.recipient" :wallet="recipient" />
@@ -24,7 +24,7 @@
 								<h3>Transaction</h3>
 								<div class="flex-column">
 									<div v-if="isData"><a :href="ArweaveStore.gatewayURL + tx.id" target="_blank">{{ gatewayHostname }}</a></div>
-									<div v-if="tx.data?.type === 'application/x.arweave-manifest+json'"><a :href="ArweaveStore.gatewayURL + 'tx/' + tx.id + '/data.json'" target="_blank">Manifest</a></div>
+									<div v-if="type === 'application/x.arweave-manifest+json'"><a :href="ArweaveStore.gatewayURL + 'tx/' + tx.id + '/data.json'" target="_blank">Manifest</a></div>
 									<div class="secondary-text"><Address :tx="tx.id">ID:&nbsp;</Address></div>
 								</div>
 							</div>
@@ -60,12 +60,12 @@
 									<Amount :ar="tx.fee.ar" />
 								</div>
 							</div>
-							<div v-if="tagsSchema.length">
+							<div v-if="tx.tags.length">
 								<h3>Tags</h3>
 							</div>
 						</div>
-						<div v-if="tagsSchema.length" style="background: var(--background2); border-radius: var(--border-radius);">
-							<InputGrid :schema="tagsSchema" disabled />
+						<div v-if="tx.tags.length" style="background: var(--background2); border-radius: var(--border-radius);">
+							<InputTags v-model="tx.tags" disabled />
 						</div>
 					</div>
 				</div>
@@ -84,7 +84,7 @@
 import Selector from '@/components/handlers/Selector.vue'
 import FoldingLayout from '@/components/layout/FoldingLayout.vue'
 import Address from '@/components/atomic/Address.vue'
-import InputGrid from '@/components/atomic/InputGrid.vue'
+import InputTags from '@/components/atomic/InputTags.vue'
 import Amount from '@/components/composed/Amount.vue'
 import ArweaveStore, { arweave, useWatchTx, networkInfo } from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'
@@ -96,6 +96,7 @@ import ProfilePreview from '@/components/composed/ProfilePreview.vue'
 import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
 import TransitionsManager from '@/components/visual/TransitionsManager.vue'
 import { getReactiveAsyncData } from '@/functions/AsyncData'
+import { unpackTags } from '@/functions/Transactions'
 
 const props = defineProps<{
 	txId: string
@@ -122,6 +123,7 @@ const status = getReactiveAsyncData({
 
 const sender = computed(() => tx.value?.owner && getAccountByAddress(tx.value?.owner.address))
 const recipient = computed(() => tx.value?.recipient && getAccountByAddress(tx.value?.recipient))
+const type = computed(() => unpackTags(tx.value?.tags || [])['Content-Type'])
 
 const isData = computed(() => tx.value?.data?.size !== '0')
 const isPending = computed(() => !tx.value?.block)
@@ -132,19 +134,6 @@ const date = computed(() => {
 		+ ' ' + dateObj.toLocaleTimeString()
 })
 const confirmations = computed(() => networkInfo.value?.height && tx.value?.block?.height && (networkInfo.value?.height - tx.value?.block?.height + 1))
-const tagsSchema = computed(() => {
-	if (!tx.value?.tags) { return }
-	const result = []
-	for (const tag of tx.value?.tags) {
-		result.push({
-			items: [
-				{ name: '', value: tag.name, attrs: { disabled: true } },
-				{ name: '', value: tag.value, attrs: { disabled: true } }
-			]
-		})
-	}
-	return result
-})
 
 const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
 const vector = ref(0)

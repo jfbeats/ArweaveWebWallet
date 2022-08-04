@@ -5,6 +5,7 @@ import { notify } from '@/store/NotificationStore'
 import { track } from '@/store/Analytics'
 import BigNumber from 'bignumber.js'
 import { PromisePool } from '@supercharge/promise-pool'
+import { encode } from '@/functions/Crypto'
 import type Transaction from 'arweave/web/lib/transaction'
 import type { CreateTransactionInterface } from 'arweave/web'
 
@@ -15,15 +16,16 @@ export async function buildTransaction (tx: ArTxParams) {
 	txSettings.target = tx.target || ''
 	txSettings.quantity = tx.quantity || tx.winston || (tx.ar ? arweave.ar.arToWinston(tx.ar) : '0')
 	txSettings.reward = tx.reward || tx.winstonReward || (tx.arReward ? arweave.ar.arToWinston(tx.arReward) : undefined)
-	if (tx.data) { txSettings.data = tx.data instanceof File ? await readFile(tx.data) : tx.data }
+	if (tx.data) { txSettings.data = tx.data }
 	const txObj = await arweave.createTransaction(txSettings)
 	for (const tag of tx.tags || []) { txObj.addTag(tag.name, tag.value) }
 	if (txSettings.reward) { txObj.reward = txSettings.reward }
 	return txObj
 }
 
-export async function deduplicate (transactions: Transaction[], trustedAddresses?: string[]): Promise<Array<string | undefined>> {
-	const entries = (await PromisePool.for(transactions).withConcurrency(5).process(async tx => ({ tx, hash: await getHash(tx) }))).results
+export async function deduplicate (transactions: ArDataItemParams[], trustedAddresses?: string[]): Promise<Array<string | undefined>> {
+	const entries = (await PromisePool.for(transactions).withConcurrency(5).process(async tx =>
+		({ tx, hash: tx.tags?.find(tag => tag.name === 'File-Hash')?.value || await getHash(tx) }))).results
 	const chunks = [] as typeof entries[]
 	while (entries.length) { chunks.push(entries.splice(0, 500)) }
 	return (await PromisePool.for(chunks).withConcurrency(3).process(async chunk => {
@@ -32,7 +34,7 @@ export async function deduplicate (transactions: Transaction[], trustedAddresses
 		return (await PromisePool.for(chunk).withConcurrency(3).process(async entry => {
 			const result = query.value
 				.filter(tx => tx.node.tags.find(tag => tag.name === 'File-Hash' && tag.value === entry.hash))
-				.filter(tx => hasMatchingTags(entry.tx.tags, tx.node.tags))
+				.filter(tx => !entry.tx.tags || hasMatchingTags(entry.tx.tags, tx.node.tags))
 			for (const tx of result) {
 				const verified = trustedAddresses ? trustedAddresses.includes(tx.node.owner.address) : await verifyData(entry.hash, tx.node.id)
 				if (verified) { return tx }
@@ -41,31 +43,38 @@ export async function deduplicate (transactions: Transaction[], trustedAddresses
 	})).results.flat().map(tx => tx?.node.id)
 }
 
-async function verifyData (hash: string, id: string) {}
+async function verifyData (hash: string, id: string) {} // todo store verification results in cache
 
 function hasMatchingTags(requiredTags: { name: string; value: string }[], existingTags: { name: string; value: string }[]): Boolean {
 	return !requiredTags.find(requiredTag => !existingTags.find(existingTag =>
 		existingTag.name === requiredTag.name && existingTag.value === requiredTag.value))
 }
 
-async function getHash (tx: Transaction) {
-	const buffer = await window.crypto.subtle.digest('SHA-256', tx.data)
+export async function getHash (tx: { data: CreateTransactionInterface['data'] }) {
+	const data = typeof tx.data === 'string' ? encode(tx.data) : tx.data
+	const buffer = await window.crypto.subtle.digest('SHA-256', data)
 	return [...new Uint8Array(buffer)].map(x => x.toString(16).padStart(2, '0')).join('')
 }
 
-export async function generateManifest (files: FileWithPath[], transactions: Array<{ id: string } | string>, index: FileWithPath) { // todo data item not transaction
-	if (files.length !== transactions.length) { throw 'Length mismatch' }
-	if (files.includes(index)) { throw 'Unknown index' }
+export function generateManifest (localPaths: string[], transactions: Array<{ id: string } | string>, index?: string) {
+	if (localPaths.length !== transactions.length) { throw 'Length mismatch' }
+	if (index && !localPaths.includes(index)) { throw 'Unknown index' }
 	const paths = {} as { [key: string]: { id: string } }
-	Object.entries(files).forEach(([i, file]) => {
-		if (!file.normalizedPath) { throw 'Path undefined' }
-		const tx = transactions[+i]
+	localPaths.forEach((path, i) => {
+		if (!path) { throw 'Path undefined' }
+		const tx = transactions[i]
 		const id = typeof tx === 'string' ? tx : tx.id
-		paths[file.normalizedPath!] = { id }
+		paths[path] = { id }
 	})
+	const indexParam = index ? { index: { path: index } } : {}
 	return {
-		data: { manifest: 'arweave/paths', version: '0.1.0', index: { path: index.normalizedPath! }, paths },
-		tag: { name: 'Content-Type', value: 'application/x.arweave-manifest+json' }
+		data: JSON.stringify({
+			manifest: 'arweave/paths',
+			version: '0.1.0',
+			...indexParam,
+			paths,
+		}),
+		tags: [{ name: 'Content-Type', value: 'application/x.arweave-manifest+json' }]
 	}
 }
 
@@ -124,5 +133,5 @@ export function unpackTags <T extends boolean = false> (tags: { name: string, va
 		? (tag: typeof tags[0]) => (result[options?.lowercase ? tag.name.toLowerCase() : tag.name] ??= []).push(tag.value)
 		: (tag: typeof tags[0]) => result[options?.lowercase ? tag.name.toLowerCase() : tag.name] ??= tag.value
 	tags.forEach(set)
-	return result as { [key:string]: (T extends true ? string[] : string) }
+	return result as { [key: string]: (T extends true ? string[] : string | undefined) }
 }
