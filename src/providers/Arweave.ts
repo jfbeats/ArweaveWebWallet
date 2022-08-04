@@ -102,16 +102,14 @@ export class ArweaveProvider extends mix(ArweaveAccount).with(WalletProxy) imple
 		const signer = new signers.ArweaveSigner(sk)
 		const anchor = arweave.utils.bufferTob64(crypto.getRandomValues(new Uint8Array(32))).slice(0, 32)
 		const dataItem = createData(data, signer, { tags, target, anchor })
-		if (item.sign) { dataItem.sign(signer) }
+		await dataItem.sign(signer)
 		return dataItem
 	}
-	async createBundle (items: ArDataItemParams[]) {
+	async createBundle (items: Awaited<ReturnType<typeof this.createDataItem>>[]) {
 		const { bundleAndSignData, signers } = await import('@/../scripts/arbundles')
 		const sk = await this.getPrivateKey()
 		const signer = new signers.ArweaveSigner(sk)
-		const dataItems = await Promise.all(items.map(({ sign, ...params }) => this.createDataItem(params)))
-		const bundle = await bundleAndSignData(dataItems, signer)
-		return bundle.toTransaction({}, arweave, sk)
+		return bundleAndSignData(items, signer)
 	}
 	async bundle (tx: Transaction, options?: object) {
 		const { createData, signers } = await import('@/../scripts/arbundles')
