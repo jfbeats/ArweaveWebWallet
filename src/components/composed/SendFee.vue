@@ -14,24 +14,28 @@
 <script setup lang="ts">
 import Slider from '@/components/atomic/Slider.vue'
 import Amount from '@/components/composed/Amount.vue'
-import ArweaveStore, { arweave } from '@/store/ArweaveStore'
+import { arweave } from '@/store/ArweaveStore'
 import BlockStore from '@/store/BlockStore'
 import { getFeeRange } from '@/functions/Transactions'
 import { debounce, humanFileSize } from '@/functions/Utils'
-import axios from 'axios'
 import BigNumber from 'bignumber.js'
 import { computed, reactive, ref, watch } from 'vue'
 
-const props = defineProps(['target', 'size'])
-const emit = defineEmits(['update'])
+const props = defineProps<{
+	target: string
+	size?: string
+}>()
+const emit = defineEmits<{
+	(e: 'update', value: string | undefined): void
+}>()
 
 const address = computed(() => props.target.slice(0,43).match(/^[a-z0-9_-]{43}$/i) ? props.target.slice(0,43) : '')
-const txFee = ref(null)
-const updateFee = async () => { txFee.value = await arweave.transactions.getPrice(props.size, address.value) }
+const txFee = ref(undefined as undefined | string)
+const updateFee = async () => { props.size && (txFee.value = await arweave.transactions.getPrice(parseInt(props.size), address.value)) }
 const updateFeeDebounced = debounce(updateFee)
 updateFee()
 watch(() => address.value + props.size, () => {
-	txFee.value = null
+	txFee.value = undefined
 	updateFeeDebounced()
 })
 
@@ -51,9 +55,9 @@ const sliderSettings = computed(() => {
 	slider.value = result.default || '0'
 	return result
 })
-const factorInBaseFee = (fee) => {
-	if (!fee || !txFee.value) { return null }
-	return fee.minus(txFee.value) > 0 ? fee.minus(txFee.value) : new BigNumber('0')
+const factorInBaseFee = (fee: BigNumber) => {
+	if (!fee || !txFee.value) { return undefined }
+	return fee.minus(txFee.value).gt(0) ? fee.minus(txFee.value) : new BigNumber('0')
 }
 
 const userFee = computed(() => {
@@ -63,7 +67,7 @@ const userFee = computed(() => {
 	return txFeeBn.plus(sliderBn)
 })
 const userFeeAr = computed(() => {
-	if (!userFee.value) { return null }
+	if (!userFee.value) { return undefined }
 	return arweave.ar.winstonToAr(userFee.value)
 })
 watch(userFeeAr, userFeeAr => emit('update', userFeeAr))
