@@ -100,7 +100,7 @@ function getNewId () {
 
 export function getMethodMetadata(provider?: Wallet, runnerMethod?: string): MethodMetadata {
 	if (!provider || !runnerMethod) { return {} }
-	const providerMethod = provider.messageRunner.methodMap[runnerMethod as keyof typeof provider.messageRunner]
+	const providerMethod = (provider.messageRunner.methodMap as any)[runnerMethod]
 	if (!providerMethod) { return {} }
 	const methodsMetadata = provider.metadata?.methods
 	const result = methodsMetadata?.[providerMethod as keyof typeof methodsMetadata]
