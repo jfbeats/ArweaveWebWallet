@@ -112,16 +112,12 @@ async function getProcessedData (wallet?: Wallet): Promise<ArTxParams['data']> {
 			const dataItems = await Promise.all(form.data.map(item => wallet.createDataItem(item)))
 			const trustedAddresses = wallet.key ? [wallet.key] : []
 			const deduplicated = await deduplicate(dataItems, trustedAddresses)
-			console.log(deduplicated)
-			// form.data.forEach((item, i) => deduplicated[i] ? item.deduplicate = deduplicated[i] : delete item.deduplicate)
 			const deduplicatedDataItems = dataItems.map((item, i) => deduplicated[i] || item)
 			const paths = form.data.map(item => item.path || '')
-			console.log(paths)
 			const manifest = generateManifest(paths, deduplicatedDataItems, paths[0])
-			console.log(manifest.data)
 			const manifestDataItem = await wallet.createDataItem({ ...manifest })
-			console.log([...dataItems, manifestDataItem])
-			return (await wallet.createBundle([...dataItems.filter(item => typeof item !== 'string'), manifestDataItem])).getRaw()
+			const bundleDataItems = deduplicatedDataItems.filter(item => typeof item !== 'string') as any
+			return (await wallet.createBundle([...bundleDataItems, manifestDataItem])).getRaw()
 		}
 		else { throw 'multiple files unsupported for ' + wallet.metadata.name }
 	}
