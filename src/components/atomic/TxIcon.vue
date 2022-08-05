@@ -1,8 +1,8 @@
 <template>
-	<div class="tx-icon" :class="{ isPending }" :style="styleObject">
+	<div class="tx-icon" :class="{ isPending: options.status === 'pending' }" :style="styleObject">
 		<Icon :icon="icon" class="tx-svg" />
 		<transition name="fade">
-			<Icon v-if="isPending || uploadProgress" icon="loader" :progress="uploadProgress" class="loader" />
+			<Icon v-if="options.status === 'pending' || uploadProgress" icon="loader" :progress="uploadProgress" class="loader" />
 		</transition>
 	</div>
 </template>
@@ -23,26 +23,30 @@ import IconCube from '@/assets/icons/cube.svg?component'
 import IconTxInFull from '@/assets/icons/tx_in_full.svg?component'
 import IconTxOutFull from '@/assets/icons/tx_out_full.svg?component'
 
+export type TxDisplayOptions = {
+	isData: boolean
+	isValue: boolean
+	direction: 'in' | 'out'
+	status: 'local' | 'pending' | 'confirmed'
+}
+
 const props = defineProps<{
 	tx: any
-	direction: 'in' | 'out'
+	options: TxDisplayOptions
 }>()
 
-const isData = computed(() => (props.tx.data?.size || props.tx.data_size) > 0)
-const isValue = computed(() => (props.tx.quantity?.winston || props.tx.quantity) > 0)
-const isPending = computed(() => !props.tx.id || !props.tx.block)
 const uploadProgress = computed(() => ArweaveStore.uploads[props.tx.id]?.upload)
 const icon = computed(() => {
 	if (unpackTags(props.tx.tags)['Bundle-Version']) return IconCube
-	if (props.direction === 'in' && !isData.value) return IconTxIn
-	if (props.direction === 'out' && !isData.value) return IconTxOut
-	if (props.direction === 'in' && !isValue.value) return IconTxInData
-	if (props.direction === 'out' && !isValue.value) return IconTxOutData
-	if (props.direction === 'in') return IconTxInFull
-	if (props.direction === 'out') return IconTxOutFull
+	if (props.options.direction === 'in' && !props.options.isData) return IconTxIn
+	if (props.options.direction === 'out' && !props.options.isData) return IconTxOut
+	if (props.options.direction === 'in' && !props.options.isValue) return IconTxInData
+	if (props.options.direction === 'out' && !props.options.isValue) return IconTxOutData
+	if (props.options.direction === 'in') return IconTxInFull
+	if (props.options.direction === 'out') return IconTxOutFull
 })
 const styleObject = computed(() => ({
-	color: isData.value && !isValue.value ? 'var(--orange)' : props.direction === 'in' ? 'var(--green)' : 'var(--red)',
+	color: props.options.isData && !props.options.isValue ? 'var(--orange)' : props.options.direction === 'in' ? 'var(--green)' : 'var(--red)',
 }))
 </script>
 

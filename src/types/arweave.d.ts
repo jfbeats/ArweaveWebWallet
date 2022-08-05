@@ -15,7 +15,7 @@ type ArDataItemParams = {
 	tags?: Tag[]
 	target?: string
 	path?: string
-	// deduplicate?: string
+	key?: string
 }
 
 type Tag = { name: string, value: string, key?: string }

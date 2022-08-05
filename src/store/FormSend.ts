@@ -88,6 +88,7 @@ export async function submit (wallet: Wallet) {
 	try {
 		if (!form.txFee) { return notify.error('Transaction fee not set') }
 		if (form.data && !form.processedData) { return notify.error('Data not ready') } // todo make sure it matches current form data
+		if (wallet !== formWallet.value) { return notify.error('State sync error') }
 		const tx = await buildTransaction({
 			target: form.target,
 			ar: form.quantity,
