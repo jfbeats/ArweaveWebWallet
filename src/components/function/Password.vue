@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 import Viewport from '@/components/layout/Viewport.vue'
-import Input from '@/components/atomic/Input.vue'
+import Input from '@/components/form/Input.vue'
 import SecurityVisual from '@/components/visual/SecurityVisual.vue'
 import { emitter, testPassword, PasswordRequest } from '@/functions/Password'
 import { notify } from '@/store/NotificationStore'

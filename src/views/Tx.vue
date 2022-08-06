@@ -84,7 +84,7 @@
 import Selector from '@/components/handlers/Selector.vue'
 import FoldingLayout from '@/components/layout/FoldingLayout.vue'
 import Address from '@/components/atomic/Address.vue'
-import InputTags from '@/components/atomic/InputTags.vue'
+import InputTags from '@/components/form/InputTags.vue'
 import Amount from '@/components/composed/Amount.vue'
 import ArweaveStore, { arweave, useWatchTx, networkInfo } from '@/store/ArweaveStore'
 import InterfaceStore from '@/store/InterfaceStore'

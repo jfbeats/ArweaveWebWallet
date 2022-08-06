@@ -24,7 +24,7 @@
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import WalletInfo from '@/components/composed/WalletInfo.vue'
 import Button from '@/components/atomic/Button.vue'
-import Select from '@/components/atomic/Select.vue'
+import Select from '@/components/form/Select.vue'
 import { deleteWallet } from '@/functions/Wallets'
 
 import IconDownload from '@/assets/icons/download.svg?component'

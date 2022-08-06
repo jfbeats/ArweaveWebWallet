@@ -43,8 +43,8 @@
 
 
 <script setup lang="ts">
-import InputData from '@/components/atomic/InputData.vue'
-import InputAddress from '@/components/atomic/InputAddress.vue';
+import InputData from '@/components/form/InputData.vue'
+import InputAddress from '@/components/form/InputAddress.vue';
 import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'

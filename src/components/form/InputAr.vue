@@ -15,7 +15,7 @@
 
 
 <script setup>
-import RawInput from '@/components/function/RawInput.vue'
+import RawInput from '@/components/form/RawInput.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import { currency } from '@/store/CurrencyStore'
 import { computed, ref, watch } from 'vue'

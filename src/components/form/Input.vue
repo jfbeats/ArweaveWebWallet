@@ -12,7 +12,7 @@
 
 <script setup lang="ts">
 import Icon from '@/components/atomic/Icon.vue'
-import RawInput from '@/components/function/RawInput.vue'
+import RawInput from '@/components/form/RawInput.vue'
 import ActionsRow from '@/components/atomic/ActionsRow.vue'
 import { computed, ref, watch } from 'vue'
 

@@ -17,7 +17,7 @@
 
 
 <script setup lang="ts">
-import RawInput from '@/components/function/RawInput.vue'
+import RawInput from '@/components/form/RawInput.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import IconX from '@/assets/icons/x.svg?component'
 import { computed, ref } from 'vue'

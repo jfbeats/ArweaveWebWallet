@@ -193,7 +193,7 @@ textarea {
 	touch-action: auto;
 }
 
-/* extract */
+/* todo extract */
 .icon-container {
 	flex: 0 0 auto;
 	height: 3em;
@@ -234,6 +234,5 @@ textarea {
 .files {
 	padding: var(--spacing);
 	flex: 1 1 0;
-	
 }
 </style>

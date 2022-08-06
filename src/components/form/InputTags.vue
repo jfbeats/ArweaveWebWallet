@@ -5,10 +5,10 @@
 
 
 <script setup lang="ts">
-import InputGrid, { TagSchema } from '@/components/atomic/InputGrid.vue'
+import InputGrid, { TagSchema } from '@/components/form/InputGrid.vue'
+import { useDataWrapper } from '@/functions/AsyncData'
 import { computed, effectScope, markRaw, reactive, toRef, watch } from 'vue'
 import IconLabel from '@/assets/icons/label.svg?component'
-import { useDataWrapper } from '@/functions/AsyncData'
 
 const props = defineProps<{
 	modelValue: Tag[]

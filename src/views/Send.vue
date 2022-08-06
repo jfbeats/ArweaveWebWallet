@@ -84,10 +84,10 @@
 
 
 <script setup lang="ts">
-import InputAddress from '@/components/atomic/InputAddress.vue';
-import InputAr from '@/components/atomic/InputAr.vue'
-import InputData from '@/components/atomic/InputData.vue'
-import InputTags from '@/components/atomic/InputTags.vue'
+import InputAddress from '@/components/form/InputAddress.vue';
+import InputAr from '@/components/form/InputAr.vue'
+import InputData from '@/components/form/InputData.vue'
+import InputTags from '@/components/form/InputTags.vue'
 import SendFee from '@/components/composed/SendFee.vue'
 import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'

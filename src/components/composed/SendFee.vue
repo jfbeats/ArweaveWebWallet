@@ -12,7 +12,7 @@
 
 
 <script setup lang="ts">
-import Slider from '@/components/atomic/Slider.vue'
+import Slider from '@/components/form/Slider.vue'
 import Amount from '@/components/composed/Amount.vue'
 import { arweave } from '@/store/ArweaveStore'
 import BlockStore from '@/store/BlockStore'
