@@ -17,8 +17,10 @@ export async function dropped (e?: DragEvent | InputEvent | FileSystemDirectoryH
 	if (!e) { return addFiles([]) }
 	const text = eventToText(e)
 	const files = await eventToFiles(e)
-	const keyfiles = await findKeyfiles(text ? [text] : files)
-	// if (keyfiles.length) { return importKeyfiles(keyfiles) } // todo require async isProviderFor
+	if (type === 'keyfile') { // todo require async isProviderFor to try on any dropped type
+		const keyfiles = await findKeyfiles(text ? [text] : files)
+		if (keyfiles.length) { return importKeyfiles(keyfiles) }
+	}
 	if (type === 'keyfile') { throw 'Error importing keyfiles' }
 	// todo unsigned tx - fill send page (through tx import function?)
 	// todo signed tx - ask to upload (through tx import function?)
