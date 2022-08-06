@@ -11,12 +11,13 @@ type WalletDataInterface = {
 	}
 }
 
+type Wallet = import('@/functions/Wallets').AnyProvider
+
 interface Provider extends Account {
-	metadata: Metadata<this>
+	metadata: InstanceMetadata<this>
 	messageVerifier: any
-	messageRunner: MessageRunner<this>
+	messageRunner: MessageRunner<{}, this>
 	signTransaction?: (...args: any) => Promise<any>
-	bundle?: (...args: any) => Promise<any>
 	sign?: (data: ArrayBufferView, options: any) => Promise<ArrayBufferView>
 	decrypt?: (data: ArrayBufferView, options: any) => Promise<ArrayBufferView>
 	download?: () => Promise<any>
@@ -31,8 +32,12 @@ interface Account {
 	destructor?: () => any
 }
 
-interface MessageRunner<T> {
-	get methodMap(): MethodMap<this, T>
+type ExternalAPI = { [key: string]: (...args: any) => any }
+
+type MessageRunner<API extends ExternalAPI, Parent> = {
+	get methodMap(): { [key in keyof API]?: keyof Parent }
+} & {
+	[key in keyof API]: (...args: Parameters<API[key]>) => ReturnType<API[key]>
 }
 
 
@@ -52,7 +57,7 @@ type ProviderMetadata = DisplayMetadata & {
 	verify?: () => any // todo change to actions
 }
 
-type Metadata <T> = ProviderMetadata & {
+type InstanceMetadata<T> = ProviderMetadata & {
 	methods: { [keys in keyof T]?: MethodMetadata }
 }
 
@@ -61,5 +66,3 @@ type MethodMetadata = {
 	unavailable?: boolean
 	userIntent?: boolean
 }
-
-type MethodMap <T, U> = { [keys in keyof T]?: keyof U}

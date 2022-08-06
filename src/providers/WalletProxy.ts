@@ -6,10 +6,6 @@ import { computed } from 'vue'
 
 
 
-export type Wallet = Provider & MixinType<typeof WalletProxy>
-
-
-
 export function WalletProxy <TBase extends ClassConstructor> (Base: TBase) {
 	return class WalletProxy extends Base {
 		#wallet: WalletDataInterface
@@ -26,6 +22,7 @@ export function WalletProxy <TBase extends ClassConstructor> (Base: TBase) {
 		get hasPrivateKey () { return !!this.#wallet.jwk }
 		get isEncrypted () { return this.#isEncrypted.value }
 		async getPrivateKey (): Promise<JWKInterface> {
+			if (!this.hasPrivateKey) { throw 'Private key unavailable' }
 			if (!isEncrypted(this.#wallet.jwk!)) { return this.#wallet.jwk! }
 			return requestPrivateKey(this as any)
 		}

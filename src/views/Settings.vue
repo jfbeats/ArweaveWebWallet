@@ -50,8 +50,8 @@
 <script setup lang="ts">
 import WalletsOptions from '@/components/composed/WalletsOptions.vue'
 import SettingItem from '@/components/composed/SettingItem.vue'
-import Input from '@/components/atomic/Input.vue'
-import Select from '@/components/atomic/Select.vue'
+import Input from '@/components/form/Input.vue'
+import Select from '@/components/form/Select.vue'
 import Button from '@/components/atomic/Button.vue'
 import Links from '@/components/composed/Links.vue'
 import LinksExtension from '@/components/composed/LinksExtension.vue'

@@ -184,8 +184,9 @@ a.reset {
 }
 
 .styleScroll ::-webkit-scrollbar {
-	background-color: var(--background2);
+	background-color: var(--background);
 	color: #aaaaaa;
+	outline: 0.5px solid var(--border);
 }
 
 .styleScroll ::-webkit-scrollbar-thumb {

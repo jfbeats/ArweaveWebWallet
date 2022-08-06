@@ -23,7 +23,6 @@ import { computed, ref, watch } from 'vue'
 import IconConnection from '@/assets/icons/connection.svg?component'
 import { useChannel } from '@/functions/Channels'
 import TransitionsManager from '@/components/visual/TransitionsManager.vue'
-import type { Wallet } from '@/providers/WalletProxy'
 
 const props = defineProps<{ state: ConnectorState, walletId?: string }>()
 

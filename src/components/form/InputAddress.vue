@@ -12,7 +12,7 @@
 
 <script setup lang="ts">
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
-import Input from '@/components/atomic/Input.vue'
+import Input from '@/components/form/Input.vue'
 import Viewport from '@/components/layout/Viewport.vue'
 import Scanner from '@/components/function/Scanner.vue'
 import { computed, ref } from 'vue'

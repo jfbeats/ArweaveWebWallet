@@ -11,18 +11,22 @@
 					</label>
 					<input type="file" id="file-picker" class="file-input" @change="handleFiles" :disabled="disabled" multiple />
 				</div>
-<!--				<template v-if="showDirectoryPicker || hasDirectoryInput">-->
-<!--					<div class="spacer" />-->
-<!--					<div class="big-icon-container not-passthrough" @click="() => showDirectoryPicker && handleDirectoryPicker()">-->
-<!--						<label for="directory-picker" class="file-picker-label">-->
-<!--							<Icon :icon="IconFolder" class="img" style="width: 100%; height: 100%;" />-->
-<!--						</label>-->
-<!--						<input v-if="!showDirectoryPicker" type="file" id="directory-picker" class="file-input" @change="handleFiles" :disabled="disabled" webkitdirectory directory multiple />-->
-<!--					</div>-->
-<!--				</template>-->
+				<template v-if="showDirectoryPicker || hasDirectoryInput">
+					<div class="spacer" />
+					<div class="big-icon-container not-passthrough" @click="() => showDirectoryPicker && handleDirectoryPicker()">
+						<label for="directory-picker" class="file-picker-label">
+							<Icon :icon="IconFolder" class="img" style="width: 100%; height: 100%;" />
+						</label>
+						<input v-if="!showDirectoryPicker" type="file" id="directory-picker" class="file-input" @change="handleFiles" :disabled="disabled" webkitdirectory directory multiple />
+					</div>
+				</template>
 			</div>
 			<div v-else-if="isFile" class="overlay">
-				<Icon :icon="IconCloud" class="big-icon-container focus" />
+				<div class="files-scroll">
+					<div class="files flex-column">
+						<TxCard v-for="tx in model" :key="tx.key ??= Math.random().toString()" :tx="tx" :options="{ half: true }" />
+					</div>
+				</div>
 				<button class="clear" @click="clearFiles" type="button">
 					<div class="icon-container">
 						<Icon :icon="IconX" class="iconX no-select" draggable="false" />
@@ -37,6 +41,7 @@
 
 
 <script setup lang="ts">
+import TxCard from '@/components/composed/TxCard.vue'
 import DragOverlay from '@/components/atomic/DragOverlay.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import InterfaceStore from '@/store/InterfaceStore'
@@ -45,17 +50,16 @@ import { computed, ref, toRef, useAttrs } from 'vue'
 import IconText from '@/assets/icons/text.svg?component'
 import IconDrop from '@/assets/icons/drop.svg?component'
 import IconFolder from '@/assets/icons/folder.svg?component'
-import IconCloud from '@/assets/icons/cloud.svg?component'
 import IconX from '@/assets/icons/x.svg?component'
 
 const props = defineProps<{
-	modelValue: string
+	modelValue: string | ArDataItemParams[]
 	disabled?: boolean
 	id?: string
 	placeholder?: string
 }>()
 const emit = defineEmits<{
-	(e: 'update:modelValue', value: string): void
+	(e: 'update:modelValue', value: string | ArDataItemParams[]): void
 	(e: 'files', files?: DragEvent | InputEvent | FileSystemDirectoryHandle): void
 }>()
 const attrs = useAttrs()
@@ -90,7 +94,7 @@ const handleFiles = (e: DragEvent | InputEvent | FileSystemDirectoryHandle) => {
 	return emit('files', e)
 }
 const clearFiles = () => { emit('files') }
-const isFile = computed(() => typeof model.value === "object")
+const isFile = computed(() => Array.isArray(model.value) && model.value.length > 0)
 </script>
 
 
@@ -175,7 +179,6 @@ textarea {
 }
 
 .clear {
-	position: absolute;
 	height: 100%;
 	right: 0;
 }
@@ -190,7 +193,7 @@ textarea {
 	touch-action: auto;
 }
 
-/* extract */
+/* todo extract */
 .icon-container {
 	flex: 0 0 auto;
 	height: 3em;
@@ -219,5 +222,17 @@ textarea {
 .focus .iconX,
 .focus .symbol {
 	opacity: 1;
+}
+
+.files-scroll {
+	width: 100%;
+	max-height: 100%;
+	flex: 1 1 0;
+	overflow: auto;
+}
+
+.files {
+	padding: var(--spacing);
+	flex: 1 1 0;
 }
 </style>

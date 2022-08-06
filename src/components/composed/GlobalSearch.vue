@@ -22,7 +22,7 @@
 
 
 <script setup lang="ts">
-import Input from '@/components/atomic/Input.vue'
+import Input from '@/components/form/Input.vue'
 import List from '@/components/layout/List.vue'
 import IconSearch from '@/assets/icons/search.svg?component'
 import { computed } from 'vue'

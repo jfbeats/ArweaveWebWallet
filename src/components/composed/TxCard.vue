@@ -2,7 +2,7 @@
 	<div class="tx-card no-scrollbar" :class="{ verticalElement }">
 		<div class="tx-content" :class="{ 'flex-row': !verticalElement, 'flex-column': verticalElement }">
 			<Link class="left reset" :to="(tx.id && !options?.half) ? { name: 'Tx', params: { txId: tx.id } } : ''">
-				<TxIcon class="tx-icon" :tx="tx" :direction="direction" />
+				<TxIcon class="tx-icon" :tx="tx" :options="{ isData, isValue, direction, status }" />
 				<div class="margin" />
 				<div>
 					<Amount v-if="isValue" :ar="value" />
@@ -17,7 +17,7 @@
 						<Address v-if="relativeAddress" class="address" :address="relativeAddress" />
 						<div v-else-if="dataSize" class="secondary-text ellipsis">Size: {{ dataSize }}</div>
 						<div class="secondary-text ellipsis">
-							<template v-if="status">{{ status }}</template>
+							<template v-if="statusText">{{ statusText }}</template>
 							<template v-else-if="options?.space">Fee: <Amount :ar="tx.fee.ar" /></template>
 							<Date v-else-if="timestamp" :timestamp="timestamp" />
 						</div>
@@ -56,7 +56,7 @@ const props = defineProps<{
 
 const tags = computed(() => unpackTags(props.tx.tags, { lowercase: true }))
 const timestamp = computed(() => props.tx.block?.timestamp * 1000)
-const status = computed(() => {
+const statusText = computed(() => {
 	if (ArweaveStore.uploads[props.tx.id]) { return `Uploading ${ArweaveStore.uploads[props.tx.id].upload}%` }
 	if (!props.tx.id) { return 'Awaiting approval' }
 	if (!props.tx.block) { return 'Pending' }
@@ -65,7 +65,11 @@ const direction = computed(() => props.tx.recipient && props.tx.recipient === pr
 const relativeAddress = computed(() => direction.value === 'in' ? props.tx.owner.address : (props.tx.recipient || props.tx.target))
 const value = computed(() => props.tx.quantity?.ar || arweave.ar.winstonToAr(props.tx.quantity))
 const isValue = computed(() => value.value > 0)
-const isData = computed(() => (props.tx.data?.size || props.tx.data_size) > 0)
+const isData = computed(() => ArrayBuffer.isView(props.tx.data) || (props.tx.data?.size || props.tx.data_size) > 0)
+const status = computed(() => {
+	if (!props.tx.id || !props.tx.block) { return 'pending' }
+	return 'confirmed'
+})
 const dataSize = computed(() => isData.value && humanFileSize(props.tx.data?.size || props.tx.data_size))
 const dataType = computed(() => {
 	if (tags.value['bundle-version']) return 'Bundle'
@@ -77,7 +81,7 @@ const dataInfo = computed(() => tags.value['service'] || tags.value['app-name'] 
 const context = computed(() => {
 	const fallback = isValue.value && isData.value ? 'Payment | Data' : isValue.value ? 'Payment' : isData.value ? 'Data' : props.tx.tags?.length ? 'Tags' : 'Empty'
 	const dataTypeUsed = !isValue.value && isData.value
-	return (dataTypeUsed ? null : dataType.value) || dataInfo.value || fallback
+	return (dataTypeUsed ? null : dataType.value) || props.tx.path || dataInfo.value || fallback
 })
 const verticalElement = computed(() => InterfaceStore.breakpoints.verticalLayout)
 </script>

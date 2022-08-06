@@ -56,7 +56,7 @@
 					<button type="button" class="secondary" @click="addTag()" id="add-tag">Add</button>
 				</div>
 			</div>
-			<InputGrid :schema="form.tags" />
+			<InputTags v-model="form.tags" />
 			<div v-if="form.tags.length" class="row bottom flex-row">
 				<div>
 					<transition name="slide-up">
@@ -67,7 +67,7 @@
 			</div>
 
 			<div class="row flex-row" style="align-items:flex-end; margin-top:3em;">
-				<SendFee :size="txSize" :target="form.target" @update="fee => form.txFee = fee" />
+				<SendFee :size="form.txSize" :target="form.target" @update="fee => form.txFee = fee" />
 				<Button @click="postTx" :style="submitStyle" :disabled="loading || !form.txFee || !wallet.signTransaction" :icon="IconNorthEast">Submit</Button>
 			</div>
 			<div>
@@ -84,35 +84,33 @@
 
 
 <script setup lang="ts">
-import InputAddress from '@/components/atomic/InputAddress.vue';
-import InputAr from '@/components/atomic/InputAr.vue'
-import InputData from '@/components/atomic/InputData.vue'
-import InputGrid from '@/components/atomic/InputGrid.vue'
+import InputAddress from '@/components/form/InputAddress.vue';
+import InputAr from '@/components/form/InputAr.vue'
+import InputData from '@/components/form/InputData.vue'
+import InputTags from '@/components/form/InputTags.vue'
 import SendFee from '@/components/composed/SendFee.vue'
 import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
-import { Wallet } from '@/providers/WalletProxy'
 import { dropped } from '@/functions/File'
-import { form, addTag, getTagsFromSchema, submit } from '@/store/FormSend'
+import { form, addTag, submit, formWallet } from '@/store/FormSend'
 import { awaitEffect } from '@/functions/AsyncData'
 import { addressHashToColor, addressToHash } from '@/functions/Utils'
 import BigNumber from 'bignumber.js'
-import { computed, markRaw, reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 
 import IconNorthEast from '@/assets/icons/north_east.svg?component'
 
 const props = defineProps<{ wallet: Wallet }>()
+
+
+
+watch(() => props.wallet, () => formWallet.value = props.wallet, { immediate: true })
 
 const setMax = async () => {
 	const balance = new BigNumber(props.wallet.balance)
 	await awaitEffect(() => form.txFee)
 	form.quantity = balance.minus(form.txFee!).toString()
 }
-
-const txSize = computed(() => {
-	const data = form.data
-	return data.size || data.length || '0'
-})
 
 const loading = ref(false)
 
@@ -134,7 +132,7 @@ function isValid () {
 			validation.data = "Current balance too low"; result = false
 		}
 	}
-	const tags = getTagsFromSchema(form.tags)
+	const tags = form.tags
 	let tagLength = 0
 	for (const tag of tags) {
 		tagLength += tag.name.length + tag.value.length

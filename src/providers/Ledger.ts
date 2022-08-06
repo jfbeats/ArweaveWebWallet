@@ -1,4 +1,4 @@
-import { WalletProxy, Wallet } from '@/providers/WalletProxy'
+import { WalletProxy } from '@/providers/WalletProxy'
 import { mix } from '@/functions/UtilsClass'
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import TransportWebHID from "@ledgerhq/hw-transport-webhid"
@@ -101,7 +101,7 @@ async function sign (tx: Transaction) {
 
 
 
-export class LedgerProvider extends mix(ArweaveAccount).with(WalletProxy) implements Wallet {
+export class LedgerProvider extends mix(ArweaveAccount).with(WalletProxy) implements Provider {
 	constructor (init: WalletDataInterface) {
 		super(init)
 		this.messageVerifier = new ArweaveMessageVerifier()
@@ -120,7 +120,7 @@ export class LedgerProvider extends mix(ArweaveAccount).with(WalletProxy) implem
 		},
 		verify: async () => getAddress(true),
 	}}
-	get metadata () { return {
+	get metadata (): InstanceMetadata<LedgerProvider> { return {
 		...LedgerProvider.metadata,
 		methods: {
 			signTransaction: { userIntent: true },
