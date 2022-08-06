@@ -37,7 +37,7 @@ export function addTag (name = '', value = '') { form.tags.push({ name, value })
 
 export async function addFiles (files?: FileWithPath[]) {
 	if (!files || !files.length) { form.data = ''; setBaseTags(form.tags, {}); return }
-	form.data = await Promise.all(files?.map(async file => {
+	form.data = (await Promise.all(files?.map(async file => {
 		const data = file instanceof File ? await readFile(file) : file
 		const tags = [] as Tag[]
 		setBaseTags(tags, {
@@ -45,7 +45,7 @@ export async function addFiles (files?: FileWithPath[]) {
 			'File-Hash': await getHash({ data })
 		})
 		return { data, tags, path: file.normalizedPath }
-	}))
+	}))).sort((a, b) => +(b.path === 'index.html') - +(a.path === 'index.html'))
 	if (files.length > 1) {
 		setBaseTags(form.tags, {
 			'Bundle-Format': 'binary',
@@ -87,7 +87,7 @@ function setTag (tags: Tag[], name: string, value?: string) {
 export async function submit (wallet: Wallet) {
 	try {
 		if (!form.txFee) { return notify.error('Transaction fee not set') }
-		if (form.data && !form.processedData) { return notify.error('Data not ready') } // todo make sure it matches current form data
+		if (form.data && !form.processedData) { return notify.error('Data not ready') }
 		if (wallet !== formWallet.value) { return notify.error('State sync error') }
 		const tx = await buildTransaction({
 			target: form.target,
@@ -127,8 +127,6 @@ async function getProcessedData (wallet?: Wallet): Promise<ArTxParams['data']> {
 
 async function getSize (): Promise<number> {
 	if (typeof form.data === 'string') { return form.data.length }
-	// const randomProvider = wallet || await getRandomArweaveProvider()
-	// const processed = await getProcessedData(randomProvider)
 	const processed = form.processedData
 	if (processed == undefined) { throw 'Error' }
 	if (typeof processed === 'string') { return form.data.length }
