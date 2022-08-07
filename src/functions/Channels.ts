@@ -196,5 +196,6 @@ export async function awaitStorageAccess () {
 
 
 cleanHeartbeats()
+setTimeout(() => storageKeys.value = Object.keys(localStorage))
 window.addEventListener('storage', globalStorageListener)
 window.addEventListener('beforeunload', () => deleteChannel())
