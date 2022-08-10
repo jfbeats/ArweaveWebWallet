@@ -7,7 +7,7 @@
 				<div v-if="options.message || options.action?.name">{{ options.message || options.action?.name }}</div>
 			</div>
 			<div v-if="options.actions?.length" class="actions-container flex-row">
-				<Button v-for="action in options.actions" :key="action.name" @click="action.run">{{ action.name }}</Button>
+				<Button v-for="action in options.actions" :key="action.name" @click="action.run" :glow="true" color="#81a1c1">{{ action.name }}</Button>
 			</div>
 		</component>
 	</TransitionsManager>
@@ -64,7 +64,6 @@ const props = defineProps<{
 }
 
 .button {
-	background-image: radial-gradient(circle at center, #81a1c166, #81a1c133);
 	height: 5em;
 	font-size: 1.1em;
 	width: 100%;

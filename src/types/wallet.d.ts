@@ -43,8 +43,8 @@ type MessageRunner<API extends ExternalAPI, Parent> = {
 
 
 type DisplayMetadata = {
-	name: string
-	icon: import('vue').FunctionalComponent<import('vue').SVGAttributes, {}>
+	name?: string
+	icon?: import('vue').FunctionalComponent<import('vue').SVGAttributes, {}>
 	color?: string
 }
 
@@ -66,3 +66,12 @@ type MethodMetadata = {
 	unavailable?: boolean
 	userIntent?: boolean
 }
+
+type Action = DisplayMetadata & { // Todo type action in defineProps
+	run?: Function
+	to?: import('vue-router').RouteLocationRaw
+}
+
+type ImportOptions = Partial<{
+	address: string
+}>

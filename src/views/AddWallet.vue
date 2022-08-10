@@ -8,9 +8,9 @@
 			<div class="flex-column">
 				<InputData v-model="passphraseInput" @files="files => dropped(files, 'keyfile')" :disabled="isCreatingWallet" placeholder="Import passphrase or key file" />
 				<div />
-				<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create()" :disabled="passphraseInput.length && !isPassphrase" :icon="LogoArweave" class="main">Create new wallet</Button>
-				<Button v-else-if="isCreatingWallet" :disabled="createdWallet == null" @click="goToCreatedWallet" :icon="createdWallet == null ? 'loader' : ''" class="main">{{ createdWallet == null ? 'Generating, write down the passphrase' : 'Passphrase saved? Click here to proceed' }}</Button>
-				<Button v-else :disabled="!isPassphrase || isGeneratingWallet" @click="confirmPassphrase" class="main">Import passphrase</Button>
+				<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create" :disabled="passphraseInput.length && !isPassphrase" :icon="LogoArweave" class="main" :glow="true" color="#81a1c1">Create new wallet</Button>
+				<Button v-else-if="isCreatingWallet" :disabled="createdWallet == null" @click="goToCreatedWallet" :icon="createdWallet == null ? 'loader' : ''" class="main" :glow="true" color="#81a1c1">{{ createdWallet == null ? 'Generating, write down the passphrase' : 'Passphrase saved? Click here to proceed' }}</Button>
+				<Button v-else :disabled="!isPassphrase || isGeneratingWallet" @click="confirmPassphrase" class="main" :glow="true" color="#81a1c1">Import passphrase</Button>
 			</div>
 			<OverlayPrompt :options="popup">
 				<div v-if="popup.messageType === 'invalid'" style="text-align: center">
@@ -22,7 +22,7 @@
 		<div class="card" v-for="provider in hardwareProviders" :key="provider.metadata.name">
 			<h2 class="flex-row" style="align-items: center;"><Icon :icon="provider.metadata.icon" /><span>{{ provider.metadata.name }} Hardware Wallet (awaiting release)</span></h2>
 			<div class="flex-column">
-				<Button :disabled="provider.metadata.disabled" @click="importProvider(provider)" :icon="provider.metadata.icon" class="main">
+				<Button :disabled="provider.metadata.disabled" @click="importProvider(provider)" :icon="provider.metadata.icon" class="main" :glow="true" color="#81a1c1">
 					{{ provider.metadata.disabled ? `${provider.metadata.name} not supported for this browser` : `Connect with ${provider.metadata.name}` }}
 				</Button>
 				<div class="flex-row">
@@ -132,7 +132,6 @@ const importAddressOnlyAction = { icon: IconAddBox, run: async () => {
 }
 
 .button.main {
-	background-image: radial-gradient(circle at center, #81a1c166, #81a1c133);
 	height: 4em;
 	font-size: 1.1em;
 	width: 100%;

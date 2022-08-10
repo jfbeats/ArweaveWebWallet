@@ -68,7 +68,7 @@
 
 			<div class="row flex-row" style="align-items:flex-end; margin-top:3em;">
 				<SendFee :size="form.txSize" :target="form.target" @update="fee => form.txFee = fee" />
-				<Button @click="postTx" :style="submitStyle" :disabled="loading || !form.txFee || !wallet.signTransaction" :icon="IconNorthEast">Submit</Button>
+				<Button @click="postTx" :disabled="loading || !form.txFee || !wallet.signTransaction" :icon="IconNorthEast" :color="addressHashColor" :glow="true">Submit</Button>
 			</div>
 			<div>
 				<transition name="slide-up">
@@ -162,12 +162,6 @@ const postTx = async () => {
 const addressHash = ref(null)
 watch(() => props.wallet.key, async (val) => addressHash.value = await addressToHash(val), { immediate: true })
 const addressHashColor = computed(() => addressHashToColor(addressHash.value).join(','))
-const submitStyle = computed(() => ({
-	'--border': `rgba(${addressHashColor.value},0.8)`,
-	'--glow-color': `rgba(${addressHashColor.value},0.2)`,
-	'background-image': `radial-gradient(circle at center, rgba(${addressHashColor.value},0.4),
-	rgba(${addressHashColor.value},0.3))`
-}))
 </script>
 
 
