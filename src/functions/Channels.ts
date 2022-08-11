@@ -102,7 +102,7 @@ function getChannels <T extends 'instanceState:' | 'sharedState:'> (prefix: T) {
 		if (prefix === 'instanceState:' && !(await heartbeat(name))) { return }
 		return useChannel(prefix, name)
 	}
-	const instances = computed(() => storageKeys.value.filter(key => key.slice(0, prefix.length) === prefix).map(key => key.slice(prefix.length)).filter(channel => channel !== instance))
+	const instances = computed(() => storageKeys.value.filter(key => key.slice(0, prefix.length) === prefix).map(key => key.slice(prefix.length)))
 	const wrapper = useDataWrapper(instances, item => item, instantiate, channel => channel?.stop())
 	const states = computed(() => wrapper.value.filter(ch => ch?.state.value).map(ch => ch!.state.value!))
 	return { states, closeChannels }

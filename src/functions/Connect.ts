@@ -19,7 +19,6 @@ function buildConnector (origin: string): ConnectorState {
 		const instanceStates = computed(() => states.value.filter(c => c.origin === origin))
 		const updateWallets = (walletId?: SharedState['walletId']) => {
 			if (walletId === undefined) { return sharedStates.value[0]?.walletId }
-			sharedState.value && (sharedState.value.walletId = walletId)
 			sharedStates.value.forEach(c => c.walletId !== walletId && (c.walletId = walletId))
 			return sharedStates.value[0]?.walletId
 		}
