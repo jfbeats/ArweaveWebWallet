@@ -47,6 +47,7 @@ type DisplayMetadata = {
 	name?: string
 	icon?: import('vue').FunctionalComponent<import('vue').SVGAttributes, {}>
 	color?: string
+	disabled?: any
 }
 
 type ProviderMetadata = DisplayMetadata & {

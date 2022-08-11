@@ -35,6 +35,7 @@ const props = defineProps<{
 	color?: string
 	run?: Function
 	to?: import('vue-router').RouteLocationRaw
+	disabled?: any
 }>()
 
 const gap = computed(() => !props.to && '0.8rem')

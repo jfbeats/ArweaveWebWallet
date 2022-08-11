@@ -20,6 +20,7 @@ const props = defineProps<{
 	color?: string
 	run?: Function
 	to?: import('vue-router').RouteLocationRaw
+	disabled?: any
 }>()
 </script>
 

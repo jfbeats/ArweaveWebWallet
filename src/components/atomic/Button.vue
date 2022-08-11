@@ -1,6 +1,6 @@
 <template>
-	<Link class="button no-select" :class="{ disabled: $attrs.disabled }" v-bind="props" :run="runFunction" :style="glowStyle">
-		<Icon v-if="icon" :icon="icon" />
+	<Link class="button no-select" :class="{ disabled }" v-bind="bind" :run="runFunction" :style="glowStyle">
+		<Icon v-if="icon" :icon="icon" :class="{ margin }" />
 		<slot></slot>
 	</Link>
 </template>
@@ -10,7 +10,7 @@
 <script setup lang="ts">
 import Icon from '@/components/atomic/Icon.vue'
 import Link from '@/components/function/Link.vue'
-import { computed } from 'vue'
+import { computed, useSlots } from 'vue'
 import { normalizeColorTo } from '@/functions/Utils'
 
 const props = defineProps<{
@@ -23,11 +23,18 @@ const props = defineProps<{
 	color?: string
 	run?: Function
 	to?: import('vue-router').RouteLocationRaw
+	disabled?: any
 }>()
+const slots = useSlots()
+
+const bind = computed(() => {
+	const { run, onClick, ...other } = props
+	return other
+})
 
 const runFunction = computed(() => {
 	if (!props.onClick && !props.run) { return }
-	return () => { props.onClick?.(); props.run?.() }
+	return props.disabled ? () => {} : () => { props.onClick?.(); props.run?.() }
 })
 
 const borderSize = computed(() => props.glow ? '0' : '0.5px')
@@ -37,6 +44,7 @@ const glowStyle = computed(() => props.glow && props.color && ({
 	'background-image': `radial-gradient(circle at center, rgba(${normalizeColorTo('rgb', props.color)},0.4),
 	rgba(${normalizeColorTo('rgb', props.color)},0.3))`
 }))
+const margin = computed(() => slots.default)
 </script>
 
 
@@ -70,7 +78,7 @@ const glowStyle = computed(() => props.glow && props.color && ({
 	filter: grayscale(0.5) brightness(0.5);
 }
 
-.icon {
+.icon.margin {
 	margin-inline-end: 0.5em;
 }
 </style>
