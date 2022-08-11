@@ -26,8 +26,9 @@ const observed = ref(null)
 
 if (props.onIntersection) {
 	const intersectionObserver = new IntersectionObserver((entries) => {
-		if (!entries[0].isIntersecting) { return }
-		emit('intersection', entries[0])
+		const intersections = entries.filter(e => e.isIntersecting)
+		if (!intersections) { return }
+		intersections.forEach(e => emit('intersection', e))
 		if (props.once) { unobserve() }
 	}, { threshold: [props.threshold || 0] })
 	const unobserve = () => observed.value && intersectionObserver.unobserve(observed.value)
@@ -37,7 +38,7 @@ if (props.onIntersection) {
 
 if (props.onResize) {
 	const resizeObserver = new ResizeObserver((entries) => {
-		emit('resize', entries[0])
+		entries.forEach(e => emit('resize', e))
 		if (props.once) { unobserve() }
 	})
 	const unobserve = () => observed.value && resizeObserver.unobserve(observed.value)
@@ -47,7 +48,7 @@ if (props.onResize) {
 
 if (props.onMutation) {
 	const mutationObserver = new MutationObserver((entries) => {
-		emit('mutation', entries[0])
+		entries.forEach(e => emit('mutation', e))
 		if (props.once) { unobserve() }
 	})
 	const unobserve = () => observed.value && mutationObserver.disconnect()
