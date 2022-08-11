@@ -10,11 +10,16 @@
 
 
 
-<script setup>
+<script setup lang="ts">
 import Icon from '@/components/atomic/Icon.vue'
 import { computed, ref } from 'vue'
 
-const props = defineProps(['modelValue', 'options', 'icon', 'placeholder'])
+const props = defineProps<{
+	modelValue?: any
+	options?: { value?: any, text?: string, icon?: any }[]
+	icon?: any
+	placeholder?: string
+}>()
 const emit = defineEmits(['update:modelValue'])
 
 const model = computed({
