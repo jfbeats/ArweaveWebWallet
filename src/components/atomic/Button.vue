@@ -50,14 +50,14 @@ const glowStyle = computed(() => props.glow && props.color && ({
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	box-shadow: 0 0 calc(var(--spacing) / 2) 0 var(--glow-color);
-	transition: 0.3s ease;
 	border: v-bind(borderSize) solid var(--border);
+	box-shadow: 0 0 calc(var(--spacing) / 2) 0 var(--glow-color);
+	transition: filter 0.3s ease, box-shadow 0.3s ease;
 }
 
 .button:hover {
-	box-shadow: 0 0 var(--spacing) 0 var(--glow-color);
 	filter: brightness(1.3);
+	box-shadow: 0 0 var(--spacing) 0 var(--glow-color);
 }
 
 .button:active {
