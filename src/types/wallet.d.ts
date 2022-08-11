@@ -1,17 +1,18 @@
-type ProviderName = import('@/functions/Wallets').ProviderList
+type ProviderId = import('@/functions/Wallets').ProviderId
 type WalletDataInterface = {
 	id: string
 	uuid?: string
 	jwk?: import('arweave/web/lib/wallet').JWKInterface | EncryptedContent
-	provider?: ProviderName
-	data?: { [name in ProviderName]?: { key?: string } }
+	provider?: ProviderId
+	data?: { [name in ProviderId]?: { key?: string } }
 	settings?: {
 		sync?: boolean
 		securityLevel?: 'always' | 'inactivity' | undefined
 	}
 }
 
-type Wallet = import('@/functions/Wallets').AnyProvider
+type AnyProvider = import('@/functions/Wallets').AnyProvider
+type Wallet = Union<InstanceType<AnyProvider>>
 
 interface Provider extends Account {
 	metadata: InstanceMetadata<this>
@@ -49,12 +50,14 @@ type DisplayMetadata = {
 }
 
 type ProviderMetadata = DisplayMetadata & {
-	id: string
-	link?: string
+	id: ProviderId
 	disabled?: boolean
-	addImportData: (data: Partial<WalletDataInterface>) => Promise<void>
 	isProviderFor?: (wallet: Partial<WalletDataInterface>) => boolean
-	verify?: () => any // todo change to actions
+	addPassphrase?: (passphrase: string) => Promise<Partial<WalletDataInterface>>
+	addKeyfile?: (keyfile?: string) => Promise<Partial<WalletDataInterface>>
+	addAddress?: (address: string) => Promise<Partial<WalletDataInterface>>
+	addImportData: (data?: Partial<WalletDataInterface>, options?: ImportOptions) => Promise<Partial<WalletDataInterface>>
+	actions?: Action[]
 }
 
 type InstanceMetadata<T> = ProviderMetadata & {

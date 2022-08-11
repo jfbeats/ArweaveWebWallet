@@ -8,8 +8,11 @@ import { ArweaveAccount, ArweaveMessageRunner } from '@/providers/Arweave'
 import { arweave } from '@/store/ArweaveStore'
 import { ArweaveVerifier as ArweaveMessageVerifier } from 'arweave-wallet-connector/lib/Arweave.js'
 import LogoLedger from '@/assets/logos/ledger.svg?component'
+import IconVerify from '@/assets/icons/verify.svg?component'
+import IconLaunch from '@/assets/icons/launch.svg?component'
 import type Transaction from 'arweave/web/lib/transaction'
 import type { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
+import { track } from '@/store/Analytics'
 
 
 
@@ -111,14 +114,18 @@ export class LedgerProvider extends mix(ArweaveAccount).with(WalletProxy) implem
 		id: 'ledger',
 		name: 'Ledger',
 		icon: LogoLedger,
-		link: 'https://shop.ledger.com?r=1a60a479b0af',
 		disabled: !window.navigator.usb, // todo change to async computed and test all transports
 		addImportData: async (walletData) => {
-			walletData.provider = 'ledger'
+			walletData ??= {}
+			walletData.provider = LedgerProvider.metadata.id
 			walletData.data ??= {}
 			walletData.data.arweave = { key: await getAddress() }
+			return walletData
 		},
-		verify: async () => getAddress(true),
+		actions: [
+			{ name: 'Verify address', icon: IconVerify, run: async () => getAddress(true) },
+			{ name: 'Purchase | affiliate link', icon: IconLaunch, to: 'https://shop.ledger.com?r=1a60a479b0af', run: () => track.event('affiliate', 'https://shop.ledger.com?r=1a60a479b0af') },
+		],
 	}}
 	get metadata (): InstanceMetadata<LedgerProvider> { return {
 		...LedgerProvider.metadata,
@@ -129,7 +136,7 @@ export class LedgerProvider extends mix(ArweaveAccount).with(WalletProxy) implem
 	}}
 	messageVerifier: ArweaveMessageVerifier
 	messageRunner: ArweaveMessageRunner
-	async signTransaction (tx: Transaction, options: SignatureOptions) {
+	async signTransaction (tx: Transaction, options?: SignatureOptions) {
 		if (this.key !== await getAddress()) { throw new Error('Wrong account: using ' + this.key + ' but current device is ' + await getAddress()) }
 		if (tx.owner && tx.owner !== await this.getPublicKey()) { throw 'error' }
 		return sign(tx)

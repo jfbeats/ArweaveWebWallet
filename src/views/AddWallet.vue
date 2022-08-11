@@ -26,10 +26,7 @@
 					{{ provider.metadata.disabled ? `${provider.metadata.name} not supported for this browser` : `Connect with ${provider.metadata.name}` }}
 				</Button>
 				<div class="flex-row">
-					<Button :icon="IconVerify" @click="provider.metadata.verify">Verify address</Button>
-					<a :href="provider.metadata.link" target="_blank" class="reset" @click="() => track.event('affiliate', provider.metadata.link)">
-						<Button :icon="IconLaunch">Purchase | affiliate link</Button>
-					</a>
+					<Button v-for="action in provider.metadata.actions" :key="action.name" v-bind="action">{{ action.name }}</Button>
 				</div>
 			</div>
 		</div>
@@ -48,7 +45,7 @@ import InputAddress from '@/components/form/InputAddress.vue';
 import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
-import { hardwareProviders, addAddress, addMnemonic, addProvider, generateMnemonic, validateMnemonic } from '@/functions/Wallets'
+import { hardwareProviders, addAddress, addMnemonic, generateMnemonic, validateMnemonic } from '@/functions/Wallets'
 import { dropped } from '@/functions/File'
 import { track } from '@/store/Analytics'
 import { computed, ref } from 'vue'
@@ -56,8 +53,6 @@ import { useRouter } from 'vue-router'
 
 import LogoArweave from '@/assets/logos/arweave.svg?component'
 import IconAddBox from '@/assets/icons/add_box.svg?component'
-import IconLaunch from '@/assets/icons/launch.svg?component'
-import IconVerify from '@/assets/icons/verify.svg?component'
 
 const router = useRouter()
 const passphraseInput = ref('')
@@ -99,8 +94,8 @@ const confirmPassphrase = async () => {
 		]
 	}
 }
-const importProvider = async (provider: Provider) => {
-	const walletData = await addProvider(provider)
+const importProvider = async (provider: AnyProvider) => {
+	const walletData = await addAddress(undefined, provider)
 	router.push({ name: 'EditWallet', query: { wallet: walletData.id } })
 	track.account('Import ' + provider.metadata.name)
 }

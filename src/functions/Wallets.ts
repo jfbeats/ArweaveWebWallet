@@ -1,21 +1,17 @@
-import { arweave } from '@/store/ArweaveStore'
 import { ArweaveAccount, ArweaveProvider } from '@/providers/Arweave'
 import { LedgerProvider } from '@/providers/Ledger'
 import { useChannel } from '@/functions/Channels'
 import { useDataWrapper } from '@/functions/AsyncData'
-import { pkcs8ToJwk } from '@/functions/Crypto'
-import { download } from '@/functions/File'
 import { generateMnemonic as generateM, validateMnemonic as validateM } from 'bip39-web-crypto'
 // @ts-ignore
 import { getKeyPairFromMnemonic } from 'human-crypto-keys'
 // @ts-ignore
 import wordlist from 'bip39-web-crypto/src/wordlists/english.json'
-import type { JWKInterface } from 'arweave/web/lib/wallet'
 
 
 
-export type ProviderList = 'arweave' | 'ledger'
-export type AnyProvider = Union<InstanceType<typeof providers[number]>>
+export type ProviderId = 'arweave' | 'ledger'
+export type AnyProvider = typeof providers[number]
 export const softwareProviders = [ArweaveProvider] as const
 export const hardwareProviders = [LedgerProvider] as const
 export const providers = [...hardwareProviders, ...softwareProviders] as const
@@ -26,6 +22,19 @@ function selectProvider (wallet: WalletDataInterface) {
 	for (const provider of providers) { if (provider.metadata.id === wallet.provider) { return provider } }
 	for (const provider of providers) { if (provider.metadata.isProviderFor?.(wallet)) { return provider } }
 	return ArweaveProvider
+}
+
+
+
+export async function selectProviders (from: 'wallet' | 'keyfile', wallet: WalletDataInterface | string) {
+	return (await Promise.all(softwareProviders.map(async provider => {
+		try {
+			const walletData: Partial<WalletDataInterface> | undefined = from === 'wallet' ? wallet as WalletDataInterface : await provider.metadata.addKeyfile?.(wallet as string)
+			if (!walletData || !provider.metadata.isProviderFor?.(walletData)) { return }
+			await provider?.metadata.addImportData(walletData!)
+			return { provider, walletData }
+		} catch (e) {}
+	}))).filter((res): res is NonNullable<typeof res> => !!res)
 }
 
 
@@ -50,40 +59,40 @@ export function getAccountByAddress (address: string): Account {
 export async function generateMnemonic () { return generateM(undefined, undefined, wordlist) }
 export async function validateMnemonic (mnemonic: string) { return validateM(mnemonic, wordlist) }
 
-export async function addMnemonic (mnemonic: string): Promise<WalletDataInterface> {
-	let keyPair = await getKeyPairFromMnemonic(mnemonic, { id: 'rsa', modulusLength: 4096 }, { privateKeyFormat: 'pkcs8-der' })
-	const jwk = await pkcs8ToJwk(keyPair.privateKey)
-	console.info('generated wallet')
-	return addWallet(jwk as JWKInterface)
-}
-
-export async function addWallet (jwkObj: JWKInterface): Promise<WalletDataInterface> { // todo use addProvider(ArweaveProvider) instead, gen jwk when missing
-	const jwk = jwkObj || await arweave.wallets.generate()
-	const jwkString = JSON.stringify(jwk)
-	const existing = WalletsData.value.find(w => JSON.stringify(w.jwk) === jwkString)
-	if (existing) { return existing }
-	const key = await arweave.wallets.jwkToAddress(jwk) as string
-	if (!jwkObj) { download(key, jwkString) }
-	const walletData: WalletDataInterface = { id: getNewId(), jwk }
-	WalletsData.value.push(walletData)
-	return walletData
-}
-
-export async function addAddress (addressSource: any): Promise<WalletDataInterface> { // todo make provider specific
-	let key = typeof addressSource === 'string' && addressSource
-	key ||= addressSource.key
-	key ||= await addressSource.getActiveAddress?.()
-	if (!key) { throw 'no address found' }
-	const walletData: WalletDataInterface = { id: getNewId(), data: { arweave: { key } } }
-	WalletsData.value.push(walletData)
-	return walletData
-}
-
-export async function addProvider (provider: Provider): Promise<WalletDataInterface> { // todo deduplicate
-	const walletData: WalletDataInterface = { id: getNewId() }
+export async function addMnemonic (mnemonic: string, provider?: AnyProvider): Promise<WalletDataInterface> {
+	provider ??= ArweaveProvider
+	const walletData = await provider.metadata.addPassphrase?.(mnemonic)
+	if (!walletData) { throw 'error' }
 	await provider.metadata.addImportData(walletData)
-	WalletsData.value.push(walletData)
-	return walletData
+	return addWalletData(walletData)
+}
+
+export async function addKeyfile (keyfile?: string, provider?: AnyProvider): Promise<WalletDataInterface> { // todo deduplicate
+	let walletData: Partial<WalletDataInterface> | undefined
+	if (keyfile == null) {
+		provider ??= ArweaveProvider
+		const newWalletData = await provider.metadata.addKeyfile?.(keyfile)
+		walletData = await provider.metadata.addImportData(newWalletData)
+	} else {
+		const providers = await selectProviders('keyfile', keyfile)
+		walletData = providers[0].walletData // todo merge
+	}
+	if (!walletData) { throw 'error' }
+	return addWalletData(walletData)
+}
+
+export async function addAddress (address?: string, provider?: AnyProvider): Promise<WalletDataInterface> {
+	provider ??= ArweaveProvider
+	const walletData = await provider.metadata.addImportData({}, { address })
+	if (!walletData) { throw 'error' }
+	return addWalletData(walletData)
+}
+
+async function addWalletData (walletData: Partial<WalletDataInterface>) {
+	walletData.id ??= getNewId()
+	const result = walletData as WalletDataInterface
+	WalletsData.value.push(result)
+	return result
 }
 
 export function deleteWallet (wallet: WalletDataInterface) {

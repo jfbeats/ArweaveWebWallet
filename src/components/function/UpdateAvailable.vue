@@ -43,10 +43,10 @@ const triggerUpdate = async () => {
 		updateServiceWorker(false).then(res)
 		setTimeout(res, 1000)
 	})
-	states.value.forEach(state => state.updating = true)
+	states.value.filter(s => s !== state.value).forEach(s => s.updating = true)
 	state.value.updating = true
 }
-const otherInstance = computed(() => states.value.find(s => !s.origin || s.origin !== state.value.origin && s.session !== state.value.session))
+const otherInstance = computed(() => states.value.filter(s => s !== state.value).find(s => !s.origin || s.origin !== state.value.origin && s.session !== state.value.session))
 watch(needRefresh, needed => needed && !otherInstance.value && autoUpdateActive && triggerUpdate(), { immediate: true })
 watch(() => state.value.updating, val => val && update(), { immediate: true })
 const close = () => { needRefresh.value = false }

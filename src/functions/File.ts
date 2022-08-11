@@ -1,4 +1,4 @@
-import { addWallet, softwareProviders, Wallets } from '@/functions/Wallets'
+import { addKeyfile, selectProviders, Wallets } from '@/functions/Wallets'
 import router from '@/router'
 import Transaction from 'arweave/web/lib/transaction'
 import { track } from '@/store/Analytics'
@@ -17,10 +17,8 @@ export async function dropped (e?: DragEvent | InputEvent | FileSystemDirectoryH
 	if (!e) { return addFiles([]) }
 	const text = eventToText(e)
 	const files = await eventToFiles(e)
-	if (type === 'keyfile') { // todo require async isProviderFor to try on any dropped type
-		const keyfiles = await findKeyfiles(text ? [text] : files)
-		if (keyfiles.length) { return importKeyfiles(keyfiles) }
-	}
+	const keyfiles = await findKeyfiles(text ? [text] : files)
+	if (keyfiles.length) { return importKeyfiles(keyfiles) }
 	if (type === 'keyfile') { throw 'Error importing keyfiles' }
 	// todo unsigned tx - fill send page (through tx import function?)
 	// todo signed tx - ask to upload (through tx import function?)
@@ -67,7 +65,7 @@ async function eventToFiles (e: DragEvent | InputEvent | FileSystemDirectoryHand
 async function* fileSystemAccessApi (entry: FileSystemDirectoryHandle | FileSystemFileHandle): AsyncGenerator<FileSystemFileHandle> {
 	if (entry.kind === 'file') { yield entry }
 	else if (entry.kind === 'directory') {
-		for await (const handle of entry.values()) {
+		for await (const handle of (entry as any).values()) {
 			yield* fileSystemAccessApi(handle)
 		}
 	}
@@ -80,22 +78,15 @@ async function findKeyfiles (files: string[] | FileWithPath[]): Promise<string[]
 	for (const file of files) {
 		const text = typeof file === 'string' ? file : await file.text()
 		try {
-			const keyfile = JSON.parse(text)
-			const provider = softwareProviders.find(provider => provider.metadata.isProviderFor?.({ jwk: keyfile }))
-			if (provider) { results.push(text) }
+			const providers = await selectProviders('keyfile', text)
+			if (providers.length) { results.push(text) }
 		} catch (e) {}
 	}
 	return results
 }
 
-async function importKeyfiles (files: string[]) {
-	const walletPromises = []
-	for (const file of files) {
-		const data = JSON.parse(file)
-		const walletPromise = addWallet(data)
-		walletPromises.push(walletPromise)
-	}
-	const ids = (await Promise.all(walletPromises)).filter(e => e !== null).map(e => e.id)
+async function importKeyfiles (keyfiles: string[]) {
+	const ids = (await Promise.all(keyfiles.map(async keyfile => addKeyfile(keyfile)))).filter(e => e !== null).map(e => e.id)
 	if (ids.length > 0) { router.push({ name: 'EditWallet', query: { wallet: ids } }) }
 	track.account('Import')
 }
