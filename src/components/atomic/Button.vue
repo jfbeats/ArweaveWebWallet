@@ -81,4 +81,8 @@ const margin = computed(() => slots.default)
 .icon.margin {
 	margin-inline-end: 0.5em;
 }
+
+a {
+	color: inherit;
+}
 </style>
