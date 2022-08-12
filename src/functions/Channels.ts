@@ -14,6 +14,7 @@ type PrefixTable = {
 	pwdTest: EncryptedContent | null
 	pwdTestLock: number
 	events: { [key: string]: any }
+	ledgerSettings: { selectedTransport: string }
 }
 
 type DefaultValue <T extends keyof PrefixTable> = PrefixTable[T] | undefined

@@ -2,7 +2,7 @@ import { WalletProxy } from '@/providers/WalletProxy'
 import { mix } from '@/functions/UtilsClass'
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import TransportWebHID from "@ledgerhq/hw-transport-webhid"
-// import TransportWebBLE from "@ledgerhq/hw-transport-web-ble"
+import TransportWebBLE from "@ledgerhq/hw-transport-web-ble"
 import ArweaveApp from "@zondax/ledger-arweave"
 import { ArweaveAccount, ArweaveMessageRunner } from '@/providers/Arweave'
 import { arweave } from '@/store/ArweaveStore'
@@ -13,25 +13,26 @@ import IconLaunch from '@/assets/icons/launch.svg?component'
 import type Transaction from 'arweave/web/lib/transaction'
 import type { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
 import { track } from '@/store/Analytics'
+import { computed, markRaw, reactive, ref, watch } from 'vue'
+import { computedAsync } from '@/functions/AsyncData'
+import LedgerSettings from '@/providers/LedgerSettings.vue'
+import { useChannel } from '@/functions/Channels'
 
 
 
-const transports = [TransportWebHID, TransportWebUSB]
-let selectedTransport: any
+const transports = reactive([
+	{ name: 'HID', value: TransportWebHID, isSupported: computedAsync(() => TransportWebHID.isSupported()) },
+	{ name: 'USB', value: TransportWebUSB, isSupported: computedAsync(() => TransportWebUSB.isSupported()) },
+	{ name: 'Bluetooth', value: TransportWebBLE, isSupported: computedAsync(() => TransportWebBLE.isSupported()) },
+])
+export const availableTransports = computed(() => transports.filter(t => t.isSupported))
+export const ledgerSettings = useChannel('ledgerSettings', undefined, {
+	selectedTransport: transports[0].name
+}).state
 
 async function getTransport () {
-	if (selectedTransport) { return selectedTransport.create() }
-	console.info(`Trying to connect`)
-	for (const transport of transports) {
-		if (await transport.isSupported()) {
-			try {
-				const currentTransport = await transport.create()
-				selectedTransport = transport
-				return currentTransport
-			} catch (e) { console.error(e) }
-		}
-	}
-	throw 'getTransport failed'
+	const transport = transports.find(transport => transport.name === ledgerSettings.value.selectedTransport) || availableTransports.value[0]
+	return transport!.value.create()
 }
 
 function handleResponse (response: any) {
@@ -104,29 +105,36 @@ async function sign (tx: Transaction) {
 
 
 
+const providerMetadata: ProviderMetadata = reactive({
+	id: 'ledger',
+	name: 'Ledger',
+	icon: markRaw(LogoLedger),
+	disabled: true,
+	addImportData: async (walletData) => {
+		walletData ??= {}
+		walletData.provider = LedgerProvider.metadata.id
+		walletData.data ??= {}
+		walletData.data.arweave = { key: await getAddress() }
+		return walletData
+	},
+	actions: [
+		{ name: 'Verify address', icon: markRaw(IconVerify), run: async () => getAddress(true) },
+		{ name: 'Purchase | affiliate link', icon: markRaw(IconLaunch), to: 'https://shop.ledger.com?r=1a60a479b0af', run: () => track.event('affiliate', 'https://shop.ledger.com?r=1a60a479b0af') },
+	],
+	componentSettings: markRaw(LedgerSettings)
+})
+
+watch(availableTransports, t => providerMetadata.disabled = !t.length, { immediate: true })
+
+
+
 export class LedgerProvider extends mix(ArweaveAccount).with(WalletProxy) implements Provider {
 	constructor (init: WalletDataInterface) {
 		super(init)
 		this.messageVerifier = new ArweaveMessageVerifier()
 		this.messageRunner = new ArweaveMessageRunner(this as any)
 	}
-	static get metadata (): ProviderMetadata { return {
-		id: 'ledger',
-		name: 'Ledger',
-		icon: LogoLedger,
-		disabled: !window.navigator.usb, // todo change to async computed and test all transports
-		addImportData: async (walletData) => {
-			walletData ??= {}
-			walletData.provider = LedgerProvider.metadata.id
-			walletData.data ??= {}
-			walletData.data.arweave = { key: await getAddress() }
-			return walletData
-		},
-		actions: [
-			{ name: 'Verify address', icon: IconVerify, run: async () => getAddress(true) },
-			{ name: 'Purchase | affiliate link', icon: IconLaunch, to: 'https://shop.ledger.com?r=1a60a479b0af', run: () => track.event('affiliate', 'https://shop.ledger.com?r=1a60a479b0af') },
-		],
-	}}
+	static get metadata () { return providerMetadata }
 	get metadata (): InstanceMetadata<LedgerProvider> { return {
 		...LedgerProvider.metadata,
 		methods: {

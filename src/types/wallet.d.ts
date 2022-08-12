@@ -59,6 +59,7 @@ type ProviderMetadata = DisplayMetadata & {
 	addAddress?: (address: string) => Promise<Partial<WalletDataInterface>>
 	addImportData: (data?: Partial<WalletDataInterface>, options?: ImportOptions) => Promise<Partial<WalletDataInterface>>
 	actions?: Action[]
+	componentSettings?: any
 }
 
 type InstanceMetadata<T> = ProviderMetadata & {
