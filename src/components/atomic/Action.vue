@@ -1,17 +1,27 @@
 <template>
-	<router-link class="action">
+	<Link class="action" v-bind="props">
 		<Icon :icon="icon" />
 		<span class="text">
 			<slot></slot>
 		</span>
-	</router-link>
+	</Link>
 </template>
 
 
 
-<script setup>
+<script setup lang="ts">
 import Icon from '@/components/atomic/Icon.vue'
-const props = defineProps(['icon'])
+import Link from '@/components/function/Link.vue'
+
+const props = defineProps<{
+	// Todo type action
+	name?: string
+	icon?: import('vue').FunctionalComponent<import('vue').SVGAttributes, {}>
+	color?: string
+	run?: Function
+	to?: import('vue-router').RouteLocationRaw
+	disabled?: any
+}>()
 </script>
 
 

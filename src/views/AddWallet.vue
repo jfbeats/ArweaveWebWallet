@@ -8,9 +8,9 @@
 			<div class="flex-column">
 				<InputData v-model="passphraseInput" @files="files => dropped(files, 'keyfile')" :disabled="isCreatingWallet" placeholder="Import passphrase or key file" />
 				<div />
-				<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create()" :disabled="passphraseInput.length && !isPassphrase" :icon="LogoArweave" class="main">Create new wallet</Button>
-				<Button v-else-if="isCreatingWallet" :disabled="createdWallet == null" @click="goToCreatedWallet" :icon="createdWallet == null ? 'loader' : ''" class="main">{{ createdWallet == null ? 'Generating, write down the passphrase' : 'Passphrase saved? Click here to proceed' }}</Button>
-				<Button v-else :disabled="!isPassphrase || isGeneratingWallet" @click="confirmPassphrase" class="main">Import passphrase</Button>
+				<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create" :disabled="passphraseInput.length && !isPassphrase" :icon="LogoArweave" class="main" :glow="true" color="#81a1c1">Create new wallet</Button>
+				<Button v-else-if="isCreatingWallet" :disabled="createdWallet == null" @click="goToCreatedWallet" :icon="createdWallet == null ? 'loader' : ''" class="main" :glow="true" color="#81a1c1">{{ createdWallet == null ? 'Generating, write down the passphrase' : 'Passphrase saved? Click here to proceed' }}</Button>
+				<Button v-else :disabled="!isPassphrase || isGeneratingWallet" @click="confirmPassphrase" class="main" :glow="true" color="#81a1c1">Import passphrase</Button>
 			</div>
 			<OverlayPrompt :options="popup">
 				<div v-if="popup.messageType === 'invalid'" style="text-align: center">
@@ -19,18 +19,29 @@
 				</div>
 			</OverlayPrompt>
 		</div>
-		<div class="card" v-for="provider in hardwareProviders" :key="provider.metadata.name">
+		<div class="card" v-for="(provider, number) in hardwareProviders" :key="provider.metadata.name">
 			<h2 class="flex-row" style="align-items: center;"><Icon :icon="provider.metadata.icon" /><span>{{ provider.metadata.name }} Hardware Wallet (awaiting release)</span></h2>
 			<div class="flex-column">
-				<Button :disabled="provider.metadata.disabled" @click="importProvider(provider)" :icon="provider.metadata.icon" class="main">
-					{{ provider.metadata.disabled ? `${provider.metadata.name} not supported for this browser` : `Connect with ${provider.metadata.name}` }}
-				</Button>
 				<div class="flex-row">
-					<Button :icon="IconVerify" @click="provider.metadata.verify">Verify address</Button>
-					<a :href="provider.metadata.link" target="_blank" class="reset" @click="() => track.event('affiliate', provider.metadata.link)">
-						<Button :icon="IconLaunch">Purchase | affiliate link</Button>
-					</a>
+					<Button :disabled="provider.metadata.disabled" @click="importProvider(provider)" :icon="provider.metadata.icon" class="main" :glow="true" color="#81a1c1">
+						{{ provider.metadata.disabled ? `${provider.metadata.name} not supported for this browser` : `Connect with ${provider.metadata.name}` }}
+					</Button>
+					<Button v-if="provider.metadata.componentSettings" :icon="IconSettings"  class="secondary" @click="activeSettings = number" />
 				</div>
+				<div class="flex-row">
+					<Button v-for="action in provider.metadata.actions" :key="action.name" v-bind="action">{{ action.name }}</Button>
+				</div>
+				<Viewport v-if="provider.metadata.componentSettings" :background="true">
+					<div v-if="activeSettings === number" class="popup">
+						<div class="card flex-column" style="min-width: 300px;">
+							<div class="flex-row" style="justify-content: space-between; align-items: center">
+								<h2>Settings</h2>
+								<WalletSelector @exit="activeSettings = -1" />
+							</div>
+							<component :is="provider.metadata.componentSettings" />
+						</div>
+					</div>
+				</Viewport>
 			</div>
 		</div>
 		<div class="card">
@@ -48,16 +59,16 @@ import InputAddress from '@/components/form/InputAddress.vue';
 import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
-import { hardwareProviders, addAddress, addMnemonic, addProvider, generateMnemonic, validateMnemonic } from '@/functions/Wallets'
+import Viewport from '@/components/layout/Viewport.vue'
+import WalletSelector from '@/components/composed/WalletSelector.vue'
+import { hardwareProviders, addAddress, addMnemonic, generateMnemonic, validateMnemonic } from '@/functions/Wallets'
 import { dropped } from '@/functions/File'
 import { track } from '@/store/Analytics'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-
 import LogoArweave from '@/assets/logos/arweave.svg?component'
 import IconAddBox from '@/assets/icons/add_box.svg?component'
-import IconLaunch from '@/assets/icons/launch.svg?component'
-import IconVerify from '@/assets/icons/verify.svg?component'
+import IconSettings from '@/assets/icons/settings.svg?component'
 
 const router = useRouter()
 const passphraseInput = ref('')
@@ -99,8 +110,8 @@ const confirmPassphrase = async () => {
 		]
 	}
 }
-const importProvider = async (provider: Provider) => {
-	const walletData = await addProvider(provider)
+const importProvider = async (provider: AnyProvider) => {
+	const walletData = await addAddress(undefined, provider)
 	router.push({ name: 'EditWallet', query: { wallet: walletData.id } })
 	track.account('Import ' + provider.metadata.name)
 }
@@ -109,6 +120,7 @@ const importAddressOnlyAction = { icon: IconAddBox, run: async () => {
 	router.push({ name: 'EditWallet', query: { wallet: walletData.id } })
 	track.account('Watch')
 }}
+const activeSettings = ref(-1)
 </script>
 
 
@@ -121,7 +133,7 @@ const importAddressOnlyAction = { icon: IconAddBox, run: async () => {
 	align-items: center;
 }
 
-.card {
+.add-wallet > .card {
 	width: 100%;
 	max-width: var(--column-width);
 	overflow: hidden;
@@ -132,9 +144,28 @@ const importAddressOnlyAction = { icon: IconAddBox, run: async () => {
 }
 
 .button.main {
-	background-image: radial-gradient(circle at center, #81a1c166, #81a1c133);
-	height: 4em;
-	font-size: 1.1em;
+	height: 4.5rem;
+	font-size: 1.1rem;
 	width: 100%;
+}
+
+.button.secondary {
+	flex: 0 0 auto;
+	height: 4.5rem;
+	font-size: 1.5rem;
+	width: 4.5rem;
+}
+
+.popup {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.popup .card {
+	height: 400px;
+	display: flex;
+	overflow: hidden;
+	background: var(--background);
 }
 </style>

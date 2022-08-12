@@ -1,15 +1,50 @@
 <template>
-	<button class="button no-select" type="button">
-		<Icon v-if="icon" :icon="icon" />
+	<Link class="button no-select" :class="{ disabled }" v-bind="bind" :run="runFunction" :style="glowStyle">
+		<Icon v-if="icon" :icon="icon" :class="{ margin }" />
 		<slot></slot>
-	</button>
+	</Link>
 </template>
 
 
 
-<script setup>
+<script setup lang="ts">
 import Icon from '@/components/atomic/Icon.vue'
-const props = defineProps(['icon'])
+import Link from '@/components/function/Link.vue'
+import { computed, useSlots } from 'vue'
+import { normalizeColorTo } from '@/functions/Utils'
+
+const props = defineProps<{
+	onClick?: (e?: MouseEvent) => any
+	glow?: boolean // todo
+	
+	// Todo type action
+	name?: string
+	icon?: import('vue').FunctionalComponent<import('vue').SVGAttributes, {}>
+	color?: string
+	run?: Function
+	to?: import('vue-router').RouteLocationRaw
+	disabled?: any
+}>()
+const slots = useSlots()
+
+const bind = computed(() => {
+	const { run, onClick, ...other } = props
+	return other
+})
+
+const runFunction = computed(() => {
+	if (!props.onClick && !props.run) { return }
+	return props.disabled ? () => {} : () => { props.onClick?.(); props.run?.() }
+})
+
+const borderSize = computed(() => props.glow ? '0' : '0.5px')
+const glowStyle = computed(() => props.glow && props.color && ({
+	'--border': `rgba(${normalizeColorTo('rgb', props.color)},0.2)`,
+	'--glow-color': `rgba(${normalizeColorTo('rgb', props.color)},0.2)`,
+	'background-image': `radial-gradient(circle at center, rgba(${normalizeColorTo('rgb', props.color)},0.4),
+	rgba(${normalizeColorTo('rgb', props.color)},0.3))`
+}))
+const margin = computed(() => slots.default)
 </script>
 
 
@@ -23,13 +58,14 @@ const props = defineProps(['icon'])
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	border: v-bind(borderSize) solid var(--border);
 	box-shadow: 0 0 calc(var(--spacing) / 2) 0 var(--glow-color);
-	transition: 0.3s ease;
+	transition: filter 0.3s ease, box-shadow 0.3s ease;
 }
 
 .button:hover {
-	box-shadow: 0 0 var(--spacing) 0 var(--glow-color);
 	filter: brightness(1.3);
+	box-shadow: 0 0 var(--spacing) 0 var(--glow-color);
 }
 
 .button:active {
@@ -38,11 +74,15 @@ const props = defineProps(['icon'])
 	transition: 0s;
 }
 
-.button:disabled {
+.button:disabled, .button.disabled {
 	filter: grayscale(0.5) brightness(0.5);
 }
 
-.icon {
+.icon.margin {
 	margin-inline-end: 0.5em;
+}
+
+a {
+	color: inherit;
 }
 </style>

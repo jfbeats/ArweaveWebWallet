@@ -4,7 +4,7 @@ import { ArweaveVerifier as ArweaveMessageVerifier } from 'arweave-wallet-connec
 import { Emitter, mix } from '@/functions/UtilsClass'
 import { download, exportTransaction } from '@/functions/File'
 import { awaitEffect, getAsyncData } from '@/functions/AsyncData'
-import { getDecryptionKey, getSigningKey } from '@/functions/Crypto'
+import { getDecryptionKey, getSigningKey, pkcs8ToJwk } from '@/functions/Crypto'
 import { manageUpload } from '@/functions/Transactions'
 import Transaction from 'arweave/web/lib/transaction'
 import { computed } from 'vue'
@@ -13,6 +13,9 @@ import LogoArweave from '@/assets/logos/arweave.svg?component'
 import type { ArweaveProviderInterface } from 'arweave-wallet-connector/lib/Arweave'
 import type { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
 import type { TransactionInterface } from 'arweave/web/lib/transaction'
+import type { JWKInterface } from 'arweave/web/lib/wallet'
+// @ts-ignore
+import { getKeyPairFromMnemonic } from 'human-crypto-keys'
 
 
 
@@ -28,9 +31,22 @@ const providerMetadata: ProviderMetadata = {
 		if (walletData.data?.arweave) { return true }
 		return !!walletData.jwk // test key type
 	},
-	addImportData: async (walletData) => {
+	addPassphrase: async (passphrase) => {
+		let keyPair = await getKeyPairFromMnemonic(passphrase, { id: 'rsa', modulusLength: 4096 }, { privateKeyFormat: 'pkcs8-der' })
+		const jwk = await pkcs8ToJwk(keyPair.privateKey) as JWKInterface
+		return { jwk }
+	},
+	addKeyfile: async (keyfile) => {
+		const data = keyfile != null && JSON.parse(keyfile) as JWKInterface
+		const jwk = data || await arweave.wallets.generate()
+		return { jwk }
+	},
+	addImportData: async (walletData, options) => {
+		walletData ??= {}
+		const key = options?.address ?? await arweave.wallets.jwkToAddress(walletData.jwk as any)
 		walletData.data ??= {}
-		walletData.data.arweave = { key: await arweave.wallets.jwkToAddress(walletData.jwk as any) }
+		walletData.data.arweave = { key }
+		return walletData
 	},
 }
 

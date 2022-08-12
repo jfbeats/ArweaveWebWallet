@@ -1,9 +1,9 @@
 <template>
-	<SettingItem :icon="LogoArweave" name="Guide" description="How to get started using the wallet" href="https://docs.arweave.org/info/wallets/arweave-wallet"/>
-	<SettingItem v-if="Wallets.length" :icon="LogoDiscord" name="Discord" description="Send feedback, questions or talk about anything" href="https://discord.gg/W6VybRqwBP"/>
-	<SettingItem :icon="LogoGithub" name="Github | Web Wallet" description="Source code" href="https://github.com/jfbeats/ArweaveWebWallet"/>
-	<SettingItem :icon="LogoGithub" name="Github | Wallet Connector" description="Integrate the universal connector to use web wallets like arweave.app inside your own applications" href="https://jfbeats.github.io/ArweaveWalletConnector"/>
-	<SettingItem :icon="IconText" name="Arwiki" description="Wiki on the Arweave protocol" href="https://arwiki.wiki"/>
+	<SettingItem :icon="LogoArweave" name="Guide" description="How to get started using the wallet" to="https://docs.arweave.org/info/wallets/arweave-wallet"/>
+	<SettingItem v-if="Wallets.length" :icon="LogoDiscord" name="Discord" description="Send feedback, questions or talk about anything" to="https://discord.gg/W6VybRqwBP"/>
+	<SettingItem :icon="LogoGithub" name="Github | Web Wallet" description="Source code" to="https://github.com/jfbeats/ArweaveWebWallet"/>
+	<SettingItem :icon="LogoGithub" name="Github | Wallet Connector" description="Integrate the universal connector to use web wallets like arweave.app inside your own applications" to="https://jfbeats.github.io/ArweaveWalletConnector"/>
+	<SettingItem :icon="IconText" name="Arwiki" description="Wiki on the Arweave protocol" to="https://arwiki.wiki"/>
 </template>
 
 

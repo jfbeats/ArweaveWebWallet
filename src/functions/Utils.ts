@@ -39,6 +39,22 @@ function hsl2rgb (h: number, s: number, b: number) {
 	return [s2[~~h % 6] * 255, s2[(h | 16) % 6] * 255, s2[(h | 8) % 6] * 255]
 }
 
+function hexToRgb (hex: string) {
+	let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+	return result ? [ parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16) ].join(',') : null
+}
+
+function rgbToHex (rgb: string) {
+	const [r, g, b] = rgb.split(',').map(v => +v)
+	return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)
+}
+
+export function normalizeColorTo (type: 'hex' | 'rgb', color: string) {
+	if (type === 'rgb' && color.startsWith('#')) { return hexToRgb(color) }
+	if (type === 'hex' && color.includes(',')) { return rgbToHex(color) }
+	return color
+}
+
 export function generateUrl (url: string) {
 	if (!url.includes('://')) { url = 'https://' + url }
 	return new URL(url).href

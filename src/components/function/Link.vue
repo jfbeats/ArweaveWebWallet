@@ -1,40 +1,36 @@
 <template>
-	<a v-if="to && isExternal" :href="to" target="_blank" v-bind="{ ...getScopeAttrs(), ...$attrs }" :class="props.class" :style="style"><slot /></a>
-	<router-link v-else-if="to" :to="to" custom v-slot="{ href, navigate }">
-		<a :href="to && !$attrs.disabled ? href : null" @click="(...params) => to && navigate(...params)" v-bind="{ ...getScopeAttrs(), ...$attrs }" :class="props.class" :style="style">
-			<slot />
-		</a>
-	</router-link>
-	<button v-else-if="$attrs.onClick && !$attrs.disabled" type="button" v-bind="{ ...getScopeAttrs(), ...$attrs }" :class="props.class" :style="style"><slot /></button>
-	<span v-else v-bind="{ ...getScopeAttrs(), ...$attrs }" :class="props.class" :style="style"><slot /></span>
+	<a v-if="to && isExternal" :href="to" @click.capture="runFunctions" target="_blank"><slot /></a>
+	<a v-else-if="to" :href="!disabled ? href : null" @click.capture="runFunctions" :class="{ 'router-link-active': isActive, 'router-link-exact-active': isExactActive }"><slot /></a>
+	<button v-else-if="run" @click.capture="runFunctions" :disabled="disabled" type="button"><slot /></button>
+	<span v-else><slot /></span>
 </template>
 
 
 
 <script setup lang="ts">
-import { computed, HTMLAttributes, StyleValue } from 'vue'
-import { RouteLocationRaw } from 'vue-router'
+import { RouterLink, useLink } from 'vue-router'
+import { computed } from 'vue'
 
+// console.log(RouterLink.props)
 const props = defineProps<{
-	to?: RouteLocationRaw
-	class?: HTMLAttributes['class']
-	style?: StyleValue
+	// href?: never
+	
+	// Todo type action
+	name?: string
+	icon?: import('vue').FunctionalComponent<import('vue').SVGAttributes, {}>
+	color?: string
+	run?: Function
+	to?: import('vue-router').RouteLocationRaw
+	disabled?: any
 }>()
+const routerParams = computed(() => ({ ...props, to: props.to ?? '' }))
+const { navigate, href, route, isActive, isExactActive } = useLink(routerParams.value)
 
 const isExternal = computed(() => { try { new URL(props.to as any); return true } catch (e) {} })
-</script>
-
-
-
-<script lang="ts">
-export default {
-	inheritAttrs: false,
-	methods: {
-		getScopeAttrs () {
-			const scopeAttr = (this as any).$parent.$options.__scopeId
-			return scopeAttr ? { [scopeAttr]: '' } : {}
-		}
-	}
+const runFunctions = (e: MouseEvent) => {
+	if (props.disabled) { return }
+	props.run?.()
+	props.to && navigate(e)
 }
 </script>
 

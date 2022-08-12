@@ -15,7 +15,7 @@
 				<div></div>
 			</template>
 		</div>
-		<Button v-if="!Wallets.length" style="font-size:1.5em; background:var(--background3); width: 100%;" @click="$router.push({ name: 'AddWallet' })" icon="+" />
+		<Button v-if="!Wallets.length" style="font-size:1.5em; background:var(--background3); width: 100%;" :to="{ name: 'AddWallet' }" icon="+" />
 	</div>
 </template>
 

@@ -1,7 +1,7 @@
 <template>
 	<div class="setting-item" :class="{ 'flex-row': row }">
 		<div>
-			<Link :to="href">
+			<Link :to="to">
 				<div v-if="name" class="name">
 					<Icon v-if="icon" :icon="icon" style="margin-inline-end: 1em"/>
 					<div>{{ name }}</div>
@@ -26,14 +26,19 @@ import Link from '@/components/function/Link.vue'
 import { computed } from 'vue'
 
 const props = defineProps<{
-	name?: string
 	description?: string
 	row?: any
-	href?: string
-	icon?: any
+	
+	// Todo type action
+	name?: string
+	icon?: import('vue').FunctionalComponent<import('vue').SVGAttributes, {}>
+	color?: string
+	run?: Function
+	to?: import('vue-router').RouteLocationRaw
+	disabled?: any
 }>()
 
-const gap = computed(() => !props.href && '0.8rem')
+const gap = computed(() => !props.to && '0.8rem')
 </script>
 
 

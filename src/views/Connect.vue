@@ -31,7 +31,17 @@ const connectPrompt = computed(() => ({
 	}
 }))
 
-const currentConnectorIndex = ref(connectors.value.findIndex(connector => connector.origin === state.value.origin))
+let loading = true
+setTimeout(() => loading = false, 500)
+
+const currentConnectorIndex = ref(-1)
+watch(connectors, () => {
+	const index = connectors.value.findIndex(connector => connector.origin === state.value.origin)
+	if (!loading || index < 0 || currentConnectorIndex.value >= 0) { return }
+	currentConnectorIndex.value = index
+	loading = false
+}, { immediate: true })
+
 const extensionOrigin = ref()
 postMessageExtension('state').then(res => {
 	if (!res) { return }
