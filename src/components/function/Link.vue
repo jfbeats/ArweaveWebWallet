@@ -30,7 +30,7 @@ const isExternal = computed(() => { try { new URL(props.to as any); return true 
 const runFunctions = (e: MouseEvent) => {
 	if (props.disabled) { return }
 	props.run?.()
-	navigate(e)
+	props.to && navigate(e)
 }
 </script>
 
