@@ -64,6 +64,7 @@ import WalletSelector from '@/components/composed/WalletSelector.vue'
 import { hardwareProviders, addAddress, addMnemonic, generateMnemonic, validateMnemonic } from '@/functions/Wallets'
 import { dropped } from '@/functions/File'
 import { track } from '@/store/Analytics'
+import { notify } from '@/store/NotificationStore'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import LogoArweave from '@/assets/logos/arweave.svg?component'
@@ -111,9 +112,11 @@ const confirmPassphrase = async () => {
 	}
 }
 const importProvider = async (provider: AnyProvider) => {
-	const walletData = await addAddress(undefined, provider)
-	router.push({ name: 'EditWallet', query: { wallet: walletData.id } })
-	track.account('Import ' + provider.metadata.name)
+	try {
+		const walletData = await addAddress(undefined, provider)
+		router.push({ name: 'EditWallet', query: { wallet: walletData.id } })
+		track.account('Import ' + provider.metadata.name)
+	} catch (e: any) { console.error(e); notify.error(e.message || e) }
 }
 const importAddressOnlyAction = { icon: IconAddBox, run: async () => {
 	const walletData = await addAddress(targetInput.value)
