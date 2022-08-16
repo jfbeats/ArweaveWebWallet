@@ -60,11 +60,9 @@
 									<Amount :ar="tx.fee.ar" />
 								</div>
 							</div>
-							<div v-if="tx.tags.length">
-								<h3>Tags</h3>
-							</div>
 						</div>
-						<div v-if="tx.tags.length" style="background: var(--background2); border-radius: var(--border-radius);">
+						<div v-if="tx.tags.length" style="background: var(--background);">
+							<h3 style="margin-bottom: 0; padding: var(--spacing) 0 0 var(--spacing);">Tags</h3>
 							<InputTags v-model="tx.tags" disabled />
 						</div>
 					</div>

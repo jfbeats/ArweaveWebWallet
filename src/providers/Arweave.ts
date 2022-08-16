@@ -96,7 +96,8 @@ export class ArweaveProvider extends mix(ArweaveAccount).with(WalletProxy) imple
 			methods: {
 				download: { unavailable: !this.hasPrivateKey },
 				signTransaction: { userIntent: !this.hasPrivateKey },
-				bundle: { unavailable: !this.hasPrivateKey },
+				createDataItem: { unavailable: !this.hasPrivateKey },
+				createBundle: { unavailable: !this.hasPrivateKey },
 				sign: { unavailable: !this.hasPrivateKey },
 				decrypt: { unavailable: !this.hasPrivateKey },
 			}
@@ -126,25 +127,6 @@ export class ArweaveProvider extends mix(ArweaveAccount).with(WalletProxy) imple
 		const sk = await this.getPrivateKey()
 		const signer = new signers.ArweaveSigner(sk)
 		return bundleAndSignData(items, signer)
-	}
-	async bundle (tx: Transaction, options?: object) {
-		const { createData, signers } = await import('@/../scripts/arbundles')
-		const signer = new signers.ArweaveSigner(await this.getPrivateKey())
-		const anchor = arweave.utils.bufferTob64(crypto.getRandomValues(new Uint8Array(32))).slice(0, 32)
-		const data = tx.get('data', { decode: true, string: false })
-		const tags = tx.tags.map(tag => ({
-			name: tag.get('name', { decode: true, string: true }),
-			value: tag.get('value', { decode: true, string: true })
-		}))
-		const bundleTx = createData(data, signer, { tags, anchor, target: tx.target })
-		await bundleTx.sign(signer)
-		const res = await axios.post(ArweaveStore.bundlerURL + 'tx', bundleTx.getRaw(), {
-			headers: { 'Content-Type': 'application/octet-stream' },
-			maxBodyLength: Infinity,
-		})
-		console.log(res, bundleTx)
-		if (res.status >= 200 && res.status < 300) { return { id: bundleTx.id } }
-		throw new Error(res.status + '')
 	}
 	async sign (data: ArrayBufferView, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
 		const signingKey = await getSigningKey(await this.getPrivateKey() as JsonWebKey)
@@ -176,7 +158,7 @@ export class ArweaveMessageRunner implements MessageRunner<ArweaveProviderInterf
 	constructor (private wallet: ArweaveProvider) { }
 	get methodMap () { return {
 		signTransaction: 'signTransaction',
-		dispatch: 'bundle',
+		dispatch: 'createDataItem',
 		getPublicKey: 'getPublicKey',
 		sign: 'sign',
 		decrypt: 'decrypt',
@@ -200,8 +182,18 @@ export class ArweaveMessageRunner implements MessageRunner<ArweaveProviderInterf
 		let dispatchResult: Awaited<ReturnType<ArweaveProviderInterface['dispatch']>> | undefined
 		if (!txObject.quantity || txObject.quantity === '0') {
 			try {
-				const res = await this.wallet.bundle(txObject)
-				dispatchResult = { id: res.id, type: 'BUNDLED' }
+				const data = txObject.get('data', { decode: true, string: false })
+				const tags = txObject.tags.map(tag => ({
+					name: tag.get('name', { decode: true, string: true }),
+					value: tag.get('value', { decode: true, string: true })
+				}))
+				const target = txObject.target
+				const bundleTx = await this.wallet.createDataItem({ data, tags, target })
+				const res = await axios.post(ArweaveStore.bundlerURL + 'tx', bundleTx.getRaw(), {
+					headers: { 'Content-Type': 'application/octet-stream' },
+					maxBodyLength: Infinity,
+				})
+				if (res.status >= 200 && res.status < 300) { dispatchResult = { id: bundleTx.id, type: 'BUNDLED' } }
 			} catch (e) { console.error(e) }
 		}
 		if (dispatchResult) { return dispatchResult }

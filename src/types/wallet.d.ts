@@ -2,7 +2,7 @@ type ProviderId = import('@/functions/Wallets').ProviderId
 type WalletDataInterface = {
 	id: string
 	uuid?: string
-	jwk?: import('arweave/web/lib/wallet').JWKInterface | EncryptedContent
+	jwk?: PrivateKey | EncryptedContent
 	provider?: ProviderId
 	data?: { [name in ProviderId]?: { key?: string } }
 	settings?: {
