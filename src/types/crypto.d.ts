@@ -1,3 +1,5 @@
+type PrivateKey = import('arweave/web/lib/wallet').JWKInterface
+
 type EncryptedContent = {
 	ciphertext: number[]
 	derivationSettings: DerivationSettings

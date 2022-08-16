@@ -1,7 +1,6 @@
 import { useChannel, useLock } from '@/functions/Channels'
 import { isEncrypted, passwordDecrypt, passwordEncrypt } from '@/functions/Crypto'
 import { computed } from 'vue'
-import { JWKInterface } from 'arweave/web/lib/wallet'
 import mitt from 'mitt'
 import { getQueryManager } from '@/functions/AsyncData'
 import { getWalletById } from '@/functions/Wallets'
@@ -90,16 +89,16 @@ export async function setPassword (password: string): Promise<true> {
 
 
 export const emitter = mitt<{ password: PasswordRequest }>()
-const privateCache = {} as { [uuid: string]: JWKInterface }
+const privateCache = {} as { [uuid: string]: PrivateKey }
 
 
 
-function getCache (uuid: string): JWKInterface | void {
+function getCache (uuid: string): PrivateKey | void {
 	return privateCache[uuid]
 }
 
-async function setCache (uuid: string, password: string): Promise<JWKInterface> {
-	let currentPrivateKey = undefined as undefined | JWKInterface
+async function setCache (uuid: string, password: string): Promise<PrivateKey> {
+	let currentPrivateKey = undefined as undefined | PrivateKey
 	const result = WalletsData.value
 	.filter(wallet => isEncrypted(wallet.jwk))
 	.filter(wallet => wallet.uuid === uuid || wallet.settings?.securityLevel !== 'always') // todo settings
@@ -112,8 +111,8 @@ async function setCache (uuid: string, password: string): Promise<JWKInterface> 
 	return currentPrivateKey!
 }
 
-export async function requestPrivateKey (wallet: Wallet): Promise<JWKInterface> {
-	let currentPrivateKey = undefined as undefined | JWKInterface
+export async function requestPrivateKey (wallet: Wallet): Promise<PrivateKey> {
+	let currentPrivateKey = undefined as undefined | PrivateKey
 	const inCache = async () => {
 		const cache = getCache(wallet.uuid)
 		if (cache) { currentPrivateKey = cache; return true }
