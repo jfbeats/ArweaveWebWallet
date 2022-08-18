@@ -1,5 +1,5 @@
 <template>
-	<Link class="button no-select" :class="{ disabled }" v-bind="bind" :run="runFunction" :style="glowStyle">
+	<Link class="button no-select" :class="{ disabled }" v-bind="props" :style="glowStyle">
 		<Icon v-if="icon" :icon="icon" :class="{ margin }" />
 		<slot></slot>
 	</Link>
@@ -14,8 +14,7 @@ import { computed, useSlots } from 'vue'
 import { normalizeColorTo } from '@/functions/Utils'
 
 const props = defineProps<{
-	onClick?: (e?: MouseEvent) => any
-	glow?: boolean // todo
+	glow?: boolean
 	
 	// Todo type action
 	name?: string
@@ -26,16 +25,6 @@ const props = defineProps<{
 	disabled?: any
 }>()
 const slots = useSlots()
-
-const bind = computed(() => {
-	const { run, onClick, ...other } = props
-	return other
-})
-
-const runFunction = computed(() => {
-	if (!props.onClick && !props.run) { return }
-	return props.disabled ? () => {} : () => { props.onClick?.(); props.run?.() }
-})
 
 const borderSize = computed(() => props.glow ? '0' : '0.5px')
 const glowStyle = computed(() => props.glow && props.color && ({
