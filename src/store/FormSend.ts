@@ -110,15 +110,18 @@ async function getProcessedData (wallet?: Wallet): Promise<ArTxParams['data']> {
 	if (form.data.length > 1) {
 		if (!wallet) { throw 'multiple files unsupported for current account' }
 		if (wallet instanceof ArweaveProvider) {
+			const bundleItems = [] as Awaited<ReturnType<typeof wallet.createDataItem>>[]
 			const dataItems = await Promise.all(form.data.map(item => wallet.createDataItem(item)))
 			const trustedAddresses = wallet.key ? [wallet.key] : []
 			const deduplicated = await deduplicate(dataItems, trustedAddresses)
 			const deduplicatedDataItems = dataItems.map((item, i) => deduplicated[i] || item)
-			const paths = form.data.map(item => item.path || '')
-			const manifest = generateManifest(paths, deduplicatedDataItems, paths[0])
-			const manifestDataItem = await wallet.createDataItem({ ...manifest })
-			const bundleDataItems = deduplicatedDataItems.filter(item => typeof item !== 'string') as any
-			return (await wallet.createBundle([...bundleDataItems, manifestDataItem])).getRaw()
+			bundleItems.push(...deduplicatedDataItems.filter((item): item is Exclude<typeof item, string> => typeof item !== 'string'))
+			try {
+				const paths = form.data.map(item => item.path || '')
+				const manifest = generateManifest(paths, deduplicatedDataItems, paths[0])
+				bundleItems.push(await wallet.createDataItem({ ...manifest }))
+			} catch (e) { console.warn('manifest generation failed') }
+			return (await wallet.createBundle(bundleItems)).getRaw()
 		}
 		else { throw 'multiple files unsupported for ' + wallet.metadata.name }
 	}
