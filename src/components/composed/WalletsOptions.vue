@@ -44,7 +44,7 @@ const selectedWallets = computed(() => {
 	const editWalletArray = Array.isArray(editWallet) ? editWallet : [editWallet]
 	return Wallets.value.filter(wallet => editWalletArray.includes(wallet.id + ''))
 })
-const canConnect = computed(() => ['popup', 'iframe', 'ws'].includes(state.value.type!) && !sharedState.value.walletId)
+const canConnect = computed(() => ['popup', 'iframe', 'ws'].includes(state.value.type!) && !sharedState.value?.walletId)
 
 onBeforeRouteLeave(() => {
 	if (!hasUpdate.value) { return }
