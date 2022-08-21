@@ -1,0 +1,21 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Start App",
+            "type": "shell",
+            "command": "npm run dev",
+            "windows": {
+                "command": "npm run dev"
+            },
+            "group": "none",
+            "presentation": {
+                "reveal": "silent",
+                "panel": "new"
+            },
+            "runOptions": {
+                "runOn": "folderOpen",
+            }
+        },
+    ]
+}
