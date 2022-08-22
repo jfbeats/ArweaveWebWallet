@@ -11,19 +11,21 @@
 					<ActionsList :actions="data.actions"/>
 				</div>
 			</div>
-			<Expand v-model="data.expanded" />
+<!--			<Expand v-model="data.expanded" />-->
 		</div>
 	</div>
 </template>
 
 
 
-<script setup>
+<script setup lang="ts">
 import Date from '@/components/atomic/Date.vue'
 import Expand from '@/components/atomic/Expand.vue'
 import ActionsList from '@/components/composed/ActionsList.vue';
 
-const props = defineProps(['data'])
+const props = defineProps<{
+	data: any
+}>()
 </script>
 
 
@@ -32,6 +34,11 @@ const props = defineProps(['data'])
 .notification {
 	--spacing-notification: 8px;
 	--spacing: var(--spacing-notification);
+	color: white;
+}
+
+.secondary-text {
+	color: white;
 }
 
 .icon-background {
