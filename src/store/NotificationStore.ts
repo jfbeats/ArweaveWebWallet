@@ -6,7 +6,7 @@ import { reactive, Ref, ref } from 'vue'
 type NotificationData = NotificationOptions & {
 	title: string
 	onClose?: () => void
-	ref: Ref
+	ref?: Ref
 }
 type Notify = string | NotificationData
 const toastType = { log: 'success', warn: 'warning', error: 'danger', confirm: 'warning' } as const

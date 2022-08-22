@@ -13,11 +13,11 @@ import { computed } from 'vue'
 
 const props = defineProps<{
 	onClick?: (e?: MouseEvent) => any
-	href?: never
+	href?: ''
 	
 	// Todo type action
 	name?: string
-	icon?: import('vue').FunctionalComponent<import('vue').SVGAttributes, {}>
+	icon?: Icon
 	color?: string
 	run?: Function
 	to?: import('vue-router').RouteLocationRaw

@@ -27,11 +27,10 @@ import Password from '@/components/function/Password.vue'
 import { Wallets } from '@/functions/Wallets'
 import InterfaceStore from '@/store/InterfaceStore'
 import { findRoutePosition } from '@/router/Utils'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { toRef } from 'vue'
 
 const router = useRouter()
-const route = useRoute()
 
 const verticalLayout = toRef(InterfaceStore.breakpoints, 'verticalLayout')
 const verticalContent = toRef(InterfaceStore.breakpoints, 'verticalContent')
@@ -48,7 +47,7 @@ router.afterEach((to, from) => {
 	if (to.params.walletId && from.params.walletId && to.params.walletId !== from.params.walletId) {
 		const toWallet = Wallets.value.findIndex(el => el.id == to.params.walletId)
 		const fromWallet = Wallets.value.findIndex(el => el.id == from.params.walletId)
-		;(to.meta.transition as any).nameWallet = toWallet - fromWallet
+		to.meta.transition.nameWallet = toWallet - fromWallet
 	}
 })
 </script>

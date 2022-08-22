@@ -6,6 +6,7 @@ import Wallet from '@/views/Wallet.vue'
 import TxList from '@/views/TxList.vue'
 import Send from '@/views/Send.vue'
 import Tokens from '@/views/Tokens.vue'
+import type { findRoutePosition } from '@/router/Utils'
 
 const routes: RouterOptions['routes'] = [
 	{
@@ -121,3 +122,19 @@ const router = createRouter({
 })
 
 export default router
+
+
+
+declare module 'vue-router' {
+	interface RouteMeta {
+		title?: string
+		transition?: {
+			param?: {
+				from: ReturnType<typeof findRoutePosition>
+				to: ReturnType<typeof findRoutePosition>
+			}
+			nameWallet?: number
+			nameLayout?: number
+		}
+	}
+}

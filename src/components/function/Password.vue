@@ -27,12 +27,12 @@
 import Viewport from '@/components/layout/Viewport.vue'
 import Input from '@/components/form/Input.vue'
 import SecurityVisual from '@/components/visual/SecurityVisual.vue'
+import WalletSelector from '@/components/composed/WalletSelector.vue'
 import { emitter, testPassword, PasswordRequest } from '@/functions/Password'
 import { notify } from '@/store/NotificationStore'
 import { computed, ref, watch } from 'vue'
 
 import IconY from '@/assets/icons/y.svg?component'
-import WalletSelector from '@/components/composed/WalletSelector.vue'
 
 const passwordRequest = ref(undefined as undefined | PasswordRequest)
 const currentWalletId = computed(() => passwordRequest.value?.wallet?.id)

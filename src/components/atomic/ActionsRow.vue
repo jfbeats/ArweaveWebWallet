@@ -16,7 +16,7 @@ import { computed } from 'vue'
 
 const props = defineProps(['actions'])
 
-const actionsComputed = computed(() => props.actions?.filter((action: any) => action) || [])
+const actionsComputed = computed(() => props.actions?.filter((action): action is Action => !!action) || [])
 </script>
 
 

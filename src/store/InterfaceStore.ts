@@ -81,7 +81,7 @@ if (navigator.appVersion.indexOf("Win") != -1 || navigator.appVersion.indexOf('M
 
 const faviconEl = document.createElement('link')
 faviconEl.setAttribute('rel', 'favicon icon')
-const setFavicon = (e) => {
+const setFavicon = (e: { matches: boolean }) => {
 	faviconEl.remove()
 	if (e.matches) { faviconEl.setAttribute('href', logoArweaveBlack) }
 	else { faviconEl.setAttribute('href', logoArweaveWhite) }

@@ -113,11 +113,11 @@ export default class JsonRpc {
 		const { method, params, id } = message
 		if (id != null && typeof id !== 'number' && typeof id !== 'string') { return false }
 		if (typeof method !== 'string') { id != null && this.callbacks({ ...getError('request'), id }); return false }
-		if (!this.stateWallet.value?.messageVerifier[method]) { id != null && this.callbacks({ ...getError('method', { method }), id }); return false }
+		if (!(this.stateWallet.value?.messageVerifier as any)[method]) { id != null && this.callbacks({ ...getError('method', { method }), id }); return false }
 		if (!(this.stateWallet.value?.messageRunner as any)[method]) { id != null && this.callbacks({ ...getError('method', { method }), id }); return false }
 		if (getMethodMetadata(this.stateWallet.value, method)?.unavailable) { id != null && this.callbacks({ ...getError('method', { method }), id }); return false }
 		if (params != null && !Array.isArray(params)) { id != null && this.callbacks({ ...getError('params', { type: 'Params must be sent as an array', method, params }), id }); return false }
-		if (!this.stateWallet.value?.messageVerifier[method](...(message.params || []))) { id != null && this.callbacks({ ...getError('params', { type: 'Type error', method, params }), id }); return false }
+		if (!(this.stateWallet.value?.messageVerifier as any)[method](...(message.params || []))) { id != null && this.callbacks({ ...getError('params', { type: 'Type error', method, params }), id }); return false }
 		return true
 	}
 	
