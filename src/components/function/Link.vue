@@ -1,6 +1,6 @@
 <template>
-	<a v-if="to && isExternal" :href="to" @click.capture="runFunctions" target="_blank"><slot /></a>
-	<a v-else-if="to" :href="!disabled ? href : null" @click.capture="runFunctions" :class="{ 'router-link-active': isActive, 'router-link-exact-active': isExactActive }"><slot /></a>
+	<a v-if="hrefExternal" :href="hrefExternal" @click.capture="runFunctions" target="_blank"><slot /></a>
+	<a v-else-if="to && !disabled" :href="hrefRouter" @click.capture="runFunctions" :class="{ 'router-link-active': isActive, 'router-link-exact-active': isExactActive }"><slot /></a>
 	<button v-else-if="runFunctions" @click.capture="runFunctions" type="button"><slot /></button>
 	<span v-else><slot /></span>
 </template>
@@ -8,8 +8,7 @@
 
 
 <script setup lang="ts">
-import { useLink } from 'vue-router'
-import { computed } from 'vue'
+import { createAction } from '@/functions/UtilsVue'
 
 const props = defineProps<{
 	onClick?: (e?: MouseEvent) => any
@@ -23,19 +22,8 @@ const props = defineProps<{
 	to?: import('vue-router').RouteLocationRaw
 	disabled?: any
 }>()
-const routerParams = computed(() => ({ ...props, to: props.to ?? '' }))
-const { navigate, href, route, isActive, isExactActive } = useLink(routerParams.value)
 
-const isExternal = computed(() => { try { new URL(props.to as any); return true } catch (e) {} })
-
-const runFunctions = computed(() => {
-	if (props.disabled || !props.onClick && !props.run && !props.to) { return }
-	return (e: MouseEvent) => {
-		props.onClick?.()
-		props.run?.()
-		props.to && navigate(e)
-	}
-})
+const { hrefExternal, hrefRouter, isActive, isExactActive, runFunctions} = createAction(props, true)
 </script>
 
 
