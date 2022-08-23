@@ -5,6 +5,7 @@ import { generateUrl } from '@/functions/Utils'
 import { useChannel } from '@/functions/Channels'
 import { getAsyncData, getQueryManager, getReactiveAsyncData } from '@/functions/AsyncData'
 import { isRef, reactive, ref, Ref, watch } from 'vue'
+import { Emitter } from '@/functions/UtilsClass'
 
 
 
@@ -84,8 +85,9 @@ export function arweaveQuery (options: arweaveQueryOptions, name = 'tx list') { 
 	const refresh = 10
 	const refreshEnabled = ref(false)
 	const refreshSwitch = ref(true) // todo
+	const emitter = new Emitter<{ newContent: undefined }>()
 	
-	watch(optionsRef, (val) => {
+	watch(optionsRef, () => {
 		data.value = []
 		refreshEnabled.value = false
 		status.completed = false
@@ -125,6 +127,7 @@ export function arweaveQuery (options: arweaveQueryOptions, name = 'tx list') { 
 		awaitEffect: () => !fetchQuery.queryStatus.running && refreshEnabled.value,
 		query: async () => {
 			let requireSort = false
+			let newContent = false
 			let fulfilled = false
 			let results: any
 			for (let i = 0; !fulfilled; i++) {
@@ -142,15 +145,16 @@ export function arweaveQuery (options: arweaveQueryOptions, name = 'tx list') { 
 					const matchingTx = data.value.find(el => el.node.id === result.node.id)
 					if (matchingTx) {
 						if (matchingTx.node.block) { fulfilled = true }
-						else if (result.node.block) { Object.assign(matchingTx, result); requireSort = true }
+						else if (result.node.block) { Object.assign(matchingTx, result); requireSort = true; newContent = true }
 					} else {
 						resultsFiltered.push(result)
-						if (result.node.block) { requireSort = true }
+						if (result.node.block) { requireSort = true; newContent = true }
 					}
 				}
 				if (resultsFiltered.length > 0) { data.value.splice(0, 0, ...resultsFiltered) }
 				if (requireSort) { data.value.sort(blockSort); requireSort = false }
 			}
+			if (newContent) { emitter.emit('newContent', undefined) }
 			return results
 		},
 		seconds: refresh,
@@ -166,7 +170,7 @@ export function arweaveQuery (options: arweaveQueryOptions, name = 'tx list') { 
 		return data
 	}
 	
-	return { state: updateQuery.state, fetchQuery, updateQuery, status, refreshSwitch, fetchAll }
+	return { state: updateQuery.state, fetchQuery, updateQuery, status, refreshSwitch, fetchAll, on: emitter.on }
 }
 
 

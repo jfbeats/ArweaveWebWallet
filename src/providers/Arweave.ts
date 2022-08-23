@@ -63,6 +63,8 @@ export class ArweaveAccount extends Emitter implements Account {
 			{ query: received, name: 'Received', color: 'var(--green)' },
 			{ query: sent, name: 'Sent', color: 'var(--red)' },
 		]
+		received.on('newContent', () => this.#balance.getState(true))
+		sent.on('newContent', () => this.#balance.getState(true))
 		this.on('destructor', () => this.#balance.stop())
 	}
 	static get metadata () { return accountMetadata }
