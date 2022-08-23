@@ -1,5 +1,7 @@
 import { Wallets } from '@/functions/Wallets'
 import { useChannel } from '@/functions/Channels'
+import { base32Decode } from '@/functions/Encoding'
+import { arweave } from '@/store/ArweaveStore'
 
 
 
@@ -68,7 +70,10 @@ function init () {
 	
 	const getPayload = () => ({ website, hostname, screen, language, url: currentUrl })
 	const view = () => collect('pageview', Object.assign(getPayload(), { referrer: currentRef }))
-	const event = (event_type: EventType, event_value: string) => collect('event', Object.assign(getPayload(), { event_type, event_value }))
+	const event = (event_type: EventType, event_value: string) => {
+		if (event_type === 'connect') { try { event_value = extractId(event_value) } catch (e) {} }
+		collect('event', Object.assign(getPayload(), { event_type, event_value }))
+	}
 	
 	const handlePush = (state: any, title: any, url: any) => {
 		if (!url) { return }
@@ -100,3 +105,15 @@ function init () {
 }
 
 export const track = init()
+
+
+
+function extractId (url: string) {
+	const urlObject = new URL(url)
+	const id = urlObject.hostname.split('.').find(s => {
+		const regex = /^([a-z2-7=]{52})+$/
+		return regex.test(s)
+	})
+	if (!id) { throw '' }
+	return arweave.utils.bufferTob64Url(base32Decode(id.toUpperCase()))
+}
