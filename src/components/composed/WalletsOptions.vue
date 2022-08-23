@@ -2,10 +2,10 @@
 	<div>
 		<div class="flex-row" style="justify-content: space-between; align-items: baseline">
 			<h2>Wallet{{ selectedWallets.length > 1 ? 's' : '' }}</h2>
-			<Link class="update-message" v-if="hasUpdate" @click="updateEncryption" :disabled="!hasPassword">
+			<Link class="update-message" v-if="hasUpdate" @click="updateEncryptionOrNewPwd">
 				<Icon :icon="IconWarning" style="vertical-align: text-top" />
-				<span v-if="hasPassword"> Click to update encryption</span>
-				<span v-else> Create a new password to encrypt selected wallets</span>
+				<span v-if="hasPassword"> Click here to update encryption</span>
+				<span v-else> Click here to create a new password</span>
 			</Link>
 		</div>
 		<div class="flex-column">
@@ -28,7 +28,7 @@ import Icon from '@/components/atomic/Icon.vue'
 import { Wallets } from '@/functions/Wallets'
 import { state } from '@/functions/Channels'
 import { sharedState } from '@/functions/Connect'
-import { hasPassword, hasUpdate, updateEncryption } from '@/functions/Password'
+import { hasPassword, setPassword, hasUpdate, updateEncryption } from '@/functions/Password'
 import { computed, watch } from 'vue'
 import { onBeforeRouteLeave, useRoute } from 'vue-router'
 
@@ -45,10 +45,14 @@ const selectedWallets = computed(() => {
 	return Wallets.value.filter(wallet => editWalletArray.includes(wallet.id + ''))
 })
 const canConnect = computed(() => ['popup', 'iframe', 'ws'].includes(state.value.type!) && !sharedState.value?.walletId)
+const updateEncryptionOrNewPwd = computed(() => hasPassword.value ? () => updateEncryption() : () => setPassword('', true))
 
+let notificationClose: Function | undefined
 onBeforeRouteLeave(() => {
 	if (!hasUpdate.value) { return }
-	const { promise, close } = notify.confirm('exit?')
+	const { promise, close } = notify.confirm({ title: 'Security changes are not applied', body: 'Are you sure you want to leave this page?' })
+	if (notificationClose) { notificationClose() }
+	notificationClose = close
 	watch(hasUpdate, value => value && close())
 	return promise
 })

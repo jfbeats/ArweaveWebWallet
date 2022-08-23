@@ -8,11 +8,10 @@
 				<div class="content flex-column">
 					<div class="flex-row" style="justify-content: space-between;">
 						<div></div>
-						<WalletSelector @exit="reject" v-model="currentWalletId" />
+						<WalletSelector @exit="() => reject('Password not provided')" v-model="currentWalletId" />
 					</div>
 					<div class="flex-column">
-						<Input v-if="passwordRequest.match" v-model="passwordMatch" type="password" placeholder="Confirm new password" :actions="passwordRequest.reason === 'match' ? [passwordAction] : undefined" :autofocus="passwordRequest.match ? 'true' : undefined" />
-						<Input v-if="passwordRequest.reason !== 'match'" v-model="password" type="password" :placeholder="passwordRequest.match ? 'Old password' : 'Password'" :actions="[passwordAction]" :autofocus="passwordRequest.match ? undefined : 'true'" />
+						<Input v-for="input in inputs" v-model="input.model.value" v-bind="input.bind" type="password" />
 					</div>
 				</div>
 <!--				todo make sure you have a working backup of your wallets before encrypting, you will not be able to restore them if you forget your password -->
@@ -30,12 +29,34 @@ import SecurityVisual from '@/components/visual/SecurityVisual.vue'
 import WalletSelector from '@/components/composed/WalletSelector.vue'
 import { emitter, testPassword, PasswordRequest } from '@/functions/Password'
 import { notify } from '@/store/NotificationStore'
-import { computed, ref, watch } from 'vue'
+import { computed, Ref, ref, shallowRef, watch } from 'vue'
 
 import IconY from '@/assets/icons/y.svg?component'
 
-const passwordRequest = ref(undefined as undefined | PasswordRequest)
+const passwordRequest = shallowRef(undefined as undefined | PasswordRequest)
 const currentWalletId = computed(() => passwordRequest.value?.wallet?.id)
+const inputs = computed(() => {
+	type InputParams = {
+		model: Ref<string>
+		bind: { placeholder?: string, autofocus?: true, submit?: Action }
+	}
+	let match = undefined as undefined | InputParams
+	let result = undefined as undefined | InputParams
+	if (passwordRequest.value?.match || passwordRequest.value?.reason === 'new') { match = { model: passwordMatch, bind: {} } }
+	if (passwordRequest.value?.reason !== 'match') { result = { model: password, bind: {} } }
+	if (match) {
+		if (passwordRequest.value?.reason === 'new') { match.bind.placeholder = 'New password' }
+		else { match.bind.placeholder = passwordRequest.value?.match ? 'Confirm new password' : 'Password' }
+	}
+	if (result) {
+		if (passwordRequest.value?.reason === 'new') { result.bind.placeholder = 'Confirm new password' }
+		else { result.bind.placeholder = passwordRequest.value?.match ? 'Old password' : 'Password' }
+	}
+	const a = [match, result]
+	a.find(e => e)!.bind.autofocus = true
+	a.map(e => e).reverse().find(e => e)!.bind.submit = passwordAction.value
+	return a.filter((e): e is NonNullable<typeof e> => !!e)
+})
 emitter.on('password', callback => passwordRequest.value = callback)
 
 const password = ref('')
@@ -43,12 +64,13 @@ const passwordMatch = ref('')
 const passwordAction = computed(() => ({ run: submit, icon: IconY }))
 const submit = async () => {
 	if (passwordRequest.value?.match && passwordRequest.value.match !== passwordMatch.value) { return notify.error('New password does not match') }
-	if (passwordRequest.value?.reason !== 'match') { try { await testPassword(password.value) } catch (e) { return notify.error(passwordRequest.value?.match ? 'Invalid current password' : 'Invalid') } }
+	if (passwordRequest.value?.reason === 'new') { if (passwordMatch.value !== password.value) { return notify.error('New password does not match') } }
+	else if (passwordRequest.value?.reason !== 'match') { try { await testPassword(password.value) } catch (e) { return notify.error(passwordRequest.value?.match ? 'Invalid current password' : 'Invalid') } }
 	passwordRequest.value?.resolve(password.value)
 	passwordRequest.value = undefined
 }
-const reject = () => {
-	passwordRequest.value?.reject()
+const reject = (error: string) => {
+	passwordRequest.value?.reject(error)
 	passwordRequest.value = undefined
 }
 watch(passwordRequest, () => {

@@ -1,14 +1,15 @@
 import { useChannel, useLock } from '@/functions/Channels'
 import { isEncrypted, passwordDecrypt, passwordEncrypt } from '@/functions/Crypto'
-import { computed } from 'vue'
-import mitt from 'mitt'
 import { getQueryManager } from '@/functions/AsyncData'
 import { getWalletById } from '@/functions/Wallets'
+import { AppSettings } from '@/store/SettingsStore'
+import { computed } from 'vue'
+import mitt from 'mitt'
 
 
 
 export type PasswordRequest = {
-	reason: 'get' | 'update' | 'change' | 'match'
+	reason: 'get' | 'update' | 'change' | 'match' | 'new'
 	resolve: (arg: string) => void
 	reject: (e?: string) => void
 	match?: string
@@ -54,28 +55,29 @@ export async function updateEncryption () {
 	} finally { pwdTestLock.unlock() }
 }
 
-export async function setPassword (password: string): Promise<true> {
+export async function setPassword (password: string, askNew?: true): Promise<true> {
 	await pwdTestLock.lock()
 	try {
-		let wallets = [] as any[]
+		let wallets = [] as { uuid: string, jwk: PrivateKey | EncryptedContent }[]
 		if (pwdTest.value) {
 			const oldPassword = await requestPassword({ reason: 'change', match: password })
 			const promises = WalletsData.value
 			.filter(wallet => wallet.jwk && isEncrypted(wallet.jwk))
 			.map(async wallet => ({
-				uuid: getWalletById(wallet.id)?.uuid,
+				uuid: getWalletById(wallet.id)!.uuid,
 				jwk: await passwordDecrypt(oldPassword!, wallet.jwk as any)
 			}))
 			wallets = await Promise.all(promises)
 		}
-		if (password) {
-			if (!pwdTest.value) { await requestPassword({ reason: 'match', match: password }) }
+		if (password || askNew) {
+			if (askNew) { password = await requestPassword({ reason: 'new' }) }
+			else if (!pwdTest.value) { await requestPassword({ reason: 'match', match: password }) }
 			const unencrypted = requireEncryption.value.map(wallet => ({
-				uuid: getWalletById(wallet.id)?.uuid,
-				jwk: wallet.jwk
+				uuid: getWalletById(wallet.id)!.uuid,
+				jwk: wallet.jwk!
 			}))
 			wallets = [...wallets, ...unencrypted]
-			wallets = await Promise.all(wallets.map(async wallet => wallet.jwk = await passwordEncrypt(password, wallet.jwk)))
+			await Promise.all(wallets.map(async wallet => wallet.jwk = await passwordEncrypt(password, wallet.jwk)))
 			const encryptedContent = await passwordEncrypt(password, 'valid')
 			pwdTest.value = encryptedContent
 		} else {
@@ -89,22 +91,34 @@ export async function setPassword (password: string): Promise<true> {
 
 
 export const emitter = mitt<{ password: PasswordRequest }>()
-const privateCache = {} as { [uuid: string]: PrivateKey }
+const privateCache = {} as { [uuid: string]: { privateKey: PrivateKey, timestamp: number } | undefined }
 
 
+
+function invalidateMaybe (uuid: string) {
+	const entry = privateCache[uuid]
+	if (!entry) { return }
+	if (Date.now() - entry.timestamp > AppSettings.value.password.invalidateCache) { delete privateCache[uuid]; return true }
+}
+
+setInterval(() => Object.keys(privateCache).forEach(uuid => invalidateMaybe(uuid)), 60000)
 
 function getCache (uuid: string): PrivateKey | void {
-	return privateCache[uuid]
+	const entry = privateCache[uuid]
+	if (!entry) { return }
+	if (invalidateMaybe(uuid)) { return }
+	entry.timestamp = Date.now()
+	return entry.privateKey
 }
 
 async function setCache (uuid: string, password: string): Promise<PrivateKey> {
 	let currentPrivateKey = undefined as undefined | PrivateKey
 	const result = WalletsData.value
 	.filter(wallet => isEncrypted(wallet.jwk))
-	.filter(wallet => wallet.uuid === uuid || wallet.settings?.securityLevel !== 'always') // todo settings
+	.filter(wallet => wallet.uuid === uuid || wallet.settings?.securityLevel !== 'always')
 	.map(async wallet => {
 		const privateKey = await passwordDecrypt(password, wallet.jwk as any)
-		if (wallet.settings?.securityLevel !== 'always') { privateCache[uuid] = privateKey } // todo cache invalidation
+		if (wallet.settings?.securityLevel !== 'always') { privateCache[uuid] = { privateKey, timestamp: Date.now() } }
 		if (wallet.uuid === uuid) { currentPrivateKey = privateKey }
 	})
 	await Promise.all(result)
@@ -138,7 +152,7 @@ async function requestPassword (request: Omit<PasswordRequest, 'resolve' | 'reje
 	let controls: { resolve: PasswordRequest['resolve'], reject: PasswordRequest['reject']}
 	const promise = new Promise<string>((resolve, reject) => controls = { resolve, reject })
 	const query = async () => {
-		if (invalidate && await invalidate()) { return }
+		if (invalidate && await invalidate()) { return controls.resolve('') }
 		emitter.emit('password', { ...request , ...controls })
 		await promise
 	}

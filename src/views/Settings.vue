@@ -19,15 +19,15 @@
 					<Select v-model="currentSetting" :options="redstoneOptions" :icon="currency.symbol" />
 				</SettingItem>
 			</div>
-<!--			<div>-->
-<!--				<h2>Security</h2>-->
-<!--				<SettingItem name="Password" description="Used to encrypt selected wallets">-->
-<!--					<Input v-model="password" type="password" :placeholder="hasPassword ? 'Change password or delete' : 'Create a new password'" :actions="[passwordAction]" />-->
-<!--				</SettingItem>-->
-<!--				<SettingItem name="Stay unlocked" description="Time to wait before requiring the password again">-->
-<!--					<Select />-->
-<!--				</SettingItem>-->
-<!--			</div>-->
+			<div>
+				<h2>Security</h2>
+				<SettingItem name="Password" description="Used to encrypt selected wallets">
+					<Input v-model="password" type="password" :placeholder="hasPassword ? 'Change password or delete' : 'Create a new password'" :submit="passwordAction" />
+				</SettingItem>
+				<SettingItem name="Stay unlocked" description="Time to wait before requiring the password again">
+					<Select v-model="AppSettings.password.invalidateCache" :options="AppSettingsOptions.password.invalidateCache" />
+				</SettingItem>
+			</div>
 			<WalletsOptions />
 			<div>
 				<h2>Links</h2>
@@ -58,6 +58,7 @@ import LinksExtension from '@/components/composed/LinksExtension.vue'
 import { PWA } from '@/pwa'
 import { hasPassword, setPassword } from '@/functions/Password'
 import ArweaveStore, { bundlerDefault, gatewayDefault, updateArweave, updateBundler } from '@/store/ArweaveStore'
+import { AppSettings, AppSettingsOptions } from '@/store/SettingsStore'
 import { currency, redstoneOptions } from '@/store/CurrencyStore'
 import { notify } from '@/store/NotificationStore'
 import { computed, ref } from 'vue'
