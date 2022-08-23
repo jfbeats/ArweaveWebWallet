@@ -10,10 +10,10 @@
 <!--				-->
 <!--				</SettingItem>-->
 				<SettingItem name="Gateway" description="URL of the service used to access network data">
-					<Input v-model="gateway" :actions="[gatewayAction]" :placeholder="ArweaveStore.gatewayURL" :icon="IconDownload" style="flex:1 1 0;" />
+					<Input v-model="gateway" :submit="gatewayAction" :placeholder="ArweaveStore.gatewayURL" :icon="IconDownload" style="flex:1 1 0;" />
 				</SettingItem>
 				<SettingItem name="Bundler" description="URL of the service used to submit data to the network when possible instead of using the gateway">
-					<Input v-model="bundler" :actions="[bundlerAction]" :placeholder="ArweaveStore.bundlerURL" :icon="IconUpload" style="flex:1 1 0;" />
+					<Input v-model="bundler" :submit="bundlerAction" :placeholder="ArweaveStore.bundlerURL" :icon="IconUpload" style="flex:1 1 0;" />
 				</SettingItem>
 				<SettingItem name="Currency">
 					<Select v-model="currentSetting" :options="redstoneOptions" :icon="currency.symbol" />

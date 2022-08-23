@@ -1,9 +1,9 @@
 <template>
 	<div class="input">
 		<div class="input-box" :class="{ focus }">
-			<Icon v-if="icon" :icon="icon" />
-			<RawInput class="text" v-model="model" @keyup.enter="runLastAction" :placeholder="placeholder" @focus="focus = true" @blur="focus = false" v-bind="$attrs" />
-			<ActionsRow :actions="props.actions" />
+			<IconVue v-if="icon" :icon="icon" />
+			<RawInput class="text" v-model="model" @keyup.enter="runSubmit" :placeholder="placeholder" @focus="focus = true" @blur="focus = false" v-bind="$attrs" />
+			<ActionsRow :actions="actions" />
 		</div>
 	</div>
 </template>
@@ -11,24 +11,36 @@
 
 
 <script setup lang="ts">
-import Icon from '@/components/atomic/Icon.vue'
+import IconVue from '@/components/atomic/Icon.vue'
 import RawInput from '@/components/form/RawInput.vue'
 import ActionsRow from '@/components/atomic/ActionsRow.vue'
+import { createAction } from '@/functions/UtilsVue'
 import { computed, ref, watch } from 'vue'
 
-const props = defineProps(['modelValue', 'icon', 'placeholder', 'actions', 'autocomplete', 'mask'])
+const props = defineProps<{
+	modelValue: string
+	icon?: Icon
+	placeholder?: string
+	actions?: Action[]
+	submit?: Action
+	autocomplete?: string
+	mask?: (val: string) => boolean
+}>()
 const emit = defineEmits(['update:modelValue'])
 
 const model = computed({
 	get () { return props.modelValue },
 	set (value) { emit('update:modelValue', value) }
 })
+const actions = computed(() => [...(props.actions || []), ...(props.submit ? [props.submit] : [])])
 const focus = ref(false)
 watch(() => model.value, (newVal, oldVal) => {
 	if (!props.mask) { return }
 	if (!props.mask(newVal)) { model.value = oldVal }
 })
-const runLastAction = () => props.actions?.[props.actions.length - 1]?.run?.()
+
+const { runFunctions } = createAction(props.submit)
+const runSubmit = (e: KeyboardEvent) => runFunctions.value?.(e as any)
 </script>
 
 

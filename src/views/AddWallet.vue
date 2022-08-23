@@ -46,7 +46,7 @@
 		</div>
 		<div class="card">
 			<h2>Address Only</h2>
-			<InputAddress v-model="targetInput" :actions="[importAddressOnlyAction]" />
+			<InputAddress v-model="targetInput" :submit="importAddressOnlyAction" />
 		</div>
 	</div>
 </template>
