@@ -1,5 +1,5 @@
+import { Emitter } from '@/functions/UtilsClass'
 import { reactive, ref, watch } from 'vue'
-import mitt from 'mitt'
 
 import logoArweaveBlack from '@/assets/logos/arweaveBlack.svg?url'
 import logoArweaveWhite from '@/assets/logos/arweaveWhite.svg?url'
@@ -21,17 +21,7 @@ const InterfaceStore = reactive({
 
 
 
-export const emitter = mitt()
-emitter.once = (eventName, handler) => {
-	return new Promise(resolve => {
-		const wrapper = (e) => {
-			emitter.off(eventName, wrapper)
-			resolve(e)
-			if (handler) { handler(e) }
-		}
-		emitter.on(eventName, wrapper)
-	})
-}
+export const emitter = new Emitter<{ scrollHistory: undefined }>()
 
 
 
