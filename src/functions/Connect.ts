@@ -17,12 +17,17 @@ function buildConnector (origin: string): ConnectorState {
 	return scope.run(() => {
 		const sharedStates = computed(() => connectorsData.value.filter(c => c.origin === origin))
 		const instanceStates = computed(() => states.value.filter(c => c.origin === origin))
-		const updateWallets = (walletId?: SharedState['walletId']) => {
-			if (walletId === undefined) { return sharedStates.value[0]?.walletId }
-			sharedStates.value.forEach(c => c.walletId !== walletId && (c.walletId = walletId))
-			return sharedStates.value[0]?.walletId
-		}
-		const walletId = computed({ get: () => updateWallets(), set: id => updateWallets(id) })
+		const walletId = computed({
+			get: () => {
+				const disconnected = sharedStates.value.find(c => c.walletId === false)
+				if (disconnected) { sharedStates.value.forEach(c => c.walletId = false); return false }
+				const id = sharedStates.value.find(c => c.walletId)?.walletId
+				if (!id) { return }
+				sharedStates.value.forEach(c => c.walletId !== id && (c.walletId = id))
+				return id
+			},
+			set: id => sharedStates.value.forEach(c => c.walletId !== id && (c.walletId = id))
+		})
 		const messageQueue = computed(() => sharedStates.value
 			.map(c => c.messageQueue).flat().sort((a, b) => a.timestamp - b.timestamp))
 		const appInfo = computed(() => sharedStates.value.find(c => c.appInfo)?.appInfo)
