@@ -14,7 +14,7 @@
 						<Input v-for="input in inputs" v-model="input.model.value" v-bind="input.bind" type="password" />
 					</div>
 				</div>
-<!--				todo make sure you have a working backup of your wallets before encrypting, you will not be able to restore them if you forget your password -->
+				<OverlayPrompt :options="newPasswordMessage" autofocus />
 			</div>
 		</div>
 	</Viewport>
@@ -27,11 +27,13 @@ import Viewport from '@/components/layout/Viewport.vue'
 import Input from '@/components/form/Input.vue'
 import SecurityVisual from '@/components/visual/SecurityVisual.vue'
 import WalletSelector from '@/components/composed/WalletSelector.vue'
-import { emitter, testPassword, PasswordRequest } from '@/functions/Password'
+import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
+import { emitter, testPassword, PasswordRequest, hasPassword } from '@/functions/Password'
 import { notify } from '@/store/NotificationStore'
-import { computed, Ref, ref, shallowRef, watch } from 'vue'
+import { computed, markRaw, Ref, ref, shallowRef, watch } from 'vue'
 
 import IconY from '@/assets/icons/y.svg?component'
+import IconShieldWarning from '@/assets/icons/shield_warning.svg?component'
 
 const passwordRequest = shallowRef(undefined as undefined | PasswordRequest)
 const currentWalletId = computed(() => passwordRequest.value?.wallet?.id)
@@ -53,7 +55,7 @@ const inputs = computed(() => {
 		else { result.bind.placeholder = passwordRequest.value?.match ? 'Old password' : 'Password' }
 	}
 	const a = [match, result]
-	a.find(e => e)!.bind.autofocus = true
+	if (!newPasswordMessage.value) { a.find(e => e)!.bind.autofocus = true }
 	a.map(e => e).reverse().find(e => e)!.bind.submit = passwordAction.value
 	return a.filter((e): e is NonNullable<typeof e> => !!e)
 })
@@ -77,6 +79,8 @@ watch(passwordRequest, () => {
 	password.value = ''
 	passwordMatch.value = ''
 })
+
+const newPasswordMessage = ref(!hasPassword.value && { icon: markRaw(IconShieldWarning), message: 'Always make sure that you have a working backup of your private keys. You will not be able to recover the ones that are encrypted if you forget your password', action: { run: () => newPasswordMessage.value = undefined } } || undefined)
 </script>
 
 

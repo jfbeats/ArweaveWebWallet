@@ -3,6 +3,7 @@ import { isEncrypted, passwordDecrypt, passwordEncrypt } from '@/functions/Crypt
 import { getQueryManager } from '@/functions/AsyncData'
 import { getWalletById } from '@/functions/Wallets'
 import { AppSettings } from '@/store/SettingsStore'
+import { notify } from '@/store/NotificationStore'
 import { computed } from 'vue'
 import mitt from 'mitt'
 
@@ -70,7 +71,11 @@ export async function setPassword (password: string, askNew?: true): Promise<tru
 			wallets = await Promise.all(promises)
 		}
 		if (password || askNew) {
-			if (askNew) { password = await requestPassword({ reason: 'new' }) }
+			if (password) { passwordValidation(password) }
+			if (askNew) {
+				password = await requestPassword({ reason: 'new' })
+				passwordValidation(password)
+			}
 			else if (!pwdTest.value) { await requestPassword({ reason: 'match', match: password }) }
 			const unencrypted = requireEncryption.value.map(wallet => ({
 				uuid: getWalletById(wallet.id)!.uuid,
@@ -86,6 +91,11 @@ export async function setPassword (password: string, askNew?: true): Promise<tru
 		wallets.forEach(wallet => WalletsData.value.find(data => data.uuid === wallet.uuid)!.jwk = wallet.jwk)
 	} finally { pwdTestLock.unlock() }
 	return true
+}
+
+function passwordValidation (password: string) {
+	const lengthMessage = 'Password length must be at least 8 characters long'
+	if (password.length < 8) { notify.error(lengthMessage); throw lengthMessage }
 }
 
 

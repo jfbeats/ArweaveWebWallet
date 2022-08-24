@@ -1,15 +1,15 @@
 <template>
 	<TransitionsManager>
-		<component :is="options.action ? 'button' : 'div'" v-if="options" :key="options.message || options.action?.name" class="overlay-prompt flex-column" :class="{ inline }" @click="options.action?.run">
+		<Link v-if="options" :key="options.message || options.action?.name" class="overlay-prompt flex-column" :class="{ inline }" :run="options.action?.run">
 			<div class="content flex-column">
 				<Icon v-if="options.icon || options.action?.icon" :icon="options.icon || options.action?.icon" style="font-size: 4em;" />
 				<slot />
-				<div v-if="options.message || options.action?.name">{{ options.message || options.action?.name }}</div>
+				<div class="message" v-if="options.message || options.action?.name" >{{ options.message || options.action?.name }}</div>
 			</div>
 			<div v-if="options.actions?.length" class="actions-container flex-row">
 				<Button v-for="action in options.actions" :key="action.name" @click="action.run" :glow="true" color="#81a1c1">{{ action.name }}</Button>
 			</div>
-		</component>
+		</Link>
 	</TransitionsManager>
 </template>
 
@@ -19,6 +19,7 @@
 import Icon from '@/components/atomic/Icon.vue'
 import TransitionsManager from '@/components/visual/TransitionsManager.vue'
 import Button from '@/components/atomic/Button.vue'
+import Link from '@/components/function/Link.vue'
 
 const props = defineProps<{
 	options?: {
@@ -57,6 +58,10 @@ const props = defineProps<{
 	align-items:center;
 	justify-content:space-evenly;
 	/*margin-bottom:var(--spacing);*/
+}
+
+.message {
+	text-align: justify;
 }
 
 .actions-container {
