@@ -5,7 +5,7 @@
 
 
 <script setup lang="ts">
-import { ref, computed, useAttrs, onMounted } from 'vue'
+import { ref, computed, useAttrs, watch, onMounted } from 'vue'
 
 const props = defineProps(['modelValue'])
 const emit = defineEmits(['update:modelValue'])
@@ -29,7 +29,7 @@ const handleChange = () => {
 
 onMounted(() => {
 	// always autofocus
-	if ('autofocus' in attrs && attrs.autofocus !== undefined) { setTimeout(() => input.value?.focus()) }
+	watch(() => attrs.autofocus, autofocus => autofocus && setTimeout(() => input.value?.focus()), { immediate: true })
 })
 </script>
 

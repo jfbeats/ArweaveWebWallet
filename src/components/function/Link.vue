@@ -1,7 +1,7 @@
 <template>
-	<a v-if="hrefExternal" :href="hrefExternal" @click.capture="runFunctions" target="_blank"><slot /></a>
-	<a v-else-if="to && !disabled" :href="hrefRouter" @click.capture="runFunctions" :class="{ 'router-link-active': isActive, 'router-link-exact-active': isExactActive }"><slot /></a>
-	<button v-else-if="runFunctions" @click.capture="runFunctions" type="button"><slot /></button>
+	<a v-if="hrefExternal" ref="input" :href="hrefExternal" @click.capture="runFunctions" target="_blank"><slot /></a>
+	<a v-else-if="to && !disabled" ref="input" :href="hrefRouter" @click.capture="runFunctions" :class="{ 'router-link-active': isActive, 'router-link-exact-active': isExactActive }"><slot /></a>
+	<button v-else-if="runFunctions" ref="input" @click.capture="runFunctions" type="button"><slot /></button>
 	<span v-else><slot /></span>
 </template>
 
@@ -9,6 +9,7 @@
 
 <script setup lang="ts">
 import { createAction } from '@/functions/UtilsVue'
+import { onMounted, ref, useAttrs } from 'vue'
 
 const props = defineProps<{
 	onClick?: (e?: MouseEvent) => any
@@ -22,8 +23,15 @@ const props = defineProps<{
 	to?: import('vue-router').RouteLocationRaw
 	disabled?: any
 }>()
+const attrs = useAttrs()
+const input = ref(undefined as undefined | HTMLInputElement)
 
 const { hrefExternal, hrefRouter, isActive, isExactActive, runFunctions} = createAction(props, true)
+
+onMounted(() => {
+	// always autofocus
+	if ('autofocus' in attrs && attrs.autofocus !== undefined) { setTimeout(() => input.value?.focus()) }
+})
 </script>
 
 
