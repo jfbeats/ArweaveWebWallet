@@ -19,6 +19,7 @@ import { computed, ref } from 'vue'
 
 import IconPerson from '@/assets/icons/person.svg?component'
 import IconQR from '@/assets/icons/qr.svg?component'
+import { ArweaveAccount } from '@/providers/Arweave'
 
 const props = defineProps<{
 	modelValue: string
@@ -34,7 +35,7 @@ const model = computed({
 	set (value) { emit('update:modelValue', value) }
 })
 
-const maskAddress = (address: string) => { return !!address.match(/^[a-z0-9_-]{0,43}$/i) }
+const maskAddress = (address: string) => ArweaveAccount.metadata.isAddress(address, true)
 const scanning = ref(false)
 const scanningResult = (result?: string) => {
 	scanning.value = false

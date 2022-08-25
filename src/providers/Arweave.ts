@@ -19,9 +19,14 @@ import { getKeyPairFromMnemonic } from 'human-crypto-keys'
 
 
 
-const accountMetadata: DisplayMetadata = {
+const displayMetadata: DisplayMetadata = {
 	name: 'Arweave address',
 	icon: LogoArweave
+}
+
+const accountMetadata: AccountMetadata = {
+	...displayMetadata,
+	isAddress: (address, partial) => !partial ? !!address?.match(/^[a-z0-9_-]{43}$/i) : !!address?.match(/^[a-z0-9_-]{0,43}$/i)
 }
 
 const providerMetadata: ProviderMetadata = {

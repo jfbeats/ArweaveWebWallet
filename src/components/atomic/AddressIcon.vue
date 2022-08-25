@@ -17,13 +17,14 @@ import Identicon from '@/components/atomic/Identicon.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import ArweaveStore from '@/store/ArweaveStore'
 import ProfileStore, { getArweaveId } from '@/store/ProfileStore'
+import { ArweaveAccount } from '@/providers/Arweave'
 import { computed, watch, ref } from 'vue'
 
 import IconCloud from '@/assets/icons/cloud.svg?component'
 
 const props = defineProps(['address'])
 
-const isValid = computed(() => props.address?.match(/^[a-z0-9_-]{43}$/i))
+const isValid = computed(() => ArweaveAccount.metadata.isAddress(props.address))
 const arweaveId = computed(() => ProfileStore.arweaveId[props.address])
 const hasTransition = ref(!arweaveId.value)
 watch(arweaveId, () => {

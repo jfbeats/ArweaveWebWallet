@@ -12,6 +12,7 @@ import wordlist from 'bip39-web-crypto/src/wordlists/english.json'
 
 export type ProviderId = 'arweave' | 'ledger'
 export type AnyProvider = typeof providers[number]
+export const accounts = [ArweaveAccount]
 export const softwareProviders = [ArweaveProvider] as const
 export const hardwareProviders = [LedgerProvider] as const
 export const providers = [...hardwareProviders, ...softwareProviders] as const

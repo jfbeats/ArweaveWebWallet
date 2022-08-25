@@ -44,7 +44,11 @@ type MessageRunner<API extends ExternalAPI, Parent> = {
 
 
 
-type ProviderMetadata = DisplayMetadata & {
+type AccountMetadata = DisplayMetadata & {
+	isAddress: (address?: string, partial?: boolean) => boolean
+}
+
+type ProviderMetadata = AccountMetadata & {
 	id: ProviderId
 	disabled?: boolean
 	isProviderFor?: (wallet: Partial<WalletDataInterface>) => boolean

@@ -4,6 +4,7 @@ import { unpackTags } from '@/functions/Transactions'
 import { getVerification } from 'arverify'
 import { awaitEffect } from '@/functions/AsyncData'
 import { graphql } from '@/store/ArweaveStore'
+import { ArweaveAccount } from '@/providers/Arweave'
 
 
 
@@ -20,7 +21,7 @@ export default ProfileStore
 
 export async function getArweaveId (address: string) {
 	if ((ProfileStore.arweaveIdStatus[address] ??= {}).loading) { return }
-	if (!address || !address.match(/^[a-z0-9_-]{43}$/i)) { return }
+	if (!address || !ArweaveAccount.metadata.isAddress(address)) { return }
 	ProfileStore.arweaveIdStatus[address].loading = true
 	await awaitEffect(() => InterfaceStore.windowVisible)
 
@@ -29,7 +30,7 @@ export async function getArweaveId (address: string) {
 		const arweaveIdTx = (await graphql().getTransactions({ owners: [address], tags: [{ name: 'App-Name', values: ['arweave-id'] }], first: 1 })).transactions.edges[0]?.node
 		if (!arweaveIdTx) { return }
 		const tags = unpackTags(arweaveIdTx.tags)
-		if (tags.Image && !tags.Image.match(/^[a-z0-9_-]{43}$/i)) { delete tags.image }
+		if (tags.Image && !ArweaveAccount.metadata.isAddress(tags.Image)) { delete tags.image }
 		if (!tags.Image && tags['Content-Type']?.includes('image')) { tags.Image = arweaveIdTx.id }
 		ProfileStore.arweaveId[address] = tags
 	} catch (e) {
@@ -40,7 +41,7 @@ export async function getArweaveId (address: string) {
 
 export async function getArverify (address: string) {
 	if (!address || (ProfileStore.arverifyStatus[address] ??= {}).loading) { return }
-	if (!address.match(/^[a-z0-9_-]{43}$/i)) { return }
+	if (!ArweaveAccount.metadata.isAddress(address)) { return }
 	ProfileStore.arverifyStatus[address].loading = true
 	await awaitEffect(() => InterfaceStore.windowVisible)
 
