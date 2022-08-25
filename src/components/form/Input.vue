@@ -39,8 +39,8 @@ watch(() => model.value, (newVal, oldVal) => {
 	if (!props.mask(newVal)) { model.value = oldVal }
 })
 
-const { runFunctions } = createAction(props.submit)
-const runSubmit = (e: KeyboardEvent) => runFunctions.value?.(e as any)
+const { runFunctions } = createAction(computed(() => props.submit))
+const runSubmit = (e: KeyboardEvent) => { runFunctions.value?.(e as any) }
 </script>
 
 
