@@ -30,6 +30,7 @@ interface Account {
 	key?: string
 	balance?: string
 	queries: { query: any, name: string, color: string }[]
+	queryBalance: any
 	destructor?: () => any
 }
 
