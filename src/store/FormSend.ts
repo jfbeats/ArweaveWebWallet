@@ -45,7 +45,7 @@ export async function addFiles (files?: FileWithPath[]) {
 			'File-Hash': await getHash({ data })
 		})
 		return { data, tags, path: file.normalizedPath }
-	}))).sort((a, b) => +(b.path === 'index.html') - +(a.path === 'index.html'))
+	})))
 	if (files.length > 1) {
 		setBaseTags(form.tags, {
 			'Bundle-Format': 'binary',
@@ -118,7 +118,8 @@ async function getProcessedData (wallet?: Wallet): Promise<ArTxParams['data']> {
 			bundleItems.push(...deduplicatedDataItems.filter((item): item is Exclude<typeof item, string> => typeof item !== 'string'))
 			try {
 				const paths = form.data.map(item => item.path || '')
-				const manifest = generateManifest(paths, deduplicatedDataItems, paths[0])
+				const index = paths.find(path => path === 'index.html')
+				const manifest = generateManifest(paths, deduplicatedDataItems, index)
 				bundleItems.push(await wallet.createDataItem({ ...manifest }))
 			} catch (e) { console.warn('manifest generation failed') }
 			return (await wallet.createBundle(bundleItems)).getRaw()
