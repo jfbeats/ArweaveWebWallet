@@ -12,7 +12,7 @@
 				<Tooltip v-if="arverify?.verified" class="icon-container" content="verified">
 					<Icon :icon="IconVerify" />
 				</Tooltip>
-				<Tooltip v-if="clipboard" class="icon-container" content="copy">
+				<Tooltip v-if="clipboard" class="icon-container" :content="clipboardClicked ? undefined : 'copy'">
 					<Link :run="clipboard" style="display: flex">
 						<Icon :icon="clipboardIcon"  />
 					</Link>
