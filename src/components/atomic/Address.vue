@@ -9,10 +9,12 @@
 			<span class="address-tx ellipsis">
 				<slot />
 				<span class="text ellipsis">{{ val }}</span>
-				<Icon :icon="IconVerify" v-if="arverify?.verified" class="icon-container" />
-				<Tooltip class="icon-container" content="copy">
-					<Link v-if="clipboard" :run="clipboard" style="display: flex">
-						<Icon :icon="IconCopy"  />
+				<Tooltip v-if="arverify?.verified" class="icon-container" content="verified">
+					<Icon :icon="IconVerify" />
+				</Tooltip>
+				<Tooltip v-if="clipboard" class="icon-container" content="copy">
+					<Link :run="clipboard" style="display: flex">
+						<Icon :icon="clipboardIcon"  />
 					</Link>
 				</Tooltip>
 				<Tooltip class="icon-container">
@@ -34,11 +36,12 @@ import Tooltip from '@/components/function/Tooltip.vue'
 import QR from '@/components/atomic/QR.vue'
 import Link from '@/components/function/Link.vue'
 import ProfileStore, { getArverify } from '@/store/ProfileStore'
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import IconVerify from '@/assets/icons/verify.svg?component'
 import IconCopy from '@/assets/icons/copy.svg?component'
 import IconQR from '@/assets/icons/qr.svg?component'
+import IconY from '@/assets/icons/y.svg?component'
 
 const props = defineProps<{
 	address?: string
@@ -53,8 +56,12 @@ watch(() => props.address, async () => props.address && getArverify(props.addres
 const clipboard = computed(() => {
 	const address = props.address
 	if (!navigator.clipboard?.writeText || !address) { return }
-	return () => navigator.clipboard.writeText(address)
+	return () => { navigator.clipboard.writeText(address); clipboardClicked.value = true }
 })
+
+const clipboardClicked = ref()
+watch(clipboardClicked, clicked => clicked && setTimeout(() => clipboardClicked.value = false, 2000))
+const clipboardIcon = computed(() => clipboardClicked.value ? IconY : IconCopy)
 </script>
 
 
