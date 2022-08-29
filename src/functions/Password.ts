@@ -101,17 +101,21 @@ function passwordValidation (password: string) {
 
 
 export const emitter = mitt<{ password: PasswordRequest }>()
-const privateCache = {} as { [uuid: string]: { privateKey: PrivateKey, timestamp: number } | undefined }
+const privateCache = {} as { [uuid: string]: { privateKey: PrivateKey, timestamp: number, wallet: WalletDataInterface } | undefined }
 
 
 
 function invalidateMaybe (uuid: string) {
 	const entry = privateCache[uuid]
 	if (!entry) { return }
-	if (Date.now() - entry.timestamp > AppSettings.value.password.invalidateCache) { delete privateCache[uuid]; return true }
+	if (
+		Date.now() - entry.timestamp > AppSettings.value.password.invalidateCache
+		|| entry.wallet.settings?.securityLevel === 'always' && Date.now() - entry.timestamp > 1000
+	) { delete privateCache[uuid]; return true }
 }
 
-setInterval(() => Object.keys(privateCache).forEach(uuid => invalidateMaybe(uuid)), 60000)
+function invalidateAllMaybe () { Object.keys(privateCache).forEach(uuid => invalidateMaybe(uuid)) }
+setInterval(invalidateAllMaybe, 60000)
 
 function getCache (uuid: string): PrivateKey | void {
 	const entry = privateCache[uuid]
@@ -121,52 +125,71 @@ function getCache (uuid: string): PrivateKey | void {
 	return entry.privateKey
 }
 
-async function setCache (uuid: string, password: string): Promise<PrivateKey> {
+async function setCache (uuid: string, password: string): Promise<PrivateKey | undefined> {
 	let currentPrivateKey = undefined as undefined | PrivateKey
 	const result = WalletsData.value
 	.filter(wallet => isEncrypted(wallet.jwk))
-	.filter(wallet => wallet.uuid === uuid || wallet.settings?.securityLevel !== 'always')
+	.filter(wallet => getWalletById(wallet.id)!.uuid === uuid || wallet.settings?.securityLevel !== 'always')
 	.map(async wallet => {
 		const privateKey = await passwordDecrypt(password, wallet.jwk as any)
-		if (wallet.settings?.securityLevel !== 'always') { privateCache[uuid] = { privateKey, timestamp: Date.now() } }
-		if (wallet.uuid === uuid) { currentPrivateKey = privateKey }
+		const walletObject = getWalletById(wallet.id)
+		if (!walletObject) { throw 'wallet no longer accessible' }
+		if (walletObject.uuid === uuid) { currentPrivateKey = privateKey }
+		privateCache[walletObject.uuid] = { privateKey, timestamp: Date.now(), wallet }
 	})
 	await Promise.all(result)
-	return currentPrivateKey!
+	setTimeout(invalidateAllMaybe, 2000)
+	return currentPrivateKey
 }
 
 export async function requestPrivateKey (wallet: Wallet): Promise<PrivateKey> {
-	let currentPrivateKey = undefined as undefined | PrivateKey
+	let skPromiseControls: { resolve: (arg: PrivateKey) => void, reject: PasswordRequest['reject'] }
+	const skPromise = new Promise<PrivateKey>((resolve, reject) => skPromiseControls = { resolve, reject })
+	let passwordPromiseControls: { resolve: PasswordRequest['resolve'], reject: PasswordRequest['reject'] }
+	const passwordPromise = new Promise<string>((resolve, reject) => passwordPromiseControls = { resolve, reject })
+	passwordPromise.catch(e => skPromiseControls.reject(e))
 	const inCache = async () => {
 		const cache = getCache(wallet.uuid)
-		if (cache) { currentPrivateKey = cache; return true }
+		if (cache) { skPromiseControls.resolve(cache); return true }
 	}
-	const password = await requestPassword({ reason: 'get', wallet }, inCache)
-	if (!currentPrivateKey) { currentPrivateKey = await setCache(wallet.uuid, password) }
-	return currentPrivateKey!
+	const query = async () => {
+		if (await inCache()) { return passwordPromiseControls.resolve('') }
+		emitter.emit('password', { reason: 'get', wallet, ...passwordPromiseControls })
+		const password = await passwordPromise
+		const currentPrivateKey = await setCache(wallet.uuid, password)
+		if (!currentPrivateKey) { return skPromiseControls.reject('unable to get private key') }
+		skPromiseControls.resolve(currentPrivateKey)
+	}
+	requestPasswordQueue.push({ query, ...passwordPromiseControls! })
+	runQueue.query()
+	return skPromise
 }
 
-const requestPasswordQueue = [] as Function[]
+let requestPasswordQueue = [] as { query: Function, resolve: Function, reject: Function }[]
 
 const runQueue = getQueryManager({
 	name: 'Password',
 	query: async () => {
 		while (requestPasswordQueue.length) {
 			const item = requestPasswordQueue.splice(0, 1)[0]
-			try { await item() } catch (e) {}
+			try { await item.query() } catch (e) {
+				const queue = requestPasswordQueue
+				requestPasswordQueue = []
+				queue.forEach(r => r.reject())
+			}
 		}
 	}
 })
 
 async function requestPassword (request: Omit<PasswordRequest, 'resolve' | 'reject'>, invalidate?: () => Promise<any>) {
-	let controls: { resolve: PasswordRequest['resolve'], reject: PasswordRequest['reject']}
+	let controls: { resolve: PasswordRequest['resolve'], reject: PasswordRequest['reject'] }
 	const promise = new Promise<string>((resolve, reject) => controls = { resolve, reject })
 	const query = async () => {
 		if (invalidate && await invalidate()) { return controls.resolve('') }
 		emitter.emit('password', { ...request , ...controls })
 		await promise
 	}
-	requestPasswordQueue.push(query)
+	requestPasswordQueue.push({ query, ...controls! })
 	runQueue.query()
 	return promise
 }
