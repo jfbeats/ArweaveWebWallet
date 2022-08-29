@@ -4,7 +4,7 @@
 		<div v-show="false">
 			<div ref="contentEl" :style="{ padding }">
 				<span v-if="content">{{ content }}</span>
-				<slot name="content"/> <!-- todo only when popup is showing, use v-if -->
+				<slot name="content"/> <!-- todo v-if='popup is displayed' + activate from keyboard nav -->
 			</div>
 		</div>
 	</div>

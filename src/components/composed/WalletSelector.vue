@@ -1,9 +1,9 @@
 <template>
 	<div class="wallet-selector">
 		<TransitionsManager>
-			<button v-if="model" type="button" @click="$emit('selectWallet')" class="tab" :class="{ active }">
+			<Link v-if="model" :run="selectWallet" class="tab" :class="{ active }">
 				<AddressIcon :address="address" />
-			</button>
+			</Link>
 		</TransitionsManager>
 		<button v-if="onExit" class="exit" type="button" @click="$emit('exit')">
 			<div class="exit-background" />
@@ -20,10 +20,11 @@
 <script setup lang="ts">
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import TransitionsManager from '@/components/visual/TransitionsManager.vue'
-import { computed } from 'vue'
+import Link from '@/components/function/Link.vue'
 import { getWalletById } from '@/functions/Wallets'
+import { computed } from 'vue'
 
-const props = defineProps({ modelValue: String, onExit: Function, active: Boolean })
+const props = defineProps({ modelValue: String, onExit: Function, onSelectWallet: Function, active: Boolean })
 const emit = defineEmits(['update:modelValue', 'selectWallet', 'exit'])
 
 const model = computed<string | undefined>({
@@ -32,6 +33,10 @@ const model = computed<string | undefined>({
 })
 
 const address = computed(() => getWalletById(model.value)?.key)
+const selectWallet = computed(() => {
+	if (!props.onSelectWallet) { return }
+	return () => emit('selectWallet')
+})
 </script>
 
 

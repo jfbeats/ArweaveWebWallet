@@ -8,7 +8,7 @@
 				<div class="content flex-column">
 					<div class="flex-row" style="justify-content: space-between;">
 						<div></div>
-						<WalletSelector @exit="() => reject('Password not provided')" v-model="currentWalletId" />
+						<WalletSelector @exit="() => reject('Password not provided')" v-model="currentWalletId" :active="true" />
 					</div>
 					<div class="flex-column">
 						<Input v-for="input in inputs" v-model="input.model.value" v-bind="input.bind" type="password" />
