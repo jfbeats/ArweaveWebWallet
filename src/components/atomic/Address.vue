@@ -1,31 +1,24 @@
 <template>
-	<Tooltip disabled>
-		<template #content>
-			<div class="text">
-				{{ address }}
-			</div>
-		</template>
-		<div class="address ellipsis">
-			<span class="address-tx ellipsis">
-				<slot />
-				<span class="text ellipsis">{{ val }}</span>
-				<Tooltip v-if="arverify?.verified" class="icon-container" content="verified">
-					<Icon :icon="IconVerify" />
-				</Tooltip>
-				<Tooltip v-if="clipboard" class="icon-container" :content="clipboardClicked ? undefined : 'copy'">
-					<Link :run="clipboard" style="display: flex">
-						<Icon :icon="clipboardIcon"  />
-					</Link>
-				</Tooltip>
-				<Tooltip class="icon-container">
-					<template #content>
-						<QR :qr="address" />
-					</template>
-					<Icon :icon="IconQR"  />
-				</Tooltip>
-			</span>
-		</div>
-	</Tooltip>
+	<div class="address ellipsis">
+		<span class="address-tx ellipsis">
+			<slot />
+			<span class="text ellipsis">{{ val }}</span>
+			<Tooltip v-if="arverify?.verified" class="icon-container" content="verified">
+				<Icon :icon="IconVerify" />
+			</Tooltip>
+			<Tooltip v-if="clipboard" class="icon-container" :content="clipboardClicked ? undefined : 'copy'">
+				<Link :run="clipboard" style="display: flex">
+					<Icon :icon="clipboardIcon"  />
+				</Link>
+			</Tooltip>
+			<Tooltip v-if="address" class="icon-container">
+				<template #content>
+					<QR :qr="val" />
+				</template>
+				<Icon :icon="IconQR"  />
+			</Tooltip>
+		</span>
+	</div>
 </template>
 
 
@@ -54,7 +47,7 @@ const arverify = computed(() => props.address && ProfileStore.arverify[props.add
 watch(() => props.address, async () => props.address && getArverify(props.address), { immediate: true })
 
 const clipboard = computed(() => {
-	const address = props.address
+	const address = val.value
 	if (!navigator.clipboard?.writeText || !address) { return }
 	return () => { navigator.clipboard.writeText(address); clipboardClicked.value = true }
 })
