@@ -61,7 +61,7 @@ const props = defineProps<{
 }
 
 .message {
-	text-align: justify;
+	text-align: center;
 }
 
 .actions-container {
