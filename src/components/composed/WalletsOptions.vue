@@ -2,9 +2,10 @@
 	<div>
 		<div class="flex-row" style="justify-content: space-between; align-items: baseline">
 			<h2>Wallet{{ selectedWallets.length > 1 ? 's' : '' }}</h2>
-			<Link class="update-message" v-if="hasUpdate" @click="updateEncryptionOrNewPwd">
+			<Link class="update-message" v-if="securityMismatch" @click="securityMismatchAction">
 				<Icon :icon="IconWarning" style="vertical-align: text-top" />
-				<span v-if="hasPassword"> Click here to update encryption</span>
+				<span v-if="hasNoTargetWallets"> Select wallets to encrypt</span>
+				<span v-else-if="hasPassword"> Click here to update encryption</span>
 				<span v-else> Click here to create a new password</span>
 			</Link>
 		</div>
@@ -28,7 +29,7 @@ import Icon from '@/components/atomic/Icon.vue'
 import { Wallets } from '@/functions/Wallets'
 import { state } from '@/functions/Channels'
 import { sharedState } from '@/functions/Connect'
-import { hasPassword, setPassword, hasUpdate, updateEncryption } from '@/functions/Password'
+import { hasPassword, setPassword, hasUpdate, updateEncryption, hasNoTargetWallets } from '@/functions/Password'
 import { computed, watch } from 'vue'
 import { onBeforeRouteLeave, useRoute } from 'vue-router'
 
@@ -45,11 +46,14 @@ const selectedWallets = computed(() => {
 	return Wallets.value.filter(wallet => editWalletArray.includes(wallet.id + ''))
 })
 const canConnect = computed(() => ['popup', 'iframe', 'ws'].includes(state.value.type!) && !sharedState.value?.walletId)
-const updateEncryptionOrNewPwd = computed(() => hasPassword.value ? () => updateEncryption() : () => setPassword('', true))
+const securityMismatch = computed(() => hasUpdate.value || hasNoTargetWallets.value)
+const securityMismatchAction = computed(() => {
+	if (hasUpdate.value) { return hasPassword.value ? () => updateEncryption() : () => setPassword('', true) }
+})
 
 let notificationClose: Function | undefined
 onBeforeRouteLeave(() => {
-	if (!hasUpdate.value) { return }
+	if (!securityMismatch.value) { return }
 	const { promise, close } = notify.confirm({ title: 'Security changes are not applied', body: 'Are you sure you want to leave this page?' })
 	if (notificationClose) { notificationClose() }
 	notificationClose = close

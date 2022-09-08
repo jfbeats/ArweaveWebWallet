@@ -28,6 +28,7 @@ const requireDecryption = computed(() => WalletsData.value
 	.filter(wallet => wallet.jwk && isEncrypted(wallet.jwk) && !wallet.settings?.securityLevel))
 export const hasPassword = computed(() => pwdTest.value)
 export const hasUpdate = computed(() => requireEncryption.value.length + requireDecryption.value.length)
+export const hasNoTargetWallets = computed(() => hasPassword.value && !WalletsData.value.find(wallet => wallet.settings?.securityLevel))
 
 
 
@@ -93,9 +94,9 @@ export async function setPassword (password: string, askNew?: true): Promise<tru
 	return true
 }
 
-function passwordValidation (password: string) {
-	const lengthMessage = 'Password length must be at least 8 characters long'
-	if (password.length < 8) { notify.error(lengthMessage); throw lengthMessage }
+export const passwordValidationMessage = 'Password length must be at least 8 characters long'
+export function passwordValidation (password: string) {
+	if (password.length < 8) { notify.error(passwordValidationMessage); throw passwordValidationMessage }
 }
 
 

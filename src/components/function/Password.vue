@@ -28,7 +28,7 @@ import Input from '@/components/form/Input.vue'
 import SecurityVisual from '@/components/visual/SecurityVisual.vue'
 import WalletSelector from '@/components/composed/WalletSelector.vue'
 import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
-import { emitter, testPassword, PasswordRequest, hasPassword } from '@/functions/Password'
+import { emitter, testPassword, PasswordRequest, hasPassword, passwordValidation } from '@/functions/Password'
 import { notify } from '@/store/NotificationStore'
 import { computed, markRaw, Ref, ref, shallowRef, watch } from 'vue'
 
@@ -66,7 +66,10 @@ const passwordMatch = ref('')
 const passwordAction = computed(() => ({ run: submit, icon: IconY }))
 const submit = async () => {
 	if (passwordRequest.value?.match && passwordRequest.value.match !== passwordMatch.value) { return notify.error('New password does not match') }
-	if (passwordRequest.value?.reason === 'new') { if (passwordMatch.value !== password.value) { return notify.error('New password does not match') } }
+	if (passwordRequest.value?.reason === 'new') {
+		if (passwordMatch.value !== password.value) { return notify.error('New password does not match') }
+		passwordValidation(password.value)
+	}
 	else if (passwordRequest.value?.reason !== 'match') { try { await testPassword(password.value) } catch (e) { return notify.error(passwordRequest.value?.match ? 'Invalid current password' : 'Invalid') } }
 	passwordRequest.value?.resolve(password.value)
 	passwordRequest.value = undefined
