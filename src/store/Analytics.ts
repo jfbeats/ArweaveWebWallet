@@ -65,7 +65,7 @@ function init () {
 	const trackingDisabled = () => localStorage && localStorage.getItem('umami.disabled') || dnt && doNotTrack()
 	const collect = (type: string, payload: object) => {
 		if (trackingDisabled()) { return }
-		post(`${root}/api/collect`, { type, payload }, (res: string) => { cache = res })
+		post(`${root}/c`, { type, payload }, (res: string) => { cache = res })
 	}
 	
 	const getPayload = () => ({ website, hostname, screen, language, url: currentUrl })
