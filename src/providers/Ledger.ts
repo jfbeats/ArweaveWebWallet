@@ -120,7 +120,7 @@ const providerMetadata: ProviderMetadata = reactive({
 	},
 	actions: [
 		{ name: 'Verify address', icon: markRaw(IconVerify), run: async () => getAddress(true) },
-		{ name: 'Purchase | affiliate link', icon: markRaw(IconLaunch), to: 'https://shop.ledger.com?r=1a60a479b0af', run: () => track.event('affiliate', 'https://shop.ledger.com?r=1a60a479b0af') },
+		{ name: 'Purchase | affiliate link', icon: markRaw(IconLaunch), to: 'https://shop.ledger.com?r=1a60a479b0af', run: () => track.event('Affiliate', { value: 'Ledger', link: 'https://shop.ledger.com?r=1a60a479b0af' }) },
 	],
 	componentSettings: markRaw(LedgerSettings)
 })

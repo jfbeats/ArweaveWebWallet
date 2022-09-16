@@ -98,7 +98,7 @@ export default class JsonRpc {
 			messageEntry.fulfilled = true
 			await this.updateMessage(messageEntry)
 			if (id != null) { this.callbacks({ result, id }) }
-			track.event('connector', message.method)
+			track.event(`Connector ${message.method}`)
 		} catch (e) {
 			// todo ledger transaction not removed on error
 			messageEntry.status = 'error'

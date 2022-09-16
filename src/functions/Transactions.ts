@@ -96,7 +96,10 @@ export async function manageUpload (tx: Transaction) {
 	localStorage.removeItem(storageKey)
 	setTimeout(() => delete ArweaveStore.uploads[tx.id], 1000)
 	notify.log('Transaction sent')
-	track.event('tx', 'Sent')
+	if (tx.quantity && tx.quantity !== '0' && tx.data_size && tx.data_size !== '0') { track.event('Tx Value Data') }
+	else if (tx.quantity && tx.quantity !== '0') { track.event('Tx Value') }
+	else if (tx.data_size && tx.data_size !== '0') { track.event('Tx Data') }
+	else { track.event('Tx Empty') }
 	return uploader.lastResponseStatus
 }
 

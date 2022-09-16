@@ -93,7 +93,7 @@ async function findKeyfiles (files: string[] | FileWithPath[]): Promise<string[]
 async function importKeyfiles (keyfiles: string[]) {
 	const ids = (await Promise.all(keyfiles.map(async keyfile => addKeyfile(keyfile)))).filter(e => e !== null).map(e => e.id)
 	if (ids.length > 0) { router.push({ name: 'EditWallet', query: { wallet: ids } }) }
-	track.account('Import')
+	track.account('Account Import')
 }
 
 

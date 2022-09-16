@@ -38,7 +38,7 @@ const triggerUpdate = async () => {
 	overlay.value = true
 	if (updating) { return }
 	updating = true
-	track.event('app', 'Update')
+	track.event('App Update')
 	await new Promise(res => {
 		updateServiceWorker(false).then(res)
 		setTimeout(res, 1000)

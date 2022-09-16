@@ -28,7 +28,7 @@ async function install () {
 	const { outcome } = await PWA.installPrompt.userChoice
 	if (outcome !== 'accepted') { return }
 	PWA.installState = 'installed'
-	track.event('app', 'Install')
+	track.event('App Install')
 }
 
 

@@ -122,7 +122,7 @@ async function initConnector () {
 		if (id === false) { return disconnect() }
 		if (!id) { return }
 		connect()
-		if (!sharedState.value.connected) { track.event('connect', sharedState.value.origin) }
+		if (!sharedState.value.connected) { track.event('Connect', sharedState.value.origin) }
 		sharedState.value.connected = true
 	})
 	watchEffect(() => {
