@@ -2,7 +2,7 @@
 	<div class="select input-box" :class="{ focus }">
 		<Icon v-if="currentIcon" :icon="currentIcon" style="left:0;" />
 		<select class="text" v-model="model" :placeholder="placeholder" @focus="focus = true" @blur="focus = false" :class="{ hasPadding: currentIcon }">
-			<option v-for="option in options" :key="option" :value="option.value">{{ option.text }}</option>
+			<option class="text-option" v-for="option in options" :key="option" :value="option.value">{{ option.text }}</option>
 		</select>
 		<Icon :icon="'⥥'" style="right:0;" />
 	</div>
@@ -69,5 +69,10 @@ const currentIcon = computed(() => props.icon || props.options?.find(op => op.va
 
 .text.hasPadding {
 	padding: 0 calc(var(--spacing) + 3em) 0 calc(var(--spacing) + 3em);
+}
+
+.text-option {
+	background-color: var(--background3);
+	color: var(--element-secondary);
 }
 </style>
