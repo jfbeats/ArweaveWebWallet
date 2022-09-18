@@ -10,7 +10,7 @@ type EventType = AccountEvent |
 	'App Install' | 'App Update'
 	| 'Affiliate'
 	| 'Connect' | 'Connect Localhost'
-	| `Connector ${string}`
+	| 'Connector'
 	| 'Tx Data' | 'Tx Value' | 'Tx Value Data' | 'Tx Empty'
 	| 'Error'
 const eventRecords = useChannel('events', undefined, {}).state
