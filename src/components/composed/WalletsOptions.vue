@@ -12,7 +12,7 @@
 		<div class="flex-column">
 			<template v-for="wallet in selectedWallets" :key="wallet.id">
 				<WalletOptions :wallet="wallet" />
-				<Button v-if="canConnect" @click="() => sharedState.walletId = wallet.id">Connect</Button>
+				<Button v-if="canConnect" @click="() => { sharedState.walletId = wallet.id; router.push('Connect') }">Connect</Button>
 				<div></div>
 			</template>
 		</div>
@@ -31,13 +31,14 @@ import { state } from '@/functions/Channels'
 import { sharedState } from '@/functions/Connect'
 import { hasPassword, setPassword, hasUpdate, updateEncryption, hasNoTargetWallets } from '@/functions/Password'
 import { computed, watch } from 'vue'
-import { onBeforeRouteLeave, useRoute } from 'vue-router'
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 
 import IconWarning from '@/assets/icons/shield_warning.svg?component'
 import Link from '@/components/function/Link.vue'
 import { notify } from '@/store/NotificationStore'
 
 const route = useRoute()
+const router = useRouter()
 
 const selectedWallets = computed(() => {
 	const editWallet = route.query.wallet
