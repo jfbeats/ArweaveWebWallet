@@ -2,11 +2,14 @@ import Notification from '@/components/composed/Notification.vue'
 import { getDB } from '@/store/IndexedDB'
 import { createToast, withProps } from 'mosha-vue-toastify'
 import { reactive, Ref, ref } from 'vue'
+import IconY from '@/assets/icons/y.svg?component'
+import IconX from '@/assets/icons/x.svg?component'
 
-type NotificationData = NotificationOptions & {
-	title: string
+export type NotificationData = NotificationOptions & {
+	title?: string
 	onClose?: () => void
-	ref: Ref
+	actions?: Action[] // todo convert NotificationAction[] of NotificationOptions type to only have Action[] type
+	ref?: Ref
 }
 type Notify = string | NotificationData
 const toastType = { log: 'success', warn: 'warning', error: 'danger', confirm: 'warning' } as const
@@ -37,11 +40,11 @@ function createNotification (type: keyof typeof toastType, notify: Notify, push?
 	let actions
 	let close = () => {}
 	const promise = new Promise<boolean>(res => {
-		actions = [{ name: 'accept', run: () => res(true) }]
+		actions = [{ name: 'Accept', icon: IconY, run: () => res(true) }, { name: 'Cancel', icon: IconX, run: () => res(false) }]
 		close = () => res(false)
 	})
 	const toastSettings = { title, description: options.body }
-	const props = { data: { ...toastSettings, actions } }
+	const props: { data: NotificationData } = { data: { ...toastSettings, actions } }
 	const toastContent = type !== 'confirm' ? toastSettings : withProps(Notification, props)
 	
 	const notification = doNotification ? new Notification(title, options) : undefined

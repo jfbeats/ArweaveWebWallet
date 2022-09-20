@@ -1,37 +1,37 @@
 <template>
-	<a v-if="to && isExternal" :href="to" @click.capture="runFunctions" target="_blank"><slot /></a>
-	<a v-else-if="to" :href="!disabled ? href : null" @click.capture="runFunctions" :class="{ 'router-link-active': isActive, 'router-link-exact-active': isExactActive }"><slot /></a>
-	<button v-else-if="run" @click.capture="runFunctions" :disabled="disabled" type="button"><slot /></button>
+	<a v-if="hrefExternal" ref="input" :href="hrefExternal" @click.capture="runFunctions" target="_blank"><slot /></a>
+	<a v-else-if="to && !disabled" ref="input" :href="hrefRouter" @click.capture="runFunctions" :class="{ 'router-link-active': isActive, 'router-link-exact-active': isExactActive }"><slot /></a>
+	<button v-else-if="runFunctions" ref="input" @click.capture="runFunctions" type="button"><slot /></button>
 	<span v-else><slot /></span>
 </template>
 
 
 
 <script setup lang="ts">
-import { RouterLink, useLink } from 'vue-router'
-import { computed } from 'vue'
+import { createAction } from '@/functions/UtilsVue'
+import { onMounted, ref, useAttrs } from 'vue'
 
-// console.log(RouterLink.props)
 const props = defineProps<{
-	// href?: never
+	onClick?: (e?: MouseEvent) => any
+	href?: ''
 	
 	// Todo type action
 	name?: string
-	icon?: import('vue').FunctionalComponent<import('vue').SVGAttributes, {}>
+	icon?: Icon
 	color?: string
 	run?: Function
 	to?: import('vue-router').RouteLocationRaw
 	disabled?: any
 }>()
-const routerParams = computed(() => ({ ...props, to: props.to ?? '' }))
-const { navigate, href, route, isActive, isExactActive } = useLink(routerParams.value)
+const attrs = useAttrs()
+const input = ref(undefined as undefined | HTMLInputElement)
 
-const isExternal = computed(() => { try { new URL(props.to as any); return true } catch (e) {} })
-const runFunctions = (e: MouseEvent) => {
-	if (props.disabled) { return }
-	props.run?.()
-	props.to && navigate(e)
-}
+const { hrefExternal, hrefRouter, isActive, isExactActive, runFunctions} = createAction(props, true)
+
+onMounted(() => {
+	// always autofocus
+	if ('autofocus' in attrs && attrs.autofocus !== undefined) { setTimeout(() => input.value?.focus()) }
+})
 </script>
 
 

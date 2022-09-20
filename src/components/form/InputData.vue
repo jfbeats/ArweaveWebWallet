@@ -5,20 +5,20 @@
 			<div v-if="!model && !dragOverlay" class="overlay passthrough">
 				<Icon :icon="IconText" class="big-icon-container img" />
 				<div class="spacer" />
-				<div class="big-icon-container not-passthrough">
-					<label for="file-picker" class="file-picker-label">
+				<Link class="big-icon-container not-passthrough" @click="() => filePicker?.click()">
+					<div class="file-picker-label">
 						<Icon :icon="IconDrop" class="img" style="width: 100%; height: 100%;" />
-					</label>
-					<input type="file" id="file-picker" class="file-input" @change="handleFiles" :disabled="disabled" multiple />
-				</div>
-				<template v-if="showDirectoryPicker || hasDirectoryInput">
-					<div class="spacer" />
-					<div class="big-icon-container not-passthrough" @click="() => showDirectoryPicker && handleDirectoryPicker()">
-						<label for="directory-picker" class="file-picker-label">
-							<Icon :icon="IconFolder" class="img" style="width: 100%; height: 100%;" />
-						</label>
-						<input v-if="!showDirectoryPicker" type="file" id="directory-picker" class="file-input" @change="handleFiles" :disabled="disabled" webkitdirectory directory multiple />
 					</div>
+					<input ref="filePicker" type="file" id="file-picker" class="file-input" @change="handleFiles" :disabled="disabled" multiple />
+				</Link>
+				<template v-if="hasDirectoryInput">
+					<div class="spacer" />
+					<Link class="big-icon-container not-passthrough" @click="() => directoryPicker?.click()">
+						<div class="file-picker-label">
+							<Icon :icon="IconFolder" class="img" style="width: 100%; height: 100%;" />
+						</div>
+						<input ref="directoryPicker" type="file" id="directory-picker" class="file-input" @change="handleFiles" :disabled="disabled" webkitdirectory directory multiple />
+					</Link>
 				</template>
 			</div>
 			<div v-else-if="isFile" class="overlay">
@@ -27,11 +27,11 @@
 						<TxCard v-for="tx in model" :key="tx.key ??= Math.random().toString()" :tx="tx" :options="{ half: true }" />
 					</div>
 				</div>
-				<button class="clear" @click="clearFiles" type="button">
+				<Link class="clear" @click="clearFiles" type="button">
 					<div class="icon-container">
 						<Icon :icon="IconX" class="iconX no-select" draggable="false" />
 					</div>
-				</button>
+				</Link>
 			</div>
 		</transition>
 		<DragOverlay />
@@ -43,8 +43,10 @@
 <script setup lang="ts">
 import TxCard from '@/components/composed/TxCard.vue'
 import DragOverlay from '@/components/atomic/DragOverlay.vue'
+import Link from '@/components/function/Link.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import InterfaceStore from '@/store/InterfaceStore'
+import { state } from '@/functions/Channels'
 import { computed, ref, toRef, useAttrs } from 'vue'
 
 import IconText from '@/assets/icons/text.svg?component'
@@ -60,9 +62,11 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{
 	(e: 'update:modelValue', value: string | ArDataItemParams[]): void
-	(e: 'files', files?: DragEvent | InputEvent | FileSystemDirectoryHandle): void
+	(e: 'files', files?: DragEvent | InputEvent | FileSystemDirectoryHandle | FileSystemFileHandle[]): void
 }>()
 const attrs = useAttrs()
+const filePicker = ref()
+const directoryPicker = ref()
 
 const model = computed({
 	get () { return props.modelValue },
@@ -83,13 +87,25 @@ function testDirectoryPicker() {
 	}
 	return false
 }
-const showDirectoryPicker = (window as any).showDirectoryPicker as Function | undefined
-const handleDirectoryPicker = async () => {
+const handleDirectoryPicker = computed(() => { // API doesn't work in iframe
+	const showDirectoryPicker = (window as any).showDirectoryPicker as ((options?: any) => Promise<FileSystemDirectoryHandle>) | undefined
+	if (state.value.type === 'iframe' || state.value.type === 'extension') { return }
 	if (attrs.disabled || !showDirectoryPicker) { return }
-	const files = await showDirectoryPicker?.() as FileSystemDirectoryHandle
-	handleFiles(files)
-}
-const handleFiles = (e: DragEvent | InputEvent | FileSystemDirectoryHandle) => {
+	return async () => {
+		const files = await showDirectoryPicker()
+		handleFiles(files)
+	}
+})
+const handleFilePicker = computed(() => { // API doesn't work in iframe
+	const showOpenFilePicker = (window as any).showOpenFilePicker as ((options?: any) => Promise<FileSystemFileHandle[]>) | undefined
+	if (state.value.type === 'iframe' || state.value.type === 'extension') { return }
+	if (attrs.disabled || !showOpenFilePicker) { return }
+	return async () => {
+		const files = await showOpenFilePicker({ multiple: true })
+		handleFiles(files)
+	}
+})
+const handleFiles = (e: DragEvent | InputEvent | FileSystemDirectoryHandle | FileSystemFileHandle[]) => {
 	if (attrs.disabled) { return }
 	return emit('files', e)
 }

@@ -161,6 +161,7 @@ iframe.hover:hover {
 }
 
 .raw {
+	font-family: inherit;
 	overflow: auto;
 	padding: var(--spacing);
 	margin: 0;

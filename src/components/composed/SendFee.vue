@@ -14,6 +14,7 @@
 <script setup lang="ts">
 import Slider from '@/components/form/Slider.vue'
 import Amount from '@/components/composed/Amount.vue'
+import { ArweaveAccount } from '@/providers/Arweave'
 import { arweave } from '@/store/ArweaveStore'
 import BlockStore from '@/store/BlockStore'
 import { getFeeRange } from '@/functions/Transactions'
@@ -29,7 +30,7 @@ const emit = defineEmits<{
 	(e: 'update', value: string | undefined): void
 }>()
 
-const address = computed(() => props.target.slice(0,43).match(/^[a-z0-9_-]{43}$/i) ? props.target.slice(0,43) : '')
+const address = computed(() => ArweaveAccount.metadata.isAddress(props.target.slice(0,43)) ? props.target.slice(0,43) : '')
 const txFee = ref(undefined as undefined | string)
 const updateFee = async () => { props.size && (txFee.value = await arweave.transactions.getPrice(parseInt(props.size), address.value)) }
 const updateFeeDebounced = debounce(updateFee)

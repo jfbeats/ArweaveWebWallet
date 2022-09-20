@@ -1,9 +1,18 @@
 import { Wallets } from '@/functions/Wallets'
 import { useChannel } from '@/functions/Channels'
+import { base32Decode } from '@/functions/Encoding'
+import { arweave } from '@/store/ArweaveStore'
 
 
 
-type EventType = 'app' | 'account' | 'connect' | 'connector' | 'tx' | 'affiliate' | 'error'
+type AccountEvent = 'Account Create' | 'Account Import' | 'Account Watch' | 'Account Ledger'
+type EventType = AccountEvent |
+	'App Install' | 'App Update'
+	| 'Affiliate'
+	| 'Connect' | 'Connect Localhost'
+	| 'Connector'
+	| 'Tx Data' | 'Tx Value' | 'Tx Value Data' | 'Tx Empty'
+	| 'Error'
 const eventRecords = useChannel('events', undefined, {}).state
 
 
@@ -24,8 +33,10 @@ function doNotTrack () {
 	return dnt == '1' || dnt === 'yes'
 }
 
+function testLocalhost (location = window.location) { return /^localhost$|^127(?:\.[0-9]+){0,2}\.[0-9]+$|^(?:0*:)*?:?0*1$/.test(location.hostname) || location.protocol === 'file:' }
+
 const isMain = location.hostname === 'arweave.app'
-const isLocalhost = /^localhost$|^127(?:\.[0-9]+){0,2}\.[0-9]+$|^(?:0*:)*?:?0*1$/.test(location.hostname) || location.protocol === 'file:'
+const isLocalhost = testLocalhost()
 const isKnown = isMain || isLocalhost
 
 
@@ -51,24 +62,24 @@ function init () {
 	let currentRef = document.referrer
 	let cache: string
 	
-	const post = (url: string, data: object, callback: Function) => {
-		const req = new XMLHttpRequest()
-		req.open('POST', url, true)
-		req.setRequestHeader('Content-Type', 'application/json')
-		if (cache) req.setRequestHeader('x-umami-cache', cache)
-		req.onreadystatechange = () => req.readyState === 4 && callback(req.response)
-		req.send(JSON.stringify(data))
-	}
-	
 	const trackingDisabled = () => localStorage && localStorage.getItem('umami.disabled') || dnt && doNotTrack()
 	const collect = (type: string, payload: object) => {
 		if (trackingDisabled()) { return }
-		post(`${root}/api/collect`, { type, payload }, (res: string) => { cache = res })
+		return fetch(`${root}/c`, {
+			method: 'POST',
+			body: JSON.stringify({ type, payload }),
+			headers: Object.assign({ 'Content-Type': 'application/json' }, { ['x-umami-cache']: cache }),
+		}).then(res => res.text()).then(text => (cache = text))
 	}
 	
 	const getPayload = () => ({ website, hostname, screen, language, url: currentUrl })
 	const view = () => collect('pageview', Object.assign(getPayload(), { referrer: currentRef }))
-	const event = (event_type: EventType, event_value: string) => collect('event', Object.assign(getPayload(), { event_type, event_value }))
+	const event = (event_name: EventType, value?: { [key: string]: any } | string) => {
+		const event_data = typeof value === 'string' ? { value } : value
+		if (event_name === 'Connect' && event_data) { try { event_data.value = extractId(event_data.value) } catch (e) {} }
+		if (event_name === 'Connect' && event_data && testLocalhost(event_data.value)) { event_name = 'Connect Localhost' }
+		collect('event', Object.assign(getPayload(), { event_name, event_data }))
+	}
 	
 	const handlePush = (state: any, title: any, url: any) => {
 		if (!url) { return }
@@ -88,15 +99,28 @@ function init () {
 	
 	let walletsLength: number
 	setTimeout(() => walletsLength = Wallets.value.length)
-	const account = (value: string) => {
+	const account = (event_name: AccountEvent, options?: {}) => {
 		if (!walletsLength && !eventRecords.value.firstAccount) {
 			eventRecords.value.firstAccount = true
-			event('account', 'First')
+			options ??= {}
+			;(options as any).first = true
 		}
-		event('account', value)
+		event(event_name, options)
 	}
 	
 	return { event, account }
 }
 
 export const track = init()
+
+
+
+function extractId (url: string) {
+	const urlObject = new URL(url)
+	const id = urlObject.hostname.split('.').find(s => {
+		const regex = /^([a-z2-7=]{52})+$/
+		return regex.test(s)
+	})
+	if (!id) { throw '' }
+	return arweave.utils.bufferTob64Url(base32Decode(id.toUpperCase()))
+}

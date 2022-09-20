@@ -13,10 +13,11 @@ import { emitter } from '@/store/InterfaceStore'
 const props = defineProps<{
 	axis?: 'x' | 'y'
 	vector?: number
+	fast?: boolean
 }>()
 
 const name = computed<string>(() => {
-	if (props.vector == null || props.vector === 0) { return 'fade' }
+	if (props.vector == null || props.vector === 0) { return props.fast ? 'fade-fast' : 'fade' }
 	if (props.axis === 'x') { return props.vector > 0 ? 'slide-left' : 'slide-right' }
 	else { return props.vector > 0 ? 'slide-up' : 'slide-down' }
 })

@@ -7,9 +7,9 @@
 			</div>
 		</div>
 		<div class="content flex-column">
-<!--			<div v-if="wallet.hasPrivateKey" class="flex-row">-->
-<!--				<Select v-model="wallet.settings.securityLevel" :options="securityOptions" />-->
-<!--			</div>-->
+			<div v-if="wallet.hasPrivateKey" class="flex-row">
+				<Select v-model="wallet.settings.securityLevel" :options="securityOptions" />
+			</div>
 			<div class="flex-row">
 				<Button v-if="wallet.download && !wallet.metadata.methods.download?.unavailable" :icon="IconDownload" @click="() => wallet.download()">Download</Button>
 				<Button :icon="IconX" @click="deleteWallet(wallet)">Delete</Button>
@@ -49,17 +49,11 @@ const securityOptions = [
 .wallet-options {
 	display: flex;
 	flex-direction: column;
-	/* padding: 16px 16px 16px 0; */
-	/* background: var(--background2); */
-	overflow: hidden;
 }
 
 .left {
-	/* align-self: center; */
 	flex: 0 0 auto;
 	display: flex;
-	/* flex-direction: column; */
-	/* background: var(--background3); */
 	align-items: center;
 }
 
@@ -69,7 +63,6 @@ const securityOptions = [
 }
 
 .bottom {
-	/* background: var(--background2); */
 	border-radius: var(--border-radius);
 }
 
@@ -79,7 +72,6 @@ const securityOptions = [
 	height: 92px;
 	background: var(--background);
 	border-radius: var(--border-radius);
-	/* border-radius: 50%; */
 	padding: 24px;
 }
 

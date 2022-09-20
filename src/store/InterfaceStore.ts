@@ -1,5 +1,5 @@
+import { Emitter } from '@/functions/UtilsClass'
 import { reactive, ref, watch } from 'vue'
-import mitt from 'mitt'
 
 import logoArweaveBlack from '@/assets/logos/arweaveBlack.svg?url'
 import logoArweaveWhite from '@/assets/logos/arweaveWhite.svg?url'
@@ -21,17 +21,7 @@ const InterfaceStore = reactive({
 
 
 
-export const emitter = mitt()
-emitter.once = (eventName, handler) => {
-	return new Promise(resolve => {
-		const wrapper = (e) => {
-			emitter.off(eventName, wrapper)
-			resolve(e)
-			if (handler) { handler(e) }
-		}
-		emitter.on(eventName, wrapper)
-	})
-}
+export const emitter = new Emitter<{ scrollHistory: undefined }>()
 
 
 
@@ -81,7 +71,7 @@ if (navigator.appVersion.indexOf("Win") != -1 || navigator.appVersion.indexOf('M
 
 const faviconEl = document.createElement('link')
 faviconEl.setAttribute('rel', 'favicon icon')
-const setFavicon = (e) => {
+const setFavicon = (e: { matches: boolean }) => {
 	faviconEl.remove()
 	if (e.matches) { faviconEl.setAttribute('href', logoArweaveBlack) }
 	else { faviconEl.setAttribute('href', logoArweaveWhite) }

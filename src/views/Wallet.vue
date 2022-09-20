@@ -11,7 +11,7 @@
 					</div>
 				</template>
 				<template #right>
-					<div :key="route.name + route.params.walletId" class="router-view">
+					<div :key="$route.name?.toString() + $route.params.walletId.toString()" class="router-view">
 						<component :is="Component" />
 					</div>
 				</template>
@@ -35,7 +35,7 @@ import IconSouthWest from '@/assets/icons/south_west.svg?component'
 import IconSwap from '@/assets/icons/swap.svg?component'
 import IconCircle from '@/assets/icons/cloud_circle.svg?component'
 
-const props = defineProps({ wallet: Object })
+const props = defineProps<{ wallet: Wallet }>()
 
 const actions = [
 	{ name: 'Send', icon: IconNorthEast, text: 'Send' },

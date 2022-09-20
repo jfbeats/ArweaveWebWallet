@@ -1,6 +1,7 @@
 import { getCurrentScope, onScopeDispose, watch, ref, effectScope, computed } from 'vue'
 import type { EffectScope, Ref, WatchStopHandle } from 'vue'
 import { useDataWrapper } from '@/functions/AsyncData'
+import type { AppSettingsInterface } from '@/store/SettingsStore'
 
 type PrefixTable = {
 	'instanceState:': InstanceState
@@ -15,6 +16,7 @@ type PrefixTable = {
 	pwdTestLock: number
 	events: { [key: string]: any }
 	ledgerSettings: { selectedTransport: string }
+	appSettings: AppSettingsInterface
 }
 
 type DefaultValue <T extends keyof PrefixTable> = PrefixTable[T] | undefined

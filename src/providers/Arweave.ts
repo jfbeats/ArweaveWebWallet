@@ -19,9 +19,14 @@ import { getKeyPairFromMnemonic } from 'human-crypto-keys'
 
 
 
-const accountMetadata: DisplayMetadata = {
+const displayMetadata: DisplayMetadata = {
 	name: 'Arweave address',
 	icon: LogoArweave
+}
+
+const accountMetadata: AccountMetadata = {
+	...displayMetadata,
+	isAddress: (address, partial) => !partial ? !!address?.match(/^[a-z0-9_-]{43}$/i) : !!address?.match(/^[a-z0-9_-]{0,43}$/i)
 }
 
 const providerMetadata: ProviderMetadata = {
@@ -63,19 +68,21 @@ export class ArweaveAccount extends Emitter implements Account {
 			{ query: received, name: 'Received', color: 'var(--green)' },
 			{ query: sent, name: 'Sent', color: 'var(--red)' },
 		]
-		this.on('destructor', () => this.#balance.stop())
+		received.on('newContent', () => this.queryBalance.getState(true))
+		sent.on('newContent', () => this.queryBalance.getState(true))
+		this.on('destructor', () => this.queryBalance.stop())
 	}
 	static get metadata () { return accountMetadata }
 	get metadata () { return accountMetadata }
 	#key = computed(() => typeof this.init === 'string' ? this.init : this.init.data?.arweave?.key)
-	#balance = getAsyncData({
+	queryBalance = getAsyncData({
 		name: 'balance',
 		awaitEffect: () => this.key,
 		query: async () => arweave.ar.winstonToAr(await arweave.wallets.getBalance(this.key!)),
 		seconds: 600,
 	})
 	get key () { return this.#key.value }
-	get balance () { return this.#balance.state.value }
+	get balance () { return this.queryBalance.state.value }
 	queries
 }
 

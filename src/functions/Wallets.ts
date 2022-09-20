@@ -4,14 +4,13 @@ import { useChannel } from '@/functions/Channels'
 import { useDataWrapper } from '@/functions/AsyncData'
 import { generateMnemonic as generateM, validateMnemonic as validateM } from 'bip39-web-crypto'
 // @ts-ignore
-import { getKeyPairFromMnemonic } from 'human-crypto-keys'
-// @ts-ignore
 import wordlist from 'bip39-web-crypto/src/wordlists/english.json'
 
 
 
 export type ProviderId = 'arweave' | 'ledger'
 export type AnyProvider = typeof providers[number]
+export const accounts = [ArweaveAccount]
 export const softwareProviders = [ArweaveProvider] as const
 export const hardwareProviders = [LedgerProvider] as const
 export const providers = [...hardwareProviders, ...softwareProviders] as const

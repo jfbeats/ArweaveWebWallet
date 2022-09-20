@@ -30,12 +30,12 @@ import { arweaveQuery, queryAggregator } from '@/store/ArweaveStore'
 import TxCard from '@/components/composed/TxCard.vue'
 import TransitionsManager from '@/components/visual/TransitionsManager.vue'
 import ProfileCard from '@/components/composed/ProfileCard.vue'
+import { ArweaveAccount } from '@/providers/Arweave'
 import { getAccountByAddress } from '@/functions/Wallets'
 import { useDebouncedRef } from '@/functions/UtilsVue'
 
-
 const search = useDebouncedRef('', 1000)
-const isId = computed(() => search.value.match(/^[a-z0-9_-]{43}$/i))
+const isId = computed(() => ArweaveAccount.metadata.isAddress(search.value))
 const searchAction = { run: () => {}, icon: IconSearch }
 
 const wallet = computed(() => isId.value && userTxQuery?.state?.value?.length && getAccountByAddress(search.value))

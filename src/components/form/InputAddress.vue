@@ -1,6 +1,6 @@
 <template>
 	<div class="row flex-row">
-		<Input v-model.trim="model" :icon="IconPerson" placeholder="Address" :mask="maskAddress" :actions="actions" :disabled="disabled" :id="id"/>
+		<Input v-model.trim="model" :icon="IconPerson" placeholder="Address" :mask="maskAddress" :actions="actions" :submit="submit" :disabled="disabled" :id="id"/>
 		<AddressIcon class="address-icon" :address="model"/>
 	</div>
 	<Viewport>
@@ -19,8 +19,15 @@ import { computed, ref } from 'vue'
 
 import IconPerson from '@/assets/icons/person.svg?component'
 import IconQR from '@/assets/icons/qr.svg?component'
+import { ArweaveAccount } from '@/providers/Arweave'
 
-const props = defineProps(['modelValue', 'actions', 'disabled', 'id'])
+const props = defineProps<{
+	modelValue: string
+	actions?: Action[]
+	submit?: Action
+	disabled?: boolean
+	id?: string
+}>()
 const emit = defineEmits(['update:modelValue'])
 
 const model = computed({
@@ -28,7 +35,7 @@ const model = computed({
 	set (value) { emit('update:modelValue', value) }
 })
 
-const maskAddress = (address: string) => { return address.match(/^[a-z0-9_-]{0,43}$/i) }
+const maskAddress = (address: string) => ArweaveAccount.metadata.isAddress(address, true)
 const scanning = ref(false)
 const scanningResult = (result?: string) => {
 	scanning.value = false

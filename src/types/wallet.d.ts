@@ -21,7 +21,7 @@ interface Provider extends Account {
 	signTransaction?: (...args: any) => Promise<any>
 	sign?: (data: ArrayBufferView, options: any) => Promise<ArrayBufferView>
 	decrypt?: (data: ArrayBufferView, options: any) => Promise<ArrayBufferView>
-	download?: () => Promise<any>
+	download?: () => Promise<any> // todo extract from providers
 	destructor?: () => any
 }
 
@@ -30,6 +30,7 @@ interface Account {
 	key?: string
 	balance?: string
 	queries: { query: any, name: string, color: string }[]
+	queryBalance: any
 	destructor?: () => any
 }
 
@@ -43,14 +44,12 @@ type MessageRunner<API extends ExternalAPI, Parent> = {
 
 
 
-type DisplayMetadata = {
-	name?: string
-	icon?: import('vue').FunctionalComponent<import('vue').SVGAttributes, {}>
-	color?: string
-	disabled?: any
+
+type AccountMetadata = DisplayMetadata & {
+	isAddress: (address?: string, partial?: boolean) => boolean
 }
 
-type ProviderMetadata = DisplayMetadata & {
+type ProviderMetadata = AccountMetadata & {
 	id: ProviderId
 	disabled?: boolean
 	isProviderFor?: (wallet: Partial<WalletDataInterface>) => boolean
@@ -70,11 +69,6 @@ type MethodMetadata = {
 	skip?: boolean
 	unavailable?: boolean
 	userIntent?: boolean
-}
-
-type Action = DisplayMetadata & { // Todo type action in defineProps
-	run?: Function
-	to?: import('vue-router').RouteLocationRaw
 }
 
 type ImportOptions = Partial<{

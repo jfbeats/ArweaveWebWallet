@@ -13,7 +13,7 @@ window.addEventListener('drop', dropped)
 
 
 
-export async function dropped (e?: DragEvent | InputEvent | FileSystemDirectoryHandle, type?: 'keyfile' | 'data') {
+export async function dropped (e?: DragEvent | InputEvent | FileSystemDirectoryHandle | FileSystemFileHandle[], type?: 'keyfile' | 'data') {
 	if (!e) { return addFiles([]) }
 	const text = eventToText(e)
 	const files = await eventToFiles(e)
@@ -29,12 +29,12 @@ export async function dropped (e?: DragEvent | InputEvent | FileSystemDirectoryH
 
 
 
-function eventToText (e: DragEvent | InputEvent | FileSystemDirectoryHandle) {
+function eventToText (e: DragEvent | InputEvent | FileSystemDirectoryHandle | FileSystemFileHandle[]) {
 	if (!(e && 'dataTransfer' in e && e.dataTransfer && typeof e.dataTransfer === 'object')) { return }
 	return e.dataTransfer.getData('text')
 }
 
-async function eventToFiles (e: DragEvent | InputEvent | FileSystemDirectoryHandle): Promise<FileWithPath[]> {
+async function eventToFiles (e: DragEvent | InputEvent | FileSystemDirectoryHandle | FileSystemFileHandle[]): Promise<FileWithPath[]> {
 	let files = [] as FileWithPath[]
 	if ('preventDefault' in e) {
 		e.preventDefault()
@@ -49,14 +49,19 @@ async function eventToFiles (e: DragEvent | InputEvent | FileSystemDirectoryHand
 			Object.defineProperty(file, 'normalizedPath', { value: hasRoot ? path?.split('/').slice(1).join('/') : path })
 		})
 	} else {
-		const handle = e
-		for await (const fileHandle of fileSystemAccessApi(handle)) {
-			const file = await fileHandle.getFile()
-			if (file == null) { continue }
-			const path = await handle.resolve(fileHandle)
-			if (path) { Object.defineProperty(file, 'path', { value: path.join('/') }) }
-			files.push(file as FileWithPath)
+		const rootFolderHandle = !Array.isArray(e) && e
+		const fileHandles = Array.isArray(e) && e
+		const processHandle = async (handle: FileSystemDirectoryHandle | FileSystemFileHandle) => {
+			for await (const fileHandle of fileSystemAccessApi(handle)) {
+				const file = await fileHandle.getFile()
+				if (file == null) { return }
+				const path = rootFolderHandle ? await rootFolderHandle.resolve(fileHandle) : [fileHandle.name]
+				if (path) { Object.defineProperty(file, 'path', { value: path.join('/') }) }
+				files.push(file as FileWithPath)
+			}
 		}
+		if (fileHandles) { await Promise.all(fileHandles.map(handle => processHandle(handle))) }
+		if (rootFolderHandle) { await processHandle(rootFolderHandle) }
 		files.forEach(file => Object.defineProperty(file, 'normalizedPath', { value: file.path }))
 	}
 	return files
@@ -88,7 +93,7 @@ async function findKeyfiles (files: string[] | FileWithPath[]): Promise<string[]
 async function importKeyfiles (keyfiles: string[]) {
 	const ids = (await Promise.all(keyfiles.map(async keyfile => addKeyfile(keyfile)))).filter(e => e !== null).map(e => e.id)
 	if (ids.length > 0) { router.push({ name: 'EditWallet', query: { wallet: ids } }) }
-	track.account('Import')
+	track.account('Account Import')
 }
 
 

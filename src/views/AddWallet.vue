@@ -46,7 +46,7 @@
 		</div>
 		<div class="card">
 			<h2>Address Only</h2>
-			<InputAddress v-model="targetInput" :actions="[importAddressOnlyAction]" />
+			<InputAddress v-model="targetInput" :submit="importAddressOnlyAction" />
 		</div>
 	</div>
 </template>
@@ -85,7 +85,7 @@ const create = async () => {
 	passphraseInput.value = await generateMnemonic()
 	const walletData = addMnemonic(passphraseInput.value)
 	setTimeout(async () => createdWallet.value = await walletData, 10000)
-	track.account('Create')
+	track.account('Account Create')
 }
 const goToCreatedWallet = () => {
 	if (!createdWallet.value) { return }
@@ -99,7 +99,7 @@ const importPassphrase = async () => {
 		message: 'importing',
 	}
 	router.push({ name: 'EditWallet', query: { wallet: (await walletData).id } })
-	track.account('Import')
+	track.account('Account Import')
 }
 const confirmPassphrase = async () => {
 	if (await validateMnemonic(passphraseInput.value)) { return importPassphrase() }
@@ -115,13 +115,13 @@ const importProvider = async (provider: AnyProvider) => {
 	try {
 		const walletData = await addAddress(undefined, provider)
 		router.push({ name: 'EditWallet', query: { wallet: walletData.id } })
-		track.account('Import ' + provider.metadata.name)
+		track.account('Account Ledger')
 	} catch (e: any) { console.error(e); notify.error(e.message || e) }
 }
 const importAddressOnlyAction = { icon: IconAddBox, run: async () => {
 	const walletData = await addAddress(targetInput.value)
 	router.push({ name: 'EditWallet', query: { wallet: walletData.id } })
-	track.account('Watch')
+	track.account('Account Watch')
 }}
 const activeSettings = ref(-1)
 </script>
