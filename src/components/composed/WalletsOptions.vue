@@ -1,13 +1,15 @@
 <template>
 	<div>
-		<div class="flex-row" style="justify-content: space-between; align-items: baseline">
+		<div class="flex-row" style="justify-content: space-between; align-items: center">
 			<h2>Wallet{{ selectedWallets.length > 1 ? 's' : '' }}</h2>
-			<Link class="update-message" v-if="securityMismatch" @click="securityMismatchAction">
-				<Icon :icon="IconWarning" style="vertical-align: text-top" />
-				<span v-if="hasNoTargetWallets"> Select wallets to encrypt</span>
-				<span v-else-if="hasPassword"> Click here to update encryption</span>
-				<span v-else> Click here to create a new password</span>
-			</Link>
+			<TransitionsManager :fast="true">
+				<Link v-if="securityMismatch" class="update-message" :key="'' + hasNoTargetWallets + hasPassword" @click="securityMismatchAction" style="text-align: right;">
+					<Icon :icon="IconWarning" style="vertical-align: text-top" />
+					<span v-if="hasNoTargetWallets"> Select wallets to encrypt or click here to remove password</span>
+					<span v-else-if="hasPassword"> Click here to update encryption</span>
+					<span v-else> Click here to create a new password</span>
+				</Link>
+			</TransitionsManager>
 		</div>
 		<div class="flex-column">
 			<template v-for="wallet in selectedWallets" :key="wallet.id">
@@ -26,6 +28,9 @@
 import WalletOptions from '@/components/composed/WalletOptions.vue'
 import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
+import Link from '@/components/function/Link.vue'
+import TransitionsManager from '@/components/visual/TransitionsManager.vue'
+import { notify } from '@/store/NotificationStore'
 import { Wallets } from '@/functions/Wallets'
 import { state } from '@/functions/Channels'
 import { sharedState } from '@/functions/Connect'
@@ -34,8 +39,6 @@ import { computed, watch } from 'vue'
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 
 import IconWarning from '@/assets/icons/shield_warning.svg?component'
-import Link from '@/components/function/Link.vue'
-import { notify } from '@/store/NotificationStore'
 
 const route = useRoute()
 const router = useRouter()
@@ -49,6 +52,7 @@ const selectedWallets = computed(() => {
 const canConnect = computed(() => ['popup', 'iframe', 'ws'].includes(state.value.type!) && !sharedState.value?.walletId)
 const securityMismatch = computed(() => hasUpdate.value || hasNoTargetWallets.value)
 const securityMismatchAction = computed(() => {
+	if (hasNoTargetWallets.value) { return () => setPassword('') }
 	if (hasUpdate.value) { return hasPassword.value ? () => updateEncryption() : () => setPassword('', true) }
 })
 
