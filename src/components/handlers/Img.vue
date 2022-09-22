@@ -1,7 +1,7 @@
 <template>
 	<Observer @resize="resize" class="img" :class="{ x, y }">
 		<div class="frame-scroller">
-			<img ref="imgRef" :src="src" @load="load" />
+			<img ref="imgRef" :src="src" @load="load" @error="emit('error')" />
 		</div>
 	</Observer>
 </template>
@@ -13,16 +13,13 @@ import Observer from '@/components/function/Observer.vue'
 import { ref, computed } from 'vue'
 
 const props = defineProps(['src'])
-const emit = defineEmits(['load'])
+const emit = defineEmits(['load', 'error'])
 
 const imgRef = ref(null as null | HTMLImageElement)
 const elAspect = ref(null as null | number)
 const imgAspect = ref(null as null | number)
 
-const resize = (size: ResizeObserverEntry) => {
-	console.log(size)
-	elAspect.value = size.contentRect.width / size.contentRect.height
-}
+const resize = (size: ResizeObserverEntry) => elAspect.value = size.contentRect.width / size.contentRect.height
 
 const load = () => {
 	imgAspect.value = imgRef.value && imgRef.value.naturalWidth / imgRef.value.naturalHeight

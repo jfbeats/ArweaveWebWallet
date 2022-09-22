@@ -5,17 +5,17 @@
 		</div>
 		<div v-else-if="data.handler === 'raw'" key="json" class="selector data-container min-height box">
 			<TransitionsManager>
-				<LoaderBlock v-if="!data.loaded" class="loader" />
+				<LoaderBlock v-if="!data.loaded && !data.error" class="loader" />
 				<pre v-else class="raw">{{ data.payload }}</pre>
 			</TransitionsManager>
 		</div>
 		<div v-else-if="data.handler" class="selector">
 			<TransitionsManager>
-				<LoaderBlock v-if="!data.loaded" class="loader" />
+				<LoaderBlock v-if="!data.loaded && !data.error" class="loader" />
 			</TransitionsManager>
 			<TransitionsManager>
 				<div v-show="data.loaded" v-bind="data.handler.containerAttrs" class="box">
-					<component :is="data.handler.is" v-bind="data.handler.attrs" @load="data.loaded = true" />
+					<component :is="data.handler.is" v-bind="data.handler.attrs" @load="data.loaded = true" @error="data.error = true; notify.error('Failed to load')" />
 				</div>
 			</TransitionsManager>
 		</div>
@@ -32,6 +32,7 @@ import List from '@/components/layout/List.vue'
 import TxCard from '@/components/composed/TxCard.vue'
 import LoaderBlock from '@/components/layout/LoaderBlock.vue'
 import TransitionsManager from '@/components/visual/TransitionsManager.vue'
+import { notify } from '@/store/NotificationStore'
 import IconDownload from '@/assets/icons/download.svg?component'
 import ArweaveStore, { arweave, arweaveQuery } from '@/store/ArweaveStore'
 import { unpackTags } from '@/functions/Transactions'
@@ -52,6 +53,7 @@ const data = reactive({
 	handler: undefined as undefined | Handler | 'intent' | 'raw',
 	payload: undefined as any,
 	loaded: false,
+	error: false,
 	intent: false,
 })
 const rawWhiteSpace = ref(undefined as undefined | string)
@@ -60,6 +62,7 @@ watch(() => props.tx.id, () => {
 	data.handler = undefined
 	data.payload = undefined
 	data.loaded = false
+	data.error = false
 	data.intent = false
 	rawWhiteSpace.value = 'pre-wrap'
 	load()
