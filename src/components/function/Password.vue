@@ -1,7 +1,7 @@
 <template>
 	<Viewport :background="true">
-		<div v-if="passwordRequest" class="password">
-			<div class="card">
+		<Observer v-if="passwordRequest" class="password" @resize="size = $event">
+			<div class="card" :class="{ fill }">
 				<div class="background">
 					<SecurityVisual class="background-content" />
 				</div>
@@ -16,7 +16,7 @@
 				</div>
 				<OverlayPrompt :options="newPasswordMessage" autofocus />
 			</div>
-		</div>
+		</Observer>
 	</Viewport>
 </template>
 
@@ -28,7 +28,9 @@ import Input from '@/components/form/Input.vue'
 import SecurityVisual from '@/components/visual/SecurityVisual.vue'
 import WalletSelector from '@/components/composed/WalletSelector.vue'
 import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
+import Observer from '@/components/function/Observer.vue'
 import { emitter, testPassword, PasswordRequest, hasPassword, passwordValidation } from '@/functions/Password'
+import { focusWindow } from '@/functions/Connect'
 import { notify } from '@/store/NotificationStore'
 import { computed, markRaw, Ref, ref, shallowRef, watch } from 'vue'
 
@@ -59,7 +61,10 @@ const inputs = computed(() => {
 	a.map(e => e).reverse().find(e => e)!.bind.submit = passwordAction.value
 	return a.filter((e): e is NonNullable<typeof e> => !!e)
 })
-emitter.on('password', callback => passwordRequest.value = callback)
+emitter.on('password', callback => {
+	passwordRequest.value = callback
+	focusWindow()
+})
 
 const password = ref('')
 const passwordMatch = ref('')
@@ -83,6 +88,12 @@ watch(passwordRequest, () => {
 	passwordMatch.value = ''
 })
 
+const size = ref(undefined as undefined | ResizeObserverEntry)
+const fill = computed(() => {
+	if (!size.value) { return false }
+	const { width, height } = size.value.contentRect
+	return height < 700 && width < 500
+})
 const newPasswordMessage = ref(!hasPassword.value && { icon: markRaw(IconShieldWarning), message: 'Always make sure that you have a working backup of your private keys. You will not be able to recover the ones that are encrypted if you forget your password', action: { run: () => newPasswordMessage.value = undefined } } || undefined)
 </script>
 
@@ -102,6 +113,12 @@ const newPasswordMessage = ref(!hasPassword.value && { icon: markRaw(IconShieldW
 	background: var(--background);
 }
 
+.card.fill {
+	height: 100%;
+	width: 100%;
+	border-radius: 0;
+}
+
 .background {
 	position: absolute;
 	border-radius: inherit;
@@ -109,11 +126,13 @@ const newPasswordMessage = ref(!hasPassword.value && { icon: markRaw(IconShieldW
 	inset: 0;
 	display: flex;
 	justify-content: center;
+	align-items: center;
 }
 
 .background-content {
 	position: absolute;
-	height: 90%;
+	height: 400px;
+	padding-bottom: 24px;
 }
 
 .content {

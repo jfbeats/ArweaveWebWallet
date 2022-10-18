@@ -81,7 +81,6 @@ async function initConnector () {
 	await awaitStorageAccess()
 	if (!initSharedState(sharedState)) { return }
 	sharedState.value.links[state.value.type!] = true
-	const postMessage = (message: any) => windowRef.postMessage({ ...message, jsonrpc: '2.0' }, origin!)
 	const jsonRpc = new JsonRpc(postMessage, sharedState)
 	window.addEventListener('message', async (e) => {
 		if (e.source !== windowRef || e.origin !== origin) { return }
@@ -91,7 +90,7 @@ async function initConnector () {
 			postMessage({ id: e.data?.id })
 		}
 		const prompt = await jsonRpc.pushMessage(e.data)
-		if (prompt && state.value.type === 'iframe' && sharedState.value.link) { postMessage({ method: 'showIframe', params: true }) }
+		if (prompt) { focusWindow() }
 	})
 	const connect = () => {
 		// todo reject transactions that are designated to current address
@@ -165,6 +164,15 @@ async function initWebSockets () {
 }
 
 
+
+async function postMessage (message: any) {
+	return windowRef.postMessage({ ...message, jsonrpc: '2.0' }, origin!)
+}
+
+export async function focusWindow () {
+	window.focus()
+	if (state.value.type === 'iframe' && sharedState.value?.link) { return postMessage({ method: 'showIframe', params: true }) }
+}
 
 export async function postMessageExtension (message: 'connect' | 'permissions' | 'state' | 'close') {
 	if (state.value.type !== 'extension') { return }
