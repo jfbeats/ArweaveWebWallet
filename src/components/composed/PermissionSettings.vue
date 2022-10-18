@@ -35,7 +35,8 @@ const displayKeys = {
 	getArweaveConfig: 'Share arweave gateway configuration',
 } as { [key: string]: string | undefined }
 
-const getInstanceProperties = (wallet?: Wallet) => Object.getOwnPropertyNames(Object.getPrototypeOf(wallet?.messageRunner || {}))
+const getInstanceProperties = (wallet?: Wallet) => ['connect']
+	.concat(Object.getOwnPropertyNames(Object.getPrototypeOf(wallet?.messageRunner || {})))
 	.filter(prop => {
 		if (prop === 'constructor' || prop === 'methodMap' || !wallet) { return }
 		return !getMethodMetadata(wallet, prop)?.unavailable
@@ -46,7 +47,7 @@ const getInstanceProperties = (wallet?: Wallet) => Object.getOwnPropertyNames(Ob
 		disabled: getMethodMetadata(wallet, prop)?.userIntent
 	}))
 const wallet = computed(() => getWalletById(props.walletId))
-const methods = computed(() => [...getInstanceProperties(wallet.value)]) // 'connect' in here?
+const methods = computed(() => [...getInstanceProperties(wallet.value)])
 const setMethod = (method: string) => walletSettings.value && (walletSettings.value[method] = !walletSettings.value[method])
 const channel = useChannel('connectionSettings:', props.state.origin, {})
 const walletSettings = ref(undefined as undefined | { [method: string]: any })
