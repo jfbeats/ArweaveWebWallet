@@ -48,8 +48,15 @@ type ConnectorState = {
 	instanceStates: InstanceState[]
 	messageQueue: MessageEntry[]
 	appInfo?: { name?: string, logo?: string}
+	connectionSettings: ConnectionSettings
 	walletId?: string | false
 	destructor: () => void
 }
 
-type ConnectionSettings = { [uuid: string]: { [method: string]: boolean } } | undefined
+type ConnectionSettings = {
+	[walletUuid: string]: {
+		[method: string]: boolean
+	} & {
+		connect?: boolean
+	}
+}

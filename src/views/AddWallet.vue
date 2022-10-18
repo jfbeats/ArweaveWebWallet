@@ -6,7 +6,7 @@
 				<span>Key file</span>
 			</h2>
 			<div class="flex-column">
-				<InputData v-model="passphraseInput" @files="files => dropped(files, 'keyfile')" :disabled="isCreatingWallet" placeholder="Import passphrase or key file" />
+				<InputData v-model="passphraseInput" @files="files => dropped(files, 'keyfile')" :disabled="isCreatingWallet" placeholder="Import passphrase or key file" autocapitalize="none" />
 				<div />
 				<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create" :disabled="passphraseInput.length && !isPassphrase" :icon="LogoArweave" class="main" :glow="true" color="#81a1c1">Create new wallet</Button>
 				<Button v-else-if="isCreatingWallet" :disabled="createdWallet == null" @click="goToCreatedWallet" :icon="createdWallet == null ? 'loader' : ''" class="main" :glow="true" color="#81a1c1">{{ createdWallet == null ? 'Generating, write down the passphrase' : 'Passphrase saved? Click here to proceed' }}</Button>

@@ -48,7 +48,8 @@ export const Wallets = useDataWrapper(WalletsData, (w) => w.id, walletFactory, w
 
 
 export function getWalletById (walletId?: any) {
-	return Wallets.value.find(wallet => wallet.id == walletId)
+	if (walletId == null) { return }
+	return Wallets.value.find(wallet => wallet.id == walletId || wallet.uuid == walletId)
 }
 
 export function getAccountByAddress (address: string): Account {

@@ -1,6 +1,6 @@
 <template>
 	<div class="input-data input-box" :class="{ focus }" @drop.stop.prevent="handleFiles">
-		<textarea v-show="!isFile" v-model="model" @focus="focus = 1" @blur="focus = 0" :disabled="disabled" :id="id" :placeholder="placeholder"></textarea>
+		<textarea v-show="!isFile" v-model="model" @focus="focus = 1" @blur="focus = 0" :disabled="disabled" :id="id" :placeholder="placeholder" :autocapitalize="autocapitalize"></textarea>
 		<transition name="fade">
 			<div v-if="!model && !dragOverlay" class="overlay passthrough">
 				<Icon :icon="IconText" class="big-icon-container img" />
@@ -59,6 +59,7 @@ const props = defineProps<{
 	disabled?: boolean
 	id?: string
 	placeholder?: string
+	autocapitalize?: 'none'
 }>()
 const emit = defineEmits<{
 	(e: 'update:modelValue', value: string | ArDataItemParams[]): void
