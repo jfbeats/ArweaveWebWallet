@@ -113,15 +113,20 @@ async function initConnector () {
 	}
 	if (state.value.type === 'iframe') {
 		InterfaceStore.toolbar.enabled = false
-		window.addEventListener('beforeunload', () => !state.value.updating && connector.value
-			&& (connector.value.sharedStates.length > 1 ? deleteChannel() : disconnect()))
+		const unload = () => { !state.value.updating && connector.value && (connector.value.sharedStates.length > 1 ? deleteChannel() : disconnect()) }
+		window.addEventListener('beforeunload', unload)
+		window.addEventListener('unload', unload)
 	}
 	if (state.value.type === 'popup') {
 		if (!sharedState.value.walletId) { InterfaceStore.toolbar.enabled = false }
 		const keepPopup = computed(() => !sharedState.value.link)
 		watch(keepPopup, () => postMessage({ method: 'keepPopup', params: keepPopup.value }), { immediate: true })
-		window.addEventListener('beforeunload', () => !state.value.updating && !sharedState.value.links?.iframe
-			&& connector.value && (connector.value.sharedStates.length > 1 ? deleteChannel() : disconnect()))
+		const unload = () => {
+			!state.value.updating && !sharedState.value.links?.iframe && connector.value && (connector.value.sharedStates.length > 1 ? deleteChannel() : disconnect())
+			window.close()
+		}
+		window.addEventListener('beforeunload', unload)
+		window.addEventListener('unload', unload)
 	}
 	watch(() => sharedState.value.walletId, id => {
 		if (id === false) { return disconnect() }
@@ -167,6 +172,7 @@ async function initWebSockets () {
 	const disconnect = () => { deleteChannel(); postMessage({ method: 'disconnect' }) }
 	watch(() => sharedState.value.walletId, (id) => id === false ? disconnect() : connect())
 	window.addEventListener('beforeunload', () => disconnect())
+	window.addEventListener('unload', () => disconnect())
 }
 
 
