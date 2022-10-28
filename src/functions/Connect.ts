@@ -32,11 +32,12 @@ function buildConnector (origin: string): ConnectorState {
 			.map(c => c.messageQueue).flat().sort((a, b) => a.timestamp - b.timestamp))
 		const appInfo = computed(() => sharedStates.value.find(c => c.appInfo)?.appInfo)
 		const connectionSettings = useChannel('connectionSettings:', origin, {}).state
-		if (walletId.value == null) {
+		watch(connectionSettings, () => {
+			if (walletId.value != null) { return }
 			const autoConnectWalletUuid = Object.entries(connectionSettings.value ?? {}).find(entry => entry[1].connect)?.[0]
 			const id = getWalletById(autoConnectWalletUuid)?.id
 			if (id != null) { walletId.value = id }
-		}
+		}, { immediate: true })
 		const destructor = () => scope.stop()
 		return reactive({ origin, sharedStates, instanceStates, walletId, messageQueue, appInfo, connectionSettings, destructor })
 	})!
