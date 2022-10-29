@@ -35,6 +35,7 @@
 import TxCard from '@/components/composed/TxCard.vue'
 import TxCardExtension from '@/components/composed/TxCardExtension.vue'
 import ActionList from '@/components/composed/ActionsList.vue'
+import { arweave } from '@/store/ArweaveStore'
 import { getMessage } from '@/functions/JsonRpc'
 import { computed, ref, watch } from 'vue'
 import type { ArweaveVerifier } from 'arweave-wallet-connector/lib/Arweave.js'
@@ -50,7 +51,7 @@ const message = ref(null as null | StoredMessage)
 const tx = computed(() => {
 	if (message.value?.method !== 'signTransaction' && message.value?.method !== 'dispatch') { return }
 	const receivedTx = message.value?.params?.[0] as Parameters<ArweaveVerifier['signTransaction']>[0]
-	const tags = receivedTx.tags?.map(({name, value}) => ({ name: window.atob(name), value: window.atob(value) }))
+	const tags = receivedTx.tags?.map(({name, value}) => ({ name: arweave.utils.b64UrlToString(name), value: arweave.utils.b64UrlToString(value) }))
 	return { ...receivedTx, tags }
 })
 
