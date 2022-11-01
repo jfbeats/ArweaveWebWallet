@@ -61,11 +61,11 @@ if (sessionStorage.getItem('type') === 'extension' || document.location.pathname
 } else if (origin?.split('://')[0] === 'ws') {
 	state.value.type = 'ws'
 	initWebSockets()
-} else if (window.opener) {
+} else if (origin && window.opener) {
 	state.value.type = 'popup'
 	windowRef = window.opener
 	initConnector()
-} else if (window.parent && window.parent !== window) {
+} else if (origin && window.parent && window.parent !== window) {
 	state.value.type = 'iframe'
 	windowRef = window.parent
 	initConnector()
