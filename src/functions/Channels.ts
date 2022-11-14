@@ -10,6 +10,7 @@ type PrefixTable = {
 	wallets: WalletDataInterface[]
 	currency: { rate?: string, currency: string, provider: string, timestamp?: number }
 	gateway: string
+	localGatewayTest: number
 	bundler: string
 	scannerCamera: string
 	pwdTest: EncryptedContent | null
@@ -84,12 +85,12 @@ export function useChannel <T extends keyof PrefixTable, U extends DefaultValue<
 	}
 	channelInstances[key].subscribers++
 	
-	const stop = () => {
+	const stop = () => { window.setTimeout(() => {
 		channelInstances[key].subscribers--
 		if (channelInstances[key].subscribers > 0) { return }
 		channelInstances[key].scope.stop()
 		delete channelInstances[key]
-	}
+	})}
 	const deleteChannel = () => {
 		channelInstances[key]?.channel?.deleteChannel()
 	}

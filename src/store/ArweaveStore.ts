@@ -360,5 +360,12 @@ export const currentBlock = currentBlockData.state
 function loadGatewaySettings () {
 	updateArweave(ArweaveStore.gatewayURL || gatewayDefault, true)
 	updateBundler(ArweaveStore.bundlerURL || bundlerDefault, true)
+	const { state, stop } = useChannel('localGatewayTest')
+	if (state.value && Date.now() - state.value > 2600000000) { state.value = undefined }
+	if (!ArweaveStore.gatewayURL && !state.value) {
+		state.value = Date.now()
+		updateArweave(location.origin).catch(() => {})
+	}
+	stop()
 }
 loadGatewaySettings()
