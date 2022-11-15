@@ -91,10 +91,11 @@ async function initConnector () {
 	const jsonRpc = new JsonRpc(postMessage, sharedState)
 	window.addEventListener('message', async (e) => {
 		if (e.source !== windowRef || e.origin !== origin) { return }
+		if (e.data?.method === 'ready') { return postMessage({ id: e.data?.id, method: 'ready' }) }
 		if (e.data?.method === 'connect') { return }
 		if (e.data?.method === 'disconnect') {
 			sharedState.value.walletId = false
-			postMessage({ id: e.data?.id })
+			return postMessage({ id: e.data?.id })
 		}
 		const prompt = await jsonRpc.pushMessage(e.data)
 		if (prompt) { focusWindow() }
