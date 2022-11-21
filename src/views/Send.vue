@@ -107,7 +107,7 @@ const props = defineProps<{ wallet: Wallet }>()
 watch(() => props.wallet, () => formWallet.value = props.wallet, { immediate: true })
 
 const setMax = async () => {
-	const balance = new BigNumber(props.wallet.balance)
+	const balance = new BigNumber(props.wallet.balance ?? 0)
 	await awaitEffect(() => form.txFee)
 	form.quantity = balance.minus(form.txFee!).toString()
 }
@@ -159,7 +159,7 @@ const postTx = async () => {
 	loading.value = false
 }
 
-const addressHash = ref(null)
+const addressHash = ref(undefined as undefined | string)
 watch(() => props.wallet.key, async (val) => addressHash.value = await addressToHash(val), { immediate: true })
 const addressHashColor = computed(() => addressHashToColor(addressHash.value).join(','))
 </script>
