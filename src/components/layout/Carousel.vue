@@ -27,8 +27,9 @@ const props = defineProps<{
 		immediate?: boolean
 		awaitTransition?: boolean
 	}
+	onIndex?: any
 }>()
-const emit = defineEmits(['update:modelValue', 'start', 'end'])
+const emit = defineEmits(['update:modelValue', 'start', 'end', 'index'])
 const parentTransitionState = inject('transitionState', null as any)
 
 const model = computed<number | undefined>({
@@ -60,9 +61,41 @@ const effect = async (index?: number, instant?: boolean) => {
 }
 let observer: MutationObserver
 const refresh = ref(0)
+let intersectionObserver: IntersectionObserver
+const visibleElements = ref([] as Element[])
+const visibleIndexes = computed(() => visibleElements.value.map(el => elements.value.indexOf(el as HTMLElement)).filter(i => i >= 0).sort((a, b) => a - b))
+const visibleIndex = computed(() => {
+	if (!visibleIndexes.value.length) { return }
+	if (props.options.align === 'center') {
+		if (!root.value) { return }
+		const parentPos = root.value.getBoundingClientRect()
+		const parentCenter = parentPos.left + parentPos.width / 2
+		const distances = visibleIndexes.value.map(i => {
+			const childPos = elements.value[i].getBoundingClientRect()
+			const childCenter = childPos.left + childPos.width / 2
+			return childCenter - parentCenter
+		}).map(val => Math.abs(val))
+		const index = distances.indexOf(Math.min(...distances))
+		return visibleIndexes.value[index]
+	}
+	if (props.options.align === 'start') { return visibleIndexes.value[0] }
+	if (props.options.align === 'end') { return visibleIndexes.value[visibleIndexes.value.length - 1] }
+})
+watch(visibleIndex, val => emit('index', 'val'))
 onMounted(async () => {
 	observer = new MutationObserver(async () => { refresh.value++ })
 	observer.observe(root.value!, { subtree: false, childList: true })
+	intersectionObserver = new IntersectionObserver(entries => {
+		entries.forEach(el => {
+			if (el.intersectionRatio > 0.5) {
+				if (!visibleElements.value.includes(el.target)) { visibleElements.value.push(el.target) }
+			} else {
+				visibleElements.value = visibleElements.value.filter(visEl => visEl !== el.target)
+			}
+		})
+		visibleElements.value = visibleElements.value.filter(el => elements.value.includes(el as HTMLElement))
+	}, { root: root.value, threshold: [0.4, 0.6] })
+	watch(elements, () => props.onIndex && elements.value.forEach(el => intersectionObserver.observe(el)), { immediate: true })
 	await nextTick()
 	await awaitEffect(() => elements.value.length)
 	setTimeout(() => {
@@ -72,7 +105,10 @@ onMounted(async () => {
 		watch(model, v => effect(v), { immediate: hasInitSlide })
 	})
 })
-onBeforeUnmount(() => observer && observer.disconnect())
+onBeforeUnmount(() => {
+	observer?.disconnect()
+	intersectionObserver?.disconnect()
+})
 </script>
 
 
