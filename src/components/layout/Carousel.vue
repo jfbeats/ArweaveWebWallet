@@ -81,7 +81,7 @@ const visibleIndex = computed(() => {
 	if (props.options.align === 'start') { return visibleIndexes.value[0] }
 	if (props.options.align === 'end') { return visibleIndexes.value[visibleIndexes.value.length - 1] }
 })
-watch(visibleIndex, val => emit('index', 'val'))
+watch(visibleIndex, val => emit('index', val))
 onMounted(async () => {
 	observer = new MutationObserver(async () => { refresh.value++ })
 	observer.observe(root.value!, { subtree: false, childList: true })
