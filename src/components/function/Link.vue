@@ -19,7 +19,7 @@ const props = defineProps<{
 	name?: string
 	icon?: Icon
 	color?: string
-	run?: Function
+	run?: Function | false | null
 	to?: import('vue-router').RouteLocationRaw
 	disabled?: any
 }>()

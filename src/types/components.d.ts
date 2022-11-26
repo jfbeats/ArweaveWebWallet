@@ -8,7 +8,7 @@ type DisplayMetadata = {
 }
 
 type Action = DisplayMetadata & { // Todo type action in defineProps
-	run?: Function
+	run?: Function | false | null
 	to?: import('vue-router').RouteLocationRaw
 }
 
