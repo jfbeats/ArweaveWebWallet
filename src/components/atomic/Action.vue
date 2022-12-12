@@ -44,14 +44,6 @@ const props = defineProps<{
 	background: #00000022;
 }
 
-.action.router-link-active {
-	box-shadow: -5px 0 0 -3px var(--element-secondary);
-}
-
-[dir="rtl"] .action.router-link-active {
-	box-shadow: 5px 0 0 -3px var(--element-secondary);
-}
-
 .icon {
 	/* height: 1em; */
 	font-size: 1.2em;

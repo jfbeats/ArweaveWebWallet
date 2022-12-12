@@ -6,7 +6,9 @@
 					<div class="user-info flex-column" :key="wallet.key">
 						<Balance :wallet="wallet" />
 						<div class="actions">
-							<Action v-for="action in actions" :key="action.name" :to="{ name: action.name }" :icon="action.icon" replace>{{ action.text }}</Action>
+							<Selector selector=".action" active=".active, .router-link-active" :vertical="true">
+								<Action v-for="action in actions" :key="action.name" :to="{ name: action.name }" :icon="action.icon" replace>{{ action.text }}</Action>
+							</Selector>
 						</div>
 					</div>
 				</template>
@@ -25,6 +27,7 @@
 <script setup lang="ts">
 import FoldingLayout from '@/components/layout/FoldingLayout.vue'
 import Balance from '@/components/composed/Balance.vue'
+import Selector from '@/components/atomic/Selector.vue'
 import Action from '@/components/atomic/Action.vue'
 import InterfaceStore from '@/store/InterfaceStore'
 import { toRef, computed } from 'vue'

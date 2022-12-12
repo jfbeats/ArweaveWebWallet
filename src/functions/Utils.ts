@@ -3,13 +3,23 @@ import { v4 } from 'uuid'
 
 export function uuidV4 () { return v4() as string }
 
-export function debounce (fun: Function, timeout = 500) {
-	let timer: ReturnType<typeof setTimeout>
-	return (...args: any[]) => {
-		clearTimeout(timer)
-		timer = setTimeout(() => { // @ts-ignore
-			fun.apply(this, args) }, timeout)
-	}
+export function debounce <T extends (...args: any[]) => any> (fun: T, options?: { timeout?: number, animationFrame?: true }) {
+	let timer: any
+	let promises = [] as Function[]
+	return ((...args: any[]) => {
+		return new Promise<ReturnType<T>>(res => {
+			promises.push(res)
+			// @ts-ignore
+			const resolve = () => promises.forEach(res => res(fun.apply(this, args)))
+			if (options?.animationFrame) {
+				cancelAnimationFrame(timer)
+				timer = requestAnimationFrame(() => resolve())
+			} else {
+				clearTimeout(timer)
+				timer = setTimeout(() => resolve(), options?.timeout ?? 500)
+			}
+		})
+	}) as (...args: Parameters<T>) => Promise<ReturnType<T>>
 }
 
 export function humanFileSize (size: string | number) {
