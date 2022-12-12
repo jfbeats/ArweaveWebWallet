@@ -1,11 +1,11 @@
 <template>
 	<div class="input-data input-box" :class="{ focus }" @drop.stop.prevent="handleFiles">
-		<textarea v-show="!isFile" v-model="model" @focus="focus = 1" @blur="focus = 0" :disabled="disabled" :id="id" :placeholder="placeholder" :autocapitalize="autocapitalize"></textarea>
+		<textarea ref="textarea" v-show="!isFile" v-model="model" @focus="focus = 1" @blur="focus = 0" :disabled="disabled" :id="id" :placeholder="placeholder" :autocapitalize="autocapitalize"></textarea>
 		<transition name="fade">
-			<div v-if="!model && !dragOverlay" class="overlay passthrough">
-				<Icon :icon="IconText" class="big-icon-container img" />
+			<div v-if="!model" class="overlay passthrough">
+				<Icon :icon="IconText" class="big-icon-container not-passthrough img text" style="flex: 0 1 auto;" @click="() => textarea?.focus()" />
 				<div class="spacer" />
-				<Link class="big-icon-container not-passthrough" @click="() => filePicker?.click()">
+				<Link class="big-icon-container not-passthrough" @click="() => filePicker?.click()" :class="{ isDragging: dragOverlay }">
 					<div class="file-picker-label">
 						<Icon :icon="IconDrop" class="img" style="width: 100%; height: 100%;" />
 					</div>
@@ -13,11 +13,19 @@
 				</Link>
 				<template v-if="hasDirectoryInput">
 					<div class="spacer" />
-					<Link class="big-icon-container not-passthrough" @click="() => directoryPicker?.click()">
+					<Link class="big-icon-container not-passthrough" @click="() => directoryPicker?.click()" :class="{ isDragging: dragOverlay }">
 						<div class="file-picker-label">
 							<Icon :icon="IconFolder" class="img" style="width: 100%; height: 100%;" />
 						</div>
 						<input ref="directoryPicker" type="file" id="directory-picker" class="file-input" @change="handleFiles" :disabled="disabled" webkitdirectory directory multiple />
+					</Link>
+				</template>
+				<template v-if="hasCamera">
+					<div class="spacer" />
+					<Link class="big-icon-container not-passthrough" @click="scanData">
+						<div class="file-picker-label">
+							<Icon :icon="IconQR" class="img" style="width: 100%; height: 100%;" />
+						</div>
 					</Link>
 				</template>
 			</div>
@@ -34,7 +42,6 @@
 				</Link>
 			</div>
 		</transition>
-		<DragOverlay />
 	</div>
 </template>
 
@@ -42,36 +49,42 @@
 
 <script setup lang="ts">
 import TxCard from '@/components/composed/TxCard.vue'
-import DragOverlay from '@/components/atomic/DragOverlay.vue'
 import Link from '@/components/function/Link.vue'
 import Icon from '@/components/atomic/Icon.vue'
+import { scan, hasCamera } from '@/functions/Scanner'
 import InterfaceStore from '@/store/InterfaceStore'
 import { state } from '@/functions/Channels'
-import { computed, ref, toRef, useAttrs } from 'vue'
+import { dropped } from '@/functions/File'
+import { computed, ref, toRef, useAttrs, watch } from 'vue'
 
 import IconText from '@/assets/icons/text.svg?component'
 import IconDrop from '@/assets/icons/drop.svg?component'
 import IconFolder from '@/assets/icons/folder.svg?component'
+import IconQR from '@/assets/icons/qr.svg?component'
 import IconX from '@/assets/icons/x.svg?component'
+import { debounce } from '@/functions/Utils'
 
 const props = defineProps<{
-	modelValue: string | ArDataItemParams[]
+	modelValue?: string | ArDataItemParams[]
+	type?: 'keyfile' | 'data'
 	disabled?: boolean
 	id?: string
 	placeholder?: string
 	autocapitalize?: 'none'
+	onFiles?: any
 }>()
 const emit = defineEmits<{
 	(e: 'update:modelValue', value: string | ArDataItemParams[]): void
-	(e: 'files', files?: DragEvent | InputEvent | FileSystemDirectoryHandle | FileSystemFileHandle[]): void
+	(e: 'files', files?: DragEvent | InputEvent | FileSystemDirectoryHandle | FileSystemFileHandle[] | string): void
 }>()
 const attrs = useAttrs()
 const filePicker = ref()
 const directoryPicker = ref()
+const textarea = ref()
 
 const model = computed({
 	get () { return props.modelValue },
-	set (value) { emit('update:modelValue', value) }
+	set (value) { value != undefined && emit('update:modelValue', value) }
 })
 const focus = ref(0)
 const dragOverlay = toRef(InterfaceStore, 'dragOverlay')
@@ -106,12 +119,19 @@ const handleFilePicker = computed(() => { // API doesn't work in iframe
 		handleFiles(files)
 	}
 })
-const handleFiles = (e: DragEvent | InputEvent | FileSystemDirectoryHandle | FileSystemFileHandle[]) => {
+const scanData = async () => handleFiles(await scan())
+const handleFiles = (e: DragEvent | InputEvent | FileSystemDirectoryHandle | FileSystemFileHandle[] | string) => {
 	if (attrs.disabled) { return }
+	if (!props.onFiles) { dropped(e, props.type) }
 	return emit('files', e)
 }
 const clearFiles = () => { emit('files') }
 const isFile = computed(() => Array.isArray(model.value) && model.value.length > 0)
+const checkContent = debounce(async (content: typeof model['value']) => {
+	if (typeof content !== 'string' || props.disabled) { return }
+	if (await dropped(content, props.type, true)) { model.value = '' }
+})
+watch(model, value => checkContent(value))
 </script>
 
 
@@ -138,6 +158,10 @@ textarea {
 	text-align: inherit;
 }
 
+textarea::placeholder {
+	text-align: center;
+}
+
 .overlay {
 	position: absolute;
 	top: 0;
@@ -154,7 +178,6 @@ textarea {
 .spacer {
 	width: 0.5px;
 	height: 56px;
-	margin: 0 var(--spacing);
 	background: #ffffff18;
 	transition: 0.3s ease;
 }
@@ -164,14 +187,15 @@ textarea {
 }
 
 .big-icon-container {
+	box-sizing: content-box;
 	width: 48px;
 	height: 48px;
+	padding: calc(var(--spacing) / 2) var(--spacing);
 	position: relative;
 	display: flex;
 }
 
 .file-picker-label {
-	position: absolute;
 	width: 100%;
 	height: 100%;
 	z-index: 1;
@@ -183,8 +207,24 @@ textarea {
 	transition: 0.3s ease;
 }
 
+.img.text {
+	cursor: text;
+}
+
 .focus .img {
+	opacity: 0.3;
+}
+
+.focus .img.text,
+.big-icon-container:hover .img,
+.big-icon-container:focus .img,
+.img:hover {
 	opacity: 0.6;
+}
+
+.big-icon-container.isDragging .img {
+	opacity: 1;
+	color: #fff;
 }
 
 .file-input {

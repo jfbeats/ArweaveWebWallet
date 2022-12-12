@@ -3,9 +3,6 @@
 		<Input v-model.trim="model" :icon="IconPerson" placeholder="Address" :mask="maskAddress" :actions="actions" :submit="submit" :disabled="disabled" :id="id"/>
 		<AddressIcon class="address-icon" :address="model"/>
 	</div>
-	<Viewport>
-		<Scanner v-if="scanning" @result="scanningResult" />
-	</Viewport>
 </template>
 
 
@@ -13,9 +10,8 @@
 <script setup lang="ts">
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
 import Input from '@/components/form/Input.vue'
-import Viewport from '@/components/layout/Viewport.vue'
-import Scanner from '@/components/function/Scanner.vue'
-import { computed, ref } from 'vue'
+import { scan, hasCamera } from '@/functions/Scanner'
+import { computed } from 'vue'
 
 import IconPerson from '@/assets/icons/person.svg?component'
 import IconQR from '@/assets/icons/qr.svg?component'
@@ -36,17 +32,16 @@ const model = computed({
 })
 
 const maskAddress = (address: string) => ArweaveAccount.metadata.isAddress(address, true)
-const scanning = ref(false)
-const scanningResult = (result?: string) => {
-	scanning.value = false
-	if (!result) { return }
+
+const scanAddress = async () => {
+	const result = await scan()
 	if (!maskAddress(result)) { throw 'invalid address' }
 	model.value = result
 }
 
 const actions = computed<Action[]>(() => {
 	const result: Action[] = []
-	if (Scanner.hasCamera.value) { result.push({ icon: IconQR, run: () => scanning.value = true }) }
+	if (hasCamera.value) { result.push({ icon: IconQR, run: () => scanAddress() }) }
 	if (props.actions) { result.push(...props.actions) }
 	return result
 })
