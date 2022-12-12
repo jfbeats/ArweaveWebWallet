@@ -1,42 +1,42 @@
 <template>
 	<svg id="root" viewBox="0 0 3000 3000" preserveAspectRatio="xMinYMin slice" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
-		<g id="LoaderRail" transform="matrix(1.08253,0.625,1.25,-0.721688,-757.772,4625)">
-			<path d="M-1146.15,2288.3C-812.878,2288.3 -542.302,2522.63 -542.302,2811.25C-542.302,2957.22 -611.412,3089.52 -721.97,3185.27C-832.529,3281.01 -985.298,3340.86 -1153.85,3340.86C-1487.12,3340.86 -1757.7,3106.54 -1757.7,2817.92C-1757.7,2671.95 -1688.59,2539.64 -1578.03,2443.9C-1467.47,2348.15 -1314.7,2288.3 -1146.15,2288.3L-1146.15,2288.3ZM-1150,2294.97C-818.851,2294.97 -550,2527.8 -550,2814.58C-550,3101.37 -818.851,3334.2 -1150,3334.2C-1481.15,3334.2 -1750,3101.37 -1750,2814.58C-1750,2527.8 -1481.15,2294.97 -1150,2294.97Z" style="fill:rgb(255,0,0);"/>
-		</g>
-		<g id="Loader" transform="matrix(1.08253,0.625,1.25,-0.721688,-757.772,4625)">
-			<path d="M-1146.15,2288.3C-812.878,2288.3 -542.302,2522.63 -542.302,2811.25C-542.302,2957.22 -611.412,3089.52 -721.97,3185.27C-832.529,3281.01 -985.298,3340.86 -1153.85,3340.86C-1487.12,3340.86 -1757.7,3106.54 -1757.7,2817.92C-1757.7,2671.95 -1688.59,2539.64 -1578.03,2443.9C-1467.47,2348.15 -1314.7,2288.3 -1146.15,2288.3L-1146.15,2288.3ZM-1150,2294.97C-818.851,2294.97 -550,2527.8 -550,2814.58C-550,3101.37 -818.851,3334.2 -1150,3334.2C-1481.15,3334.2 -1750,3101.37 -1750,2814.58C-1750,2527.8 -1481.15,2294.97 -1150,2294.97Z" style="fill:rgb(255,0,0);"/>
-		</g>
+		<defs>
+			<radialGradient id="gradientDef">
+				<stop offset="0.2" stop-color="transparent" />
+				<stop offset="0.65" stop-color="var(--orange)" />
+				<stop offset="0.9" stop-color="transparent" />
+			</radialGradient>
+		</defs>
 		<g transform="matrix(1,0,0,1,518.671,501.923)">
 			<g id="Shadow" transform="matrix(0.761155,-0.439453,0.78125,0.451055,-2625.14,-1324.43)">
 				<path d="M-192,5163.16C-192,5127.84 -217.491,5099.16 -248.889,5099.16L-1159.11,5099.16C-1190.51,5099.16 -1216,5127.84 -1216,5163.16L-1216,5478.56C-1216,5513.89 -1190.51,5542.56 -1159.11,5542.56L-248.889,5542.56C-217.491,5542.56 -192,5513.89 -192,5478.56L-192,5163.16Z" style="fill-opacity:0.5;"/>
 			</g>
 			<g id="RaysLeft" transform="matrix(1,0,0,1,24.6305,-25.5453)">
-				<g opacity="0.4">
-					<g transform="matrix(1.6,-0.34641,-0.34641,1.2,-344.115,-591.377)">
-						<path d="M1082.53,2075L866.025,2200" style="fill:none;stroke:rgb(255,0,0);stroke-width:8px;"/>
-					</g>
-					<g transform="matrix(1.6,-0.34641,-0.34641,1.2,-300.814,-566.377)">
-						<path d="M1082.53,2075L866.025,2200" style="fill:none;stroke:rgb(255,0,0);stroke-width:8px;"/>
-					</g>
-					<g transform="matrix(1.6,-0.34641,-0.34641,1.2,-257.513,-541.377)">
-						<path d="M1082.53,2075L866.025,2200" style="fill:none;stroke:rgb(255,0,0);stroke-width:8px;"/>
-					</g>
+				<g transform="matrix(1.6,-0.34641,-0.34641,1.2,-344.115,-591.377)">
+					<path d="M1082.53,2075L866.025,2200" style="fill:none;stroke:rgb(255,0,0);stroke-width:8px;"/>
+				</g>
+				<g transform="matrix(1.6,-0.34641,-0.34641,1.2,-300.814,-566.377)">
+					<path d="M1082.53,2075L866.025,2200" style="fill:none;stroke:rgb(255,0,0);stroke-width:8px;"/>
+				</g>
+				<g transform="matrix(1.6,-0.34641,-0.34641,1.2,-257.513,-541.377)">
+					<path d="M1082.53,2075L866.025,2200" style="fill:none;stroke:rgb(255,0,0);stroke-width:8px;"/>
 				</g>
 			</g>
 			<g id="RaysRight" transform="matrix(0,0.57735,1.73205,0,-1425.61,811.752)">
-				<g opacity="0.4">
-					<g transform="matrix(1.6,-0.34641,-0.34641,1.2,-344.115,-591.377)">
-						<path d="M1082.53,2075L866.025,2200" style="fill:none;stroke:rgb(255,0,0);stroke-width:8px;"/>
-					</g>
-					<g transform="matrix(1.6,-0.34641,-0.34641,1.2,-300.814,-566.377)">
-						<path d="M1082.53,2075L866.025,2200" style="fill:none;stroke:rgb(255,0,0);stroke-width:8px;"/>
-					</g>
-					<g transform="matrix(1.6,-0.34641,-0.34641,1.2,-257.513,-541.377)">
-						<path d="M1082.53,2075L866.025,2200" style="fill:none;stroke:rgb(255,0,0);stroke-width:8px;"/>
-					</g>
+				<g transform="matrix(1.6,-0.34641,-0.34641,1.2,-344.115,-591.377)">
+					<path d="M1082.53,2075L866.025,2200" style="fill:none;stroke:rgb(255,0,0);stroke-width:8px;"/>
+				</g>
+				<g transform="matrix(1.6,-0.34641,-0.34641,1.2,-300.814,-566.377)">
+					<path d="M1082.53,2075L866.025,2200" style="fill:none;stroke:rgb(255,0,0);stroke-width:8px;"/>
+				</g>
+				<g transform="matrix(1.6,-0.34641,-0.34641,1.2,-257.513,-541.377)">
+					<path d="M1082.53,2075L866.025,2200" style="fill:none;stroke:rgb(255,0,0);stroke-width:8px;"/>
 				</g>
 			</g>
 		</g>
+		<ellipse id="LoaderRail" fill="transparent" :ry="normalizedRadius/1.72" :rx="normalizedRadius" :cx="1515" :cy="1874" />
+		<ellipse v-if="light" id="Gradient" :ry="normalizedRadius/1.72 * 1.5" :rx="normalizedRadius * 1.5" :cx="1515" :cy="1874" fill="url('#gradientDef')" />
+		<ellipse id="Loader" stroke-linecap="round" fill="transparent" :ry="normalizedRadius/1.72" :rx="normalizedRadius" :cx="1515" :cy="1874" />
 		<g id="Lock">
 			<g transform="matrix(1,0,0,1,518.671,501.923)">
 				<g transform="matrix(1,0,0,1,-2.27374e-13,48.6226)">
@@ -265,36 +265,48 @@
 
 
 <script setup lang="ts">
+const props = defineProps<{
+	light?: boolean
+}>()
 
+const normalizedRadius = 925
 </script>
 
 
 
 <style scoped>
 #root {
-	--animation-time: 5s;
+	--animation-time: 4s;
 }
 
-#Loader path {
-	fill: none !important;
+#Loader,
+#LoaderRail {
+	stroke-width: 10px;
+}
+
+#Loader {
 	stroke: var(--orange) !important;
-	stroke-width: 4px;
-	stroke-dasharray: 400 800;
-	animation: loader-animation 15s infinite linear;
+	stroke-dasharray: 26%;
+	animation: loader-animation calc(var(--animation-time) * 4) infinite linear, light var(--animation-time) ease-in-out infinite;
 }
 
-#LoaderRail path {
-	fill: none !important;
-	stroke: var(--background3) !important;
-	stroke-width: 4px;
+#LoaderRail {
+	stroke: #444 !important;
 }
 
 #Vents path {
+	animation: vents var(--animation-time) ease-in-out infinite;
 	stroke: var(--orange) !important;
+}
+
+#Gradient {
+	animation: gradient var(--animation-time) ease-in-out infinite;
+	
 }
 
 #RaysLeft path,
 #RaysRight path {
+	animation: light var(--animation-time) ease-in-out infinite;
 	stroke: var(--orange) !important;
 }
 
@@ -309,12 +321,48 @@
 
 #CloudLeft {
 	animation: float-left var(--animation-time) ease-in-out infinite;
-	animation-delay: calc(var(--animation-time) * 0.2);
+	animation-delay: calc(var(--animation-time) * -0.95);
 }
 
 #CloudRight {
 	animation: float-right var(--animation-time) ease-in-out infinite;
-	animation-delay:calc(var(--animation-time) * 0.2);
+	animation-delay: calc(var(--animation-time) * -0.95);
+}
+
+@keyframes vents {
+	0% {
+		opacity: 100%;
+	}
+	50% {
+		opacity: 70%;
+	}
+	100% {
+		opacity: 100%;
+	}
+}
+
+@keyframes light {
+	0% {
+		opacity: 60%;
+	}
+	50% {
+		opacity: 10%;
+	}
+	100% {
+		opacity: 60%;
+	}
+}
+
+@keyframes gradient {
+	0% {
+		opacity: 4%;
+	}
+	50% {
+		opacity: 1.5%;
+	}
+	100% {
+		opacity: 4%;
+	}
 }
 
 @keyframes loader-animation {
@@ -322,19 +370,19 @@
 		stroke-dashoffset: 0;
 	}
 	100% {
-		stroke-dashoffset: 1200;
+		stroke-dashoffset: 104%;
 	}
 }
 
 @keyframes float-left {
 	0% {
-		translate: 0 60px;
+		translate: -10px 60px;
 	}
 	50% {
-		translate: 0 20px;
+		translate: -10px 20px;
 	}
 	100% {
-		translate: 0 60px;
+		translate: -10px 60px;
 	}
 }
 
@@ -352,13 +400,13 @@
 
 @keyframes big-float {
 	0% {
-		translate: 0 50px;
+		translate: 0 30px;
 	}
 	50% {
 		translate: 0 -30px;
 	}
 	100% {
-		translate: 0 50px;
+		translate: 0 30px;
 	}
 }
 </style>
