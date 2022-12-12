@@ -22,7 +22,7 @@
 			<div>
 				<h2>Security</h2>
 				<SettingItem name="Password" description="Used to encrypt selected wallets">
-					<Input v-model="password" type="password" :placeholder="hasPassword ? 'Change password or delete' : 'Create a new password'" :submit="passwordAction" />
+					<Input v-model="password" type="password" :placeholder="hasPassword ? 'Change password or remove' : 'Create a new password'" :submit="passwordAction" />
 				</SettingItem>
 				<SettingItem name="Stay unlocked" description="Time to wait before requiring the password again">
 					<Select v-model="AppSettings.password.invalidateCache" :options="AppSettingsOptions.password.invalidateCache" />

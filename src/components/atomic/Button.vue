@@ -1,5 +1,5 @@
 <template>
-	<Link class="button no-select" :class="{ disabled }" v-bind="props" :style="glowStyle">
+	<Link class="button no-select" :class="{ disabled, square }" v-bind="props" :style="glowStyle">
 		<Icon v-if="icon" :icon="icon" :class="{ margin }" />
 		<slot></slot>
 	</Link>
@@ -15,6 +15,7 @@ import { normalizeColorTo } from '@/functions/Utils'
 
 const props = defineProps<{
 	glow?: boolean
+	square?: boolean
 	
 	// Todo type action
 	name?: string
@@ -65,6 +66,13 @@ const margin = computed(() => slots.default)
 
 .button:disabled, .button.disabled {
 	filter: grayscale(0.5) brightness(0.5);
+}
+
+.button.square {
+	flex: 0 0 auto;
+	height: 4.5rem;
+	font-size: 1.5rem;
+	width: 4.5rem;
 }
 
 .icon.margin {

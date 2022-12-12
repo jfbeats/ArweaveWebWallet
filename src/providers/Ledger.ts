@@ -108,7 +108,7 @@ async function sign (tx: Transaction) {
 const providerMetadata: ProviderMetadata = reactive({
 	...ArweaveAccount.metadata,
 	id: 'ledger',
-	name: 'Ledger',
+	name: 'Ledger (awaiting release)',
 	icon: markRaw(LogoLedger),
 	disabled: true,
 	addImportData: async (walletData) => {
