@@ -65,7 +65,7 @@ const direction = computed(() => props.tx.recipient && props.tx.recipient === pr
 const relativeAddress = computed(() => direction.value === 'in' ? props.tx.owner.address : (props.tx.recipient || props.tx.target))
 const value = computed(() => props.tx.quantity?.ar || arweave.ar.winstonToAr(props.tx.quantity))
 const isValue = computed(() => value.value > 0)
-const isData = computed(() => ArrayBuffer.isView(props.tx.data) || (props.tx.data?.size || props.tx.data_size) > 0)
+const isData = computed(() => (ArrayBuffer.isView(props.tx.data) && props.tx.data.size > 0) || (props.tx.data?.size || props.tx.data_size) > 0)
 const status = computed(() => {
 	if (!props.tx.id || !props.tx.block) { return 'pending' }
 	return 'confirmed'
