@@ -3,7 +3,7 @@
 		<Icon :icon="IconQR" class="background" />
 		<video ref="video" class="video" :class="{ isPlaying }"></video>
 		<div class="actions-row-container">
-			<ActionsRow :actions="actions" :class="{ isPlaying }" />
+			<ActionsRow :actions="actions" />
 		</div>
 	</div>
 </template>
@@ -16,7 +16,7 @@ import { useChannel } from '@/functions/Channels'
 import { postMessageExtension } from '@/functions/Connect'
 import { notify } from '@/store/NotificationStore'
 import { awaitEffect } from '@/functions/AsyncData'
-import { emitter } from '@/functions/Scanner'
+import { emitter, getScanner } from '@/functions/Scanner'
 import QrScanner from 'qr-scanner'
 import { onUnmounted, onMounted, ref, inject } from 'vue'
 
@@ -49,9 +49,16 @@ onMounted(async () => {
 	const unmount = new Promise<void>(res => onUnmounted(res))
 	if (!video.value) { return console.error('failed to start scanner') }
 	video.value.addEventListener('play', () => isPlaying.value = true)
+	video.value.addEventListener('playing', () => isPlaying.value = true)
 	video.value.addEventListener('pause', () => isPlaying.value = false)
+	video.value.addEventListener('emptied', () => isPlaying.value = false)
+	video.value.addEventListener('ended', () => isPlaying.value = false)
+	video.value.addEventListener('stalled', () => isPlaying.value = false)
+	video.value.addEventListener('suspend', () => isPlaying.value = false)
+	video.value.addEventListener('waiting', () => isPlaying.value = false)
 	cameras = await QrScanner.listCameras(true)
-	qrScanner = new QrScanner(video.value, result => emitter.emit('event', result))
+	const scanner = getScanner(video.value)
+	qrScanner = scanner.qrScanner
 	if (scannerCamera.value != null) { qrScanner.setCamera(scannerCamera.value) }
 	qrScanner.start().catch(() => {
 		postMessageExtension('permissions')
@@ -60,7 +67,7 @@ onMounted(async () => {
 	})
 	await unmount
 	await awaitEffect(() => !parentTransitionState?.leave)
-	qrScanner.destroy()
+	scanner.destructor()
 })
 </script>
 
@@ -75,7 +82,7 @@ onMounted(async () => {
 
 .background {
 	position: absolute;
-	height: 80%;
+	height: 100%;
 	width: 100%;
 	/*z-index: 10;*/
 	top: 0;
@@ -119,9 +126,6 @@ onMounted(async () => {
 	border-top-right-radius: var(--border-radius);
 	border: 1px solid #ffffff22;
 	border-bottom: none;
-}
-
-.actions-row.isPlaying {
 	backdrop-filter: blur(10px);
 }
 </style>
