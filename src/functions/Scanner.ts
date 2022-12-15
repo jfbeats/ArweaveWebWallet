@@ -70,7 +70,7 @@ export function getScanner (video: HTMLVideoElement) {
 		const promise = new Promise(res => setTimeout(res, fullScanRate))
 		await fullScan().catch(() => {})
 		await promise.catch(() => {})
-		fullScanLoop()
+		fullScanLoop?.()
 	}) as any
 	fullScanLoop()
 	const destructor = () => {
