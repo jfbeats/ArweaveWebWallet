@@ -86,6 +86,7 @@ export default {
 	height: 100%;
 	font-size: 1.4em;
 	opacity: var(--element-secondary-opacity);
+	transition: 0.3s ease;
 }
 
 .focus .icon,
