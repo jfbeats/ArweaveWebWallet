@@ -1,6 +1,6 @@
 import { WalletProxy } from '@/providers/WalletProxy'
 import ArweaveStore, { arweave, arweaveQuery, fetchPublicKey, queryAggregator } from '@/store/ArweaveStore'
-import { ArweaveVerifier as ArweaveMessageVerifier } from 'arweave-wallet-connector/lib/Arweave'
+import { ArweaveVerifier as ArweaveMessageVerifier } from 'arweave-wallet-connector'
 import { Emitter, mix } from '@/functions/UtilsClass'
 import { download, exportTransaction } from '@/functions/File'
 import { awaitEffect, getAsyncData } from '@/functions/AsyncData'
