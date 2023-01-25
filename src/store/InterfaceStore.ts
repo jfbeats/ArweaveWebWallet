@@ -17,11 +17,13 @@ const InterfaceStore = reactive({
 	},
 	sticky: false,
 	dragOverlay: false,
+	online: navigator.onLine,
 })
+export default InterfaceStore
 
 
 
-export const emitter = new Emitter<{ scrollHistory: undefined }>()
+export const emitter = new Emitter<{ scrollHistory: undefined, selectWallet: string | undefined }>()
 
 
 
@@ -32,6 +34,9 @@ const updateWindowSize = () => {
 }
 updateWindowSize()
 window.addEventListener('resize', updateWindowSize)
+
+window.addEventListener('online', () => InterfaceStore.online = true)
+window.addEventListener('offline', () => InterfaceStore.online = false)
 
 document.addEventListener('visibilitychange', () => InterfaceStore.windowVisible = !document.hidden)
 
@@ -85,4 +90,11 @@ if (window.matchMedia) {
 
 
 
-export default InterfaceStore
+export function onUnload (callback: (e: Event) => void): () => void {
+	window.addEventListener('beforeunload', callback)
+	window.addEventListener('unload', callback)
+	return () => {
+		window.removeEventListener('beforeunload', callback)
+		window.removeEventListener('unload', callback)
+	}
+}
