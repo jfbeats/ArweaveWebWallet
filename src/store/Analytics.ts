@@ -78,7 +78,7 @@ function init () {
 		const event_data = typeof value === 'string' ? { value } : value
 		if (event_name === 'Connect' && event_data) { try { event_data.value = extractId(event_data.value) } catch (e) {} }
 		if (event_name === 'Connect' && event_data && testLocalhost(event_data.value)) { event_name = 'Connect Localhost' }
-		collect('event', Object.assign(getPayload(), { event_name, event_data }))
+		collect('event', Object.assign(getPayload(), { event_name, event_data }))?.catch(() => {})
 	}
 	
 	const handlePush = (state: any, title: any, url: any) => {
