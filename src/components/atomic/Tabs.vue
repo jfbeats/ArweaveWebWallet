@@ -14,17 +14,17 @@ import { computed } from 'vue'
 
 const props = defineProps<{
 	tabs: { name: string, color: string }[]
-	modelValue: string
+	modelValue?: string
 	disabled?: boolean
 }>()
 const emit = defineEmits(['update:modelValue'])
 
-const model = computed<string>({
+const model = computed<string | undefined>({
 	get () { return props.modelValue },
 	set (value) { emit('update:modelValue', value) }
 })
 
-const color = computed(() => props.tabs.find(t => t.name.toLowerCase() === model.value.toLowerCase())?.color)
+const color = computed(() => props.tabs.find(t => t.name.toLowerCase() === model.value?.toLowerCase())?.color)
 </script>
 
 
