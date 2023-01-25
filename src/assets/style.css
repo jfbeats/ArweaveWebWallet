@@ -46,21 +46,6 @@
 	}
 }
 
-html {
-	box-sizing: border-box;
-	background-color: #0f0f0f;
-	font-family: Avenir, Helvetica, Arial, sans-serif;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	color: #eee;
-}
-
-body {
-	margin: 0;
-	padding: 0;
-	line-height: var(--line-height);
-}
-
 h1, h2, h3, h4, h5 {
 	font-weight: normal;
 }

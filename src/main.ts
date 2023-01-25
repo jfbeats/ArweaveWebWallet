@@ -1,3 +1,5 @@
+import '@/store/Theme'
+import '@/assets/style.css'
 import '@/assets/animations.css'
 import '@/assets/style.css'
 import '@/store/Analytics'

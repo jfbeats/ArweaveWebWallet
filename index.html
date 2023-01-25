@@ -5,30 +5,43 @@
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width,initial-scale=1.0">
-	<link rel="favicon icon" href="https://arweave.app/arweave.svg">
-	<title> <%- VITE_TITLE %> </title>
-	<meta property="og:title" content="<%- VITE_TITLE %>">
-	<meta name="twitter:title" content="<%- VITE_TITLE %>">
+	<link rel="favicon icon" href="<%- VITE_FAVICON %>">
+	<title><%- VITE_TITLE %></title>
+	<meta property="og:title" name="twitter:title" content="<%- VITE_TITLE %>">
 	<meta name="description" content="<%- VITE_DESCRIPTION %>">
-	<meta property="og:description" content="<%- VITE_DESCRIPTION %>">
-	<meta name="twitter:description" content="<%- VITE_DESCRIPTION %>">
-	<meta property="og:image" content="https://arweave.app/arweaveViewLandscape.png">
-	<meta name="twitter:image" content="https://arweave.app/arweaveViewLandscape.png">
+	<meta property="og:description" name="twitter:description" content="<%- VITE_DESCRIPTION %>">
+	<meta property="og:image" name="twitter:image" content="<%- VITE_COVER %>">
 	<meta property="og:type" content="website">
 	<meta name="twitter:card" content="summary_large_image">
-	<script type="module">
-		import { Buffer } from 'buffer'
-		
-		if (window.global === undefined) {
-			window.global = window
-			window.Buffer = Buffer
+	<meta name="color-scheme" content="dark">
+	<meta name="theme-color" content="<%- VITE_BACKGROUND %>">
+	<style>
+		html {
+			box-sizing: border-box;
+			font-family: Avenir, Helvetica, Arial, sans-serif;
+			-webkit-font-smoothing: antialiased;
+			-moz-osx-font-smoothing: grayscale;
+			background: #151515;
+			color: #eeeeee;
 		}
+		body {
+			margin: 0;
+			padding: 0;
+			line-height: var(--line-height, inherit);
+		}
+	</style>
+	<script>
+		document.documentElement.style.background = document.querySelector('meta[name=theme-color]')?.content
 	</script>
 </head>
 
 <body>
 	<noscript><strong>JavaScript Disabled</strong></noscript>
 	<div id="app"></div>
+	<script type="module">
+		import { Buffer } from 'buffer'
+		if (window.global === undefined) { window.global = window; window.Buffer = Buffer }
+	</script>
 	<script type="module" src="/src/main.ts"></script>
 </body>
 
