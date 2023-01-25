@@ -6,6 +6,8 @@ import { useChannel } from '@/functions/Channels'
 import { getAsyncData, getQueryManager, getReactiveAsyncData } from '@/functions/AsyncData'
 import { isRef, reactive, ref, Ref, watch } from 'vue'
 import { Emitter } from '@/functions/UtilsClass'
+import { notify } from '@/store/NotificationStore'
+import { track } from '@/store/Analytics'
 
 
 
@@ -22,7 +24,7 @@ const ArweaveStore = reactive({
 })
 
 export default ArweaveStore
-export let arweave: Arweave
+export var arweave: Arweave
 
 
 
@@ -34,17 +36,22 @@ export function urlToSettings (url: string) {
 	return { protocol, host, port }
 }
 
-export async function updateArweave (url?: string, sync?: boolean) {
+export async function updateArweave (url?: string, sync?: boolean): Promise<true> {
 	url = url ? generateUrl(url) : gatewayDefault
 	const settings = urlToSettings(url)
-	if (!sync && url !== gatewayDefault) {
-		const arweaveTest = Arweave.init(settings)
-		const net = await arweaveTest.network.getInfo()
-		if (!net.network) { throw 'Invalid' }
-	}
+	if (!sync && url !== gatewayDefault) { await testGateway(settings) }
 	arweave = Arweave.init(settings)
 	ArweaveStore.gatewayURL = url !== gatewayDefault ? url : undefined as any
+	return true
 	// todo if network name is different, clear all cache
+}
+
+async function testGateway (settings: ReturnType<typeof urlToSettings> | string): Promise<true> {
+	settings = typeof settings === 'string' ? urlToSettings(settings) : settings
+	const arweaveTest = Arweave.init(settings)
+	const net = await arweaveTest.network.getInfo()
+	if (!net.network) { throw 'Gateway Unreachable' }
+	return true
 }
 
 export async function updateBundler (url?: string, sync?: boolean) {
@@ -357,14 +364,25 @@ export const currentBlock = currentBlockData.state
 
 
 
-function loadGatewaySettings () {
+async function loadGatewaySettings () {
 	updateArweave(ArweaveStore.gatewayURL || gatewayDefault, true)
 	updateBundler(ArweaveStore.bundlerURL || bundlerDefault, true)
 	const { state, stop } = useChannel('localGatewayTest')
 	if (state.value && Date.now() - state.value > 2600000000) { state.value = undefined }
-	if (!ArweaveStore.gatewayURL && !state.value) {
-		state.value = Date.now()
-		updateArweave(location.origin).catch(() => {})
+	if (!ArweaveStore.gatewayURL && !state.value && navigator.onLine) {
+		const isLocal = await updateArweave(location.origin).catch(() => {})
+		const isReachable = isLocal || await testGateway(gatewayDefault).catch(async e => {
+			const isp = await fetch('http://ip-api.com/json').then(res => res.json().then(res => res?.isp as string)).catch(() => {})
+			track.event('Error', { e, value: gatewayDefault, isp })
+			notify.error({
+				title: `Default gateway is unreachable`,
+				body: `${new URL(gatewayDefault).hostname} may be blocked by your internet service provider or is temporarily unavailable`,
+				requireInteraction: true,
+			})
+			const fallbackReachable = await updateArweave('https://ar-io.net/').catch(() => false)
+			return fallbackReachable
+		})
+		if (isReachable) { state.value = Date.now() }
 	}
 	stop()
 }
