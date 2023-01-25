@@ -82,6 +82,7 @@ export function useChannel <T extends keyof PrefixTable, U extends DefaultValue<
 		const scope = effectScope(true)
 		const channel = scope.run(() => ChannelRef(prefix, instanceName, init, writeInit))!
 		channelInstances[key] = { channel, subscribers: 0, scope }
+		globalStorageListener()
 	}
 	channelInstances[key].subscribers++
 	
@@ -90,6 +91,7 @@ export function useChannel <T extends keyof PrefixTable, U extends DefaultValue<
 		if (channelInstances[key].subscribers > 0) { return }
 		channelInstances[key].scope.stop()
 		delete channelInstances[key]
+		globalStorageListener()
 	})}
 	const deleteChannel = () => {
 		channelInstances[key]?.channel?.deleteChannel()
@@ -146,6 +148,7 @@ const instance = origin + Math.random().toString().slice(2)
 const storageKeys = ref(Object.keys(localStorage)) as Ref<string[]>
 const { state, deleteChannel } = useChannel('instanceState:', instance, { origin, session }, true)
 const { states } = getChannels('instanceState:')
+watch(states, () => {})
 const connectorChannels = getChannels('sharedState:')
 export { state, states, connectorChannels, appInfo }
 
@@ -182,10 +185,10 @@ function cleanHeartbeats () {
 	}
 }
 
-function globalStorageListener (e: StorageEvent) {
+function globalStorageListener (e?: StorageEvent) {
 	const partialKey = 'heartbeat:' + instance
-	if (e.key?.slice(0, partialKey.length) === partialKey && e.newValue === '') { localStorage.setItem(e.key, 'ok') }
-	storageKeys.value = Object.keys(localStorage)
+	if (e && e.key?.slice(0, partialKey.length) === partialKey && e.newValue === '') { localStorage.setItem(e.key, 'ok') }
+	setTimeout(() => storageKeys.value = Object.keys(localStorage))
 }
 
 export async function hasStorageAccess () {
@@ -200,7 +203,7 @@ export async function awaitStorageAccess () {
 
 
 cleanHeartbeats()
-setTimeout(() => storageKeys.value = Object.keys(localStorage))
+globalStorageListener()
 window.addEventListener('storage', globalStorageListener)
 window.addEventListener('beforeunload', () => deleteChannel())
 window.addEventListener('unload', () => deleteChannel())
