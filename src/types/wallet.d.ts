@@ -67,7 +67,19 @@ type MethodMetadata = {
 	skip?: boolean
 	unavailable?: boolean
 	userIntent?: boolean
+	public?: boolean
 }
+
+type MethodMetadataPermission = {
+	name?: string
+}
+
+type MethodMetadataRecursive<Parent> = MethodMetadata | keyof Parent
+	| { or: Readonly<MethodMetadataRecursive<Parent>[]> }
+	| { and: Readonly<MethodMetadataRecursive<Parent>[]> }
+
+type MethodMetadataExtended<Parent> = MethodMetadataRecursive<Parent>
+	| { metadata: MethodMetadataRecursive<Parent>, permission: MethodMetadataPermission }
 
 type ImportOptions = Partial<{
 	address: string

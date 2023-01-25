@@ -125,12 +125,37 @@ function getNewId () {
 
 
 
-export function getMethodMetadata(provider?: Wallet, runnerMethod?: string): MethodMetadata {
+export function getMethodMetadata(provider?: Wallet, runnerMethod?: string): MethodMetadata & MethodMetadataPermission {
 	if (!provider || !runnerMethod) { return {} }
-	const providerMethod = (provider.messageRunner.methodMap as any)[runnerMethod]
-	if (!providerMethod) { return {} }
+	const methodMetadataExtended = (provider.messageRunner.methodMap as any)[runnerMethod] as MethodMetadataExtended<Wallet>
+	if (!methodMetadataExtended) { return {} }
 	const methodsMetadata = provider.metadata?.methods
-	const result = methodsMetadata?.[providerMethod as keyof typeof methodsMetadata]
-	if (!result && provider[providerMethod as keyof typeof methodsMetadata]) { return {} }
-	return result || { unavailable: true }
+	const rec = (methods: MethodMetadataRecursive<Wallet>): MethodMetadata => {
+		if (typeof methods === 'string') {
+			const methodMetadata = (methodsMetadata as any)?.[methods]
+			const methodDefinition = provider[methods]
+			return methodMetadata ?? (methodDefinition ? {} : { unavailable: true })
+		}
+		if ('or' in methods) {
+			return {
+				skip: methods.or.some(m => rec(m).skip),
+				unavailable: !methods.or.some(m => !rec(m).unavailable),
+				userIntent: methods.or.some(m => rec(m).userIntent),
+				public: methods.or.every(m => rec(m).public),
+			}
+		}
+		if ('and' in methods) {
+			return {
+				skip: methods.and.some(m => rec(m).skip),
+				unavailable: methods.and.some(m => rec(m).unavailable),
+				userIntent: methods.and.some(m => rec(m).userIntent),
+				public: methods.and.every(m => rec(m).public),
+			}
+		}
+		return methods
+	}
+	if (typeof methodMetadataExtended === 'object' && 'permission' in methodMetadataExtended) {
+		return { ...rec(methodMetadataExtended.metadata), ...methodMetadataExtended.permission }
+	}
+	return rec(methodMetadataExtended)
 }
