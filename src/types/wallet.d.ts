@@ -1,4 +1,3 @@
-type ProviderId = import('@/functions/Wallets').ProviderId
 type WalletDataInterface = {
 	id: string
 	uuid?: string
@@ -11,7 +10,6 @@ type WalletDataInterface = {
 	}
 }
 
-type AnyProvider = import('@/functions/Wallets').AnyProvider
 type Wallet = Union<InstanceType<AnyProvider>>
 
 interface Provider extends Account {
