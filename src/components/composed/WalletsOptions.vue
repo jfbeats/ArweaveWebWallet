@@ -15,7 +15,6 @@
 			<template v-for="wallet in selectedWallets" :key="wallet.id">
 				<WalletOptions :wallet="wallet" />
 				<Button v-if="canConnect" @click="() => { sharedState.walletId = wallet.id; router.push('Connect') }">Connect</Button>
-				<div></div>
 			</template>
 		</div>
 		<Button v-if="!Wallets.length" style="font-size:1.5em; background:var(--background3); width: 100%;" :to="{ name: 'AddWallet' }" icon="+" />
