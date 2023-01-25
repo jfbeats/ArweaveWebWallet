@@ -1,6 +1,9 @@
 <template>
-	<div class="qr" style="overflow: hidden;">
+	<div class="qr" style="overflow: hidden; position: relative;">
 		<div ref="canvas" class="qr-container" />
+		<div v-if="hasLogo" class="logo" style="filter:url(#blob2);">
+			<Icon :icon="ArweaveLogo" />
+		</div>
 	</div>
 </template>
 
@@ -9,12 +12,15 @@
 <script setup lang="ts">
 import QRCodeStyling from 'qr-code-styling'
 import { computed, onBeforeUnmount, onMounted, ref, watchEffect } from 'vue'
+import ArweaveLogo from '@/assets/logos/arweaveOutline.svg?component'
+import Icon from '@/components/atomic/Icon.vue'
 
 const props = defineProps<{ qr?: string }>()
 
 const light = '#eeeeee'
 const dark = '#000000'
 const canvas = ref(undefined as undefined | HTMLElement)
+const correctionLevel = ref(undefined as undefined | string)
 const modules = ref(0)
 const offsetScale = ref(1)
 const offsetScaleCSS = computed(() => `scale(${offsetScale.value})`)
@@ -22,6 +28,10 @@ const maxSizes = ref([] as number[])
 const maxSize = computed(() => Math.min(...maxSizes.value.filter(v => v)) + 'px')
 const genSize = 20000
 const moduleSize = 4
+const logoSize = computed(() => modules.value * 0.541 * moduleSize)
+const logoSizeCSS = computed(() => logoSize.value + 'px')
+const hasLogo = computed(() => false) // logoSize.value > 80
+// const logoOutlineCSS = Array(10).fill(`drop-shadow(0 0 0.5px ${light})`).join(' ')
 const minSize = computed(() => modules.value * moduleSize + 'px')
 const padding = computed(() => moduleSize * 4 + 'px')
 const qrCode = new QRCodeStyling()
@@ -42,7 +52,7 @@ onMounted(async () => {
 })
 watchEffect(() => {
 	if (!canvas.value) { return }
-	;(['L'] as const).find(errorCorrectionLevel => { try {
+	correctionLevel.value = (['M', 'L'] as const).find(errorCorrectionLevel => { try {
 		qrCode.update({
 			type: 'svg',
 			width: genSize,
@@ -85,6 +95,7 @@ function getOffset () {
 .qr {
 	display: flex;
 	background: v-bind(light);
+	color: v-bind(dark);
 	width: max-content;
 	max-width: v-bind(maxSize);
 	max-height: v-bind(maxSize);
@@ -105,5 +116,26 @@ function getOffset () {
 
 .qr :deep(#clip-path-dot-color > *) {
 
+}
+
+.logo {
+	position: absolute;
+	color: black;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+}
+
+.logo > * {
+	width: v-bind(logoSizeCSS);
+	height: v-bind(logoSizeCSS);
+}
+
+.logo > * > :deep(*) {
+	stroke: v-bind(dark);
+	stroke-width: 20px;
+	overflow: visible;
 }
 </style>
