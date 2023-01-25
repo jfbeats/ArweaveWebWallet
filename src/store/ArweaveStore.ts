@@ -235,15 +235,16 @@ export function queryAggregator (queries: ReturnType<typeof arweaveQuery>[]) {
 	
 	watch(refreshSwitch, val => queries.forEach(q => q.refreshSwitch.value = val))
 	queries.map(query => {
-		watch(() => query.updateQuery.stateRef.value, state => {
-			if (!state) { return }
+		watch(() => query.updateQuery.stateRef.value?.length, () => {
+			const state = query.updateQuery.stateRef
+			if (!state.value) { return }
 			const queryIndex = queries.indexOf(query)
-			const index = state.indexOf(initial[queryIndex])
+			const index = state.value.indexOf(initial[queryIndex])
 			const newResults = [] as any[]
-			for (let i = index - 1; i >= 0; i--) { if (data.value.indexOf(state[i]) < 0) { newResults.push(state[i]) } }
+			for (let i = index - 1; i >= 0; i--) { if (data.value.indexOf(state.value[i]) < 0) { newResults.push(state.value[i]) } }
 			if (newResults.length) { data.value.splice(0, 0, ...newResults) }
 			data.value.sort(blockSort)
-		}, { deep: true, flush: 'sync' })
+		})
 		watch(() => query.status.reset, () => {
 			data.value = []
 			initial = []
