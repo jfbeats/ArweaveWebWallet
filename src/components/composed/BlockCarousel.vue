@@ -1,6 +1,6 @@
 <template>
 	<div class="block-carousel">
-		<Carousel v-model="index" :options="{ align: 'center', overscroll: true, immediate: true }" @start="start" @end="end" class="block-carousel">
+		<Carousel :index="index" :options="{ align: 'center', overscroll: true, immediate: true }" @start="start" @end="end" class="block-carousel">
 			<div v-for="block in state" :key="block.node.id" class="block fade-list-item">
 				<BlockCard :block="block" class="box" />
 			</div>

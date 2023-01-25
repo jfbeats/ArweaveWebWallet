@@ -1,5 +1,5 @@
 <template>
-	<div ref="root" class="carousel flex-row no-scrollbar" :style="style">
+	<div ref="root" class="carousel flex-row no-scrollbar" :class="{ scrollSnapStop: options.scrollSnapStop}" :style="style">
 		<transition-group name="fade-list">
 			<div v-if="options?.overscroll" class="margin fade-list-item" key="margin1">
 				<Observer class="limit start" @intersection="val => emit('start', val)" />
@@ -20,23 +20,25 @@ import { awaitEffect } from '@/functions/AsyncData'
 import { onMounted, onBeforeUnmount, ref, computed, watch, nextTick, inject } from 'vue'
 
 const props = defineProps<{
-	modelValue?: number
+	index?: number
 	options: {
 		align?: ScrollLogicalPosition
 		overscroll: boolean
 		immediate?: boolean
 		awaitTransition?: boolean
+		scrollSnapStop?: boolean
 	}
 	onIndex?: any
 }>()
-const emit = defineEmits(['update:modelValue', 'start', 'end', 'index'])
+const emit = defineEmits<{
+	(e: 'start', val: IntersectionObserverEntry): void
+	(e: 'end', val: IntersectionObserverEntry): void
+	(e: 'index', val: number): void
+	(e: 'elements', val: HTMLElement[]): void
+}>()
 const parentTransitionState = inject('transitionState', null as any)
-
-const model = computed<number | undefined>({
-	get () { return props.modelValue },
-	set (value) { emit('update:modelValue', value) }
-})
 const root = ref(null as null | HTMLElement)
+
 const calcOffset = (el: HTMLElement) => {
 	if (!el || !root.value) { return }
 	if (props.options.align === 'center') { return el.offsetLeft + el.offsetWidth / 2 - root.value.offsetWidth! / 2 }
@@ -52,6 +54,7 @@ const style = computed(() => ({
 	'--position': props.options?.align || 'start',
 }))
 const effect = async (index?: number, instant?: boolean) => {
+	if (index == undefined) { return }
 	if (!instant && props.options.awaitTransition) { await awaitEffect(() => !parentTransitionState.running) }
 	index = Math.max(index || 0, 0)
 	root.value?.scroll({
@@ -81,7 +84,8 @@ const visibleIndex = computed(() => {
 	if (props.options.align === 'start') { return visibleIndexes.value[0] }
 	if (props.options.align === 'end') { return visibleIndexes.value[visibleIndexes.value.length - 1] }
 })
-watch(visibleIndex, val => emit('index', val))
+watch(visibleIndex, val => val != null && emit('index', val), { immediate: true })
+watch(elements, val => emit('elements', val), { immediate: true })
 onMounted(async () => {
 	observer = new MutationObserver(async () => { refresh.value++ })
 	observer.observe(root.value!, { subtree: false, childList: true })
@@ -99,10 +103,10 @@ onMounted(async () => {
 	await nextTick()
 	await awaitEffect(() => elements.value.length)
 	setTimeout(() => {
-		const hasInitSlide = !props.options.immediate && model.value && model.value > 0 || false
-		if (!hasInitSlide) { effect(model.value, true) }
+		const hasInitSlide = !props.options.immediate && props.index && props.index > 0 || false
+		if (!hasInitSlide) { effect(props.index, true) }
 		else { effect(0, true) }
-		watch(model, v => effect(v), { immediate: hasInitSlide })
+		watch(() => props.index, () => props.index !== visibleIndex.value && effect(props.index), { immediate: hasInitSlide })
 	})
 })
 onBeforeUnmount(() => {
@@ -129,10 +133,15 @@ onBeforeUnmount(() => {
 .carousel > :deep(*) {
 	line-height: var(--line-height);
 	vertical-align: bottom;
+	white-space: initial;
 }
 
 .carousel > :deep(*:not(.margin)) {
 	scroll-snap-align: var(--position);
+}
+
+.carousel.scrollSnapStop > :deep(*) {
+	scroll-snap-stop: always;
 }
 
 .carousel > :deep(.fade-list-leave-active) {
