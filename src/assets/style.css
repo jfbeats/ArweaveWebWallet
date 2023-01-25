@@ -6,26 +6,12 @@
 	--column-width-small: 600px;
 	--column-width: 700px;
 	--column-large-width: 1000px;
-	--background: #151515;
-	--background2: #181818;
-	--background3: #262626;
-	--border: #222;
-	--border2: #333;
-	--border3: #555;
 	--border-radius: 8px;
 	--border-radius2: 12px;
 	--border-radius3: 12px;
-	--element-secondary: #bbb;
 	--element-secondary-opacity: 0.75;
 	--element-disabled-opacity: 0.5;
 	--line-height: 1.6;
-	--red: #BF616A;
-	--orange: #D08770;
-	--yellow: #EBCB8B;
-	--green: #A3BE8C;
-	--purple: #B48EAD;
-	--grey: #81A1C1;
-	--blue: #5E81AC;
 }
 
 @media (max-width: 599px) {
