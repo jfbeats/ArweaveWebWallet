@@ -6,7 +6,7 @@
 				<span>Keyfile</span>
 			</h2>
 			<div class="flex-column">
-				<InputData v-model="passphraseInput" @files="files => dropped(files, 'keyfile')" :disabled="isCreatingWallet" placeholder="Import passphrase or key file" autocapitalize="none" />
+				<InputData v-model="passphraseInput" type="keyfile" :disabled="isCreatingWallet" placeholder="Type passphrase or import keyfile" autocapitalize="none" />
 				<div />
 				<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create" :disabled="passphraseInput.length && !isPassphrase" class="main" :glow="true" color="#81a1c1">Create new wallet</Button>
 				<Button v-else-if="isCreatingWallet" :disabled="createdWallet == null" @click="goToCreatedWallet" :icon="createdWallet == null ? 'loader' : ''" class="main" :glow="true" color="#81a1c1">{{ createdWallet == null ? 'Generating, write down the passphrase' : 'Passphrase saved? Click here to proceed' }}</Button>
@@ -62,7 +62,6 @@ import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
 import Viewport from '@/components/layout/Viewport.vue'
 import WalletSelector from '@/components/composed/WalletSelector.vue'
 import { hardwareProviders, addAddress, addMnemonic, generateMnemonic, validateMnemonic } from '@/functions/Wallets'
-import { dropped } from '@/functions/File'
 import { track } from '@/store/Analytics'
 import { notify } from '@/store/NotificationStore'
 import { computed, ref } from 'vue'
@@ -145,7 +144,7 @@ const activeSettings = ref(-1)
 }
 
 .input-data {
-	text-align: center;
+	/*text-align: center;*/
 }
 
 .button.main {
