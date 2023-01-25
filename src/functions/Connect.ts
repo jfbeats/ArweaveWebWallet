@@ -3,7 +3,7 @@ import JsonRpc from '@/functions/JsonRpc'
 import { watch, watchEffect, computed, reactive, effectScope, Ref } from 'vue'
 import { getWalletById } from '@/functions/Wallets'
 import { useDataWrapper } from '@/functions/AsyncData'
-import InterfaceStore from '@/store/InterfaceStore'
+import InterfaceStore, { onUnload } from '@/store/InterfaceStore'
 import { track } from '@/store/Analytics'
 
 let windowRef: Window
@@ -116,8 +116,7 @@ async function initConnector () {
 	if (state.value.type === 'iframe') {
 		InterfaceStore.toolbar.enabled = false
 		const unload = () => { !state.value.updating && connector.value && (connector.value.sharedStates.length > 1 ? deleteChannel() : disconnect()) }
-		window.addEventListener('beforeunload', unload)
-		window.addEventListener('unload', unload)
+		onUnload(unload)
 	}
 	if (state.value.type === 'popup') {
 		if (!sharedState.value.walletId) { InterfaceStore.toolbar.enabled = false }
@@ -127,8 +126,7 @@ async function initConnector () {
 			!state.value.updating && !sharedState.value.links?.iframe && connector.value && (connector.value.sharedStates.length > 1 ? deleteChannel() : disconnect())
 			window.close()
 		}
-		window.addEventListener('beforeunload', unload)
-		window.addEventListener('unload', unload)
+		onUnload(unload)
 	}
 	watch(() => sharedState.value.walletId, id => {
 		if (id === false) { return disconnect() }
@@ -173,8 +171,7 @@ async function initWebSockets () {
 	}
 	const disconnect = () => { deleteChannel(); postMessage({ method: 'disconnect' }) }
 	watch(() => sharedState.value.walletId, (id) => id === false ? disconnect() : connect())
-	window.addEventListener('beforeunload', () => disconnect())
-	window.addEventListener('unload', () => disconnect())
+	onUnload(disconnect)
 }
 
 
