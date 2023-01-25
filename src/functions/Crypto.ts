@@ -1,3 +1,7 @@
+import { decode, encode } from '@/functions/Encode'
+
+
+
 export function isEncrypted (val: any): val is EncryptedContent { return val && typeof val === 'object' && Array.isArray(val.ciphertext) && typeof val.derivationSettings === 'object' }
 
 function getDerivationSettings (): DerivationSettings {
@@ -44,28 +48,26 @@ export async function pkcs8ToJwk (key: Uint8Array) {
 	return jwk
 }
 
-export async function getSigningKey (key: JsonWebKey) {
+export async function getSigningKey (key: JsonWebKey, hash = 'SHA-256') {
 	const jwk = { ...key }
 	delete jwk.key_ops
 	delete jwk.alg
-	return window.crypto.subtle.importKey('jwk', jwk, { name: 'RSA-PSS', hash: 'SHA-256' }, false, ['sign'])
+	return window.crypto.subtle.importKey('jwk', jwk, { name: 'RSA-PSS', hash }, false, ['sign'])
 }
 
-export async function getDecryptionKey (key: JsonWebKey) {
+export async function getVerificationKey (n: string, hash = 'SHA-256') {
+	const jwk = { kty: "RSA", e: "AQAB", n, alg: "RSA-PSS-256", ext: true }
+	return window.crypto.subtle.importKey('jwk', jwk, { name: 'RSA-PSS', hash }, false, ['verify'])
+}
+
+export async function getDecryptionKey (key: JsonWebKey, hash = 'SHA-256') {
 	const jwk = { ...key }
 	delete jwk.key_ops
 	delete jwk.alg
-	return window.crypto.subtle.importKey('jwk', jwk, { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['decrypt'])
+	return window.crypto.subtle.importKey('jwk', jwk, { name: 'RSA-OAEP', hash }, false, ['decrypt'])
 }
 
-
-
-export function encode (text: string) {
-	const encoder = new TextEncoder()
-	return encoder.encode(text)
-}
-
-export function decode (buffer: BufferSource) {
-	const decoder = new TextDecoder()
-	return decoder.decode(buffer)
+export async function getEncryptionKey (n: string, hash = 'SHA-256') {
+	const jwk = { kty: "RSA", e: "AQAB", n, alg: "RSA-OAEP-256", ext: true }
+	return window.crypto.subtle.importKey('jwk', jwk, { name: 'RSA-OAEP', hash }, false, ['encrypt'])
 }
