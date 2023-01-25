@@ -5,8 +5,8 @@ import { notify } from '@/store/NotificationStore'
 import { track } from '@/store/Analytics'
 import BigNumber from 'bignumber.js'
 import { PromisePool } from '@supercharge/promise-pool'
-import { encode } from '@/functions/Crypto'
-import type Transaction from 'arweave/web/lib/transaction'
+import { encode } from '@/functions/Encode'
+import Transaction from 'arweave/web/lib/transaction'
 import type { CreateTransactionInterface } from 'arweave/web'
 
 
