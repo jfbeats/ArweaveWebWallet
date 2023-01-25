@@ -95,8 +95,7 @@ export async function submit (wallet: Wallet) {
 			arReward: form.txFee,
 			tags: form.tags,
 			data: form.processedData,
-		})
-		await wallet.signTransaction(tx)
+		}).then(tx => wallet.signTransaction(tx))
 		manageUpload(tx)
 		reset()
 	} catch (e: any) {
