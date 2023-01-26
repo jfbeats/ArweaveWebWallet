@@ -35,7 +35,7 @@ interface Account {
 type ExternalAPI = { [key: string]: (...args: any) => any }
 
 type MessageRunner<API extends ExternalAPI, Parent> = {
-	get methodMap(): { [key in keyof API]?: keyof Parent }
+	get methodMap(): { [key in keyof API]: MethodMetadataExtended<Parent> }
 } & {
 	[key in keyof API]: (...args: Parameters<API[key]>) => ReturnType<API[key]>
 }
