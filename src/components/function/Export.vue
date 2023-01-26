@@ -21,8 +21,11 @@
 					<div class="carousel-item" key="1">
 						<div class="carousel-item-content flex-column">
 							<div style="align-self: center">Export {{ exportRequest?.entry.isSigned ? 'signed' : 'unsigned' }} transaction</div>
+							<div class="flex-row" style="align-items: stretch; justify-content: stretch;">
+								<Button :run="doDownload" style="flex: 1 1 auto; height: initial;">Download File</Button>
+								<Button :square="true" :run="share" :icon="IconShare" />
+							</div>
 							<QR :qr="compressed"/>
-							<Button :run="doDownload">Download File</Button>
 						</div>
 					</div>
 					<div v-if="InterfaceStore.online" class="carousel-item" key="2">
@@ -56,6 +59,7 @@ import { exportRequest } from '@/functions/Export'
 import { computed, ref, watch } from 'vue'
 import { download } from '@/functions/File'
 import InterfaceStore from '@/store/InterfaceStore'
+import IconShare from '@/assets/icons/share.svg?component'
 
 watch(exportRequest, () => index.value = 0)
 const txString = computed(() => {
@@ -79,6 +83,7 @@ const doDownload = () => {
 	download(exportRequest.value?.entry.isSigned ? 'SignedTransaction.json' : 'UnsignedTransaction.json', txString.value)
 	setTimeout(() => nav(1), 2000)
 }
+const share = () => navigator.share({ text: txString.value })
 const reject = () => exportRequest.value?.reject('External provider cancelled')
 const index = ref(0)
 const onIndex = ref(0)
