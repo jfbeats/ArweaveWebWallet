@@ -1,10 +1,13 @@
-import { state, connectorChannels, awaitStorageAccess, useChannel, appInfo, states } from '@/functions/Channels'
-import JsonRpc from '@/functions/JsonRpc'
-import { watch, watchEffect, computed, reactive, effectScope, Ref } from 'vue'
-import { getWalletById } from '@/functions/Wallets'
+import { appInfo, awaitStorageAccess, connectorChannels, state, states, useChannel } from '@/functions/Channels'
+import JsonRpc, { getOwnerIdFromMessage } from '@/functions/JsonRpc'
+import { computed, effectScope, reactive, Ref, ref, watch, watchEffect } from 'vue'
+import { getWalletById, Wallets } from '@/functions/Wallets'
 import { useDataWrapper } from '@/functions/AsyncData'
 import InterfaceStore, { onUnload } from '@/store/InterfaceStore'
 import { track } from '@/store/Analytics'
+import { Emitter } from '@/functions/UtilsClass'
+import { ArweaveApi } from 'arweave-wallet-connector'
+import type { Connection } from 'arweave-wallet-connector/lib/types'
 
 let windowRef: Window
 const { origin, session } = state.value
@@ -76,9 +79,63 @@ if (state.value.type !== 'iframe') { localStorage.setItem('global', '1') }
 
 
 
-function initSharedState (state: Ref): state is Ref<SharedState> {
-	if (!origin || origin === '*') { return false }
-	if (!sharedState.value?.origin) { sharedState.value = { origin, session, appInfo, timestamp: Date.now(), messageQueue: [], links: {} } }
+const localJsonRpc = (function LocalJsonRpc () {
+	const emitter = new Emitter<{ [id: number]: any }>()
+	let id = 0
+	const constructor = () => {
+		const channel = useChannel('sharedState:', 'local' + Math.random())
+		if (!initSharedState(channel.state, { walletId: undefined, origin: 'local', session: Math.random() + '', appInfo: { name: 'Imported' } })) { return }
+		const jsonRpc = new JsonRpc(message => emitter.emit(message.id, message), channel.state)
+		onUnload(channel.deleteChannel)
+		channel.state.value.walletId = Wallets.value[0].id
+		watch(() => jsonRpc.state.value.messageQueue, async val => {
+			const id = await getOwnerIdFromMessage(instance?.jsonRpc.state.value.messageQueue.find(el => !el.fulfilled))
+			id != undefined && instance!.channel.state.value && (instance!.channel.state.value.walletId = id)
+		}, { immediate: true, deep: true })
+		return { channel, jsonRpc }
+	}
+	let instance: ReturnType<typeof constructor>
+	const pending = ref(0)
+	watch(pending, val => {
+		if (!instance || !instance.channel.state.value) { return }
+		if (val > 0) { instance.channel.state.value.walletId === false && (instance.channel.state.value.walletId = undefined) }
+		else { instance.channel.state.value.walletId = false }
+	}, { immediate: true })
+	const push = (e: Message) => {
+		instance ??= constructor()
+		const currentId = id++
+		e.id = currentId
+		return new Promise((res, rej) => {
+			emitter.once(currentId, message => message.error ? rej(message.error) : res(message.result) ).then(() => pending.value--)
+			instance!.jsonRpc.pushMessage(e)
+			pending.value++
+		})
+	}
+	return { push }
+})()
+
+
+class LocalRPC implements Connection {
+	constructor () {}
+	connect () {}
+	disconnect () {}
+	postMessage (...args: Parameters<Connection['postMessage']>) {
+		const [method, params, options] = args
+		if (['connect', 'disconnect'].includes(method)) { return }
+		return localJsonRpc.push({ method, params })
+	}
+}
+const ArweaveClass = ArweaveApi(LocalRPC)
+
+export const RPC = {
+	arweave: new ArweaveClass()
+}
+
+
+
+function initSharedState (state: Ref, init?: Partial<SharedState>): state is Ref<SharedState> {
+	if (!init?.origin && (!origin || origin === '*')) { return false }
+	if (!state.value?.origin) { state.value = Object.assign({ origin, session, appInfo, timestamp: Date.now(), messageQueue: [], links: {} }, init ?? {}) }
 	return true
 }
 

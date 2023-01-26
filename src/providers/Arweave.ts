@@ -2,9 +2,9 @@ import { WalletProxy } from '@/providers/WalletProxy'
 import ArweaveStore, { arweave, arweaveQuery, fetchPublicKey, queryAggregator } from '@/store/ArweaveStore'
 import { ArweaveVerifier as ArweaveMessageVerifier } from 'arweave-wallet-connector'
 import { Emitter, mix } from '@/functions/UtilsClass'
-import { download, exportTransaction } from '@/functions/File'
+import { download } from '@/functions/File'
 import { awaitEffect, getAsyncData } from '@/functions/AsyncData'
-import { getDecryptionKey, getSigningKey, pkcs8ToJwk } from '@/functions/Crypto'
+import { getDecryptionKey, getEncryptionKey, getSigningKey, getVerificationKey, pkcs8ToJwk } from '@/functions/Crypto'
 import { manageUpload } from '@/functions/Transactions'
 import Transaction from 'arweave/web/lib/transaction'
 import { computed } from 'vue'
@@ -16,6 +16,8 @@ import type { TransactionInterface } from 'arweave/web/lib/transaction'
 import type { JWKInterface } from 'arweave/web/lib/wallet'
 // @ts-ignore
 import { getKeyPairFromMnemonic } from 'human-crypto-keys'
+import { requestExport } from '@/functions/Export'
+import { encode } from '@/functions/Encode'
 
 
 
@@ -107,6 +109,7 @@ export class ArweaveProvider extends mix(ArweaveAccount).with(WalletProxy) imple
 				createBundle: { unavailable: !this.hasPrivateKey },
 				sign: { unavailable: !this.hasPrivateKey },
 				decrypt: { unavailable: !this.hasPrivateKey },
+				getPublicKey: { public: true },
 			}
 		}
 	}
@@ -114,9 +117,14 @@ export class ArweaveProvider extends mix(ArweaveAccount).with(WalletProxy) imple
 	messageRunner: ArweaveMessageRunner
 	async signTransaction (tx: Transaction, options?: SignatureOptions) {
 		// todo test balance
-		if (!this.hasPrivateKey) { return exportTransaction(tx) }
-		if (tx.owner && tx.owner !== await this.getPublicKey()) { throw 'error' }
+		const verifyTarget = tx.quantity && +tx.quantity > 0 && tx.target
+		const targetVerificationFailure = verifyTarget && arweaveQuery({ ids: [tx.target] }).fetchQuery.query().catch(() => {}).then(res => res && res.length > 0)
+		const owner = await this.getPublicKey().catch(() => {})
+		if (owner && tx.owner && tx.owner !== owner) { throw 'Wrong owner' }
+		if (!tx.owner && owner) { tx.setOwner(owner) }
+		if (!this.hasPrivateKey) { return requestExport({ tx }) }
 		await arweave.transactions.sign(tx, await this.getPrivateKey(), options)
+		if (await targetVerificationFailure) { throw 'The target is a transaction hash, not an account' }
 		return tx
 	}
 	async createDataItem (item: ArDataItemParams) {
@@ -135,12 +143,12 @@ export class ArweaveProvider extends mix(ArweaveAccount).with(WalletProxy) imple
 		const signer = new signers.ArweaveSigner(sk)
 		return bundleAndSignData(items, signer)
 	}
-	async sign (data: ArrayBufferView, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
-		const signingKey = await getSigningKey(await this.getPrivateKey() as JsonWebKey)
-		const signed = await window.crypto.subtle.sign(options, signingKey, data)
+	async sign (data: BufferSource, options?: Parameters<ArweaveProviderInterface['signMessage']>[1]) {
+		const signingKey = await getSigningKey(await this.getPrivateKey() as JsonWebKey, options?.hashAlgorithm)
+		const signed = await window.crypto.subtle.sign({ name: 'RSA-PSS' }, signingKey, data)
 		return new Uint8Array(signed)
 	}
-	async decrypt (data: ArrayBufferView, options: Parameters<ArweaveProviderInterface['decrypt']>[1]) {
+	async decrypt (data: BufferSource, options: Parameters<ArweaveProviderInterface['decrypt']>[1]) {
 		const decryptionKey = await getDecryptionKey(await this.getPrivateKey() as JsonWebKey)
 		const decrypted = await window.crypto.subtle.decrypt(options, decryptionKey, data)
 		return new Uint8Array(decrypted)
@@ -165,10 +173,18 @@ export class ArweaveMessageRunner implements MessageRunner<ArweaveProviderInterf
 	constructor (private wallet: ArweaveProvider) { }
 	get methodMap () { return {
 		signTransaction: 'signTransaction',
-		dispatch: 'createDataItem',
+		signDataItem: 'createDataItem',
+		signMessage: 'sign',
+		dispatch: {
+			metadata: { or: ['signTransaction', 'createDataItem'] },
+			permission: { name: 'signTransaction' }
+		},
 		getPublicKey: 'getPublicKey',
-		sign: 'sign',
 		decrypt: 'decrypt',
+		encrypt: { public: true },
+		verifyMessage: { public: true },
+		getArweaveConfig: {},
+		privateHash: { unavailable: !this.wallet.hasPrivateKey },
 	} as const }
 	async signTransaction (tx: Parameters<ArweaveProviderInterface['signTransaction']>[0], options?: Parameters<ArweaveProviderInterface['signTransaction']>[1]) {
 		const txObject = new Transaction(tx as TransactionInterface)
@@ -182,6 +198,16 @@ export class ArweaveMessageRunner implements MessageRunner<ArweaveProviderInterf
 			signature: txObject.signature,
 			reward: txObject.reward
 		}
+	}
+	async signDataItem (tx: any) { throw 'not implemented'; return undefined as any }
+	async signMessage (message: ArrayBufferView, options: Parameters<ArweaveProviderInterface['signMessage']>[1]) {
+		const hash = await window.crypto.subtle.digest(options.hashAlgorithm, message)
+		return this.wallet.sign(hash, options) // hashed a second time with the same algo in the sign function
+	}
+	async verifyMessage (message: ArrayBufferView, signature: ArrayBufferView, publicKey: string, options: Parameters<ArweaveProviderInterface['verifyMessage']>[3]) {
+		const hash = await window.crypto.subtle.digest(options.hashAlgorithm, message)
+		const verificationKey = await getVerificationKey(publicKey)
+		return window.crypto.subtle.verify({ name: 'RSA-PSS' }, verificationKey, signature, hash)
 	}
 	async dispatch (tx: Parameters<ArweaveProviderInterface['signTransaction']>[0], options?: Parameters<ArweaveProviderInterface['signTransaction']>[1]) {
 		// todo do not store large data in indexeddb
@@ -205,7 +231,7 @@ export class ArweaveMessageRunner implements MessageRunner<ArweaveProviderInterf
 		}
 		if (dispatchResult) { return dispatchResult }
 		try {
-			// set fees
+			// todo set fees
 			await this.wallet.signTransaction(txObject)
 			manageUpload(txObject)
 			dispatchResult = { id: txObject.id, type: 'BASE' }
@@ -215,12 +241,12 @@ export class ArweaveMessageRunner implements MessageRunner<ArweaveProviderInterf
 	}
 	async getPublicKey () {
 		const publicKey = await this.wallet.getPublicKey()
-		if (!publicKey) { throw 'error' }
+		if (!publicKey) { throw 'key missing' }
 		return publicKey
 	}
-	async sign (message: ArrayBufferView, options: Parameters<ArweaveProviderInterface['sign']>[1]) {
-		if (message.byteLength === 48) { throw 'error' }
-		return this.wallet.sign(message, options)
+	async encrypt (message: ArrayBufferView, publicKey: string, options: Parameters<ArweaveProviderInterface['encrypt']>[2]) {
+		const encryptionKey = await getEncryptionKey(publicKey)
+		return window.crypto.subtle.encrypt(options, encryptionKey, message)
 	}
 	async decrypt (message: ArrayBufferView, options: Parameters<ArweaveProviderInterface['decrypt']>[1]) {
 		return this.wallet.decrypt(message, options)
@@ -228,5 +254,11 @@ export class ArweaveMessageRunner implements MessageRunner<ArweaveProviderInterf
 	async getArweaveConfig () {
 		const config = arweave.getConfig().api
 		return { protocol: config.protocol, host: config.host, port: config.port }
+	}
+	async privateHash (message: ArrayBufferView, options: Parameters<ArweaveProviderInterface['privateHash']>[1]) {
+		const sk = (await this.wallet.getPrivateKey()).d
+		if (!sk) { throw 'key missing' }
+		const hash = await window.crypto.subtle.digest(options.hashAlgorithm, arweave.utils.concatBuffers([message.buffer, encode(sk)]))
+		return new Uint8Array(hash)
 	}
 }
