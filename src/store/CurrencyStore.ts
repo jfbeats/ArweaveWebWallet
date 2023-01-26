@@ -2,6 +2,7 @@ import { useChannel } from '@/functions/Channels'
 import { getAsyncData } from '@/functions/AsyncData'
 import axios from 'axios'
 import { computed, reactive, Ref, toRef, watch } from 'vue'
+import { AppSettings } from '@/store/SettingsStore'
 
 
 export const currency = getConversion()
@@ -34,6 +35,8 @@ function getConversion () {
 
 export const { state: redstoneOptions } = getAsyncData({
 	name: 'currency options list',
+	existingState: toRef(AppSettings.value.currencies, 'state'),
+	timestamp: toRef(AppSettings.value.currencies, 'timestamp'),
 	query: async () => {
 		type currencyOptions = { value: { currency: string, provider: string }, text: string }[]
 		const options = [] as currencyOptions
