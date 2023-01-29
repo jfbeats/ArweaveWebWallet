@@ -132,8 +132,8 @@ export async function getFeeRange () {
 	const sortedFees = fees.sort((a, b) => (+b) - (+a))
 	const nextBlock = sortedFees.slice(0, blockSize)
 	range.max = (new BigNumber(nextBlock[0])).plus('1')
-	if (txs.length < (ids.length / 4)) {
-		notify.warn('Unable to estimate optimal transaction fee')
+	if (txs.length < (ids.length / 10)) {
+		notify.warn('Unable to estimate optimal transaction fee. The gateway is returning data on less than 10% of pending transactions.')
 		failedLastFeeRange = true
 		return range
 	}
