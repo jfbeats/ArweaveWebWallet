@@ -25,7 +25,7 @@ const modules = ref(0)
 const offsetScale = ref(1)
 const offsetScaleCSS = computed(() => `scale(${offsetScale.value})`)
 const maxSizes = ref([] as number[])
-const maxSize = computed(() => Math.min(...maxSizes.value.filter(v => v)) + 'px')
+const maxSize = computed(() => `min(${Math.min(...maxSizes.value.filter(v => v))}px, 100%)`)
 const genSize = 20000
 const moduleSize = 4
 const logoSize = computed(() => modules.value * 0.541 * moduleSize)

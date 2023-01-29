@@ -11,11 +11,14 @@ export function debounce <T extends (...args: any[]) => any> (fun: T, options?: 
 	return ((...args: any[]) => {
 		return new Promise<ReturnType<T>>(res => {
 			promises.push(res)
-			// @ts-ignore
-			const resolve = () => promises.forEach(res => res(fun.apply(this, args)))
+			const resolve = () => {
+				// @ts-ignore
+				const result = fun.apply(this, args)
+				promises.forEach(res => res(result))
+			}
 			if (options?.animationFrame) {
-				cancelAnimationFrame(timer)
-				timer = requestAnimationFrame(() => resolve())
+				if (timer) { return }
+				timer = requestAnimationFrame(() => { resolve(); timer = undefined })
 			} else {
 				clearTimeout(timer)
 				timer = setTimeout(() => resolve(), options?.timeout ?? 500)

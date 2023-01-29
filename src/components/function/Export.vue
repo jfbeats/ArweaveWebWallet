@@ -7,8 +7,8 @@
 					<WalletSelector @exit="reject" :active="true" />
 				</div>
 				<Carousel :options="{ align: 'center', overscroll: true, scrollSnapStop: true }" @index="i => onIndex = i" @elements="el => elements = el" :index="index">
-					<Link class="carousel-item" key="0" :run="() => nav(1)">
-						<div class="carousel-item-content flex-column" style="width: min-content;">
+					<FadeOverflow class="carousel-item" key="0">
+						<Link class="carousel-item-content flex-column" style="width: min-content;" :run="() => nav(1)">
 							<SecurityVisual style="opacity: 0.5; width: 400px; margin: -40px; align-self: center;" />
 							<p v-if="reason == 'signature'" style="text-align: center; opacity: 0.8;">
 								This account only has access to the public address. The transaction must be signed using the private key. You can import it or continue to use a cold wallet device
@@ -16,18 +16,18 @@
 							<p v-if="reason == 'offline'" style="text-align: center; opacity: 0.8;">
 								You are currently offline. The signed transaction must be exported to a device that can communicate it back to the network
 							</p>
-						</div>
-					</Link>
-					<div class="carousel-item" key="1">
+						</Link>
+					</FadeOverflow>
+					<FadeOverflow class="carousel-item" key="1">
 						<div class="carousel-item-content flex-column">
 							<div style="align-self: center">Export {{ exportRequest?.entry.isSigned ? 'signed' : 'unsigned' }} transaction</div>
+							<QR :qr="compressed"/>
 							<div class="flex-row" style="align-items: stretch; justify-content: stretch;">
-								<Button :run="doDownload" style="flex: 1 1 auto; height: initial;">Download File</Button>
+								<Button :run="doDownload" style="flex: 1 1 auto; height: initial;" :glow="true">Download File</Button>
 								<Button :square="true" :run="share" :icon="IconShare" />
 							</div>
-							<QR :qr="compressed"/>
 						</div>
-					</div>
+					</FadeOverflow>
 					<div v-if="InterfaceStore.online" class="carousel-item" key="2">
 						<div class="carousel-item-content flex-column" style="flex: 1 1 auto;">
 							<div style="align-self: center">Import signed transaction</div>
@@ -55,6 +55,7 @@ import Carousel from '@/components/layout/Carousel.vue'
 import Link from '@/components/function/Link.vue'
 import InputData from '@/components/form/InputData.vue'
 import SecurityVisual from '@/components/visual/SecurityVisual.vue'
+import FadeOverflow from '@/components/function/FadeOverflow.vue'
 import { exportRequest } from '@/functions/Export'
 import { computed, ref, watch } from 'vue'
 import { download } from '@/functions/File'
@@ -83,7 +84,7 @@ const doDownload = () => {
 	download(exportRequest.value?.entry.isSigned ? 'SignedTransaction.json' : 'UnsignedTransaction.json', txString.value)
 	setTimeout(() => nav(1), 2000)
 }
-const share = () => navigator.share({ text: txString.value })
+const share = () => navigator.share({ text: txString.value }).then(() => setTimeout(() => nav(1), 2000))
 const reject = () => exportRequest.value?.reject('External provider cancelled')
 const index = ref(0)
 const onIndex = ref(0)
@@ -141,11 +142,12 @@ const nav = (i: 1 | -1) => (index.value = onIndex.value + i)
 	display: inline-flex;
 	justify-content: center;
 	align-items: start;
-	padding: var(--spacing);
 	overflow: auto;
 }
 
 .carousel-item-content {
+	padding: var(--spacing);
+	margin: auto;
 	min-height: 100%;
 	max-width: 100%;
 	overflow: hidden;

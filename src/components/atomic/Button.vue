@@ -27,12 +27,13 @@ const props = defineProps<{
 }>()
 const slots = useSlots()
 
+const color = computed(() => normalizeColorTo('rgb', props.color ?? 'var(--blue)'))
 const borderSize = computed(() => props.glow ? '0' : '0.5px')
-const glowStyle = computed(() => props.glow && props.color && ({
-	'--border': `rgba(${normalizeColorTo('rgb', props.color)},0.2)`,
-	'--glow-color': `rgba(${normalizeColorTo('rgb', props.color)},0.2)`,
-	'background-image': `radial-gradient(circle at center, rgba(${normalizeColorTo('rgb', props.color)},0.4),
-	rgba(${normalizeColorTo('rgb', props.color)},0.3))`
+const glowStyle = computed(() => props.glow && ({
+	'--border': `rgba(${color.value},0.2)`,
+	'--glow-color': `rgba(${color.value},0.2)`,
+	'background-image': `radial-gradient(circle at center, rgba(${color.value},0.4),
+	rgba(${color.value},0.3))`
 }))
 const margin = computed(() => slots.default)
 </script>
