@@ -9,7 +9,7 @@
 				<Carousel :options="{ align: 'center', overscroll: true, scrollSnapStop: true }" @index="i => onIndex = i" @elements="el => elements = el" :index="index">
 					<FadeOverflow class="carousel-item" key="0">
 						<Link class="carousel-item-content flex-column" style="width: min-content;" :run="() => nav(1)">
-							<SecurityVisual style="opacity: 0.5; width: 400px; margin: -40px; align-self: center;" />
+							<SecurityVisual style="opacity: 0.5; width: var(--popup-width); margin: -40px; align-self: center;" />
 							<p v-if="reason == 'signature'" style="text-align: center; opacity: 0.8;">
 								This account only has access to the public address. The transaction must be signed using the private key. You can import it or continue to use a cold wallet device
 							</p>
@@ -121,7 +121,7 @@ const nav = (i: 1 | -1) => (index.value = onIndex.value + i)
 
 .background-content {
 	position: absolute;
-	height: 400px;
+	height: var(--popup-width);
 	padding-bottom: 24px;
 }
 

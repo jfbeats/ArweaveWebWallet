@@ -121,7 +121,7 @@ const newPasswordMessage = ref(!hasPassword.value && { icon: markRaw(IconShieldW
 
 .background-content {
 	position: absolute;
-	height: 400px;
+	height: var(--popup-width);
 	padding-bottom: 24px;
 }
 
@@ -129,7 +129,7 @@ const newPasswordMessage = ref(!hasPassword.value && { icon: markRaw(IconShieldW
 	flex: 1 1 0;
 	position: relative;
 	justify-content: space-between;
-	min-height: 400px;
+	min-height: var(--popup-width);
 }
 
 .input {

@@ -160,7 +160,7 @@ const activeSettings = ref(-1)
 }
 
 .popup .card {
-	height: 400px;
+	height: var(--popup-width);
 	display: flex;
 	overflow: hidden;
 	background: var(--background);

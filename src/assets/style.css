@@ -3,6 +3,7 @@
 	--toolbar-spacing: 10px;
 	--spacing-default: 18px;
 	--spacing: var(--spacing-default);
+	--popup-width: 400px;
 	--column-width-small: 600px;
 	--column-width: 700px;
 	--column-large-width: 1000px;

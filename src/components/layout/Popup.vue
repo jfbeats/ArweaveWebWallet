@@ -69,7 +69,7 @@ const fill = computed(() => {
 
 .background-content {
 	position: absolute;
-	height: 400px;
+	height: var(--popup-width);
 	padding-bottom: 24px;
 }
 
