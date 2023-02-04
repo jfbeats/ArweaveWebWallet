@@ -92,6 +92,8 @@ const localJsonRpc = (function LocalJsonRpc () {
 			const id = await getOwnerIdFromMessage(instance?.jsonRpc.state.value.messageQueue.find(el => !el.fulfilled))
 			id != undefined && instance!.channel.state.value && (instance!.channel.state.value.walletId = id)
 		}, { immediate: true, deep: true })
+		watch(() => channel.state.value?.walletId, id => id === false && channel.state.value?.messageQueue
+			.forEach(m => !m.fulfilled && (m.status = 'rejected')))
 		return { channel, jsonRpc }
 	}
 	let instance: ReturnType<typeof constructor>
