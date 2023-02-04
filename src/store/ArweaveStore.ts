@@ -18,7 +18,7 @@ if (localStorage.getItem('gateway') === JSON.stringify(gatewayDefault)) { localS
 if (localStorage.getItem('bundler') === JSON.stringify(bundlerDefault)) { localStorage.removeItem('bundler') } // todo remove, temp conversion
 
 const ArweaveStore = reactive({
-	gatewayURL: useChannel('gateway', undefined, gatewayDefault).state,
+	gatewayURL: useChannel('gateway', undefined, gatewayDefault).state, // todo useChannel init to a RefMaybe
 	bundlerURL: useChannel('bundler', undefined, bundlerDefault).state,
 	uploads: {} as { [key: string]: { upload?: number } },
 })
@@ -162,7 +162,7 @@ export function arweaveQuery (options: arweaveQueryOptions, name = 'tx list') { 
 				if (requireSort) { data.value.sort(blockSort); requireSort = false }
 			}
 			if (newContent) { emitter.emit('newContent', undefined) }
-			return results
+			return results as GQLTransactionEdge[]
 		},
 		seconds: refresh,
 		existingState: data,
@@ -279,7 +279,7 @@ export function queryAggregator (queries: ReturnType<typeof arweaveQuery>[]) {
 				
 				let row = await Promise.all(queryControls.map(q => q.prep()))
 				const nextEl = row.find(el => el && el.node.block == null)
-					|| row.reduce((acc, el) => el && el.node.block.height > (acc?.node.block.height || 0) ? el : acc, undefined)
+					|| row.reduce((acc, el) => el && (el.node.block?.height || 0) > (acc?.node.block?.height || 0) ? el : acc, undefined)
 				if (!nextEl) { status.completed = true; break }
 				if (nextEl.node.block && i >= 10) { fulfilled = true }
 				const queryIndex = row.indexOf(nextEl)
