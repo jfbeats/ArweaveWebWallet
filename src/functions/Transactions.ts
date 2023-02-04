@@ -143,8 +143,9 @@ export async function getFeeRange () {
 	return range
 }
 
-export function unpackTags <T extends boolean = false> (tags: { name: string, value: string }[], options?: { duplicate?: T, lowercase?: boolean }) {
+export function unpackTags <T extends boolean = false> (tags?: { name: string, value: string }[], options?: { duplicate?: T, lowercase?: boolean }) {
 	const result = {} as { [key:string]: any }
+	if (!tags) { return result as { [key: string]: (T extends true ? string[] : string | undefined) } }
 	const set = options?.duplicate
 		? (tag: typeof tags[0]) => (result[options?.lowercase ? tag.name.toLowerCase() : tag.name] ??= []).push(tag.value)
 		: (tag: typeof tags[0]) => result[options?.lowercase ? tag.name.toLowerCase() : tag.name] ??= tag.value
