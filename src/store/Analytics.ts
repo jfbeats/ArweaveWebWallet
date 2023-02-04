@@ -63,13 +63,13 @@ function init () {
 	let cache: string
 	
 	const trackingDisabled = () => localStorage && localStorage.getItem('umami.disabled') || dnt && doNotTrack()
-	const collect = (type: string, payload: object) => {
+	const collect = async (type: string, payload: object) => {
 		if (trackingDisabled()) { return }
 		return fetch(`${root}/c`, {
 			method: 'POST',
 			body: JSON.stringify({ type, payload }),
 			headers: Object.assign({ 'Content-Type': 'application/json' }, { ['x-umami-cache']: cache }),
-		}).then(res => res.text()).then(text => (cache = text))
+		}).then(res => res.text()).then(text => (cache = text)).catch(() => {})
 	}
 	
 	const getPayload = () => ({ website, hostname, screen, language, url: currentUrl })
@@ -78,7 +78,7 @@ function init () {
 		const event_data = typeof value === 'string' ? { value } : value
 		if (event_name === 'Connect' && event_data) { try { event_data.value = extractId(event_data.value) } catch (e) {} }
 		if (event_name === 'Connect' && event_data && testLocalhost(event_data.value)) { event_name = 'Connect Localhost' }
-		collect('event', Object.assign(getPayload(), { event_name, event_data }))?.catch(() => {})
+		collect('event', Object.assign(getPayload(), { event_name, event_data }))
 	}
 	
 	const handlePush = (state: any, title: any, url: any) => {
