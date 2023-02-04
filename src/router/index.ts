@@ -1,11 +1,13 @@
 import { createRouter, createWebHistory, createWebHashHistory, START_LOCATION, RouterOptions } from 'vue-router'
 import { Wallets, getWalletById } from '@/functions/Wallets'
-import InterfaceStore, { emitter } from '@/store/InterfaceStore'
+import { emitter } from '@/store/InterfaceStore'
 import { state } from '@/functions/Channels'
 import Wallet from '@/views/Wallet.vue'
 import TxList from '@/views/TxList.vue'
 import Send from '@/views/Send.vue'
 import Tokens from '@/views/Tokens.vue'
+import Cold from '@/views/Cold.vue'
+import Connect from '@/views/Connect.vue'
 import type { findRoutePosition } from '@/router/Utils'
 
 const routes: RouterOptions['routes'] = [
@@ -67,7 +69,7 @@ const routes: RouterOptions['routes'] = [
 	{
 		path: '/connect',
 		name: 'Connect',
-		component: () => import('@/views/Connect.vue'),
+		component: Connect,
 		meta: { title: 'Connect' }
 	},
 	{
@@ -93,6 +95,18 @@ const routes: RouterOptions['routes'] = [
 		name: 'Settings',
 		component: () => import('@/views/Settings.vue'),
 		meta: { title: 'Settings' },
+	},
+	{
+		path: '/cold',
+		name: 'Cold',
+		component: Cold,
+		meta: { title: 'Cold Wallet Setup' },
+	},
+	{
+		path: '/wordlist',
+		name: 'WordList',
+		component: () => import('@/views/WordList.vue'),
+		meta: { title: 'Word List' },
 	},
 	{
 		path: '/connector',

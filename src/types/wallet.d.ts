@@ -4,6 +4,7 @@ type WalletDataInterface = {
 	jwk?: PrivateKey | EncryptedContent
 	provider?: ProviderId
 	data?: { [name in ProviderId]?: { key?: string } }
+	state?: { hot?: true }
 	settings?: {
 		sync?: boolean
 		securityLevel?: 'always' | 'inactivity' | undefined

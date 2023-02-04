@@ -18,6 +18,7 @@ type PrefixTable = {
 	events: { [key: string]: any }
 	ledgerSettings: { selectedTransport: string }
 	appSettings: AppSettingsInterface
+	cold: { status: 'active' | 'compromised', excluded: string[] }
 }
 
 type DefaultValue <T extends keyof PrefixTable> = PrefixTable[T] | undefined

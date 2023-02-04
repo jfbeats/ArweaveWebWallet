@@ -1,10 +1,10 @@
 import '@/store/Theme'
 import '@/assets/style.css'
 import '@/assets/animations.css'
-import '@/assets/style.css'
-import '@/store/Analytics'
 import '@/pwa'
 import '@/functions/File'
+import '@/store/Cold'
+import '@/store/Analytics'
 
 import { createApp } from 'vue'
 import App from './App.vue'

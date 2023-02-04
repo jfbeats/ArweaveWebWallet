@@ -19,6 +19,12 @@
 				</div>
 			</OverlayPrompt>
 		</div>
+		<div class="card">
+			<h2 class="flex-row" style="align-items: center;"><Icon :icon="IconSearch" /><span>Watch public address</span></h2>
+			<InputAddress v-model="targetInput" :submit="importAddressOnlyAction" />
+			<h2 class="flex-row" style="align-items: center;"><Icon :icon="IconSnow" /><span>Permafrost Vault</span></h2>
+			<Button to="Cold" class="main" :glow="true" color="#81a1c1">Use this device as a cold wallet</Button>
+		</div>
 		<div class="card" v-for="(provider, number) in hardwareProviders" :key="provider.metadata.name">
 			<h2 class="flex-row" style="align-items: center;"><Icon :icon="provider.metadata.icon" /><span>{{ provider.metadata.name }}</span></h2>
 			<div class="flex-column">
@@ -43,10 +49,6 @@
 					</div>
 				</Viewport>
 			</div>
-		</div>
-		<div class="card">
-			<h2 class="flex-row" style="align-items: center;"><Icon :icon="IconSearch" /><span>Watch public address</span></h2>
-			<InputAddress v-model="targetInput" :submit="importAddressOnlyAction" />
 		</div>
 	</div>
 </template>
