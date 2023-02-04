@@ -97,20 +97,20 @@ a.reset {
 
 .flex-row {
 	display: flex;
-	/* gap: var(--spacing); */
+	gap: var(--spacing);
 }
 
-.flex-row>*+* {
+.inline-margin-gap>*+* {
 	margin-inline-start: var(--spacing);
 }
 
 .flex-column {
 	display: flex;
 	flex-direction: column;
-	/* gap: var(--spacing); */
+	gap: var(--spacing);
 }
 
-.flex-column>*+* {
+.block-margin-gap>*+* {
 	margin-block-start: var(--spacing);
 }
 

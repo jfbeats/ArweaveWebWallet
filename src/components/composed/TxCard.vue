@@ -111,7 +111,6 @@ const verticalElement = computed(() => InterfaceStore.breakpoints.verticalLayout
 	flex: 0 0 auto;
 	display: flex;
 	align-items: center;
-	text-transform: capitalize;
 }
 
 .right {

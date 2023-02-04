@@ -1,12 +1,14 @@
 <template>
-	<div class="nav-container no-select" style="justify-content: space-between; align-items: center;">
-		<TransitionsManager :fast="true">
-			<Link class="nav no-select" :run="previous" :key="!!previous" :class="{ active: previous }">Previous</Link>
-		</TransitionsManager>
-		<PaginationDots :index="index" :elements="elements" @index="i => nav(i)"/>
-		<TransitionsManager :fast="true">
-			<Link class="nav no-select" :run="next" :key="!!next" :class="{ active: next }" style="text-align: right;">Next</Link>
-		</TransitionsManager>
+	<div class="pagination no-select" style="">
+		<div class="container">
+			<TransitionsManager :fast="true">
+				<Link class="nav no-select" :run="previous" :key="!!previous" :disabled="!previous">Previous</Link>
+			</TransitionsManager>
+			<PaginationDots :index="index" :elements="elements" @index="i => nav(i)"/>
+			<TransitionsManager :fast="true">
+				<Link class="nav no-select" :run="next" :key="!!next" :disabled="!next" style="text-align: right;">Next</Link>
+			</TransitionsManager>
+		</div>
 	</div>
 </template>
 
@@ -21,6 +23,7 @@ import { computed, ref } from 'vue'
 const props = defineProps<{
 	index: number
 	elements: number
+	width?: string
 }>()
 const emit = defineEmits<{
 	(e: 'index', value: number): void
@@ -35,22 +38,34 @@ const nav = (i: number) => {
 	setTimeout(() => timeout.value = 0, 400)
 	emit('index', i)
 }
+const width = computed(() => props.width || 'var(--column-width-small)')
 </script>
 
 
 
 <style scoped>
-.nav-container {
+.pagination {
 	display: flex;
+	justify-content: center;
+}
+
+.container {
+	display: flex;
+	flex: 1 1 0;
+	justify-content: space-between;
+	align-items: center;
+	max-width: v-bind(width);
+	transition: max-width 0.1s ease;
 }
 
 .nav {
 	width: 7em;
 	padding: var(--spacing);
 	opacity: 0;
+	flex: 1 1 0;
 }
 
-.nav.active {
+.nav:not(:disabled) {
 	opacity: 1;
 }
 </style>

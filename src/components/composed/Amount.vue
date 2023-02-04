@@ -1,6 +1,7 @@
 <template>
 	<span>
-		<Ar :ar="amount" />&nbsp;
+		<Ar :ar="amount" /><template v-if="!slots.default">&nbsp;</template>
+		<slot />
 		<LocaleCurrency class="secondary-text" :ar="amount" />
 	</span>
 </template>
@@ -11,9 +12,10 @@
 import Ar from '@/components/atomic/Ar.vue'
 import LocaleCurrency from '@/components/atomic/LocaleCurrency.vue'
 import { arweave } from '@/store/ArweaveStore'
-import { ref, watch } from 'vue'
+import { ref, useSlots, watch } from 'vue'
 
 const props = defineProps(['ar', 'winston'])
+const slots = useSlots()
 
 const amount = ref(undefined as undefined | string)
 watch(() => props, async () => {

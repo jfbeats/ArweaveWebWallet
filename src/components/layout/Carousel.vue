@@ -1,5 +1,5 @@
 <template>
-	<div ref="root" class="carousel flex-row no-scrollbar" :class="{ scrollSnapStop: options.scrollSnapStop}" :style="style">
+	<div ref="root" class="carousel inline-margin-gap no-scrollbar" :class="{ scrollSnapStop: options.scrollSnapStop}" :style="style">
 		<transition-group name="fade-list">
 			<div v-if="options?.overscroll" class="margin fade-list-item" key="margin1">
 				<Observer class="limit start" @intersection="val => emit('start', val)" />
