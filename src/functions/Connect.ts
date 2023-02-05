@@ -1,6 +1,6 @@
 import { appInfo, awaitStorageAccess, connectorChannels, state, states, useChannel } from '@/functions/Channels'
 import JsonRpc, { getOwnerIdFromMessage } from '@/functions/JsonRpc'
-import { computed, effectScope, reactive, Ref, ref, watch, watchEffect } from 'vue'
+import { computed, effectScope, reactive, Ref, ref, shallowRef, watch, watchEffect } from 'vue'
 import { getWalletById, Wallets } from '@/functions/Wallets'
 import { useDataWrapper } from '@/functions/AsyncData'
 import InterfaceStore, { onUnload } from '@/store/InterfaceStore'
@@ -84,7 +84,7 @@ const localJsonRpc = (function LocalJsonRpc () {
 	let id = 0
 	const constructor = () => {
 		const channel = useChannel('sharedState:', 'local' + Math.random())
-		if (!initSharedState(channel.state, { walletId: undefined, origin: 'local', session: Math.random() + '', appInfo: { name: 'Imported' } })) { return }
+		if (!initSharedState(channel.state, { walletId: undefined, origin: 'local', session: Math.random() + '', appInfo: { name: 'Imported' } })) { throw 'Unable to init state' }
 		const jsonRpc = new JsonRpc(message => emitter.emit(message.id, message), channel.state)
 		onUnload(channel.deleteChannel)
 		channel.state.value.walletId = Wallets.value[0].id
@@ -103,8 +103,9 @@ const localJsonRpc = (function LocalJsonRpc () {
 		if (val > 0) { instance.channel.state.value.walletId === false && (instance.channel.state.value.walletId = undefined) }
 		else { instance.channel.state.value.walletId = false }
 	}, { immediate: true })
+	const connect = () => { instance ??= constructor(); return instance }
 	const push = (e: Message) => {
-		instance ??= constructor()
+		connect()
 		const currentId = id++
 		e.id = currentId
 		return new Promise((res, rej) => {
@@ -113,14 +114,14 @@ const localJsonRpc = (function LocalJsonRpc () {
 			pending.value++
 		})
 	}
-	return { push }
+	return { connect, push }
 })()
 
 
 class LocalRPC implements Connection {
 	constructor () {}
-	connect () {}
-	disconnect () {}
+	connect () { return localJsonRpc.connect() }
+	disconnect () { this.connect().channel.state.value!.walletId = false }
 	postMessage (...args: Parameters<Connection['postMessage']>) {
 		const [method, params, options] = args
 		if (['connect', 'disconnect'].includes(method)) { return }
