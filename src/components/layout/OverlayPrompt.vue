@@ -7,7 +7,7 @@
 				<div class="message" v-if="options.message || options.action?.name" >{{ options.message || options.action?.name }}</div>
 			</div>
 			<div v-if="options.actions?.length" class="actions-container flex-row">
-				<Button v-for="action in options.actions" :key="action.name" @click="action.run" :glow="true" color="#81a1c1">{{ action.name }}</Button>
+				<Button v-for="action in options.actions" :key="action.name" @click="action.run" :glow="true" color="var(--grey)">{{ action.name }}</Button>
 			</div>
 		</Link>
 	</TransitionsManager>

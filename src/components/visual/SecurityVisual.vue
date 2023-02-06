@@ -3,7 +3,7 @@
 		<defs>
 			<radialGradient id="gradientDef">
 				<stop offset="0.2" stop-color="transparent" />
-				<stop offset="0.65" stop-color="var(--orange)" />
+				<stop offset="0.65" :stop-color="color" />
 				<stop offset="0.9" stop-color="transparent" />
 			</radialGradient>
 		</defs>
@@ -265,11 +265,15 @@
 
 
 <script setup lang="ts">
+import { computed } from 'vue'
+
 const props = defineProps<{
+	color?: string
 	light?: boolean
 }>()
 
 const normalizedRadius = 925
+const color = computed(() => props.color ?? 'var(--orange)')
 </script>
 
 
@@ -285,7 +289,8 @@ const normalizedRadius = 925
 }
 
 #Loader {
-	stroke: var(--orange) !important;
+	stroke: v-bind(color) !important;
+	transition: stroke 0.5s ease;
 	stroke-dasharray: 26%;
 	animation: loader-animation calc(var(--animation-time) * 4) infinite linear, light var(--animation-time) ease-in-out infinite;
 }
@@ -296,7 +301,8 @@ const normalizedRadius = 925
 
 #Vents path {
 	animation: vents var(--animation-time) ease-in-out infinite;
-	stroke: var(--orange) !important;
+	stroke: v-bind(color) !important;
+	transition: stroke 0.5s ease;
 }
 
 #Gradient {
@@ -307,7 +313,8 @@ const normalizedRadius = 925
 #RaysLeft path,
 #RaysRight path {
 	animation: light var(--animation-time) ease-in-out infinite;
-	stroke: var(--orange) !important;
+	stroke: v-bind(color) !important;
+	transition: stroke 0.5s ease;
 }
 
 #Lock {

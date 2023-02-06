@@ -27,7 +27,7 @@ const props = defineProps<{
 }>()
 const slots = useSlots()
 
-const color = computed(() => normalizeColorTo('rgb', props.color ?? 'var(--blue)'))
+const color = computed(() => normalizeColorTo('rgb', props.color ?? 'var(--grey)'))
 const borderSize = computed(() => props.glow ? '0' : '0.5px')
 const glowStyle = computed(() => props.glow && ({
 	'--border': `rgba(${color.value},0.2)`,
