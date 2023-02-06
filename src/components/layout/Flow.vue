@@ -39,6 +39,8 @@ onMounted(() => {
 	const page = Array.isArray(route.params.page) ? route.params.page[0] : route.params.page
 	if (page) { onIndex.value = parseInt(page) }
 })
+
+defineExpose({ nav })
 </script>
 
 

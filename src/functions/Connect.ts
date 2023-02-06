@@ -82,9 +82,9 @@ if (state.value.type !== 'iframe') { localStorage.setItem('global', '1') }
 const localJsonRpc = (function LocalJsonRpc () {
 	const emitter = new Emitter<{ [id: number]: any }>()
 	let id = 0
-	const constructor = () => {
+	const constructor = (name: string) => {
 		const channel = useChannel('sharedState:', 'local' + Math.random())
-		if (!initSharedState(channel.state, { walletId: undefined, origin: 'local', session: Math.random() + '', appInfo: { name: 'Imported' } })) { throw 'Unable to init state' }
+		if (!initSharedState(channel.state, { walletId: undefined, origin: 'local', session: Math.random() + '', appInfo: { name } })) { throw 'Unable to init state' }
 		const jsonRpc = new JsonRpc(message => emitter.emit(message.id, message), channel.state)
 		onUnload(channel.deleteChannel)
 		channel.state.value.walletId = Wallets.value[0].id
@@ -103,7 +103,7 @@ const localJsonRpc = (function LocalJsonRpc () {
 		if (val > 0) { instance.channel.state.value.walletId === false && (instance.channel.state.value.walletId = undefined) }
 		else { instance.channel.state.value.walletId = false }
 	}, { immediate: true })
-	const connect = () => { instance ??= constructor(); return instance }
+	const connect = (name?: string) => { instance ??= constructor(name ?? 'Imported'); return instance }
 	const push = (e: Message) => {
 		connect()
 		const currentId = id++
@@ -120,7 +120,7 @@ const localJsonRpc = (function LocalJsonRpc () {
 
 class LocalRPC implements Connection {
 	constructor () {}
-	connect () { return localJsonRpc.connect() }
+	connect (name?: string) { return localJsonRpc.connect(name) }
 	disconnect () { this.connect().channel.state.value!.walletId = false }
 	postMessage (...args: Parameters<Connection['postMessage']>) {
 		const [method, params, options] = args

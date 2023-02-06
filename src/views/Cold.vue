@@ -1,19 +1,19 @@
 <template>
 	<div class="cold">
-		<Flow class="flex-column" :index="index">
-			<div class="flow-item" key="1">
+		<Flow ref="flow" class="flex-column" :index="index">
+			<Link class="flow-item" key="1" :run="() => flow.nav(1)">
 				<div class="flow-item-content flex-column" style="width: var(--popup-width);">
 					<SecurityVisual style="opacity: 0.75; margin: -3%; width: 90%; align-self: center" />
 					<div>There are steps you can take to generate and use your keys in a way that relies on no single trusted party. It is possible to turn any device into a secure vault to interact with these account.</div>
 				</div>
-			</div>
-			<div class="flow-item" key="2">
+			</Link>
+			<Link class="flow-item" key="2" :run="() => flow.nav(1)">
 				<div class="flow-item-content flex-column">
 					<div>1/4 | Prevent potential eavesdropping.</div>
 					<div>Keep your devices offline before and after importing vault accounts and validate all communications before they are submitted through QR codes or files. Compromised software or hardware may preserve secret information in memory and wait indefinitely for any opportunity to relay it to bad actors.</div>
 				</div>
-			</div>
-			<div class="flow-item" key="3">
+			</Link>
+			<Link class="flow-item" key="3" :run="() => flow.nav(1)">
 				<div class="flow-item-content flex-column">
 					<div>2/4 | Avoid using fake private keys.</div>
 					<div>
@@ -25,32 +25,33 @@
 						Note that generating your passphrase manually will likely lead to a message indicating that the generation was not from this app, but it is fine to proceed.
 					</div>
 				</div>
-			</div>
-			<div class="flow-item" key="4">
+			</Link>
+			<Link class="flow-item" key="4" :run="() => flow.nav(1)">
 				<div class="flow-item-content flex-column">
 					<div>3/4 | Avoid using fake addresses.</div>
 					<div>Check that the key derivation process is safely executed. By importing multiple randomly generated test passphrases inside cold wallets and separate devices from different manufacturers, operating systems, and wallet software, you are able to verify that every single passphrase is producing the correct account. Compromised software or hardware could attempt to display the wrong address in order to divert funds.</div>
 				</div>
-			</div>
-			<div class="flow-item" key="5">
+			</Link>
+			<Link class="flow-item" key="5" :run="() => flow.nav(1)">
 				<div class="flow-item-content flex-column">
 					<div>4/4 | Be safe against equipment failures.</div>
 					<div>Always send test transactions before transferring or receiving large amounts to confirm that everything is working correctly. It is your responsibility to select the appropriate security based on the risks involved.</div>
 				</div>
-			</div>
+			</Link>
 			<div class="flow-item" key="6">
 				<div class="flow-item-content flex-column">
+<!--					todo fix not responsive, breaks when going back online  -->
 					<div>Get access to the Permafrost Vault for an unlimited number of accounts and devices by donating {{ humanFileSize(byteSize) }} worth of arweave storage (<Amount :ar="feeManager.ar"> | </Amount>).</div>
-					<Button :run="feeRoute" :glow="true">{{ actionText }}</Button>
-					<div class="cards">
+					<Button v-bind="feeAction" :glow="true">{{ feeAction.name }}</Button>
+					<div class="cards flex-column">
 						<TxCard v-for="tx in feeManager.txs" :tx="tx.node" />
 					</div>
 				</div>
 			</div>
 			<div class="flow-item" key="7" v-if="feeManager.isPaid">
-				<div class="flow-item-content flex-column">
-					<div></div>
-					<div></div>
+				<div class="flow-item-content flex-column" style="width: var(--popup-width);">
+					<SecurityVisual :color="coldWalletAction.color" :light="true" style="opacity: 0.75; margin: -3%; width: 90%; align-self: center" />
+					<Button v-bind="coldWalletAction" :glow="true">{{ coldWalletAction.name }}</Button>
 				</div>
 			</div>
 		</Flow>
@@ -70,10 +71,15 @@ import Button from '@/components/atomic/Button.vue'
 import TxCard from '@/components/composed/TxCard.vue'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import IconSnow from '@/assets/icons/snow.svg?component'
+import IconLock from '@/assets/icons/lock.svg?component'
+import IconUnlock from '@/assets/icons/unlock.svg?component'
+import { coldState, launchVault, ready } from '@/store/Cold'
 
+const flow = ref(undefined as undefined | InstanceType<typeof Flow>)
 const router = useRouter()
 
-const byteSize = 5 * 1024 * 1024 * 1024
+const byteSize = 5 * 1024
 const index = ref(undefined as undefined | number)
 watch(index, i => i != undefined && setTimeout(() => index.value = undefined))
 const feeManager = fee({ byteSize })
@@ -84,11 +90,29 @@ const feeRoute = async () => {
 	await promise.catch(() => {})
 	await router.push({ name: 'Cold', params: { page: '5' } })
 }
-const actionText = computed(() => {
-	if (feeManager.isPaid) { return 'Paid' }
-	if (feeManager.txs.length) { return 'Pay remaining' }
-	return 'Pay'
-})
+const feeAction = computed(() => ({
+	run: feeRoute,
+	name: feeManager.isPaid ? 'Paid' : feeManager.txs.length ? 'Pay remaining' : 'Pay',
+}))
+const coldWalletAction = computed(() => coldState.value?.status === 'compromised' ? ({
+	name: `Disable Vault`,
+	color: 'var(--red)',
+	run: () => coldState.value = undefined,
+}) : !ready.value ? ({
+	icon: IconUnlock,
+	name: `Device must be offline`,
+	color: 'var(--red)',
+	run: () => launchVault(),
+}) : coldState.value?.status === 'active' ?  ({
+	icon: IconLock,
+	name: `Active`,
+	to: 'cold',
+}) : ({
+	icon: IconSnow,
+	name: 'Launch',
+	color: 'var(--blue)',
+	run: () => launchVault(),
+}))
 </script>
 
 
@@ -118,6 +142,5 @@ const actionText = computed(() => {
 
 .cards {
 	flex: 1 1 0;
-	min-height: 0;
 }
 </style>

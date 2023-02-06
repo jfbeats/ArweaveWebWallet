@@ -36,11 +36,11 @@ export function fee (options: { byteSize: number, validityThreshold?: number, du
 	}).map(v => parseFloat(v)).reduce((acc, v) => acc + v, 0) ?? 0)
 	const isPaid = computed(() => ar.value && hasPaid.value > (parseFloat(ar.value) * validityThreshold))
 	const pay = async () => {
-		if (!ar.value) { throw 'fee not yet defined' }
+		if (!ar.value || ar.value === '0') { throw 'fee not yet defined' }
 		const quantity = arweave.ar.arToWinston((parseFloat(ar.value) - hasPaid.value).toString())
 		const tx = await arweave.createTransaction({ target: getRecipient(), quantity })
 		tagEntries.forEach(e => tx.addTag(e[0], e[1]))
-		const state = RPC.arweave.connect()
+		const state = RPC.arweave.connect('Fee')
 		const walletId = Wallets.value.find(w => w.hasPrivateKey && (parseFloat(w.balance ?? '0') > 0))?.id
 		if (state.channel.state.value) { state.channel.state.value.walletId = walletId }
 		const signedTx = await RPC.arweave.signTransaction(tx)
