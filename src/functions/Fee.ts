@@ -4,6 +4,7 @@ import { computed, reactive, ref, watch } from 'vue'
 import { computedAsync } from '@/functions/AsyncData'
 import { RPC } from '@/functions/Connect'
 import { manageUpload } from '@/functions/Transactions'
+import { notify } from '@/store/NotificationStore'
 
 
 
@@ -34,6 +35,7 @@ export function fee (options: { byteSize: number, validityThreshold?: number, du
 		if (balanceAdj < (options.dustThreshold ?? 0)) { return '0' }
 		return tx.node.quantity.ar
 	}).map(v => parseFloat(v)).reduce((acc, v) => acc + v, 0) ?? 0)
+	const remaining = computed(() => ar.value && (parseFloat(ar.value) - hasPaid.value))
 	const isPaid = computed(() => ar.value && hasPaid.value > (parseFloat(ar.value) * validityThreshold))
 	const pay = async () => {
 		if (!ar.value || ar.value === '0') { throw 'fee not yet defined' }
@@ -41,11 +43,15 @@ export function fee (options: { byteSize: number, validityThreshold?: number, du
 		const tx = await arweave.createTransaction({ target: getRecipient(), quantity })
 		tagEntries.forEach(e => tx.addTag(e[0], e[1]))
 		const state = RPC.arweave.connect('Fee')
-		const walletId = Wallets.value.find(w => w.hasPrivateKey && (parseFloat(w.balance ?? '0') > 0))?.id
+		const walletId = Wallets.value.find(w => {
+			if (recipients.includes(w.key ?? '')) { return false }
+			return w.hasPrivateKey && (parseFloat(w.balance ?? '0') > (remaining.value ?? 0))
+		})?.id
+		if (walletId == undefined) { notify.log('Fund and select a wallet to transfer tokens') }
 		if (state.channel.state.value) { state.channel.state.value.walletId = walletId }
 		const signedTx = await RPC.arweave.signTransaction(tx)
 		manageUpload(signedTx)
 		return signedTx.id
 	}
-	return reactive({ ar, hasPaid, isPaid, pay, txs })
+	return reactive({ ar, remaining, hasPaid, isPaid, pay, txs })
 }
