@@ -13,9 +13,10 @@
 import Pagination from '@/components/function/Pagination.vue'
 import Carousel from '@/components/layout/Carousel.vue'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const props = defineProps<{ index?: number }>()
+const router = useRouter()
 const route = useRoute()
 
 const index = ref(0)
@@ -25,7 +26,7 @@ const elementsLength = ref(0)
 watch(() => props.index, i => i != null && (index.value = i), { immediate: true })
 watch(onIndex, () => {
 	index.value = onIndex.value
-	route.params.page = '' + onIndex.value
+	router.replace({ query: { page: '' + (onIndex.value + 1) } })
 })
 watch(elements, e => elementsLength.value = e.length, { immediate: true })
 const nav = (i: 1 | -1) => (index.value = onIndex.value + i)
@@ -36,8 +37,8 @@ const contentWidth = computed(() => {
 	return width
 })
 onMounted(() => {
-	const page = Array.isArray(route.params.page) ? route.params.page[0] : route.params.page
-	if (page) { onIndex.value = parseInt(page) }
+	const page = Array.isArray(route.query.page) ? route.query.page[0] : route.query.page
+	if (page) { onIndex.value = parseInt(page) - 1 }
 })
 
 defineExpose({ nav })

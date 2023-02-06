@@ -85,7 +85,7 @@ const feeRoute = async () => {
 	const promise = feeManager.pay()
 	router.push({ name: 'Connect' })
 	await promise.catch(() => {})
-	await router.push({ name: 'Cold', params: { page: '5' } })
+	await router.push({ name: 'Cold', query: { page: '6' } })
 }
 const feeAction = computed(() => ({
 	run: feeRoute,
