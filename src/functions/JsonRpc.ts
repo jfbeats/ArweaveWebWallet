@@ -6,6 +6,8 @@ import { uuidV4 } from '@/functions/Utils'
 import { useChannel } from '@/functions/Channels'
 import { track } from '@/store/Analytics'
 import { findTransactions } from '@/functions/Transactions'
+import { paywall } from '@/store/Cold'
+import { notify } from '@/store/NotificationStore'
 
 const errors = {
 	rejected: { code: 0, message: 'Rejected' },
@@ -91,6 +93,7 @@ export default class JsonRpc {
 		messageEntry.processing = true
 		const id = messageEntry.id
 		try {
+			if (paywall(this.stateWallet.value)) { notify.error('Vault must be enabled'); throw new Error('Vault must be enabled') }
 			const message = await getMessage(messageEntry)
 			if (!this.isValidMessage(message)) { throw new Error('message changed and is not valid anymore') }
 			const runner = this.stateWallet.value?.messageRunner

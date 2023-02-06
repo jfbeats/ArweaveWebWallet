@@ -5,12 +5,12 @@ import { reactive, Ref, ref } from 'vue'
 import IconY from '@/assets/icons/y.svg?component'
 import IconX from '@/assets/icons/x.svg?component'
 
-export type NotificationData = NotificationOptions & {
+export type NotificationData = Override<NotificationOptions, {
 	title?: string
 	onClose?: () => void
-	actions?: Action[] // todo convert NotificationAction[] of NotificationOptions type to only have Action[] type
+	actions?: Action[]
 	ref?: Ref
-}
+}>
 type Notify = string | NotificationData
 const toastType = { log: 'success', warn: 'warning', error: 'danger', confirm: 'warning' } as const
 
@@ -34,18 +34,22 @@ function createNotification (type: keyof typeof toastType, notify: Notify, push?
 	const isVisible = document.visibilityState === 'visible'
 	const doNotification = window.Notification && Notification.permission === 'granted' && !isVisible && push
 	
+	let actions = data.actions ?? []
 	if (type === 'confirm') {
 		options.requireInteraction = true
 	}
-	let actions
 	let close = () => {}
 	const promise = new Promise<boolean>(res => {
-		actions = [{ name: 'Accept', icon: IconY, run: () => res(true) }, { name: 'Cancel', icon: IconX, run: () => res(false) }]
+		actions = actions.map(a => {
+			const run = () => { a.run && a.run?.(); res(true) }
+			return { ...a, run }
+		})
+		if (type === 'confirm') { actions = [{ name: 'Accept', icon: IconY, run: () => res(true) }, { name: 'Cancel', icon: IconX, run: () => res(false) }, ...actions] }
 		close = () => res(false)
 	})
 	const toastSettings = { title, description: options.body }
 	const props: { data: NotificationData } = { data: { ...toastSettings, actions } }
-	const toastContent = type !== 'confirm' ? toastSettings : withProps(Notification, props)
+	const toastContent = withProps(Notification, props)
 	
 	const notification = doNotification ? new Notification(title, options) : undefined
 	const toast = !doNotification ? createToast(toastContent, {

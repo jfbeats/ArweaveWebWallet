@@ -71,18 +71,15 @@ import Button from '@/components/atomic/Button.vue'
 import TxCard from '@/components/composed/TxCard.vue'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import IconSnow from '@/assets/icons/snow.svg?component'
-import IconLock from '@/assets/icons/lock.svg?component'
-import IconUnlock from '@/assets/icons/unlock.svg?component'
-import { coldState, launchVault, ready } from '@/store/Cold'
+import { getColdWalletAction } from '@/store/Cold'
 
 const flow = ref(undefined as undefined | InstanceType<typeof Flow>)
 const router = useRouter()
 
-const byteSize = 5 * 1024
+const byteSize = 5 * 1024 * 1024 * 1024
+const feeManager = fee({ byteSize })
 const index = ref(undefined as undefined | number)
 watch(index, i => i != undefined && setTimeout(() => index.value = undefined))
-const feeManager = fee({ byteSize })
 const feeRoute = async () => {
 	if (feeManager.isPaid) { return index.value = 6 }
 	const promise = feeManager.pay()
@@ -94,25 +91,7 @@ const feeAction = computed(() => ({
 	run: feeRoute,
 	name: feeManager.isPaid ? 'Paid' : feeManager.txs.length ? 'Pay remaining' : 'Pay',
 }))
-const coldWalletAction = computed(() => coldState.value?.status === 'compromised' ? ({
-	name: `Disable Vault`,
-	color: 'var(--red)',
-	run: () => coldState.value = undefined,
-}) : !ready.value ? ({
-	icon: IconUnlock,
-	name: `Device must be offline`,
-	color: 'var(--red)',
-	run: () => launchVault(),
-}) : coldState.value?.status === 'active' ?  ({
-	icon: IconLock,
-	name: `Active`,
-	to: 'cold',
-}) : ({
-	icon: IconSnow,
-	name: 'Launch',
-	color: 'var(--blue)',
-	run: () => launchVault(),
-}))
+const coldWalletAction = computed(() => getColdWalletAction(true))
 </script>
 
 

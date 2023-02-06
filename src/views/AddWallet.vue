@@ -73,8 +73,7 @@ import IconAddBox from '@/assets/icons/add_box.svg?component'
 import IconSettings from '@/assets/icons/settings.svg?component'
 import IconSnow from '@/assets/icons/snow.svg?component'
 import IconSearch from '@/assets/icons/search.svg?component'
-import IconLock from '@/assets/icons/lock.svg?component'
-import { coldState } from '@/store/Cold'
+import { getColdWalletAction } from '@/store/Cold'
 
 const router = useRouter()
 const passphraseInput = ref('')
@@ -129,18 +128,7 @@ const importAddressOnlyAction = { icon: IconAddBox, run: async () => {
 	track.account('Account Watch')
 }}
 const activeSettings = ref(-1)
-const coldWalletAction = computed(() => coldState.value?.status === 'active' ?  ({
-	icon: IconLock,
-	name: `Active`,
-	to: 'cold',
-}) :  coldState.value?.status === 'compromised' ? ({
-	name: `Disable Vault`,
-	color: 'var(--red)',
-	run: () => coldState.value = undefined,
-}) : ({
-	name: `Use this device as a cold wallet`,
-	to: 'cold',
-}))
+const coldWalletAction = computed(() => getColdWalletAction(false))
 </script>
 
 
