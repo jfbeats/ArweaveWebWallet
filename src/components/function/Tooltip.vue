@@ -31,6 +31,7 @@ const settings: Partial<Props> = {
 	plugins: [animateFill],
 	maxWidth: 'none',
 	theme: 'glass',
+	hideOnClick: false,
 }
 
 const tooltipEl = ref(null as null | HTMLElement)
@@ -46,6 +47,7 @@ const setProps = () => tooltip.setProps({
 
 onMounted(async () => {
 	const beforeUnmount = new Promise<void>(res => onBeforeUnmount(res))
+	settings.triggerTarget = [tooltipEl.value, tooltipEl.value?.firstElementChild].filter((e): e is NonNullable<typeof e> => !!e)
 	tooltip = tippy(tooltipEl.value!, settings)
 	watchEffect(setProps)
 	await beforeUnmount

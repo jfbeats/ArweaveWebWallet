@@ -25,7 +25,7 @@ const modules = ref(0)
 const offsetScale = ref(1)
 const offsetScaleCSS = computed(() => `scale(${offsetScale.value})`)
 const maxSizes = ref([] as number[])
-const maxSize = computed(() => `min(${Math.min(...maxSizes.value.filter(v => v))}px, 100%)`)
+const maxSize = computed(() => `100%`)
 const genSize = 20000
 const moduleSize = 4
 const logoSize = computed(() => modules.value * 0.541 * moduleSize)
@@ -44,7 +44,7 @@ onMounted(async () => {
 	const observer = new ResizeObserver(entries => entries.forEach(e => {
 		const i = parents.indexOf(e.target as HTMLElement)
 		if (i < 0 || e.contentRect.width < 100 || e.contentRect.height < 100) { return }
-		maxSizes.value[i] = Math.min(e.contentRect.width, e.contentRect.height)
+		// maxSizes.value[i] = Math.min(e.contentRect.width, e.contentRect.height)
 	}))
 	setTimeout(() => parents.forEach(parent => parent && observer.observe(parent)))
 	await beforeUnmount
