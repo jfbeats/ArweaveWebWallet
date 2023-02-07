@@ -11,7 +11,7 @@
 					<Icon :icon="clipboardIcon" />
 				</Link>
 			</Tooltip>
-			<Tooltip v-if="address" class="icon-container" tabindex="0">
+			<Tooltip v-if="address" class="icon-container" tabindex="0" :hideOnClick="false">
 				<template #content>
 					<QR :qr="val" />
 				</template>
