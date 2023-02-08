@@ -1,6 +1,6 @@
 <template>
 	<div class="wallet-tabs">
-		<Carousel v-model="carouselIndex" :options="{ align: 'center', overscroll: true, immediate: true }">
+		<Carousel :index="carouselIndex" :options="{ align: 'center', overscroll: true, immediate: true }">
 			<button v-for="Wallet in Wallets" :key="Wallet.id" type="button" @click="model = Wallet.id" class="tab" :class="{ active: Wallet.id == model }">
 				<AddressIcon :address="Wallet.key" />
 			</button>

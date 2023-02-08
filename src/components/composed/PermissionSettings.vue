@@ -26,11 +26,12 @@ import TransitionsManager from '@/components/visual/TransitionsManager.vue'
 
 const props = defineProps<{ state: ConnectorState, walletId?: string }>()
 
-const displayKeys = {
+const displayKeys = { // todo move to metadata
 	connect: 'Connect automatically',
 	signTransaction: 'Sign transaction',
+	dispatch: 'Sign transaction and upload',
+	signMessage: 'Sign message',
 	getPublicKey: 'Share public key',
-	sign: 'Sign arbitrary data',
 	decrypt: 'Decrypt data',
 	getArweaveConfig: 'Share arweave gateway configuration',
 } as { [key: string]: string | undefined }
@@ -39,15 +40,20 @@ const getInstanceProperties = (wallet?: Wallet) => ['connect']
 	.concat(Object.getOwnPropertyNames(Object.getPrototypeOf(wallet?.messageRunner || {})))
 	.filter(prop => {
 		if (prop === 'constructor' || prop === 'methodMap' || !wallet) { return }
-		return !getMethodMetadata(wallet, prop)?.unavailable
+		const metadata = getMethodMetadata(wallet, prop)
+		return !metadata?.unavailable && !metadata?.public
 	})
 	.map(prop => ({
-		name: prop,
+		name: getMethodMetadata(wallet, prop)?.name ?? prop,
 		displayName: displayKeys[prop] || prop,
 		disabled: getMethodMetadata(wallet, prop)?.userIntent
 	}))
+const deduplicateProperties = (properties: ReturnType<typeof getInstanceProperties>) => properties.reduce((acc, val) => {
+	if (!acc.find((el) => el.name === val.name)) { acc.push(val) }
+	return acc
+}, [] as typeof properties)
 const wallet = computed(() => getWalletById(props.walletId))
-const methods = computed(() => [...getInstanceProperties(wallet.value)])
+const methods = computed(() => [...deduplicateProperties(getInstanceProperties(wallet.value))])
 const setMethod = (method: string) => walletSettings.value && (walletSettings.value[method] = !walletSettings.value[method])
 const channel = useChannel('connectionSettings:', props.state.origin, {})
 const walletSettings = ref(undefined as undefined | { [method: string]: any })

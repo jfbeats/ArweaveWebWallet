@@ -1,6 +1,6 @@
 <template>
 	<div class="connect flex-column">
-		<Carousel v-model="currentConnectorIndex" :options="{ align: 'start', overscroll: true }" class="connectors">
+		<Carousel :index="currentConnectorIndex" :options="{ align: 'start', overscroll: true }" class="connectors">
 			<div v-if="!connectors.length && extensionOrigin" class="connection-card-container fade-list-item" style="position: relative">
 				<OverlayPrompt :options="connectPrompt" />
 			</div>
@@ -18,11 +18,12 @@ import Carousel from '@/components/layout/Carousel.vue'
 import ConnectionCard from '@/components/composed/ConnectionCard.vue'
 import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
 import { state } from '@/functions/Channels'
-import { connectors, postMessageExtension } from '@/functions/Connect'
+import { connectors as unordered, postMessageExtension } from '@/functions/Connect'
 import { computed, ref, watch } from 'vue'
 
 import IconPlug from '@/assets/icons/plug.svg?component'
 
+const connectors = computed(() => unordered.value.sort((a, b) => +(b.origin === 'local') - +(a.origin === 'local')))
 const connectPrompt = computed(() => ({
 	action: {
 		icon: IconPlug,

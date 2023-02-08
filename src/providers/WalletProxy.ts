@@ -1,7 +1,8 @@
 import { uuidV4 } from '@/functions/Utils'
 import { isEncrypted } from '@/functions/Crypto'
 import { requestPrivateKey } from '@/functions/Password'
-import { computed } from 'vue'
+import InterfaceStore from '@/store/InterfaceStore'
+import { computed, watch } from 'vue'
 
 
 
@@ -12,11 +13,13 @@ export function WalletProxy <TBase extends ClassConstructor> (Base: TBase) {
 		constructor (...args: any[]) { super(...args)
 			this.#wallet = args[0] as WalletDataInterface
 			if (args[0].arweave) { this.data.arweave = args[0].arweave } // TODO remove - temporary conversion
-			;(this as any).on('destructor', () => this.#isEncrypted.effect.stop())
+			const stopColdWatch = watch(() => InterfaceStore.online, online => online && this.hasPrivateKey && (this.state.hot = true))
+			;(this as any).on('destructor', () => { this.#isEncrypted.effect.stop(); stopColdWatch() })
 		}
 		get id () { return this.#wallet.id + '' }
 		get uuid () { return this.#wallet.uuid ??= uuidV4() }
 		get data () { return this.#wallet.data ??= {} }
+		get state () { return this.#wallet.state ??= {} }
 		get settings () { return this.#wallet.settings ??= {} }
 		get hasPrivateKey () { return !!this.#wallet.jwk }
 		get isEncrypted () { return this.#isEncrypted.value }

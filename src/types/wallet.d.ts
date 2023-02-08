@@ -1,17 +1,16 @@
-type ProviderId = import('@/functions/Wallets').ProviderId
 type WalletDataInterface = {
 	id: string
 	uuid?: string
 	jwk?: PrivateKey | EncryptedContent
 	provider?: ProviderId
 	data?: { [name in ProviderId]?: { key?: string } }
+	state?: { hot?: true }
 	settings?: {
 		sync?: boolean
 		securityLevel?: 'always' | 'inactivity' | undefined
 	}
 }
 
-type AnyProvider = import('@/functions/Wallets').AnyProvider
 type Wallet = Union<InstanceType<AnyProvider>>
 
 interface Provider extends Account {
@@ -37,7 +36,7 @@ interface Account {
 type ExternalAPI = { [key: string]: (...args: any) => any }
 
 type MessageRunner<API extends ExternalAPI, Parent> = {
-	get methodMap(): { [key in keyof API]?: keyof Parent }
+	get methodMap(): { [key in keyof API]: MethodMetadataExtended<Parent> }
 } & {
 	[key in keyof API]: (...args: Parameters<API[key]>) => ReturnType<API[key]>
 }
@@ -69,7 +68,19 @@ type MethodMetadata = {
 	skip?: boolean
 	unavailable?: boolean
 	userIntent?: boolean
+	public?: boolean
 }
+
+type MethodMetadataPermission = {
+	name?: string
+}
+
+type MethodMetadataRecursive<Parent> = MethodMetadata | keyof Parent
+	| { or: Readonly<MethodMetadataRecursive<Parent>[]> }
+	| { and: Readonly<MethodMetadataRecursive<Parent>[]> }
+
+type MethodMetadataExtended<Parent> = MethodMetadataRecursive<Parent>
+	| { metadata: MethodMetadataRecursive<Parent>, permission: MethodMetadataPermission }
 
 type ImportOptions = Partial<{
 	address: string

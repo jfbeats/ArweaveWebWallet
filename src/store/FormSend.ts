@@ -2,7 +2,7 @@ import { reactive, shallowRef, watch } from 'vue'
 import { buildTransaction, deduplicate, generateManifest, getHash, manageUpload } from '@/functions/Transactions'
 import { notify } from '@/store/NotificationStore'
 import { TagField, TagSchema } from '@/components/form/InputGrid.vue'
-import { readFile, FileWithPath } from '@/functions/File'
+import { readFile } from '@/functions/File'
 import { ArweaveProvider } from '@/providers/Arweave'
 import type { CreateTransactionInterface } from 'arweave/web'
 
@@ -95,8 +95,7 @@ export async function submit (wallet: Wallet) {
 			arReward: form.txFee,
 			tags: form.tags,
 			data: form.processedData,
-		})
-		await wallet.signTransaction(tx)
+		}).then(tx => wallet.signTransaction(tx))
 		manageUpload(tx)
 		reset()
 	} catch (e: any) {

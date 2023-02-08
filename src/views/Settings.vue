@@ -22,10 +22,13 @@
 			<div>
 				<h2>Security</h2>
 				<SettingItem name="Password" description="Used to encrypt selected wallets">
-					<Input v-model="password" type="password" :placeholder="hasPassword ? 'Change password or delete' : 'Create a new password'" :submit="passwordAction" />
+					<Input v-model="password" type="password" :placeholder="hasPassword ? 'Change password or remove' : 'Create a new password'" :submit="passwordAction" />
 				</SettingItem>
 				<SettingItem name="Stay unlocked" description="Time to wait before requiring the password again">
 					<Select v-model="AppSettings.password.invalidateCache" :options="AppSettingsOptions.password.invalidateCache" />
+				</SettingItem>
+				<SettingItem name="Reset application" description="Clear all accounts, settings and password" row="true">
+					<Button :run="reset" :icon="IconX" :glow="true" color="var(--red)">Reset</Button>
 				</SettingItem>
 			</div>
 			<WalletsOptions />
@@ -40,6 +43,12 @@
 			<div>
 				<h2>Version Alpha</h2>
 				<!-- Todo version history -->
+				<div class="secondary-text">
+					Permanently stored version history coming soon
+				</div>
+				<div class="secondary-text">
+					Anonymized telemetry is used to improve the service
+				</div>
 			</div>
 		</div>
 	</div>
@@ -103,6 +112,21 @@ const passwordAction = computed(() => ({
 	run: async () => await setPassword(password.value) && (password.value = ''),
 	icon: hasPassword.value && !password.value ? IconX : IconY
 }))
+
+const reset = async () => {
+	if (!await notify.confirm('Reset application?').promise) { return }
+	localStorage.clear()
+	const clear = (dbs: any[]) => Promise.all(dbs.map(db => new Promise<void>(res => {
+		if (!db.name) { return res() }
+		setTimeout(res, 1000)
+		const req = indexedDB.deleteDatabase(db.name)
+		req.onerror = () => res()
+		req.onsuccess = () => res()
+	})))
+	await indexedDB.databases().then(dbs => clear(dbs))
+	console.log('cleared')
+	location.reload()
+}
 </script>
 
 

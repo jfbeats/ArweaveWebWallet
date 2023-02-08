@@ -21,8 +21,8 @@ const emit = defineEmits<{
 	(e: 'resize', value: ResizeObserverEntry): void
 	(e: 'mutation', value: MutationRecord): void
 }>()
-
 const observed = ref(null)
+defineExpose({ el: observed })
 
 if (props.onIntersection) {
 	const intersectionObserver = new IntersectionObserver((entries) => {

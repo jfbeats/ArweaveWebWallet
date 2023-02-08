@@ -37,7 +37,7 @@
 					<span>Data</span>
 				</h3>
 			</label>
-			<InputData v-model="form.data" @files="files => dropped(files, 'data')" id="data" />
+			<InputData v-model="form.data" type="data" id="data" />
 			<div class="row bottom flex-row">
 				<div>
 					<transition name="slide-up">
@@ -68,7 +68,7 @@
 
 			<div class="row flex-row" style="align-items:flex-end; margin-top:3em;">
 				<SendFee :size="form.txSize" :target="form.target" @update="fee => form.txFee = fee" />
-				<Button @click="postTx" :disabled="loading || !form.txFee || !form.txSize || !wallet.signTransaction" :icon="IconNorthEast" :color="addressHashColor" :glow="true">Submit</Button>
+				<Button @click="postTx" :disabled="loading || !form.txFee || !form.txSize || !wallet.signTransaction" :icon="IconNorthEast" :color="addressHashColor" :glow="true">{{ InterfaceStore.online ? 'Submit' : 'Sign'}}</Button>
 			</div>
 			<div>
 				<transition name="slide-up">
@@ -91,7 +91,7 @@ import InputTags from '@/components/form/InputTags.vue'
 import SendFee from '@/components/composed/SendFee.vue'
 import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
-import { dropped } from '@/functions/File'
+import InterfaceStore from '@/store/InterfaceStore'
 import { form, addTag, submit, formWallet } from '@/store/FormSend'
 import { awaitEffect } from '@/functions/AsyncData'
 import { addressHashToColor, addressToHash } from '@/functions/Utils'
@@ -107,7 +107,7 @@ const props = defineProps<{ wallet: Wallet }>()
 watch(() => props.wallet, () => formWallet.value = props.wallet, { immediate: true })
 
 const setMax = async () => {
-	const balance = new BigNumber(props.wallet.balance)
+	const balance = new BigNumber(props.wallet.balance ?? 0)
 	await awaitEffect(() => form.txFee)
 	form.quantity = balance.minus(form.txFee!).toString()
 }
@@ -159,7 +159,7 @@ const postTx = async () => {
 	loading.value = false
 }
 
-const addressHash = ref(null)
+const addressHash = ref(undefined as undefined | string)
 watch(() => props.wallet.key, async (val) => addressHash.value = await addressToHash(val), { immediate: true })
 const addressHashColor = computed(() => addressHashToColor(addressHash.value).join(','))
 </script>

@@ -2,7 +2,7 @@
 	<Observer class="travelling-blocks" @resize="resize">
 		<div class="bubbles">
 			<div class="base" />
-			<div class="bubble" v-for="n in nbBlocks" :key="n" :style="getStyle()" />
+			<div class="bubble" v-for="(n, i) in styles.entries()" :key="i + 'i' + iterations[i]" :style="n" @animationiteration="e => update(e, i)" />
 		</div>
 		<svg style="position:fixed;">
 			<defs>
@@ -21,11 +21,12 @@
 
 <script setup lang="ts">
 import Observer from '@/components/function/Observer.vue'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 const containerSize = ref(undefined as undefined | ResizeObserverEntry)
 const nbBlocks = computed(() => Math.floor((containerSize.value?.contentRect.width || 0) / 60))
-
+const iterations = ref([] as any[])
+const styles = ref([] as string[])
 const resize = (size: ResizeObserverEntry) => containerSize.value = size
 const getStyle = () => {
 	const range = containerSize.value?.contentRect.height || 0
@@ -34,8 +35,15 @@ const getStyle = () => {
 		--distance:${range * 0.5 + range * 0.5 * Math.random()}px;
 		--position:${Math.random() * 100}%;
 		--time:${4 + Math.random() * 18}s;
-		--delay:${-1 * (4 + Math.random() * 2)}s;
 	`
+}
+watch(nbBlocks, n => {
+	iterations.value = Array(n).fill(0)
+	styles.value = Array(n).fill(undefined).map(() => getStyle())
+}, { immediate: true })
+const update = (e: AnimationEvent, i: number) => {
+	iterations.value[i]++
+	styles.value[i] = getStyle()
 }
 </script>
 
@@ -74,8 +82,8 @@ const getStyle = () => {
 	background: #ffffff;
 	border-radius: 16%;
 	left: var(--position);
-	animation: bubble-move var(--time) ease-in infinite var(--delay),
-		bubble-opacity var(--time) ease-in infinite var(--delay);
+	animation: bubble-move var(--time) ease-in infinite,
+		bubble-opacity var(--time) ease-in infinite;
 }
 
 @keyframes bubble-opacity {

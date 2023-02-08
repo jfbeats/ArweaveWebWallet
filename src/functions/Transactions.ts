@@ -1,17 +1,30 @@
 import ArweaveStore, { arweave, arweaveQuery } from '@/store/ArweaveStore'
 import { getMempool, getPending } from '@/store/BlockStore'
-import { exportTransaction, FileWithPath, readFile } from '@/functions/File'
 import { notify } from '@/store/NotificationStore'
 import { track } from '@/store/Analytics'
 import BigNumber from 'bignumber.js'
 import { PromisePool } from '@supercharge/promise-pool'
-import { encode } from '@/functions/Crypto'
-import type Transaction from 'arweave/web/lib/transaction'
+import { encode } from '@/functions/Encode'
+import Transaction from 'arweave/web/lib/transaction'
 import type { CreateTransactionInterface } from 'arweave/web'
+import { requestExport } from '@/functions/Export'
+
+
+
+type AnyFile = string | FileWithPath | object | undefined
+type AnyTransaction = Transaction
+export type ExportRequest = {
+	entry: ExportEntry
+	compressed?: any
+	promise: Promise<AnyTransaction>
+	resolve: (arg: AnyTransaction) => void
+	reject: (e?: string) => void
+}
 
 
 
 export async function buildTransaction (tx: ArTxParams) {
+	if (!arweave) { await new Promise(res => setTimeout(res)) } // todo fix
 	const txSettings = {} as Partial<CreateTransactionInterface>
 	txSettings.target = tx.target || ''
 	txSettings.quantity = tx.quantity || tx.winston || (tx.ar ? arweave.ar.arToWinston(tx.ar) : '0')
@@ -80,9 +93,9 @@ export function generateManifest (localPaths: string[], transactions: Array<{ id
 
 
 
-export async function manageUpload (tx: Transaction) {
-	if (!navigator.onLine) { return exportTransaction(tx) }
-	if (!tx.chunks?.chunks?.length) { return arweave.transactions.post(tx) }
+export async function manageUpload (tx: AnyTransaction) {
+	if (!navigator.onLine) { return requestExport({ tx }) }
+	if (!tx.chunks?.chunks?.length) { arweave.transactions.post(tx); notify.log('Transaction sent'); return }
 	const uploader = await arweave.transactions.getUploader(tx)
 	const storageKey = 'uploader:' + tx.id
 	localStorage.setItem(storageKey, JSON.stringify(uploader))
@@ -119,8 +132,8 @@ export async function getFeeRange () {
 	const sortedFees = fees.sort((a, b) => (+b) - (+a))
 	const nextBlock = sortedFees.slice(0, blockSize)
 	range.max = (new BigNumber(nextBlock[0])).plus('1')
-	if (txs.length < (ids.length / 4)) {
-		notify.warn('Unable to estimate optimal transaction fee')
+	if (txs.length < (ids.length / 10)) {
+		notify.warn('Unable to estimate optimal transaction fee. The gateway is returning data on less than 10% of pending transactions.')
 		failedLastFeeRange = true
 		return range
 	}
@@ -130,11 +143,96 @@ export async function getFeeRange () {
 	return range
 }
 
-export function unpackTags <T extends boolean = false> (tags: { name: string, value: string }[], options?: { duplicate?: T, lowercase?: boolean }) {
+export function unpackTags <T extends boolean = false> (tags?: { name: string, value: string }[], options?: { duplicate?: T, lowercase?: boolean }) {
 	const result = {} as { [key:string]: any }
+	if (!tags) { return result as { [key: string]: (T extends true ? string[] : string | undefined) } }
 	const set = options?.duplicate
 		? (tag: typeof tags[0]) => (result[options?.lowercase ? tag.name.toLowerCase() : tag.name] ??= []).push(tag.value)
 		: (tag: typeof tags[0]) => result[options?.lowercase ? tag.name.toLowerCase() : tag.name] ??= tag.value
 	tags.forEach(set)
 	return result as { [key: string]: (T extends true ? string[] : string | undefined) }
+}
+
+
+
+type ExportTemplates = Awaited<ReturnType<typeof makeTemplates>>
+export type ExportTemplate = ExportTemplates[keyof ExportTemplates]
+
+async function makeTemplates () {
+	const trimmed = [] as AnyTransaction[]
+	const ar = (async () => {
+		const trim = (tx: Transaction) => {
+			const { chunks, data, ...ar } = tx
+			trimmed.push(tx)
+			return ar
+		}
+		const build = (tx: Partial<Transaction>) => tx.setSignature ? tx as Transaction : arweave.transactions.fromRaw(tx)
+		return {
+			template: trim(await buildTransaction({ data: 'hey' })),
+			getOwner: (tx: any) => tx.owner,
+			isSigned: (tx: any) => 'signature' in tx && tx.signature,
+			equals: (a: Transaction, b: AnyTransaction) => {
+				if (a.owner && a.owner !== b.owner) { return false }
+				if (!hasMatchingTags(a.tags, b.tags)) { return false }
+				const fields: Array<keyof Transaction> = ['target', 'data_root', 'quantity']
+				return fields.every(field => a[field] === b[field])
+			},
+			init: async (tx: ReturnType<typeof trim>) => {
+				// todo handle transaction with unavailable data for both signed and unsigned
+				tx.data_root && trimmed.find((trimmed: Transaction) => {
+					if (tx.data_root !== trimmed.data_root) { return }
+					tx.chunks = trimmed.chunks
+					tx.data = trimmed.data
+					return true
+				})
+				if (!tx.owner && tx.signature) {
+					const owners = [] as string[]
+					trimmed.forEach(t => owners.includes(t.owner) || owners.push(t.owner))
+					const res = await Promise.all(owners.map(owner => build({ ...tx, owner })).map(tx => arweave.transactions.verify(tx)))
+					tx.owner = owners[res.findIndex(r => r)]
+				}
+				const result = build(tx)
+				if (result.data?.byteLength) { await result.prepareChunks(result.data) }
+				return result
+			},
+			trim,
+			compress: (txIn: Transaction, tx: Transaction) => {
+				const { owner, ...ownerless } = tx
+				if (!txIn.owner || txIn.owner !== owner) { return tx }
+				return ownerless
+			}
+		} as const
+	})()
+	return {
+		arweave: await ar,
+	} as const
+}
+
+const templatesPromise = makeTemplates()
+
+
+
+export type ExportEntry = Awaited<ReturnType<typeof findTransactions>>[number]
+
+export async function findTransactions (files: AnyFile | AnyFile[]) {
+	const results = []
+	const templates = await templatesPromise
+	for (const file of Array.isArray(files) ? files : [files]) {
+		try {
+			if (file == undefined) { continue }
+			const obj = typeof file === 'string' ? JSON.parse(file) : 'text' in file && typeof file.text === 'function' ? JSON.parse(await file.text()) : file
+			const entries = Object.entries(templates).filter(([name, format]) => Object.keys(format.template).every(key => key in obj))
+			const provider = entries.map(e => e[1])[0] as ExportTemplate
+			const res = entries.length && {
+				tx: obj as AnyTransaction,
+				init: () => provider.init(obj),
+				provider,
+				equals: (b: AnyTransaction) => provider.equals(obj, b),
+				owner: entries.map(([name, format]) => format.getOwner(obj)).find(entry => entry) as string,
+				isSigned: entries.some(([name, format]) => format.isSigned(obj))
+			}
+			if (res) { results.push(res) }
+		} catch (e) {}
+	}
+	return results
 }

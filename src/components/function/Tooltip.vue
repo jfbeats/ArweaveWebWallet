@@ -17,13 +17,14 @@ import tippy, { animateFill, Props } from 'tippy.js'
 import 'tippy.js/dist/tippy.css'
 import 'tippy.js/dist/backdrop.css'
 import 'tippy.js/animations/shift-away.css'
-import { computed, onBeforeUnmount, onMounted, ref, useSlots, watchEffect } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, useAttrs, useSlots, watchEffect } from 'vue'
 
 const props = defineProps<{
 	content?: any
 	interactive?: boolean
 	placement?: Props['placement']
 }>()
+const attrs = useAttrs()
 const slots = useSlots()
 
 const settings: Partial<Props> = {
@@ -31,6 +32,7 @@ const settings: Partial<Props> = {
 	plugins: [animateFill],
 	maxWidth: 'none',
 	theme: 'glass',
+	hideOnClick: attrs.hideOnClick as boolean ?? true,
 }
 
 const tooltipEl = ref(null as null | HTMLElement)
@@ -46,6 +48,7 @@ const setProps = () => tooltip.setProps({
 
 onMounted(async () => {
 	const beforeUnmount = new Promise<void>(res => onBeforeUnmount(res))
+	settings.triggerTarget = [tooltipEl.value, tooltipEl.value?.firstElementChild].filter((e): e is NonNullable<typeof e> => !!e)
 	tooltip = tippy(tooltipEl.value!, settings)
 	watchEffect(setProps)
 	await beforeUnmount

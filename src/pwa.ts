@@ -40,5 +40,5 @@ window.addEventListener('beforeinstallprompt', e => {
 })
 
 // @ts-ignore
-navigator.getInstalledRelatedApps?.()?.then(apps => { PWA.installed = apps; console.log(apps) })
+navigator.getInstalledRelatedApps?.()?.then(apps => { PWA.installed = apps; apps.length && console.log(apps) }).catch(() => {})
 PWA.registration.then((r: any) => setInterval(() => r.update(), 60 * 60 * 1000))

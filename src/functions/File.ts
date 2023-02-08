@@ -1,11 +1,11 @@
 import { addKeyfile, selectProviders, Wallets } from '@/functions/Wallets'
-import router from '@/router'
-import Transaction from 'arweave/web/lib/transaction'
-import { track } from '@/store/Analytics'
+import { requestImport } from '@/functions/Export'
+import { findTransactions } from '@/functions/Transactions'
 import { addFiles, form } from '@/store/FormSend'
-import { FileWithPath as FileWithPathSelector, fromEvent } from 'file-selector'
+import router from '@/router'
+import { track } from '@/store/Analytics'
+import { fromEvent } from 'file-selector'
 import { isDraggingFromOutside } from '@/store/InterfaceStore'
-export interface FileWithPath extends FileWithPathSelector { normalizedPath?: string }
 
 
 
@@ -13,18 +13,22 @@ window.addEventListener('drop', dropped)
 
 
 
-export async function dropped (e?: DragEvent | InputEvent | FileSystemDirectoryHandle | FileSystemFileHandle[], type?: 'keyfile' | 'data') {
-	if (!e) { return addFiles([]) }
-	const text = eventToText(e)
-	const files = await eventToFiles(e)
+export async function dropped (e?: DragEvent | InputEvent | FileSystemDirectoryHandle | FileSystemFileHandle[] | string, type?: 'keyfile' | 'data', writing?: true) {
+	const goToSend = (owner?: string) => {
+		const ownerWalletIndex = Wallets.value.findIndex(w => w.key === owner)
+		const walletId = Wallets.value[Math.max(ownerWalletIndex, 0)].id
+		if (ownerWalletIndex >= 0 || router.currentRoute.value.name !== 'Send') { router.push({ name: 'Send', params: { walletId } }) }
+	}
+	if (!e) { if (!writing) { await addFiles([]); return true } else { return } }
+	const text = typeof e === 'string' ? e : eventToText(e)
+	const files = typeof e === 'string' ? [] : await eventToFiles(e)
 	const keyfiles = await findKeyfiles(text ? [text] : files)
-	if (keyfiles.length) { return importKeyfiles(keyfiles) }
-	if (type === 'keyfile') { throw 'Error importing keyfiles' }
-	// todo unsigned tx - fill send page (through tx import function?)
-	// todo signed tx - ask to upload (through tx import function?)
-	const goToSend = () => router.currentRoute.value.name !== 'Send' && router.push({ name: 'Send', params: { walletId: Wallets.value[0].id } })
-	if (files.length) { addFiles(files); goToSend() }
-	else if (text && (isDraggingFromOutside.value || type === 'data')) { form.data = text; goToSend() }
+	if (keyfiles.length) { await importKeyfiles(keyfiles); return true }
+	if (type === 'keyfile') { if (!writing) { throw 'Error importing keyfiles' } else { return } }
+	const transactions = await findTransactions(text ? [text] : files)
+	if (transactions.length) { await requestImport(transactions); return true }
+	if (files.length) { await addFiles(files); goToSend(); return true }
+	if (!writing && text && (isDraggingFromOutside.value || type === 'data')) { form.data = text; goToSend(); return true }
 }
 
 
@@ -94,16 +98,6 @@ async function importKeyfiles (keyfiles: string[]) {
 	const ids = (await Promise.all(keyfiles.map(async keyfile => addKeyfile(keyfile)))).filter(e => e !== null).map(e => e.id)
 	if (ids.length > 0) { router.push({ name: 'EditWallet', query: { wallet: ids } }) }
 	track.account('Account Import')
-}
-
-
-
-export async function exportTransaction (tx: Transaction) {
-	// notify user of export
-	// if signed, don't track
-	// find if corresponding message in current connector queue
-	download('Transaction', JSON.stringify(tx))
-	// await for matching importTransaction before completing
 }
 
 

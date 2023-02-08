@@ -1,7 +1,6 @@
 import { reactive } from 'vue'
 import InterfaceStore from '@/store/InterfaceStore'
 import { unpackTags } from '@/functions/Transactions'
-import { getVerification } from 'arverify'
 import { awaitEffect } from '@/functions/AsyncData'
 import { graphql } from '@/store/ArweaveStore'
 import { ArweaveAccount } from '@/providers/Arweave'
@@ -46,7 +45,7 @@ export async function getArverify (address: string) {
 	await awaitEffect(() => InterfaceStore.windowVisible)
 
 	try {
-		ProfileStore.arverify[address] = await getVerification(address)
+		// ProfileStore.arverify[address] = await getVerification(address)
 	} catch (e) {
 		ProfileStore.arverifyStatus[address].loading = false
 		console.error(e)

@@ -12,7 +12,9 @@
 		<transition name="fade">
 			<div v-if="dragOverlay" class="overlay" />
 		</transition>
+		<Export />
 		<Password />
+		<ScannerViewport />
 		<div id="viewport" />
 	</div>
 </template>
@@ -23,7 +25,9 @@
 import Toolbar from '@/components/composed/Toolbar.vue'
 import UpdateAvailable from '@/components/function/UpdateAvailable.vue'
 import TransitionsManager from '@/components/visual/TransitionsManager.vue'
+import Export from '@/components/function/Export.vue'
 import Password from '@/components/function/Password.vue'
+import ScannerViewport from '@/components/function/ScannerViewport.vue'
 import { Wallets } from '@/functions/Wallets'
 import InterfaceStore from '@/store/InterfaceStore'
 import { findRoutePosition } from '@/router/Utils'

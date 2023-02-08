@@ -8,14 +8,14 @@
 			</Tooltip>
 			<Tooltip v-if="clipboard" class="icon-container" :content="clipboardClicked ? undefined : 'copy'">
 				<Link :run="clipboard" style="display: flex">
-					<Icon :icon="clipboardIcon"  />
+					<Icon :icon="clipboardIcon" />
 				</Link>
 			</Tooltip>
-			<Tooltip v-if="address" class="icon-container">
+			<Tooltip v-if="address" class="icon-container" tabindex="0" :hideOnClick="false">
 				<template #content>
 					<QR :qr="val" />
 				</template>
-				<Icon :icon="IconQR"  />
+				<Icon :icon="IconQR" />
 			</Tooltip>
 		</span>
 	</div>

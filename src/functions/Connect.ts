@@ -1,10 +1,13 @@
-import { state, connectorChannels, awaitStorageAccess, useChannel, appInfo, states } from '@/functions/Channels'
-import JsonRpc from '@/functions/JsonRpc'
-import { watch, watchEffect, computed, reactive, effectScope, Ref } from 'vue'
-import { getWalletById } from '@/functions/Wallets'
+import { appInfo, awaitStorageAccess, connectorChannels, state, states, useChannel } from '@/functions/Channels'
+import JsonRpc, { getOwnerIdFromMessage } from '@/functions/JsonRpc'
+import { computed, effectScope, reactive, Ref, ref, shallowRef, watch, watchEffect } from 'vue'
+import { getWalletById, Wallets } from '@/functions/Wallets'
 import { useDataWrapper } from '@/functions/AsyncData'
-import InterfaceStore from '@/store/InterfaceStore'
+import InterfaceStore, { onUnload } from '@/store/InterfaceStore'
 import { track } from '@/store/Analytics'
+import { Emitter } from '@/functions/UtilsClass'
+import { ArweaveApi } from 'arweave-wallet-connector'
+import type { Connection } from 'arweave-wallet-connector/lib/types'
 
 let windowRef: Window
 const { origin, session } = state.value
@@ -61,11 +64,11 @@ if (sessionStorage.getItem('type') === 'extension' || document.location.pathname
 } else if (origin?.split('://')[0] === 'ws') {
 	state.value.type = 'ws'
 	initWebSockets()
-} else if (window.opener) {
+} else if (origin && window.opener) {
 	state.value.type = 'popup'
 	windowRef = window.opener
 	initConnector()
-} else if (window.parent && window.parent !== window) {
+} else if (origin && window.parent && window.parent !== window) {
 	state.value.type = 'iframe'
 	windowRef = window.parent
 	initConnector()
@@ -76,9 +79,66 @@ if (state.value.type !== 'iframe') { localStorage.setItem('global', '1') }
 
 
 
-function initSharedState (state: Ref): state is Ref<SharedState> {
-	if (!origin || origin === '*') { return false }
-	if (!sharedState.value?.origin) { sharedState.value = { origin, session, appInfo, timestamp: Date.now(), messageQueue: [], links: {} } }
+const localJsonRpc = (function LocalJsonRpc () {
+	const emitter = new Emitter<{ [id: number]: any }>()
+	let id = 0
+	const constructor = (name: string) => {
+		const channel = useChannel('sharedState:', 'local' + Math.random())
+		if (!initSharedState(channel.state, { walletId: undefined, origin: 'local', session: Math.random() + '', appInfo: { name } })) { throw 'Unable to init state' }
+		const jsonRpc = new JsonRpc(message => emitter.emit(message.id, message), channel.state)
+		onUnload(channel.deleteChannel)
+		channel.state.value.walletId = Wallets.value[0].id
+		watch(() => jsonRpc.state.value.messageQueue, async val => {
+			const id = await getOwnerIdFromMessage(instance?.jsonRpc.state.value.messageQueue.find(el => !el.fulfilled))
+			id != undefined && instance!.channel.state.value && (instance!.channel.state.value.walletId = id)
+		}, { immediate: true, deep: true })
+		watch(() => channel.state.value?.walletId, id => id === false && channel.state.value?.messageQueue
+			.forEach(m => !m.fulfilled && (m.status = 'rejected')))
+		return { channel, jsonRpc }
+	}
+	let instance: ReturnType<typeof constructor>
+	const pending = ref(0)
+	watch(pending, val => {
+		if (!instance || !instance.channel.state.value) { return }
+		if (val > 0) { instance.channel.state.value.walletId === false && (instance.channel.state.value.walletId = undefined) }
+		else { instance.channel.state.value.walletId = false }
+	}, { immediate: true })
+	const connect = (name?: string) => { instance ??= constructor(name ?? 'Imported'); return instance }
+	const push = (e: Message) => {
+		connect()
+		const currentId = id++
+		e.id = currentId
+		return new Promise((res, rej) => {
+			emitter.once(currentId, message => message.error ? rej(message.error) : res(message.result) ).then(() => pending.value--)
+			instance!.jsonRpc.pushMessage(e)
+			pending.value++
+		})
+	}
+	return { connect, push }
+})()
+
+
+class LocalRPC implements Connection {
+	constructor () {}
+	connect (name?: string) { return localJsonRpc.connect(name) }
+	disconnect () { this.connect().channel.state.value!.walletId = false }
+	postMessage (...args: Parameters<Connection['postMessage']>) {
+		const [method, params, options] = args
+		if (['connect', 'disconnect'].includes(method)) { return }
+		return localJsonRpc.push({ method, params })
+	}
+}
+const ArweaveClass = ArweaveApi(LocalRPC)
+
+export const RPC = {
+	arweave: new ArweaveClass()
+}
+
+
+
+function initSharedState (state: Ref, init?: Partial<SharedState>): state is Ref<SharedState> {
+	if (!init?.origin && (!origin || origin === '*')) { return false }
+	if (!state.value?.origin) { state.value = Object.assign({ origin, session, appInfo, timestamp: Date.now(), messageQueue: [], links: {} }, init ?? {}) }
 	return true
 }
 
@@ -91,10 +151,11 @@ async function initConnector () {
 	const jsonRpc = new JsonRpc(postMessage, sharedState)
 	window.addEventListener('message', async (e) => {
 		if (e.source !== windowRef || e.origin !== origin) { return }
+		if (e.data?.method === 'ready') { return postMessage({ id: e.data?.id, method: 'ready' }) }
 		if (e.data?.method === 'connect') { return }
 		if (e.data?.method === 'disconnect') {
 			sharedState.value.walletId = false
-			postMessage({ id: e.data?.id })
+			return postMessage({ id: e.data?.id })
 		}
 		const prompt = await jsonRpc.pushMessage(e.data)
 		if (prompt) { focusWindow() }
@@ -115,8 +176,7 @@ async function initConnector () {
 	if (state.value.type === 'iframe') {
 		InterfaceStore.toolbar.enabled = false
 		const unload = () => { !state.value.updating && connector.value && (connector.value.sharedStates.length > 1 ? deleteChannel() : disconnect()) }
-		window.addEventListener('beforeunload', unload)
-		window.addEventListener('unload', unload)
+		onUnload(unload)
 	}
 	if (state.value.type === 'popup') {
 		if (!sharedState.value.walletId) { InterfaceStore.toolbar.enabled = false }
@@ -126,8 +186,7 @@ async function initConnector () {
 			!state.value.updating && !sharedState.value.links?.iframe && connector.value && (connector.value.sharedStates.length > 1 ? deleteChannel() : disconnect())
 			window.close()
 		}
-		window.addEventListener('beforeunload', unload)
-		window.addEventListener('unload', unload)
+		onUnload(unload)
 	}
 	watch(() => sharedState.value.walletId, id => {
 		if (id === false) { return disconnect() }
@@ -172,8 +231,7 @@ async function initWebSockets () {
 	}
 	const disconnect = () => { deleteChannel(); postMessage({ method: 'disconnect' }) }
 	watch(() => sharedState.value.walletId, (id) => id === false ? disconnect() : connect())
-	window.addEventListener('beforeunload', () => disconnect())
-	window.addEventListener('unload', () => disconnect())
+	onUnload(disconnect)
 }
 
 

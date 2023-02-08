@@ -3,14 +3,14 @@
 		<div class="card">
 			<h2 style="display:flex; justify-content:space-between;">
 				<span>Passphrase</span>
-				<span>Key file</span>
+				<span>Keyfile</span>
 			</h2>
 			<div class="flex-column">
-				<InputData v-model="passphraseInput" @files="files => dropped(files, 'keyfile')" :disabled="isCreatingWallet" placeholder="Import passphrase or key file" autocapitalize="none" />
+				<InputData v-model="passphraseInput" type="keyfile" :disabled="isCreatingWallet" placeholder="Type passphrase or import keyfile" autocapitalize="none" />
 				<div />
-				<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create" :disabled="passphraseInput.length && !isPassphrase" :icon="LogoArweave" class="main" :glow="true" color="#81a1c1">Create new wallet</Button>
-				<Button v-else-if="isCreatingWallet" :disabled="createdWallet == null" @click="goToCreatedWallet" :icon="createdWallet == null ? 'loader' : ''" class="main" :glow="true" color="#81a1c1">{{ createdWallet == null ? 'Generating, write down the passphrase' : 'Passphrase saved? Click here to proceed' }}</Button>
-				<Button v-else :disabled="!isPassphrase || isGeneratingWallet" @click="confirmPassphrase" class="main" :glow="true" color="#81a1c1">Import passphrase</Button>
+				<Button v-if="!isCreatingWallet && !passphraseInput.length" @click="create" :disabled="passphraseInput.length && !isPassphrase" class="main" :glow="true">Create new wallet</Button>
+				<Button v-else-if="isCreatingWallet" :disabled="createdWallet == null" @click="goToCreatedWallet" :icon="createdWallet == null ? 'loader' : ''" class="main" :glow="true">{{ createdWallet == null ? 'Generating, write down the passphrase' : 'Passphrase saved? Click here to proceed' }}</Button>
+				<Button v-else :disabled="!isPassphrase || isGeneratingWallet" @click="confirmPassphrase" class="main" :glow="true">Import passphrase</Button>
 			</div>
 			<OverlayPrompt :options="popup">
 				<div v-if="popup.messageType === 'invalid'" style="text-align: center">
@@ -19,14 +19,21 @@
 				</div>
 			</OverlayPrompt>
 		</div>
+		<div class="card">
+			<h2 class="flex-row" style="align-items: center;"><Icon :icon="IconSearch" /><span>Watch public address</span></h2>
+			<InputAddress v-model="targetInput" :submit="importAddressOnlyAction" />
+<!--			todo release -->
+<!--			<h2 class="flex-row" style="align-items: center;"><Icon :icon="IconSnow" /><span>Permafrost Vault</span></h2>-->
+<!--			<Button v-bind="coldWalletAction" class="main" :glow="true">{{ coldWalletAction.name }}</Button>-->
+		</div>
 		<div class="card" v-for="(provider, number) in hardwareProviders" :key="provider.metadata.name">
-			<h2 class="flex-row" style="align-items: center;"><Icon :icon="provider.metadata.icon" /><span>{{ provider.metadata.name }} Hardware Wallet (awaiting release)</span></h2>
+			<h2 class="flex-row" style="align-items: center;"><Icon :icon="provider.metadata.icon" /><span>{{ provider.metadata.name }}</span></h2>
 			<div class="flex-column">
 				<div class="flex-row">
-					<Button :disabled="provider.metadata.disabled" @click="importProvider(provider)" :icon="provider.metadata.icon" class="main" :glow="true" color="#81a1c1">
+					<Button :disabled="provider.metadata.disabled" @click="importProvider(provider)" class="main" :glow="true">
 						{{ provider.metadata.disabled ? `${provider.metadata.name} not supported for this browser` : `Connect with ${provider.metadata.name}` }}
 					</Button>
-					<Button v-if="provider.metadata.componentSettings" :icon="IconSettings"  class="secondary" @click="activeSettings = number" />
+					<Button v-if="provider.metadata.componentSettings" :icon="IconSettings" :square="true" @click="activeSettings = number" />
 				</div>
 				<div class="flex-row">
 					<Button v-for="action in provider.metadata.actions" :key="action.name" v-bind="action">{{ action.name }}</Button>
@@ -44,10 +51,6 @@
 				</Viewport>
 			</div>
 		</div>
-		<div class="card">
-			<h2>Address Only</h2>
-			<InputAddress v-model="targetInput" :submit="importAddressOnlyAction" />
-		</div>
 	</div>
 </template>
 
@@ -62,7 +65,6 @@ import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
 import Viewport from '@/components/layout/Viewport.vue'
 import WalletSelector from '@/components/composed/WalletSelector.vue'
 import { hardwareProviders, addAddress, addMnemonic, generateMnemonic, validateMnemonic } from '@/functions/Wallets'
-import { dropped } from '@/functions/File'
 import { track } from '@/store/Analytics'
 import { notify } from '@/store/NotificationStore'
 import { computed, ref } from 'vue'
@@ -70,6 +72,9 @@ import { useRouter } from 'vue-router'
 import LogoArweave from '@/assets/logos/arweave.svg?component'
 import IconAddBox from '@/assets/icons/add_box.svg?component'
 import IconSettings from '@/assets/icons/settings.svg?component'
+import IconSnow from '@/assets/icons/snow.svg?component'
+import IconSearch from '@/assets/icons/search.svg?component'
+import { getColdWalletAction } from '@/store/Cold'
 
 const router = useRouter()
 const passphraseInput = ref('')
@@ -124,6 +129,7 @@ const importAddressOnlyAction = { icon: IconAddBox, run: async () => {
 	track.account('Account Watch')
 }}
 const activeSettings = ref(-1)
+const coldWalletAction = computed(() => getColdWalletAction(false))
 </script>
 
 
@@ -143,20 +149,13 @@ const activeSettings = ref(-1)
 }
 
 .input-data {
-	text-align: center;
+	/*text-align: center;*/
 }
 
 .button.main {
 	height: 4.5rem;
 	font-size: 1.1rem;
 	width: 100%;
-}
-
-.button.secondary {
-	flex: 0 0 auto;
-	height: 4.5rem;
-	font-size: 1.5rem;
-	width: 4.5rem;
 }
 
 .popup {
@@ -166,7 +165,7 @@ const activeSettings = ref(-1)
 }
 
 .popup .card {
-	height: 400px;
+	height: var(--popup-width);
 	display: flex;
 	overflow: hidden;
 	background: var(--background);

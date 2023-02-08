@@ -1,7 +1,7 @@
 <template>
-	<nav class="toolbar" id="nav">
+	<Selector selector=".item" active=".active, .router-link-active" is="nav" class="toolbar" id="nav" :vertical="!verticalLayout" :class="{ verticalLayout }" distance="calc(var(--toolbar-spacing) / 2.5)">
 		<SlickList class="wallets" :axis="axis" :lockAxis="axis" v-model:list="Wallets" :pressDelay="150" helperClass="dragging" dir="ltr" @sort-start="haptic">
-			<SlickItem v-for="(wallet, i) in Wallets" :index="i" :key="wallet.key" draggable="false" class="drag-container">
+			<SlickItem v-for="(wallet, i) in Wallets" :index="i" :key="wallet.key + wallet.id" draggable="false" class="drag-container">
 				<router-link :to="{ name: navTo, params: { ...$route.params, walletId: wallet.id } }" custom v-slot="{ href, navigate }">
 					<button type="button" class="item wallet" :href="href" @click="select(wallet, navigate)" :class="{ active: wallet.id == selected && links, accent: !links, verticalLayout }" draggable="false" @dragstart.prevent>
 						<AddressIcon class="profile" :address="wallet.key" />
@@ -30,15 +30,14 @@
 				</div>
 			</div>
 		</transition>
-		<DragOverlay />
-	</nav>
+	</Selector>
 </template>
 
 
 
 <script setup lang="ts">
+import Selector from '@/components/atomic/Selector.vue'
 import AddressIcon from '@/components/atomic/AddressIcon.vue'
-import DragOverlay from '@/components/atomic/DragOverlay.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import { SlickList, SlickItem } from 'vue-slicksort'
 import InterfaceStore, { emitter } from '@/store/InterfaceStore'
@@ -166,50 +165,5 @@ const postMessageExtensionConnect = async () => {
 
 .dragging .item.verticalLayout > * {
 	transform: translateY(calc(100% + var(--toolbar-spacing) * 2));
-}
-
-.item::before {
-	--weight: 2px;
-	--length: calc(100% - var(--toolbar-spacing));
-	--offset: calc(var(--toolbar-spacing) / 2);
-	--distance: -1px;
-	content: '';
-	background: var(--element-secondary);
-	position: absolute;
-	top: var(--offset);
-	left: var(--distance);
-	width: var(--weight);
-	height: var(--length);
-	opacity: 0;
-	border-radius: 1px;
-	transition: 0.2s ease;
-}
-
-.item.active::before,
-.item.router-link-active::before {
-	opacity: 1;
-}
-
-.dragging .item::before {
-	--offset: 0;
-	--distance: calc(var(--toolbar-spacing) / -2);
-	--length: 100%;
-}
-
-.item.verticalLayout::before {
-	top: var(--distance);
-	left: var(--offset);
-	width: var(--length);
-	height: var(--weight);
-}
-
-[dir="rtl"] .item::before {
-	left: unset;
-	right: var(--distance);
-}
-
-[dir="rtl"] .item.verticalLayout::before {
-	left: unset;
-	right: var(--offset);
 }
 </style>

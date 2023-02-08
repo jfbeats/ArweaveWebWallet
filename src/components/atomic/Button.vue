@@ -1,5 +1,5 @@
 <template>
-	<Link class="button no-select" :class="{ disabled }" v-bind="props" :style="glowStyle">
+	<Link class="button no-select" :class="{ disabled, square }" v-bind="props" :style="glowStyle">
 		<Icon v-if="icon" :icon="icon" :class="{ margin }" />
 		<slot></slot>
 	</Link>
@@ -15,6 +15,7 @@ import { normalizeColorTo } from '@/functions/Utils'
 
 const props = defineProps<{
 	glow?: boolean
+	square?: boolean
 	
 	// Todo type action
 	name?: string
@@ -26,12 +27,13 @@ const props = defineProps<{
 }>()
 const slots = useSlots()
 
+const color = computed(() => normalizeColorTo('rgb', props.color ?? 'var(--grey)'))
 const borderSize = computed(() => props.glow ? '0' : '0.5px')
-const glowStyle = computed(() => props.glow && props.color && ({
-	'--border': `rgba(${normalizeColorTo('rgb', props.color)},0.2)`,
-	'--glow-color': `rgba(${normalizeColorTo('rgb', props.color)},0.2)`,
-	'background-image': `radial-gradient(circle at center, rgba(${normalizeColorTo('rgb', props.color)},0.4),
-	rgba(${normalizeColorTo('rgb', props.color)},0.3))`
+const glowStyle = computed(() => props.glow && ({
+	'--border': `rgba(${color.value},0.2)`,
+	'--glow-color': `rgba(${color.value},0.2)`,
+	'background-image': `radial-gradient(circle at center, rgba(${color.value},0.4),
+	rgba(${color.value},0.3))`
 }))
 const margin = computed(() => slots.default)
 </script>
@@ -65,6 +67,13 @@ const margin = computed(() => slots.default)
 
 .button:disabled, .button.disabled {
 	filter: grayscale(0.5) brightness(0.5);
+}
+
+.button.square {
+	flex: 0 0 auto;
+	height: 4.5rem;
+	font-size: 1.5rem;
+	width: 4.5rem;
 }
 
 .icon.margin {

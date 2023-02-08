@@ -6,6 +6,8 @@ import { useChannel } from '@/functions/Channels'
 import { getAsyncData, getQueryManager, getReactiveAsyncData } from '@/functions/AsyncData'
 import { isRef, reactive, ref, Ref, watch } from 'vue'
 import { Emitter } from '@/functions/UtilsClass'
+import { notify } from '@/store/NotificationStore'
+import { track } from '@/store/Analytics'
 
 
 
@@ -16,13 +18,13 @@ if (localStorage.getItem('gateway') === JSON.stringify(gatewayDefault)) { localS
 if (localStorage.getItem('bundler') === JSON.stringify(bundlerDefault)) { localStorage.removeItem('bundler') } // todo remove, temp conversion
 
 const ArweaveStore = reactive({
-	gatewayURL: useChannel('gateway', undefined, gatewayDefault).state,
+	gatewayURL: useChannel('gateway', undefined, gatewayDefault).state, // todo useChannel init to a RefMaybe
 	bundlerURL: useChannel('bundler', undefined, bundlerDefault).state,
 	uploads: {} as { [key: string]: { upload?: number } },
 })
 
 export default ArweaveStore
-export let arweave: Arweave
+export var arweave: Arweave
 
 
 
@@ -34,17 +36,22 @@ export function urlToSettings (url: string) {
 	return { protocol, host, port }
 }
 
-export async function updateArweave (url?: string, sync?: boolean) {
+export async function updateArweave (url?: string, sync?: boolean): Promise<true> {
 	url = url ? generateUrl(url) : gatewayDefault
 	const settings = urlToSettings(url)
-	if (!sync && url !== gatewayDefault) {
-		const arweaveTest = Arweave.init(settings)
-		const net = await arweaveTest.network.getInfo()
-		if (!net.network) { throw 'Invalid' }
-	}
+	if (!sync && url !== gatewayDefault) { await testGateway(settings) }
 	arweave = Arweave.init(settings)
 	ArweaveStore.gatewayURL = url !== gatewayDefault ? url : undefined as any
+	return true
 	// todo if network name is different, clear all cache
+}
+
+async function testGateway (settings: ReturnType<typeof urlToSettings> | string): Promise<true> {
+	settings = typeof settings === 'string' ? urlToSettings(settings) : settings
+	const arweaveTest = Arweave.init(settings)
+	const net = await arweaveTest.network.getInfo()
+	if (!net.network) { throw 'Gateway Unreachable' }
+	return true
 }
 
 export async function updateBundler (url?: string, sync?: boolean) {
@@ -155,7 +162,7 @@ export function arweaveQuery (options: arweaveQueryOptions, name = 'tx list') { 
 				if (requireSort) { data.value.sort(blockSort); requireSort = false }
 			}
 			if (newContent) { emitter.emit('newContent', undefined) }
-			return results
+			return results as GQLTransactionEdge[]
 		},
 		seconds: refresh,
 		existingState: data,
@@ -228,15 +235,16 @@ export function queryAggregator (queries: ReturnType<typeof arweaveQuery>[]) {
 	
 	watch(refreshSwitch, val => queries.forEach(q => q.refreshSwitch.value = val))
 	queries.map(query => {
-		watch(() => query.updateQuery.stateRef.value, state => {
-			if (!state) { return }
+		watch(() => query.updateQuery.stateRef.value?.length, () => {
+			const state = query.updateQuery.stateRef
+			if (!state.value) { return }
 			const queryIndex = queries.indexOf(query)
-			const index = state.indexOf(initial[queryIndex])
+			const index = state.value.indexOf(initial[queryIndex])
 			const newResults = [] as any[]
-			for (let i = index - 1; i >= 0; i--) { if (data.value.indexOf(state[i]) < 0) { newResults.push(state[i]) } }
+			for (let i = index - 1; i >= 0; i--) { if (data.value.indexOf(state.value[i]) < 0) { newResults.push(state.value[i]) } }
 			if (newResults.length) { data.value.splice(0, 0, ...newResults) }
 			data.value.sort(blockSort)
-		}, { deep: true, flush: 'sync' })
+		})
 		watch(() => query.status.reset, () => {
 			data.value = []
 			initial = []
@@ -271,7 +279,7 @@ export function queryAggregator (queries: ReturnType<typeof arweaveQuery>[]) {
 				
 				let row = await Promise.all(queryControls.map(q => q.prep()))
 				const nextEl = row.find(el => el && el.node.block == null)
-					|| row.reduce((acc, el) => el && el.node.block.height > (acc?.node.block.height || 0) ? el : acc, undefined)
+					|| row.reduce((acc, el) => el && (el.node.block?.height || 0) > (acc?.node.block?.height || 0) ? el : acc, undefined)
 				if (!nextEl) { status.completed = true; break }
 				if (nextEl.node.block && i >= 10) { fulfilled = true }
 				const queryIndex = row.indexOf(nextEl)
@@ -357,8 +365,26 @@ export const currentBlock = currentBlockData.state
 
 
 
-function loadGatewaySettings () {
+async function loadGatewaySettings () {
 	updateArweave(ArweaveStore.gatewayURL || gatewayDefault, true)
 	updateBundler(ArweaveStore.bundlerURL || bundlerDefault, true)
+	const { state, stop } = useChannel('localGatewayTest')
+	if (state.value && Date.now() - state.value > 2600000000) { state.value = undefined }
+	if (!ArweaveStore.gatewayURL && !state.value && navigator.onLine) {
+		const isLocal = await updateArweave(location.origin).catch(() => {})
+		const isReachable = isLocal || await testGateway(gatewayDefault).catch(async e => {
+			const isp = await fetch('http://ip-api.com/json').then(res => res.json().then(res => res?.isp as string)).catch(() => {})
+			track.event('Error', { e, value: gatewayDefault, isp })
+			notify.error({
+				title: `Default gateway is unreachable`,
+				body: `${new URL(gatewayDefault).hostname} may be blocked by your internet service provider or is temporarily unavailable`,
+				requireInteraction: true,
+			})
+			const fallbackReachable = await updateArweave('https://ar-io.net/').catch(() => false)
+			return fallbackReachable
+		})
+		if (isReachable) { state.value = Date.now() }
+	}
+	stop()
 }
 loadGatewaySettings()

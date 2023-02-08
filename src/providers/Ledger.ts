@@ -6,7 +6,7 @@ import TransportWebBLE from "@ledgerhq/hw-transport-web-ble"
 import ArweaveApp from "@zondax/ledger-arweave"
 import { ArweaveAccount, ArweaveMessageRunner } from '@/providers/Arweave'
 import { arweave } from '@/store/ArweaveStore'
-import { ArweaveVerifier as ArweaveMessageVerifier } from 'arweave-wallet-connector/lib/Arweave.js'
+import { ArweaveVerifier as ArweaveMessageVerifier } from 'arweave-wallet-connector'
 import LogoLedger from '@/assets/logos/ledger.svg?component'
 import IconVerify from '@/assets/icons/verify.svg?component'
 import IconLaunch from '@/assets/icons/launch.svg?component'
@@ -108,7 +108,7 @@ async function sign (tx: Transaction) {
 const providerMetadata: ProviderMetadata = reactive({
 	...ArweaveAccount.metadata,
 	id: 'ledger',
-	name: 'Ledger',
+	name: 'Ledger (awaiting release)',
 	icon: markRaw(LogoLedger),
 	disabled: true,
 	addImportData: async (walletData) => {

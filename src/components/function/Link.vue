@@ -1,7 +1,7 @@
 <template>
-	<a v-if="hrefExternal" ref="input" :href="hrefExternal" @click.capture="runFunctions" target="_blank"><slot /></a>
-	<a v-else-if="to && !disabled" ref="input" :href="hrefRouter" @click.capture="runFunctions" :class="{ 'router-link-active': isActive, 'router-link-exact-active': isExactActive }"><slot /></a>
-	<button v-else-if="runFunctions" ref="input" @click.capture="runFunctions" type="button"><slot /></button>
+	<a v-if="hrefExternal" ref="input" :href="hrefExternal" @click.stop="runFunctions" target="_blank"><slot /></a>
+	<a v-else-if="to && !attrs.disabled" ref="input" :href="hrefRouter" @click.stop="runFunctions" :class="{ 'router-link-active': isActive, 'router-link-exact-active': isExactActive }"><slot /></a>
+	<button v-else-if="runFunctions || attrs.disabled" ref="input" @click.stop="runFunctions" type="button"><slot /></button>
 	<span v-else><slot /></span>
 </template>
 
@@ -19,9 +19,8 @@ const props = defineProps<{
 	name?: string
 	icon?: Icon
 	color?: string
-	run?: Function
+	run?: Function | false | null
 	to?: import('vue-router').RouteLocationRaw
-	disabled?: any
 }>()
 const attrs = useAttrs()
 const input = ref(undefined as undefined | HTMLInputElement)

@@ -1,10 +1,13 @@
 import { getDB } from '@/store/IndexedDB'
-import { Wallets, getMethodMetadata } from '@/functions/Wallets'
+import { getMethodMetadata, getWalletById, Wallets } from '@/functions/Wallets'
 import { computed, reactive, Ref, watch } from 'vue'
 import { awaitEffect } from '@/functions/AsyncData'
 import { uuidV4 } from '@/functions/Utils'
 import { useChannel } from '@/functions/Channels'
 import { track } from '@/store/Analytics'
+import { findTransactions } from '@/functions/Transactions'
+import { paywall } from '@/store/Cold'
+import { notify } from '@/store/NotificationStore'
 
 const errors = {
 	rejected: { code: 0, message: 'Rejected' },
@@ -90,6 +93,7 @@ export default class JsonRpc {
 		messageEntry.processing = true
 		const id = messageEntry.id
 		try {
+			if (paywall(this.stateWallet.value)) { notify.error('Vault must be enabled'); throw new Error('Vault must be enabled') }
 			const message = await getMessage(messageEntry)
 			if (!this.isValidMessage(message)) { throw new Error('message changed and is not valid anymore') }
 			const runner = this.stateWallet.value?.messageRunner
@@ -158,8 +162,10 @@ export default class JsonRpc {
 	
 	private evalPermission (messageEntry: MessageEntry) {
 		if (messageEntry.status != null) { return }
-		const allowed = !!this.permissions.value?.[messageEntry.method]
-		if (allowed) { messageEntry.status = 'allowed' }
+		const metadata = getMethodMetadata(this.stateWallet.value, messageEntry.method)
+		const isAllowed = this.permissions.value?.[metadata?.name ?? messageEntry.method]
+		const isPublic = metadata?.public
+		if (isAllowed || isPublic) { messageEntry.status = 'allowed' }
 	}
 }
 
@@ -171,4 +177,14 @@ export async function getMessage (messageEntry: MessageEntry): Promise<StoredMes
 	const store = dbTx.objectStore('messages')
 	const storeRequest = store.get(messageEntry.uuid)
 	return new Promise(resolve => storeRequest.onsuccess = () => resolve(storeRequest.result))
+}
+
+
+
+export async function getOwnerIdFromMessage (message?: MessageEntry | Message) {
+	if (!message) { return }
+	const stored = 'params' in message ? message : await getMessage(message as MessageEntry)
+	const txMaybe = stored.params?.[0]
+	if (!txMaybe) { return }
+	return findTransactions([JSON.stringify(txMaybe)]).then(res => getWalletById(res?.[0]?.owner)?.id)
 }

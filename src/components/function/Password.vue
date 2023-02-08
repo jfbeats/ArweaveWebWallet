@@ -1,22 +1,25 @@
 <template>
 	<Viewport :background="true">
-		<Observer v-if="passwordRequest" class="password" @resize="size = $event">
-			<div class="card" :class="{ fill }">
-				<div class="background">
-					<SecurityVisual class="background-content" />
-				</div>
-				<div class="content flex-column">
-					<div class="flex-row" style="justify-content: space-between;">
-						<div></div>
-						<WalletSelector @exit="() => reject('Password not provided')" v-model="currentWalletId" :active="true" />
-					</div>
-					<div class="flex-column">
-						<Input v-for="input in inputs" v-model="input.model.value" v-bind="input.bind" type="password" />
-					</div>
-				</div>
-				<OverlayPrompt :options="newPasswordMessage" autofocus />
+		<Popup v-if="passwordRequest" class="password" :padding="true">
+			<div class="background">
+				<SecurityVisual class="background-content" />
 			</div>
-		</Observer>
+			<div class="content flex-column">
+				<div class="flex-row" style="justify-content: space-between; align-items: center;">
+					<div v-if="passwordRequest.reason === 'change' && inputs.length === 1">Remove password</div>
+					<div v-else-if="passwordRequest.reason === 'change'">Change password</div>
+					<div v-else-if="passwordRequest.reason === 'get'">Enter password</div>
+					<div v-else-if="passwordRequest.reason === 'match'">Confirm password</div>
+					<div v-else-if="passwordRequest.reason === 'new'">Create password</div>
+					<div v-else-if="passwordRequest.reason === 'update'">Update password??</div>
+					<WalletSelector @exit="() => reject('Password not provided')" v-model="currentWalletId" :active="true" />
+				</div>
+				<div class="flex-column">
+					<Input v-for="input in inputs" v-model="input.model.value" v-bind="input.bind" type="password" />
+				</div>
+			</div>
+			<OverlayPrompt :options="newPasswordMessage" autofocus />
+		</Popup>
 	</Viewport>
 </template>
 
@@ -24,11 +27,11 @@
 
 <script setup lang="ts">
 import Viewport from '@/components/layout/Viewport.vue'
+import Popup from '@/components/layout/Popup.vue'
 import Input from '@/components/form/Input.vue'
 import SecurityVisual from '@/components/visual/SecurityVisual.vue'
 import WalletSelector from '@/components/composed/WalletSelector.vue'
 import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
-import Observer from '@/components/function/Observer.vue'
 import { emitter, testPassword, PasswordRequest, hasPassword, passwordValidation } from '@/functions/Password'
 import { focusWindow } from '@/functions/Connect'
 import { notify } from '@/store/NotificationStore'
@@ -106,19 +109,6 @@ const newPasswordMessage = ref(!hasPassword.value && { icon: markRaw(IconShieldW
 	justify-content: center;
 }
 
-.card {
-	height: 400px;
-	display: flex;
-	overflow: hidden;
-	background: var(--background);
-}
-
-.card.fill {
-	height: 100%;
-	width: 100%;
-	border-radius: 0;
-}
-
 .background {
 	position: absolute;
 	border-radius: inherit;
@@ -131,7 +121,7 @@ const newPasswordMessage = ref(!hasPassword.value && { icon: markRaw(IconShieldW
 
 .background-content {
 	position: absolute;
-	height: 400px;
+	height: var(--popup-width);
 	padding-bottom: 24px;
 }
 
@@ -139,6 +129,7 @@ const newPasswordMessage = ref(!hasPassword.value && { icon: markRaw(IconShieldW
 	flex: 1 1 0;
 	position: relative;
 	justify-content: space-between;
+	min-height: var(--popup-width);
 }
 
 .input {

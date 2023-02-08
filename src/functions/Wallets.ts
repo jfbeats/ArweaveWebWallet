@@ -3,8 +3,20 @@ import { LedgerProvider } from '@/providers/Ledger'
 import { useChannel } from '@/functions/Channels'
 import { useDataWrapper } from '@/functions/AsyncData'
 import { generateMnemonic as generateM, validateMnemonic as validateM } from 'bip39-web-crypto'
-// @ts-ignore
-import wordlist from 'bip39-web-crypto/src/wordlists/english.json'
+import { notify } from '@/store/NotificationStore'
+
+
+
+const res = {
+	english: () => import('bip39-web-crypto/src/wordlists/english.json')
+} as const
+type ResAwaited = { [key in keyof typeof res]: Awaited<ReturnType<typeof res[key]>> }
+export async function getWordList <T extends keyof typeof res | undefined = undefined> (lang?: T) {
+	const keys = (lang ? [lang] : Object.keys(res)) as [NonNullable<T>]
+	const imports = await Promise.all(keys.map(async lang => ([lang, await res[lang]().then(i => i.default)] as const))).then(res => Object.fromEntries(res))
+	const result = lang === undefined ? imports : imports[lang as string]
+	return result as T extends keyof typeof res ? ResAwaited[T] : ResAwaited
+}
 
 
 
@@ -49,15 +61,20 @@ export const Wallets = useDataWrapper(WalletsData, (w) => w.id, walletFactory, w
 
 export function getWalletById (walletId?: any) {
 	if (walletId == null) { return }
-	return Wallets.value.find(wallet => wallet.id == walletId || wallet.uuid == walletId)
+	return Wallets.value.find(wallet => wallet.id == walletId || wallet.uuid == walletId || wallet.key == walletId)
 }
 
 export function getAccountByAddress (address: string): Account {
 	return Wallets.value.find(wallet => wallet.key == address) || new ArweaveAccount(address)
 }
 
-export async function generateMnemonic () { return generateM(undefined, undefined, wordlist) }
-export async function validateMnemonic (mnemonic: string) { return validateM(mnemonic, wordlist) }
+export async function generateMnemonic (language?: keyof typeof res) { return generateM(undefined, undefined, await getWordList(language ?? 'english')) }
+export async function validateMnemonic (mnemonic: string) {
+	const res = await Promise.all(Object.values(await getWordList()).map(list => validateM(mnemonic, list)))
+	return res.some(r => r)
+}
+
+
 
 export async function addMnemonic (mnemonic: string, provider?: AnyProvider): Promise<WalletDataInterface> {
 	provider ??= ArweaveProvider
@@ -95,7 +112,8 @@ async function addWalletData (walletData: Partial<WalletDataInterface>) {
 	return result
 }
 
-export function deleteWallet (wallet: WalletDataInterface) {
+export async function deleteWallet (wallet: WalletDataInterface) {
+	if (!await notify.confirm('Delete the selected account?').promise) { return }
 	Wallets.value = Wallets.value.filter(w => w.id !== wallet.id)
 }
 
@@ -107,12 +125,37 @@ function getNewId () {
 
 
 
-export function getMethodMetadata(provider?: Wallet, runnerMethod?: string): MethodMetadata {
+export function getMethodMetadata(provider?: Wallet, runnerMethod?: string): MethodMetadata & MethodMetadataPermission {
 	if (!provider || !runnerMethod) { return {} }
-	const providerMethod = (provider.messageRunner.methodMap as any)[runnerMethod]
-	if (!providerMethod) { return {} }
+	const methodMetadataExtended = (provider.messageRunner.methodMap as any)[runnerMethod] as MethodMetadataExtended<Wallet>
+	if (!methodMetadataExtended) { return {} }
 	const methodsMetadata = provider.metadata?.methods
-	const result = methodsMetadata?.[providerMethod as keyof typeof methodsMetadata]
-	if (!result && provider[providerMethod as keyof typeof methodsMetadata]) { return {} }
-	return result || { unavailable: true }
+	const rec = (methods: MethodMetadataRecursive<Wallet>): MethodMetadata => {
+		if (typeof methods === 'string') {
+			const methodMetadata = (methodsMetadata as any)?.[methods]
+			const methodDefinition = provider[methods]
+			return methodMetadata ?? (methodDefinition ? {} : { unavailable: true })
+		}
+		if ('or' in methods) {
+			return {
+				skip: methods.or.some(m => rec(m).skip),
+				unavailable: !methods.or.some(m => !rec(m).unavailable),
+				userIntent: methods.or.some(m => rec(m).userIntent),
+				public: methods.or.every(m => rec(m).public),
+			}
+		}
+		if ('and' in methods) {
+			return {
+				skip: methods.and.some(m => rec(m).skip),
+				unavailable: methods.and.some(m => rec(m).unavailable),
+				userIntent: methods.and.some(m => rec(m).userIntent),
+				public: methods.and.every(m => rec(m).public),
+			}
+		}
+		return methods
+	}
+	if (typeof methodMetadataExtended === 'object' && 'permission' in methodMetadataExtended) {
+		return { ...rec(methodMetadataExtended.metadata), ...methodMetadataExtended.permission }
+	}
+	return rec(methodMetadataExtended)
 }

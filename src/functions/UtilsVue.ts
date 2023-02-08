@@ -40,7 +40,7 @@ export function createAction (actionInterface: RefMaybe<Action & { onClick?: (e?
 		if (action.value?.disabled || !action.value?.onClick && !action.value?.run && !action.value?.to) { return }
 		return (e?: MouseEvent) => {
 			try { action.value?.onClick?.(e) } catch (e) { console.error(e) }
-			try { action.value?.run?.() } catch (e) { console.error(e) }
+			try { action.value?.run && action.value.run?.() } catch (e) { console.error(e) }
 			try { hrefRouter.value && routerLink.navigate(e) } catch (e) { console.error(e) }
 			try { hrefExternal.value && !forTemplate && window.open(hrefExternal.value, '_blank')} catch (e) { console.error(e) }
 		}

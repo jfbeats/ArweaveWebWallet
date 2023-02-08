@@ -1,15 +1,30 @@
 // @ts-ignore
-import { v4 } from 'uuid'
+import { v4, validate, version } from 'uuid'
+import { colors } from '@/store/Theme'
 
 export function uuidV4 () { return v4() as string }
+export function isUuidV4 (uuid: string) { return validate(uuid) && version(uuid) === 4 }
 
-export function debounce (fun: Function, timeout = 500) {
-	let timer: ReturnType<typeof setTimeout>
-	return (...args: any[]) => {
-		clearTimeout(timer)
-		timer = setTimeout(() => { // @ts-ignore
-			fun.apply(this, args) }, timeout)
-	}
+export function debounce <T extends (...args: any[]) => any> (fun: T, options?: { timeout?: number, animationFrame?: true }) {
+	let timer: any
+	let promises = [] as Function[]
+	return ((...args: any[]) => {
+		return new Promise<ReturnType<T>>(res => {
+			promises.push(res)
+			const resolve = () => {
+				// @ts-ignore
+				const result = fun.apply(this, args)
+				promises.forEach(res => res(result))
+			}
+			if (options?.animationFrame) {
+				if (timer) { return }
+				timer = requestAnimationFrame(() => { resolve(); timer = undefined })
+			} else {
+				clearTimeout(timer)
+				timer = setTimeout(() => resolve(), options?.timeout ?? 500)
+			}
+		})
+	}) as (...args: Parameters<T>) => Promise<ReturnType<T>>
 }
 
 export function humanFileSize (size: string | number) {
@@ -49,7 +64,9 @@ function rgbToHex (rgb: string) {
 	return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)
 }
 
-export function normalizeColorTo (type: 'hex' | 'rgb', color: string) {
+export function normalizeColorTo (type: 'hex' | 'rgb', color?: string) {
+	if (color?.startsWith('var')) { color = colors.value[color.replace('var(--', '').replace(')', '') as keyof typeof colors['value']] }
+	if (!color) { return colors.value['red'] }
 	if (type === 'rgb' && color.startsWith('#')) { return hexToRgb(color) }
 	if (type === 'hex' && color.includes(',')) { return rgbToHex(color) }
 	return color
