@@ -114,7 +114,7 @@ const coldWalletAction = computed(() => getColdWalletAction(true))
 .flow-item-content {
 	text-align: justify;
 	width: var(--column-width-small);
-	
+	min-width: 0;
 	padding: var(--spacing);
 	
 }
