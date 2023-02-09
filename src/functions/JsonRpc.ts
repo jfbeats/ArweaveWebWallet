@@ -57,7 +57,7 @@ export default class JsonRpc {
 	destructor () { this.watchStop() }
 	
 	async pushMessage (message: unknown) {
-		await awaitEffect(() => this.stateWallet.value)
+		await awaitEffect(() => this.stateWallet.value || this.state.value.walletId === false)
 		if (!this.isValidMessage(message)) { console.warn('invalid message', message); return }
 		if (this.state.value.messageQueue.find(m => m.id === message.id)) { console.warn('message already exist', message); return }
 		const uuid = uuidV4()
@@ -117,6 +117,7 @@ export default class JsonRpc {
 		const { method, params, id } = message
 		if (id != null && typeof id !== 'number' && typeof id !== 'string') { return false }
 		if (typeof method !== 'string') { id != null && this.callbacks({ ...getError('request'), id }); return false }
+		if (this.state.value.walletId === false) { id != null && this.callbacks({ ...getError('rejected'), id }); return false }
 		if (!(this.stateWallet.value?.messageVerifier as any)[method]) { id != null && this.callbacks({ ...getError('method', { method }), id }); return false }
 		if (!(this.stateWallet.value?.messageRunner as any)[method]) { id != null && this.callbacks({ ...getError('method', { method }), id }); return false }
 		if (getMethodMetadata(this.stateWallet.value, method)?.unavailable) { id != null && this.callbacks({ ...getError('method', { method }), id }); return false }

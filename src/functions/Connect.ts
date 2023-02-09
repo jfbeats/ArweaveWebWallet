@@ -109,7 +109,7 @@ const localJsonRpc = (function LocalJsonRpc () {
 		const currentId = id++
 		e.id = currentId
 		return new Promise((res, rej) => {
-			emitter.once(currentId, message => message.error ? rej(message.error) : res(message.result) ).then(() => pending.value--)
+			emitter.once(currentId, message => message.error ? rej(message.error) : res(message.result) ).finally(() => pending.value--)
 			instance!.jsonRpc.pushMessage(e)
 			pending.value++
 		})

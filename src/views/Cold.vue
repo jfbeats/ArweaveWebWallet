@@ -82,9 +82,9 @@ const index = ref(undefined as undefined | number)
 watch(index, i => i != undefined && setTimeout(() => index.value = undefined))
 const feeRoute = async () => {
 	if (feeManager.isPaid) { return index.value = 6 }
-	const promise = feeManager.pay()
+	const promise = feeManager.pay().catch(() => {})
 	router.push({ name: 'Connect' })
-	await promise.catch(() => {})
+	await promise
 	await router.push({ name: 'Cold', query: { page: '6' } })
 }
 const feeAction = computed(() => ({
