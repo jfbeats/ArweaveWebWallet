@@ -65,7 +65,7 @@ import Flow from '@/components/layout/Flow.vue'
 import SecurityVisual from '@/components/visual/SecurityVisual.vue'
 import Link from '@/components/function/Link.vue'
 import { fee } from '@/functions/Fee'
-import { humanFileSize } from '@/functions/Utils'
+import { humanFileSize, round } from '@/functions/Utils'
 import Amount from '@/components/composed/Amount.vue'
 import Button from '@/components/atomic/Button.vue'
 import TxCard from '@/components/composed/TxCard.vue'
@@ -89,7 +89,7 @@ const feeRoute = async () => {
 }
 const feeAction = computed(() => ({
 	run: feeRoute,
-	name: feeManager.isPaid ? 'Paid' : feeManager.txs.length ? 'Pay remaining' : 'Pay',
+	name: feeManager.isPaid ? 'Paid' : feeManager.txs.length ? `Pay remaining ${round(feeManager.remaining)} AR` : 'Pay',
 }))
 const coldWalletAction = computed(() => getColdWalletAction(true))
 </script>

@@ -11,14 +11,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { round } from '@/functions/Utils'
 
 const props = defineProps(['ar'])
-const amountRounded = computed(() => {
-	if (props.ar == null || isNaN(props.ar)) { return null }
-	const FractionDigits = new Intl.NumberFormat([...navigator.languages], { maximumFractionDigits: 3 }).format(props.ar)
-	const SignificantDigits = new Intl.NumberFormat([...navigator.languages], { maximumSignificantDigits: 1 }).format(props.ar)
-	return FractionDigits.length >= SignificantDigits.length ? FractionDigits : SignificantDigits
-})
+const amountRounded = computed(() => round(props.ar))
 </script>
 
 
