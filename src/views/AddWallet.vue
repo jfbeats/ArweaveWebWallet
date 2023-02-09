@@ -22,9 +22,8 @@
 		<div class="card">
 			<h2 class="flex-row" style="align-items: center;"><Icon :icon="IconSearch" /><span>Watch public address</span></h2>
 			<InputAddress v-model="targetInput" :submit="importAddressOnlyAction" />
-<!--			todo release -->
-<!--			<h2 class="flex-row" style="align-items: center;"><Icon :icon="IconSnow" /><span>Permafrost Vault</span></h2>-->
-<!--			<Button v-bind="coldWalletAction" class="main" :glow="true">{{ coldWalletAction.name }}</Button>-->
+			<h2 class="flex-row" style="align-items: center;"><Icon :icon="IconSnow" /><span>Permafrost Vault</span></h2>
+			<Button v-bind="coldWalletAction" class="main" :glow="true">{{ coldWalletAction.name }}</Button>
 		</div>
 		<div class="card" v-for="(provider, number) in hardwareProviders" :key="provider.metadata.name">
 			<h2 class="flex-row" style="align-items: center;"><Icon :icon="provider.metadata.icon" /><span>{{ provider.metadata.name }}</span></h2>
