@@ -3,6 +3,7 @@ import { isEncrypted } from '@/functions/Crypto'
 import { requestPrivateKey } from '@/functions/Password'
 import InterfaceStore from '@/store/InterfaceStore'
 import { computed, watch } from 'vue'
+import { coldState } from '@/store/Cold'
 
 
 
@@ -13,7 +14,10 @@ export function WalletProxy <TBase extends ClassConstructor> (Base: TBase) {
 		constructor (...args: any[]) { super(...args)
 			this.#wallet = args[0] as WalletDataInterface
 			if (args[0].arweave) { this.data.arweave = args[0].arweave } // TODO remove - temporary conversion
-			const stopColdWatch = watch(() => InterfaceStore.online, online => online && this.hasPrivateKey && (this.state.hot = true))
+			const stopColdWatch = watch(() => InterfaceStore.online, online => {
+				const isExcluded = Object.entries(this.data).some(entry => entry[1].key && coldState.value?.excluded.includes(entry[1].key))
+				if (isExcluded || online && this.hasPrivateKey) { this.state.hot = true }
+			}, { immediate: true })
 			;(this as any).on('destructor', () => { this.#isEncrypted.effect.stop(); stopColdWatch() })
 		}
 		get id () { return this.#wallet.id + '' }
