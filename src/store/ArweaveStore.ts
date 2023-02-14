@@ -8,6 +8,7 @@ import { isRef, reactive, ref, Ref, watch } from 'vue'
 import { Emitter } from '@/functions/UtilsClass'
 import { notify } from '@/store/NotificationStore'
 import { track } from '@/store/Analytics'
+import InterfaceStore from '@/store/InterfaceStore'
 
 
 
@@ -370,7 +371,7 @@ async function loadGatewaySettings () {
 	updateBundler(ArweaveStore.bundlerURL || bundlerDefault, true)
 	const { state, stop } = useChannel('localGatewayTest')
 	if (state.value && Date.now() - state.value > 2600000000) { state.value = undefined }
-	if (!ArweaveStore.gatewayURL && !state.value && navigator.onLine) {
+	if (!ArweaveStore.gatewayURL && !state.value && InterfaceStore.online) {
 		const isLocal = await updateArweave(location.origin).catch(() => {})
 		const isReachable = isLocal || await testGateway(gatewayDefault).catch(async e => {
 			const isp = await fetch('http://ip-api.com/json').then(res => res.json().then(res => res?.isp as string)).catch(() => {})

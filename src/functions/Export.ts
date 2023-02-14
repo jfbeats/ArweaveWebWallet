@@ -3,6 +3,7 @@ import { focusWindow, RPC } from '@/functions/Connect'
 import router from '@/router'
 import { ExportEntry, ExportRequest, findTransactions, manageUpload } from '@/functions/Transactions'
 import { notify } from '@/store/NotificationStore'
+import InterfaceStore from '@/store/InterfaceStore'
 import { computed, ref, toRaw } from 'vue'
 
 
@@ -45,7 +46,7 @@ export async function requestImport (entries: ExportEntry[]) {
 		unsigned.map(({ tx: txIn, provider, init }) => init().then(tx => RPC.arweave.signTransaction(tx).then(async tx => {
 			const entry = (await findTransactions(tx))?.[0]
 			const compressed = provider.compress(txIn, tx)
-			if (!navigator.onLine) { return requestExport({ tx, entry, compressed }) } // todo public key vs address
+			if (!InterfaceStore.online) { return requestExport({ tx, entry, compressed }) } // todo public key vs address
 			manageUpload(tx as any)
 		})))
 		router.push({ name: 'Connect' })
