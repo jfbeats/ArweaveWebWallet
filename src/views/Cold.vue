@@ -4,7 +4,7 @@
 			<Link class="flow-item" key="1" :run="() => flow.nav(1)">
 				<div class="flow-item-content flex-column" style="width: var(--popup-width);">
 					<SecurityVisual style="opacity: 0.75; margin: -3%; width: 90%; align-self: center" />
-					<div>There are steps you can take to generate and use your keys in a way that relies on no single trusted party. It is possible to turn any device into a secure vault to interact with these account.</div>
+					<div>There are steps you can take to generate and use your keys in a way that relies on no single trusted party. It is possible to turn any device into a secure Permafrost Vault to interact with these account.</div>
 				</div>
 			</Link>
 			<Link class="flow-item" key="2" :run="() => flow.nav(1)">
@@ -41,7 +41,7 @@
 			<div class="flow-item" key="6">
 				<div class="flow-item-content flex-column">
 <!--					todo fix not responsive, breaks when going back online  -->
-					<div>Get access to the Permafrost Vault for an unlimited number of accounts and devices by donating {{ humanFileSize(byteSize) }} worth of arweave storage (<Amount :ar="feeManager.ar"> | </Amount>).</div>
+					<div>Get lifetime access to the Permafrost Vault for an unlimited number of accounts and devices for {{ humanFileSize(byteSize) }} worth of arweave storage (<Amount :ar="feeManager.ar"> | </Amount>).</div>
 					<Button v-bind="feeAction" :glow="true">{{ feeAction.name }}</Button>
 					<div class="cards flex-column">
 						<TxCard v-for="tx in feeManager.txs" :tx="tx.node" />
