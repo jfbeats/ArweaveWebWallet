@@ -50,6 +50,16 @@ export async function selectProviders (from: 'wallet' | 'keyfile', wallet: Walle
 
 
 
+export function isWalletData (wallet?: string) {
+	try {
+		const walletData = JSON.parse(wallet!) as Partial<WalletDataInterface>
+		const providersId = providers.map(p => p.metadata.id)
+		return walletData?.data && Object.keys(walletData.data).filter(key => providersId.includes(key as any)).length > 0
+	} catch (e) {}
+}
+
+
+
 function walletFactory (wallet: WalletDataInterface): Wallet {
 	const provider = selectProvider(wallet)
 	return new provider(wallet) as Wallet
@@ -105,7 +115,7 @@ export async function addAddress (address?: string, provider?: AnyProvider): Pro
 	return addWalletData(walletData)
 }
 
-async function addWalletData (walletData: Partial<WalletDataInterface>) {
+export async function addWalletData (walletData: Partial<WalletDataInterface>) {
 	walletData.id ??= getNewId()
 	const result = walletData as WalletDataInterface
 	WalletsData.value.push(result)

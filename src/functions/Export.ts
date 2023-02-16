@@ -66,7 +66,3 @@ export async function requestRelay (wallet: Wallet) {
 	}
 	throw 'Relay not supported for specific provider'
 }
-
-export async function findRelayRequests () {
-
-}
