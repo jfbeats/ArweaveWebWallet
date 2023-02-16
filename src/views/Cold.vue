@@ -4,12 +4,12 @@
 			<Link class="flow-item" key="1" :run="() => flow.nav(1)">
 				<div class="flow-item-content flex-column" style="width: var(--popup-width);">
 					<SecurityVisual style="opacity: 0.75; margin: -3%; width: 90%; align-self: center" />
-					<div>There are steps you can take to generate and use your keys in a way that relies on no single trusted party. It is possible to turn any device into a secure vault to interact with these account.</div>
+					<div>There are steps you can take to generate and use your keys in a way that relies on no single trusted party. It is possible to turn any device into a secure Permafrost Vault to interact with these account.</div>
 				</div>
 			</Link>
 			<Link class="flow-item" key="2" :run="() => flow.nav(1)">
 				<div class="flow-item-content flex-column">
-					<div>1/4 | Prevent potential eavesdropping.</div>
+					<div>1/4 | Prevent potential leaks.</div>
 					<div>Keep your devices offline before and after importing vault accounts and validate all communications before they are submitted through QR codes or files. Compromised software or hardware may preserve secret information in memory and wait indefinitely for any opportunity to relay it to bad actors.</div>
 				</div>
 			</Link>
@@ -41,14 +41,14 @@
 			<div class="flow-item" key="6">
 				<div class="flow-item-content flex-column">
 <!--					todo fix not responsive, breaks when going back online  -->
-					<div>Get access to the Permafrost Vault for an unlimited number of accounts and devices by donating {{ humanFileSize(byteSize) }} worth of arweave storage (<Amount :ar="feeManager.ar"> | </Amount>).</div>
+					<div>Get lifetime access to the Permafrost Vault for an unlimited number of accounts and devices for {{ humanFileSize(byteSize) }} worth of arweave storage (<Amount :ar="feeManager.ar"> | </Amount>).</div>
 					<Button v-bind="feeAction" :glow="true">{{ feeAction.name }}</Button>
 					<div class="cards flex-column">
 						<TxCard v-for="tx in feeManager.txs" :tx="tx.node" />
 					</div>
 				</div>
 			</div>
-			<div class="flow-item" key="7" v-if="feeManager.isPaid">
+			<div class="flow-item" key="7" v-if="lastPage">
 				<div class="flow-item-content flex-column" style="width: var(--popup-width);">
 					<SecurityVisual :color="coldWalletAction.color" :light="true" style="opacity: 0.75; margin: -3%; width: 90%; align-self: center" />
 					<Button v-bind="coldWalletAction" :glow="true">{{ coldWalletAction.name }}</Button>
@@ -65,13 +65,13 @@ import Flow from '@/components/layout/Flow.vue'
 import SecurityVisual from '@/components/visual/SecurityVisual.vue'
 import Link from '@/components/function/Link.vue'
 import { fee } from '@/functions/Fee'
-import { humanFileSize } from '@/functions/Utils'
+import { humanFileSize, round } from '@/functions/Utils'
 import Amount from '@/components/composed/Amount.vue'
 import Button from '@/components/atomic/Button.vue'
 import TxCard from '@/components/composed/TxCard.vue'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { getColdWalletAction } from '@/store/Cold'
+import { coldState, getColdWalletAction } from '@/store/Cold'
 
 const flow = ref(undefined as undefined | InstanceType<typeof Flow>)
 const router = useRouter()
@@ -82,15 +82,16 @@ const index = ref(undefined as undefined | number)
 watch(index, i => i != undefined && setTimeout(() => index.value = undefined))
 const feeRoute = async () => {
 	if (feeManager.isPaid) { return index.value = 6 }
-	const promise = feeManager.pay()
+	const promise = feeManager.pay().catch(e => console.error(e))
 	router.push({ name: 'Connect' })
-	await promise.catch(() => {})
+	await promise
 	await router.push({ name: 'Cold', query: { page: '6' } })
 }
 const feeAction = computed(() => ({
 	run: feeRoute,
-	name: feeManager.isPaid ? 'Paid' : feeManager.txs.length ? 'Pay remaining' : 'Pay',
+	name: feeManager.isPaid ? 'Paid' : feeManager.txs.length ? `Pay remaining ${round(feeManager.remaining)} AR` : 'Pay',
 }))
+const lastPage = computed(() => feeManager.isPaid || coldState.value?.status)
 const coldWalletAction = computed(() => getColdWalletAction(true))
 </script>
 
@@ -114,7 +115,7 @@ const coldWalletAction = computed(() => getColdWalletAction(true))
 .flow-item-content {
 	text-align: justify;
 	width: var(--column-width-small);
-	
+	min-width: 0;
 	padding: var(--spacing);
 	
 }

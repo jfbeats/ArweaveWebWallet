@@ -1,4 +1,4 @@
-import { addKeyfile, selectProviders, Wallets } from '@/functions/Wallets'
+import { addKeyfile, addWalletData, isWalletData, selectProviders, Wallets } from '@/functions/Wallets'
 import { requestImport } from '@/functions/Export'
 import { findTransactions } from '@/functions/Transactions'
 import { addFiles, form } from '@/store/FormSend'
@@ -87,15 +87,19 @@ async function findKeyfiles (files: string[] | FileWithPath[]): Promise<string[]
 	for (const file of files) {
 		const text = typeof file === 'string' ? file : await file.text()
 		try {
+			const isData = isWalletData(text)
 			const providers = await selectProviders('keyfile', text)
-			if (providers.length) { results.push(text) }
+			if (providers.length || isData) { results.push(text) }
 		} catch (e) {}
 	}
 	return results
 }
 
 async function importKeyfiles (keyfiles: string[]) {
-	const ids = (await Promise.all(keyfiles.map(async keyfile => addKeyfile(keyfile)))).filter(e => e !== null).map(e => e.id)
+	const ids = (await Promise.all(keyfiles.map(async keyfile => {
+		if (isWalletData(keyfile)) { return addWalletData(JSON.parse(keyfile)) }
+		return addKeyfile(keyfile)
+	}))).filter(e => e !== null).map(e => e.id)
 	if (ids.length > 0) { router.push({ name: 'EditWallet', query: { wallet: ids } }) }
 	track.account('Account Import')
 }

@@ -22,7 +22,6 @@
 		<div class="card">
 			<h2 class="flex-row" style="align-items: center;"><Icon :icon="IconSearch" /><span>Watch public address</span></h2>
 			<InputAddress v-model="targetInput" :submit="importAddressOnlyAction" />
-<!--			todo release -->
 <!--			<h2 class="flex-row" style="align-items: center;"><Icon :icon="IconSnow" /><span>Permafrost Vault</span></h2>-->
 <!--			<Button v-bind="coldWalletAction" class="main" :glow="true">{{ coldWalletAction.name }}</Button>-->
 		</div>

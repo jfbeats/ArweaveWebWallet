@@ -3,7 +3,10 @@ import { focusWindow, RPC } from '@/functions/Connect'
 import router from '@/router'
 import { ExportEntry, ExportRequest, findTransactions, manageUpload } from '@/functions/Transactions'
 import { notify } from '@/store/NotificationStore'
-import { computed, ref, toRaw } from 'vue'
+import InterfaceStore from '@/store/InterfaceStore'
+import { computed, ref, shallowRef, toRaw } from 'vue'
+import { awaitEffect } from '@/functions/AsyncData'
+import { ArweaveProvider } from '@/providers/Arweave'
 
 
 
@@ -13,7 +16,6 @@ export const exportRequest = computed(() => pending.value[0] as ExportRequest | 
 
 
 export async function requestExport (obj: { tx?: ExportEntry['tx'], compressed?: any, entry?: ExportEntry }) {
-	// todo require cold wallet mode if cold and not online
 	let controls: { resolve: ExportRequest['resolve'], reject: ExportRequest['reject'] }
 	const promise = new Promise<Transaction>((resolve, reject) => controls = { resolve, reject })
 	const newEntry: ExportEntry | undefined = obj.tx && obj.entry && { ...obj.entry, tx: obj.tx }
@@ -45,9 +47,22 @@ export async function requestImport (entries: ExportEntry[]) {
 		unsigned.map(({ tx: txIn, provider, init }) => init().then(tx => RPC.arweave.signTransaction(tx).then(async tx => {
 			const entry = (await findTransactions(tx))?.[0]
 			const compressed = provider.compress(txIn, tx)
-			if (!navigator.onLine) { return requestExport({ tx, entry, compressed }) } // todo public key vs address
+			if (!InterfaceStore.online) { return requestExport({ tx, entry, compressed }) } // todo public key vs address
 			manageUpload(tx as any)
 		})))
 		router.push({ name: 'Connect' })
 	}
+}
+
+
+
+export const relayRequest = shallowRef(undefined as undefined | { wallet: Wallet, walletData: Partial<WalletDataInterface> })
+
+export async function requestRelay (wallet: Wallet) {
+	if (wallet instanceof ArweaveProvider) {
+		await Promise.all([wallet.getPublicKey(), awaitEffect(() => wallet.key)])
+		const { data } = wallet
+		return relayRequest.value = { wallet, walletData: { data } }
+	}
+	throw 'Relay not supported for specific provider'
 }

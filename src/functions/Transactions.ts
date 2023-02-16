@@ -1,4 +1,5 @@
 import ArweaveStore, { arweave, arweaveQuery } from '@/store/ArweaveStore'
+import InterfaceStore from '@/store/InterfaceStore'
 import { getMempool, getPending } from '@/store/BlockStore'
 import { notify } from '@/store/NotificationStore'
 import { track } from '@/store/Analytics'
@@ -94,7 +95,7 @@ export function generateManifest (localPaths: string[], transactions: Array<{ id
 
 
 export async function manageUpload (tx: AnyTransaction) {
-	if (!navigator.onLine) { return requestExport({ tx }) }
+	if (!InterfaceStore.online) { return requestExport({ tx }) }
 	if (!tx.chunks?.chunks?.length) { arweave.transactions.post(tx); notify.log('Transaction sent'); return }
 	const uploader = await arweave.transactions.getUploader(tx)
 	const storageKey = 'uploader:' + tx.id

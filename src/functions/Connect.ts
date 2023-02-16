@@ -87,7 +87,7 @@ const localJsonRpc = (function LocalJsonRpc () {
 		if (!initSharedState(channel.state, { walletId: undefined, origin: 'local', session: Math.random() + '', appInfo: { name } })) { throw 'Unable to init state' }
 		const jsonRpc = new JsonRpc(message => emitter.emit(message.id, message), channel.state)
 		onUnload(channel.deleteChannel)
-		channel.state.value.walletId = Wallets.value[0].id
+		channel.state.value.walletId = Wallets.value[0]?.id
 		watch(() => jsonRpc.state.value.messageQueue, async val => {
 			const id = await getOwnerIdFromMessage(instance?.jsonRpc.state.value.messageQueue.find(el => !el.fulfilled))
 			id != undefined && instance!.channel.state.value && (instance!.channel.state.value.walletId = id)
@@ -109,7 +109,7 @@ const localJsonRpc = (function LocalJsonRpc () {
 		const currentId = id++
 		e.id = currentId
 		return new Promise((res, rej) => {
-			emitter.once(currentId, message => message.error ? rej(message.error) : res(message.result) ).then(() => pending.value--)
+			emitter.once(currentId, message => message.error ? rej(message.error) : res(message.result) ).finally(() => pending.value--)
 			instance!.jsonRpc.pushMessage(e)
 			pending.value++
 		})

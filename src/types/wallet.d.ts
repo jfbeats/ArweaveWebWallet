@@ -3,7 +3,7 @@ type WalletDataInterface = {
 	uuid?: string
 	jwk?: PrivateKey | EncryptedContent
 	provider?: ProviderId
-	data?: { [name in ProviderId]?: { key?: string } }
+	data?: { [name in ProviderId]?: { key?: string, publicKey?: string } }
 	state?: { hot?: true }
 	settings?: {
 		sync?: boolean
