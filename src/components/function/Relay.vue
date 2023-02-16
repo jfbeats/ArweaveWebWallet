@@ -25,7 +25,7 @@
 							<div style="align-self: center">Communicate this data to the online device</div>
 							<QR :qr="txString"/>
 							<div class="flex-row" style="align-items: stretch; justify-content: stretch;">
-								<Button :run="doDownload" style="flex: 1 1 auto; height: initial;" :glow="true">Download File</Button>
+								<Button :run="doDownload" style="flex: 1 1 auto; height: initial;">Download File</Button>
 								<Button :square="true" :run="share" :icon="IconShare" />
 							</div>
 						</Link>
