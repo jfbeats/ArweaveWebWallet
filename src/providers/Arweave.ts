@@ -154,11 +154,14 @@ export class ArweaveProvider extends mix(ArweaveAccount).with(WalletProxy) imple
 		return new Uint8Array(decrypted)
 	}
 	async getPublicKey () {
+		if (this.data.arweave?.publicKey) { return this.data.arweave.publicKey }
 		let result = undefined as string | undefined
 		if (this.hasPrivateKey && !this.isEncrypted) { result ||= (await this.getPrivateKey()).n }
 		await awaitEffect(() => this.key);
 		result ||= await fetchPublicKey(this.key!)
 		if (this.hasPrivateKey) { result ||= (await this.getPrivateKey()).n }
+		if (!result) { throw 'Failed to get public key' }
+		if (this.data.arweave) { this.data.arweave.publicKey = result }
 		return result
 	}
 	async download () {

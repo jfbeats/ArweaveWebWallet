@@ -11,7 +11,8 @@
 				<Select v-model="wallet.settings.securityLevel" :options="securityOptions" />
 			</div>
 			<div class="flex-row">
-				<Button v-if="wallet.download && !wallet.metadata.methods.download?.unavailable" :icon="IconDownload" @click="() => wallet.download()">Download</Button>
+				<Button v-if="addRelay" :run="addRelay" :icon="IconUpload" :glow="glow" color="var(--blue)">Add Relay</Button>
+				<Button v-if="wallet.download && !wallet.metadata.methods.download?.unavailable" :icon="IconDownload" @click="() => wallet.download()">Backup Keyfile</Button>
 				<Button :icon="IconX" @click="deleteWallet(wallet)">Delete</Button>
 			</div>
 		</div>
@@ -26,8 +27,12 @@ import WalletInfo from '@/components/composed/WalletInfo.vue'
 import Button from '@/components/atomic/Button.vue'
 import Select from '@/components/form/Select.vue'
 import { deleteWallet } from '@/functions/Wallets'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { coldState } from '@/store/Cold'
+import { requestRelay } from '@/functions/Export'
 
 import IconDownload from '@/assets/icons/download.svg?component'
+import IconUpload from '@/assets/icons/share.svg?component'
 import IconX from '@/assets/icons/x.svg?component'
 import IconLock from '@/assets/icons/lock.svg?component'
 import IconUnlock from '@/assets/icons/unlock.svg?component'
@@ -41,6 +46,17 @@ const securityOptions = [
 	{ value: 'inactivity', text: 'Encrypted - Lock when away', icon: IconLock },
 	{ value: 'always', text: 'Encrypted - Always locked', icon: IconLock },
 ]
+const glow = ref(true)
+onMounted(async () => {
+	const unmount = new Promise<void>(res => onUnmounted(res))
+	const interval = setInterval(() => glow.value = !glow.value, 1000)
+	await unmount
+	clearInterval(interval)
+})
+const addRelay = computed(() => {
+	if (!coldState.value?.status || !props.wallet.hasPrivateKey || props.wallet.state.hot) { return }
+	return () => requestRelay(props.wallet)
+})
 </script>
 
 
@@ -60,6 +76,7 @@ const securityOptions = [
 .content {
 	flex: 1 1 auto;
 	min-width: 0;
+	overflow: visible;
 }
 
 .bottom {

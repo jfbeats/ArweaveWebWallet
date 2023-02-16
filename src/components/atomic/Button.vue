@@ -28,13 +28,14 @@ const props = defineProps<{
 const slots = useSlots()
 
 const color = computed(() => normalizeColorTo('rgb', props.color ?? 'var(--grey)'))
-const borderSize = computed(() => props.glow ? '0' : '0.5px')
 const glowStyle = computed(() => props.glow && ({
-	'--border': `rgba(${color.value},0.2)`,
+	'--border': `rgba(${color.value},0.5)`,
 	'--glow-color': `rgba(${color.value},0.2)`,
-	'background-image': `radial-gradient(circle at center, rgba(${color.value},0.4),
-	rgba(${color.value},0.3))`
 }))
+const backgroundImageCSS = computed(() => `radial-gradient(circle at center, rgba(${color.value},0.4), rgba(${color.value},0.3))`)
+const glowOpacityCSS = computed(() => props.glow ? '1' : '0')
+const glowTransitionCSS = computed(() => props.glow ? '0.2s ease' : '0.5s ease')
+const glowTransitionLongCSS = computed(() => props.glow ? '0.1s ease' : '1s ease')
 const margin = computed(() => slots.default)
 </script>
 
@@ -49,9 +50,24 @@ const margin = computed(() => slots.default)
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	border: v-bind(borderSize) solid var(--border);
+	border: 0.5px solid var(--border);
 	box-shadow: 0 0 calc(var(--spacing) / 2) 0 var(--glow-color);
-	transition: filter 0.3s ease, box-shadow 0.3s ease;
+	transition: v-bind(glowTransitionCSS);
+	position: relative;
+	z-index: 1;
+	/*overflow: hidden;*/
+}
+
+.button::after {
+	content: "";
+	opacity: v-bind(glowOpacityCSS);
+	border-radius: var(--border-radius);
+	/*border: 0.5px solid transparent;*/
+	background-image: v-bind(backgroundImageCSS);
+	position: absolute;
+	inset: 0;
+	transition: v-bind(glowTransitionLongCSS);
+	z-index: -1;
 }
 
 .button:hover {

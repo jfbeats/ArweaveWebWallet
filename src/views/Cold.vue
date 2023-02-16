@@ -9,7 +9,7 @@
 			</Link>
 			<Link class="flow-item" key="2" :run="() => flow.nav(1)">
 				<div class="flow-item-content flex-column">
-					<div>1/4 | Prevent potential eavesdropping.</div>
+					<div>1/4 | Prevent potential leaks.</div>
 					<div>Keep your devices offline before and after importing vault accounts and validate all communications before they are submitted through QR codes or files. Compromised software or hardware may preserve secret information in memory and wait indefinitely for any opportunity to relay it to bad actors.</div>
 				</div>
 			</Link>
@@ -48,7 +48,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="flow-item" key="7" v-if="feeManager.isPaid">
+			<div class="flow-item" key="7" v-if="lastPage">
 				<div class="flow-item-content flex-column" style="width: var(--popup-width);">
 					<SecurityVisual :color="coldWalletAction.color" :light="true" style="opacity: 0.75; margin: -3%; width: 90%; align-self: center" />
 					<Button v-bind="coldWalletAction" :glow="true">{{ coldWalletAction.name }}</Button>
@@ -71,7 +71,7 @@ import Button from '@/components/atomic/Button.vue'
 import TxCard from '@/components/composed/TxCard.vue'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { getColdWalletAction } from '@/store/Cold'
+import { coldState, getColdWalletAction } from '@/store/Cold'
 
 const flow = ref(undefined as undefined | InstanceType<typeof Flow>)
 const router = useRouter()
@@ -91,6 +91,7 @@ const feeAction = computed(() => ({
 	run: feeRoute,
 	name: feeManager.isPaid ? 'Paid' : feeManager.txs.length ? `Pay remaining ${round(feeManager.remaining)} AR` : 'Pay',
 }))
+const lastPage = computed(() => feeManager.isPaid || coldState.value?.status)
 const coldWalletAction = computed(() => getColdWalletAction(true))
 </script>
 
