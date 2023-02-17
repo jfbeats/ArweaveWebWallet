@@ -189,7 +189,7 @@ async function makeTemplates () {
 			getOwner: (tx: any) => tx.owner,
 			isSigned: (tx: any) => 'signature' in tx && tx.signature,
 			equals: (a: Transaction, b: AnyTransaction) => {
-				if (a.owner && a.owner !== b.owner) { return false }
+				if (a.owner && b.owner && a.owner !== b.owner) { return false }
 				if (!hasMatchingTags(a.tags, b.tags)) { return false }
 				const fields: Array<keyof Transaction> = ['target', 'data_root', 'quantity']
 				return fields.every(field => a[field] === b[field])
