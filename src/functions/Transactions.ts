@@ -175,8 +175,17 @@ async function makeTemplates () {
 			return tx
 		}
 		const verify = async (tx: any) => arweave.transactions.verify(tx).catch(() => false)
+		const getBaseTx = () => buildTransaction({ data: 'hey' }).then(tx => {
+			const trimmed = compress(trim(tx) as any)
+			localStorage.setItem('template:ar', JSON.stringify(trimmed))
+			return trimmed
+		}).catch(e => {
+			const template = localStorage.getItem('template:ar')
+			if (!template) { throw e }
+			return JSON.parse(template)
+		})
 		return {
-			template: compress(trim(await buildTransaction({ data: 'hey' })) as any),
+			template: await getBaseTx().catch(() => getBaseTx()),
 			getOwner: (tx: any) => tx.owner,
 			isSigned: (tx: any) => 'signature' in tx && tx.signature,
 			equals: (a: Transaction, b: AnyTransaction) => {
@@ -211,7 +220,7 @@ async function makeTemplates () {
 	} as const
 }
 
-const templatesPromise = makeTemplates()
+const templatesPromise = makeTemplates().catch(e => notify.warn('failed to initialize transactions ' + e))
 
 
 
