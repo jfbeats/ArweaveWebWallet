@@ -1,5 +1,5 @@
 import { useChannel } from '@/functions/Channels'
-import { Wallets } from '@/functions/Wallets'
+import { getWordList, Wallets } from '@/functions/Wallets'
 import { computed, watch } from 'vue'
 import InterfaceStore from '@/store/InterfaceStore'
 import { notify } from '@/store/NotificationStore'
@@ -12,6 +12,11 @@ import IconUnlock from '@/assets/icons/unlock.svg?component'
 export const { state: coldState } = useChannel('cold')
 
 export const ready = computed(() => !InterfaceStore.online)
+
+export async function prepare (silent?: true) {
+	try { await Promise.all([getWordList()]) }
+	catch (e) { console.error('Vault preparation failed: ' + e); !silent && notify.error('Vault preparation failed: ' + e) }
+}
 
 export function getColdWalletAction (launch?: boolean): Action {
 	if (coldState.value?.status === 'compromised' || coldState.value?.status === 'active' && !ready.value) { return {

@@ -69,9 +69,9 @@ import { humanFileSize, round } from '@/functions/Utils'
 import Amount from '@/components/composed/Amount.vue'
 import Button from '@/components/atomic/Button.vue'
 import TxCard from '@/components/composed/TxCard.vue'
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { coldState, getColdWalletAction } from '@/store/Cold'
+import { coldState, getColdWalletAction, prepare } from '@/store/Cold'
 
 const flow = ref(undefined as undefined | InstanceType<typeof Flow>)
 const router = useRouter()
@@ -93,6 +93,7 @@ const feeAction = computed(() => ({
 }))
 const lastPage = computed(() => feeManager.isPaid || coldState.value?.status)
 const coldWalletAction = computed(() => getColdWalletAction(true))
+onMounted(() => prepare())
 </script>
 
 

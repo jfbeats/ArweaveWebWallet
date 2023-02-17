@@ -6,6 +6,9 @@ import Wallet from '@/views/Wallet.vue'
 import TxList from '@/views/TxList.vue'
 import Send from '@/views/Send.vue'
 import Tokens from '@/views/Tokens.vue'
+import AddWallet from '@/views/AddWallet.vue'
+import EditWallet from '@/views/EditWallet.vue'
+import Settings from '@/views/Settings.vue'
 import Cold from '@/views/Cold.vue'
 import Connect from '@/views/Connect.vue'
 import type { findRoutePosition } from '@/router/Utils'
@@ -81,19 +84,19 @@ const routes: RouterOptions['routes'] = [
 	{
 		path: '/add',
 		name: 'AddWallet',
-		component: () => import('@/views/AddWallet.vue'),
+		component: AddWallet,
 		meta: { title: 'Add Wallets' }
 	},
 	{
 		path: '/edit',
 		name: 'EditWallet',
-		component: () => import('@/views/EditWallet.vue'),
+		component: EditWallet,
 		meta: { title: 'Edit Wallets' },
 	},
 	{
 		path: '/settings',
 		name: 'Settings',
-		component: () => import('@/views/Settings.vue'),
+		component: Settings,
 		meta: { title: 'Settings' },
 	},
 	{
