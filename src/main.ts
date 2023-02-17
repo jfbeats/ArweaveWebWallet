@@ -19,9 +19,10 @@ const app = createApp(App)
 app.use(router, Slicksort)
 
 if (location.host === 'dev.arweave.app') {
-	console = new Proxy(console, { get: (target: any, p: string | symbol, receiver: any) => p === 'error' ? (...args: any[]) => { notify.error(args[0]); target[p](...args) } : target[p] })
-	window.onerror = (event) => { notify.error(event.toString()) }
-	window.onunhandledrejection = (event) => { notify.error(event.reason) }
+	const error = (e: string) => !['', 'AxiosError: Network Error', 'TypeError: Network request failed'].includes(e) && notify.error(e)
+	console = new Proxy(console, { get: (target: any, p: string | symbol, receiver: any) => p === 'error' ? (...args: any[]) => { error('' + args[0]); target[p](...args) } : target[p] })
+	window.onerror = (event) => { error('' + event) }
+	window.onunhandledrejection = (event) => { error('' + event.reason) }
 }
 
 app.mount('#app')
