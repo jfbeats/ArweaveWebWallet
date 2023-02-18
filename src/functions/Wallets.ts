@@ -71,7 +71,7 @@ export const Wallets = useDataWrapper(WalletsData, (w) => w.id, walletFactory, w
 
 export function getWalletById (walletId?: any) {
 	if (walletId == null) { return }
-	return Wallets.value.find(wallet => wallet.id == walletId || wallet.uuid == walletId || wallet.key == walletId)
+	return Wallets.value.find(wallet => wallet.id == walletId || wallet.uuid == walletId || wallet.key == walletId || Object.values(wallet.data).some(v => v.key == walletId || v.publicKey == walletId))
 }
 
 export function getAccountByAddress (address: string): Account {

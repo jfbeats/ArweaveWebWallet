@@ -78,7 +78,7 @@ if (!state.value.type) { state.value.type = 'client' }
 if (state.value.type !== 'iframe') { localStorage.setItem('global', '1') }
 
 
-
+// todo use getOwnerIdFromMessage() on push to not request connection page
 const localJsonRpc = (function LocalJsonRpc () {
 	const emitter = new Emitter<{ [id: number]: any }>()
 	let id = 0
@@ -103,7 +103,11 @@ const localJsonRpc = (function LocalJsonRpc () {
 		if (val > 0) { instance.channel.state.value.walletId === false && (instance.channel.state.value.walletId = undefined) }
 		else { instance.channel.state.value.walletId = false }
 	}, { immediate: true })
-	const connect = (name?: string) => { instance ??= constructor(name ?? 'Imported'); return instance }
+	const connect = (name?: string) => {
+		instance ??= constructor(name ?? 'Imported')
+		if (instance.channel.state.value?.walletId === false) { instance.channel.state.value!.walletId = undefined }
+		return instance
+	}
 	const push = (e: Message) => {
 		connect()
 		const currentId = id++

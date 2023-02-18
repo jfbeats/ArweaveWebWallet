@@ -27,6 +27,8 @@ type InstanceState = {
 	origin?: string
 	session?: string
 	type?: 'extension' | 'ws' | 'popup' | 'iframe' | 'client'
+	url?: string
+	redirect?: boolean
 	updating?: boolean
 }
 

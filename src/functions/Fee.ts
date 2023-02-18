@@ -1,7 +1,7 @@
 import { arweave, arweaveQuery } from '@/store/ArweaveStore'
 import { getWalletById, Wallets } from '@/functions/Wallets'
 import { computed, reactive, ref, watch } from 'vue'
-import { computedAsync } from '@/functions/AsyncData'
+import { getAsyncData } from '@/functions/AsyncData'
 import { RPC } from '@/functions/Connect'
 import { manageUpload } from '@/functions/Transactions'
 import { notify } from '@/store/NotificationStore'
@@ -15,7 +15,12 @@ export function fee (options: { byteSize: number, validityThreshold?: number, du
 	} as const)
 	const getRecipient = () => recipients[0]
 	const validityThreshold = options.validityThreshold ?? 0.75
-	const ar = computedAsync(async () => arweave.ar.winstonToAr(await arweave.transactions.getPrice(options.byteSize)))
+	const arQuery = getAsyncData({
+		name: 'arweave storage price',
+		query: async () => arweave.ar.winstonToAr(await arweave.transactions.getPrice(options.byteSize)),
+		seconds: 10,
+	})
+	const ar = arQuery.state
 	const hotWallets = computed(() => Wallets.value.filter(w => w.hasPrivateKey && w.balance && +w.balance > (options.dustThreshold ?? 0)))
 	const addresses = computed(() => hotWallets.value.map(w => w.key).filter((w): w is NonNullable<typeof w> => !!w))
 	const queryParams: Parameters<typeof arweaveQuery>[0] = ref({ owners: addresses.value, recipients, tags: tagEntries.map(t => ({ name: t[0], values: [t[1]] })) })

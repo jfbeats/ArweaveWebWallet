@@ -9,6 +9,7 @@ import { encode } from '@/functions/Encode'
 import Transaction from 'arweave/web/lib/transaction'
 import type { CreateTransactionInterface } from 'arweave/web'
 import { requestExport } from '@/functions/Export'
+import { Wallets } from '@/functions/Wallets'
 
 
 
@@ -168,12 +169,27 @@ async function makeTemplates () {
 			return ar
 		}
 		const build = (tx: Partial<Transaction>) => tx.setSignature ? tx as Transaction : arweave.transactions.fromRaw(tx)
+		const compress = (txIn: Transaction, tx?: Transaction) => {
+			const { owner, ...ownerless } = tx ?? txIn
+			if (!tx || txIn.owner && txIn.owner === owner) { return ownerless }
+			return tx
+		}
+		const verify = async (tx: any) => arweave.transactions.verify(tx).catch(() => false)
+		const getBaseTx = () => buildTransaction({ data: 'hey' }).then(tx => {
+			const trimmed = compress(trim(tx) as any)
+			localStorage.setItem('template:ar', JSON.stringify(trimmed))
+			return trimmed
+		}).catch(e => {
+			const template = localStorage.getItem('template:ar')
+			if (!template) { throw e }
+			return JSON.parse(template)
+		})
 		return {
-			template: trim(await buildTransaction({ data: 'hey' })),
+			template: await getBaseTx().catch(() => getBaseTx()),
 			getOwner: (tx: any) => tx.owner,
 			isSigned: (tx: any) => 'signature' in tx && tx.signature,
 			equals: (a: Transaction, b: AnyTransaction) => {
-				if (a.owner && a.owner !== b.owner) { return false }
+				if (a.owner && b.owner && a.owner !== b.owner) { return false }
 				if (!hasMatchingTags(a.tags, b.tags)) { return false }
 				const fields: Array<keyof Transaction> = ['target', 'data_root', 'quantity']
 				return fields.every(field => a[field] === b[field])
@@ -187,21 +203,16 @@ async function makeTemplates () {
 					return true
 				})
 				if (!tx.owner && tx.signature) {
-					const owners = [] as string[]
+					const owners = Wallets.value.map(w => Object.values(w.data).map(v => v.publicKey)).flat().filter((v): v is NonNullable<typeof v> => false)
 					trimmed.forEach(t => owners.includes(t.owner) || owners.push(t.owner))
-					const res = await Promise.all(owners.map(owner => build({ ...tx, owner })).map(tx => arweave.transactions.verify(tx)))
+					const res = await Promise.all(owners.map(owner => build({ ...tx, owner })).map(tx => verify(tx)))
 					tx.owner = owners[res.findIndex(r => r)]
+					if (!tx.owner) { notify.error('Unable to infer transaction owner'); throw 'unknown owner' }
 				}
 				const result = build(tx)
 				if (result.data?.byteLength) { await result.prepareChunks(result.data) }
 				return result
-			},
-			trim,
-			compress: (txIn: Transaction, tx: Transaction) => {
-				const { owner, ...ownerless } = tx
-				if (!txIn.owner || txIn.owner !== owner) { return tx }
-				return ownerless
-			}
+			}, trim, compress, verify
 		} as const
 	})()
 	return {
@@ -209,7 +220,7 @@ async function makeTemplates () {
 	} as const
 }
 
-const templatesPromise = makeTemplates()
+const templatesPromise = makeTemplates().catch(e => notify.warn('failed to initialize transactions ' + e))
 
 
 

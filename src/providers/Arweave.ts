@@ -94,6 +94,7 @@ export class ArweaveProvider extends mix(ArweaveAccount).with(WalletProxy) imple
 	constructor (init: WalletDataInterface) {
 		super(init)
 		if (!this.data.arweave?.key && this.hasPrivateKey) { ArweaveProvider.metadata.addImportData(init) }
+		if (!this.data.arweave?.publicKey) { this.getPublicKey().catch(() => {}) }
 		this.messageVerifier = new ArweaveMessageVerifier()
 		this.messageRunner = new ArweaveMessageRunner(this)
 	}

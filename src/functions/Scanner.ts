@@ -64,15 +64,17 @@ export function getScanner (video: HTMLVideoElement) {
 		}
 		await scanImages([video]).then(process).catch(() => {})
 	}
+	let isInit = false
 	let fullScanLoop = (async () => {
 		if (!fullScanLoop) { return }
 		while (fullScanLoop && !video.videoWidth) { await new Promise(res => setTimeout(res, fullScanRate)) }
+		if (!isInit) { isInit = true; await new Promise(res => setTimeout(res, 2000)) }
 		const promise = new Promise(res => setTimeout(res, fullScanRate))
 		await fullScan().catch(() => {})
 		await promise.catch(() => {})
 		fullScanLoop?.()
 	}) as any
-	fullScanLoop()
+	fullScanLoop?.()
 	const destructor = () => {
 		fullScanLoop = undefined
 		qrScanner.destroy()

@@ -1,6 +1,7 @@
 import { useRegisterSW } from 'virtual:pwa-register/vue'
 import { reactive } from 'vue'
 import { track } from '@/store/Analytics'
+import { prepare } from '@/store/Cold'
 
 
 
@@ -23,6 +24,7 @@ export const PWA = reactive({
 
 
 async function install () {
+	await prepare(true)
 	if (!PWA.installPrompt) { throw 'Install unavailable' }
 	PWA.installPrompt.prompt()
 	const { outcome } = await PWA.installPrompt.userChoice

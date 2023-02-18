@@ -18,6 +18,7 @@ import { state, states } from '@/functions/Channels'
 import { track } from '@/store/Analytics'
 import { computed, ref, watch } from 'vue'
 
+if (sessionStorage.getItem('redirect')) { location.replace(sessionStorage.getItem('redirect')!); sessionStorage.removeItem('redirect') }
 const { needRefresh, updateServiceWorker } = useRegisterSW()
 let autoUpdateActive = state.value.type !== 'iframe'
 setTimeout(() => autoUpdateActive = false, 10000)
@@ -34,7 +35,7 @@ const update = async () => {
 	location.reload()
 }
 let updating = false
-const triggerUpdate = async () => {
+const triggerUpdate = async (e?: any) => {
 	overlay.value = true
 	if (updating) { return }
 	updating = true
@@ -44,6 +45,7 @@ const triggerUpdate = async () => {
 		setTimeout(res, 1000)
 	})
 	states.value.filter(s => s !== state.value).forEach(s => s.updating = true)
+	if (!e && state.value.redirect && state.value.url) { sessionStorage.setItem('redirect', state.value.url) }
 	state.value.updating = true
 }
 const otherInstance = computed(() => states.value.filter(s => s !== state.value).find(s => !s.origin || s.origin !== state.value.origin && s.session !== state.value.session))

@@ -12,8 +12,17 @@ import router from './router'
 // @ts-ignore
 import { plugin as Slicksort } from 'vue-slicksort'
 import 'mosha-vue-toastify/dist/style.css'
+import { notify } from '@/store/NotificationStore'
 
 
 const app = createApp(App)
 app.use(router, Slicksort)
+
+if (location.host === 'dev.arweave.app') {
+	const error = (e: string) => !['', 'AxiosError: Network Error', 'TypeError: Network request failed'].includes(e) && notify.error(e)
+	console = new Proxy(console, { get: (target: any, p: string | symbol, receiver: any) => p === 'error' ? (...args: any[]) => { error('' + args[0]); target[p](...args) } : target[p] })
+	window.onerror = (event) => { error('' + event) }
+	window.onunhandledrejection = (event) => { error('' + event.reason) }
+}
+
 app.mount('#app')
