@@ -1,2 +1,0 @@
-import{_ as r,d as i,b4 as o,o as t,g as e,$ as c,Z as d,u as l,b5 as _,t as p}from"./index.7ba8413b.js";const u={class:"word-list flex-row",style:{display:"flex","justify-content":"space-between","flex-wrap":"wrap"}},f=i({setup(v){const a=o(()=>_("english"));return(g,m)=>(t(),e("div",u,[(t(!0),e(c,null,d(l(a),(s,n)=>(t(),e("div",null,p(`${n+1}. ${s}`),1))),256))]))}});var x=r(f,[["__scopeId","data-v-35c09070"]]);export{x as default};
-//# sourceMappingURL=WordList.2fb85c25.js.map
