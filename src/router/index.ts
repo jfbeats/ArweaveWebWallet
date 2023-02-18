@@ -120,6 +120,7 @@ const routes: RouterOptions['routes'] = [
 		path: '/:pathMatch(.*)*',
 		redirect: () => {
 			if (state.value.type !== 'client') { return { name: 'Connect' } }
+			state.value.redirect = true
 			return Wallets.value[0]
 				? { name: 'TxList', params: { walletId: Wallets.value[0].id } }
 				: { name: 'Welcome' }

@@ -141,13 +141,14 @@ export function useLock (channel: Ref<number | undefined>) {
 
 
 
+const url = window.location.href
 const hash = new URLSearchParams(window.location.hash.slice(1))
 const origin = hash.get('origin') || undefined
 const session = hash.get('session') || undefined
 const appInfo = { name: hash.get('name') || undefined, logo: hash.get('logo') || undefined }
 const instance = origin + Math.random().toString().slice(2)
 const storageKeys = ref(Object.keys(localStorage)) as Ref<string[]>
-const { state, deleteChannel } = useChannel('instanceState:', instance, { origin, session }, true)
+const { state, deleteChannel } = useChannel('instanceState:', instance, { origin, session, url }, true)
 const { states } = getChannels('instanceState:')
 watch(states, () => {})
 const connectorChannels = getChannels('sharedState:')
