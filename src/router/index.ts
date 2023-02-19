@@ -103,7 +103,7 @@ const routes: RouterOptions['routes'] = [
 		path: '/cold',
 		name: 'Cold',
 		component: Cold,
-		meta: { title: 'Cold Wallet Setup' },
+		meta: { title: 'Permafrost Vault' },
 	},
 	{
 		path: '/wordlist',
