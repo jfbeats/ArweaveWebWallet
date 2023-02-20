@@ -28,7 +28,7 @@ import Icon from '@/components/atomic/Icon.vue'
 import Tooltip from '@/components/function/Tooltip.vue'
 import QR from '@/components/atomic/QR.vue'
 import Link from '@/components/function/Link.vue'
-import ProfileStore, { getArverify } from '@/store/ProfileStore'
+import ProfileStore, { getVerification } from '@/store/ProfileStore'
 import { computed, ref, watch } from 'vue'
 
 import IconVerify from '@/assets/icons/verify.svg?component'
@@ -43,8 +43,8 @@ const props = defineProps<{
 }>()
 const val = computed(() => props.address || props.tx || props.block)
 
-const arverify = computed(() => props.address && ProfileStore.arverify[props.address])
-watch(() => props.address, async () => props.address && getArverify(props.address), { immediate: true })
+const arverify = computed(() => props.address && ProfileStore.verification[props.address])
+watch(() => props.address, async () => props.address && getVerification(props.address), { immediate: true })
 
 const clipboard = computed(() => {
 	const address = val.value

@@ -5,7 +5,7 @@
 			<Icon :icon="IconCloud" v-else class="identicon cloud" draggable="false" @dragstart.prevent />
 		</transition>
 		<transition :name="hasTransition ? 'fade-fast' : null">
-			<img class="image" v-if="isValid && arweaveId?.Image" v-show="loaded" @load="loaded = true" :src="ArweaveStore.gatewayURL + arweaveId?.Image" alt="wallet profile picture" draggable="false" @dragstart.prevent />
+			<img class="image" v-if="isValid && arweaveId?.image" v-show="loaded" @load="loaded = true" :src="ArweaveStore.gatewayURL + arweaveId?.image" alt="wallet profile picture" draggable="false" @dragstart.prevent />
 		</transition>
 	</div>
 </template>
