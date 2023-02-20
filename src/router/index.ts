@@ -103,7 +103,7 @@ const routes: RouterOptions['routes'] = [
 		path: '/cold',
 		name: 'Cold',
 		component: Cold,
-		meta: { title: 'Cold Wallet Setup' },
+		meta: { title: 'Permafrost Vault' },
 	},
 	{
 		path: '/wordlist',
@@ -119,6 +119,7 @@ const routes: RouterOptions['routes'] = [
 	{
 		path: '/:pathMatch(.*)*',
 		redirect: () => {
+			// todo go back when possible
 			if (state.value.type !== 'client') { return { name: 'Connect' } }
 			state.value.redirect = true
 			return Wallets.value[0]

@@ -3,7 +3,7 @@
 		<div class="wallet-info" :key="wallet.key">
 			<div class="name">
 				<Icon class="logo" :icon="walletInfo.icon" />
-				<div>{{ arweaveId?.Name || walletInfo.name }}</div>
+				<div>{{ arweaveId?.name ? arweaveId?.name + ' | ' : '' }}{{ walletInfo.name }}</div>
 			</div>
 			<Address class="secondary-text" :address="wallet.key" />
 		</div>
