@@ -81,7 +81,8 @@ const dataInfo = computed(() => tags.value['app'] || tags.value['application'] |
 	|| tags.value['service'] || tags.value['service-name']
 	|| tags.value['protocol'] || tags.value['protocol-name']
 	|| tags.value['arweave-app'] || tags.value['uploading-app']
-	|| tags.value['user-agent']?.split('/').join(' ') || tags.value['file-name'])
+	|| tags.value['user-agent']?.split('/').join(' ') || tags.value['file-name']
+	|| tags.value['type'])
 const context = computed(() => {
 	const fallback = isValue.value && isData.value ? 'Payment | Data' : isValue.value ? 'Payment' : isData.value ? 'Data' : props.tx.tags?.length ? 'Tags' : 'Empty'
 	const dataTypeUsed = !isValue.value && isData.value
