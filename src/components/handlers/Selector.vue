@@ -34,7 +34,7 @@ import LoaderBlock from '@/components/layout/LoaderBlock.vue'
 import TransitionsManager from '@/components/visual/TransitionsManager.vue'
 import { notify } from '@/store/NotificationStore'
 import IconDownload from '@/assets/icons/download.svg?component'
-import ArweaveStore, { arweave, arweaveQuery } from '@/store/ArweaveStore'
+import ArweaveStore, { arweave, arweaveQuery, getData } from '@/store/ArweaveStore'
 import { unpackTags } from '@/functions/Transactions'
 import { computed, markRaw, reactive, ref, watch } from 'vue'
 
@@ -90,8 +90,7 @@ async function load () {
 	else {
 		data.handler = 'raw'
 		try { if (tags['Content-Type'] === 'application/gzip') { data.payload ??= await gzipDecompress(props.tx.id) } } catch (e) { console.error(e) }
-		try { data.payload ??= (await arweave.api.get(props.tx.id)).data } catch (e) { }
-		try { data.payload ??= await arweave.transactions.getData(props.tx.id, { decode: true, string: true }) } catch (e) { }
+		data.payload ??= await getData(props.tx.id).catch(() => undefined)
 		if (data.payload?.[0] === '{' || data.payload?.[0] === '[') { try { data.payload = JSON.stringify(JSON.parse(data.payload), null, 2); rawWhiteSpace.value = 'pre' } catch (e) { } }
 		data.loaded = true
 		// todo implement retries
