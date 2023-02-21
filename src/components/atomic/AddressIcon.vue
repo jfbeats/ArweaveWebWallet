@@ -12,7 +12,7 @@
 
 
 
-<script setup>
+<script setup lang="ts">
 import Identicon from '@/components/atomic/Identicon.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import ArweaveStore from '@/store/ArweaveStore'
@@ -22,10 +22,10 @@ import { computed, watch, ref } from 'vue'
 
 import IconCloud from '@/assets/icons/cloud.svg?component'
 
-const props = defineProps(['address'])
+const props = defineProps<{ address?: string }>()
 
 const isValid = computed(() => ArweaveAccount.metadata.isAddress(props.address))
-const arweaveId = computed(() => ProfileStore.arweaveId[props.address])
+const arweaveId = computed(() => props.address && ProfileStore.arweaveId[props.address] || undefined)
 const hasTransition = ref(!arweaveId.value)
 watch(arweaveId, () => {
 	hasTransition.value = false

@@ -2,7 +2,7 @@ import { reactive } from 'vue'
 import InterfaceStore from '@/store/InterfaceStore'
 import { unpackTags } from '@/functions/Transactions'
 import { awaitEffect } from '@/functions/AsyncData'
-import { graphql } from '@/store/ArweaveStore'
+import { getData, graphql } from '@/store/ArweaveStore'
 import { ArweaveAccount } from '@/providers/Arweave'
 import { TagFilter } from 'arweave-graphql'
 
@@ -35,13 +35,18 @@ export async function getArweaveId (address?: string) {
 				if (parsed.function !== 'claim') { return } // todo fetch additional txs
 				return { id: tx.id, tags: Object.entries(parsed).map(([name, value]) => ({ name, value })) }
 			}),
-			async () => query([{ name: "Protocol-Name", values: ["Account", "Account-0.2", "Account-0.3"] }]).then(tx => {
+			async () => query([{ name: "Protocol-Name", values: ["Account", "Account-0.2", "Account-0.3"] }]).then(async tx => {
+				if (!tx) { return }
+				const data = await getData(tx.id).catch(() => {}) as { [key: string]: any }
+				tx.tags.push(...Object.entries(data).map(([name, value]) => {
+					typeof value === 'string' && value.startsWith('ar://') && (value = value.substring('ar://'.length))
+					return { name, value }
+				}))
 				return tx
-			}), // todo .then to get data and merge with tags
+			}),
 		] as const
 		const [main, ...fallback] = promises
 		ProfileStore.arweaveId[address] ??= await parseTags(await main())
-		if (address === '89tR0-C1m3_sCWCoVCChg4gFYKdiH5_ZDyZpdJ2DDRw') {console.log(ProfileStore.arweaveId[address])}
 		ProfileStore.arweaveId[address] ??= await Promise.all(
 			fallback.map(f => f().catch(() => {}))
 		).then(async fbs => {

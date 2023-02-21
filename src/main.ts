@@ -18,7 +18,8 @@ import { notify } from '@/store/NotificationStore'
 const app = createApp(App)
 app.use(router, Slicksort)
 
-if (location.host === 'dev.arweave.app') {
+if (['dev.arweave.app', 'jfbeats.github.io'].includes(location.host)) {
+	notify.warn('Development mode')
 	const error = (e: string) => !['', 'AxiosError: Network Error', 'TypeError: Network request failed'].includes(e) && notify.error(e)
 	console = new Proxy(console, { get: (target: any, p: string | symbol, receiver: any) => p === 'error' ? (...args: any[]) => { error('' + args[0]); target[p](...args) } : target[p] })
 	window.onerror = (event) => { error('' + event) }
