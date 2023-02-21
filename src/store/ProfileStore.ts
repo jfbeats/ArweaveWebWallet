@@ -41,7 +41,6 @@ export async function getArweaveId (address?: string) {
 		] as const
 		const [main, ...fallback] = promises
 		ProfileStore.arweaveId[address] ??= await parseTags(await main())
-		if (address === '89tR0-C1m3_sCWCoVCChg4gFYKdiH5_ZDyZpdJ2DDRw') {console.log(ProfileStore.arweaveId[address])}
 		ProfileStore.arweaveId[address] ??= await Promise.all(
 			fallback.map(f => f().catch(() => {}))
 		).then(async fbs => {
