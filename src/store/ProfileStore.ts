@@ -42,6 +42,7 @@ export async function getArweaveId (address?: string) {
 					typeof value === 'string' && value.startsWith('ar://') && (value = value.substring('ar://'.length))
 					return { name, value }
 				}))
+				tx.tags = tx.tags.filter(({ value }) => value !== 'OrG-ZG2WN3wdcwvpjz1ihPe4MI24QBJUpsJGIdL85wA')
 				return tx
 			}),
 		] as const
