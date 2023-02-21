@@ -1,2 +1,0 @@
-import{d as n,al as r,o as e,g as s,a1 as _,a0 as c,u as l,am as d,t as i,e as p}from"./index-c43cd2e5.js";const u={class:"word-list flex-row",style:{display:"flex","justify-content":"space-between","flex-wrap":"wrap"}},f=n({__name:"WordList",setup(m){const t=r(()=>d("english"));return(x,y)=>(e(),s("div",u,[(e(!0),s(_,null,c(l(t),(a,o)=>(e(),s("div",null,i(`${o+1}. ${a}`),1))),256))]))}});const w=p(f,[["__scopeId","data-v-b8496c5a"]]);export{w as default};
-//# sourceMappingURL=WordList-ddf30a0d.js.map
