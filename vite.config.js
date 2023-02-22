@@ -11,7 +11,7 @@ export default async ({ command, mode  }) => {
 	const env = { ...process.env, ...loadEnv(mode, process.cwd()) }
 
 	return defineConfig({
-		base: env.BASE_URL ?? env.VITE_BASE_URL ?? '/',
+		base: env.VITE_BASE_URL ?? env.BASE_URL ?? '/',
 		plugins: [
 			vue(),
 			createHtmlPlugin({ inject: { data: { ...env } }, minify: true }),

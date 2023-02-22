@@ -2,10 +2,7 @@ name: Github Pages
 on:
   push:
     branches:
-      - master
-  pull_request:
-    branches:
-      - master
+      - dev
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
