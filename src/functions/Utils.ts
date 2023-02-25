@@ -85,3 +85,5 @@ export function round (number?: number | string) {
 	const SignificantDigits = new Intl.NumberFormat([...navigator.languages], { maximumSignificantDigits: 1 }).format(parsed)
 	return FractionDigits.length >= SignificantDigits.length ? FractionDigits : SignificantDigits
 }
+
+export function compact <T> (arr: (T | undefined | null)[]): T[] { return arr.filter(e => e != null) as T[] }

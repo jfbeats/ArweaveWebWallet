@@ -34,6 +34,7 @@ import WalletSelector from '@/components/composed/WalletSelector.vue'
 import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
 import { emitter, testPassword, PasswordRequest, hasPassword, passwordValidation } from '@/functions/Password'
 import { focusWindow } from '@/functions/Connect'
+import { compact } from '@/functions/Utils'
 import { notify } from '@/store/NotificationStore'
 import { computed, markRaw, Ref, ref, shallowRef, watch } from 'vue'
 
@@ -62,7 +63,7 @@ const inputs = computed(() => {
 	const a = [match, result]
 	if (!newPasswordMessage.value) { a.find(e => e)!.bind.autofocus = true }
 	a.map(e => e).reverse().find(e => e)!.bind.submit = passwordAction.value
-	return a.filter((e): e is NonNullable<typeof e> => !!e)
+	return compact(a)
 })
 emitter.on('password', callback => {
 	passwordRequest.value = callback

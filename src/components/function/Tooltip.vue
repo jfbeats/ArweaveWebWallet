@@ -17,6 +17,7 @@ import tippy, { animateFill, Props } from 'tippy.js'
 import 'tippy.js/dist/tippy.css'
 import 'tippy.js/dist/backdrop.css'
 import 'tippy.js/animations/shift-away.css'
+import { compact } from '@/functions/Utils'
 import { computed, onBeforeUnmount, onMounted, ref, useAttrs, useSlots, watchEffect } from 'vue'
 
 const props = defineProps<{
@@ -48,7 +49,7 @@ const setProps = () => tooltip.setProps({
 
 onMounted(async () => {
 	const beforeUnmount = new Promise<void>(res => onBeforeUnmount(res))
-	settings.triggerTarget = [tooltipEl.value, tooltipEl.value?.firstElementChild].filter((e): e is NonNullable<typeof e> => !!e)
+	settings.triggerTarget = compact([tooltipEl.value, tooltipEl.value?.firstElementChild])
 	tooltip = tippy(tooltipEl.value!, settings)
 	watchEffect(setProps)
 	await beforeUnmount
