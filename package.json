@@ -9,6 +9,7 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "vite build",
+		"buildFile": "vite build --mode file",
 		"serve": "vite build && vite preview",
 		"deploy": "npm run build && arkb deploy dist --wallet ../arweaveWallet.json --use-bundler http://bundler.arweave.net:10000",
 		"deploy-confirm": "npm run build && arkb deploy dist --wallet ../arweaveWallet.json --auto-confirm --use-bundler http://bundler.arweave.net:10000"
@@ -37,7 +38,7 @@
 		"uuid": "^8.3.2",
 		"vue": "^3.2.47",
 		"vue-router": "^4.0.12",
-		"vue-slicksort": "^2.0.0-alpha.5"
+		"vue-slicksort": "^2.0.5"
 	},
 	"devDependencies": {
 		"@rollup/plugin-inject": "^5.0.3",
@@ -50,6 +51,7 @@
 		"vite": "^4.1.4",
 		"vite-plugin-html": "^3.2.0",
 		"vite-plugin-pwa": "^0.14.4",
+		"vite-plugin-singlefile": "^0.13.3",
 		"vite-svg-loader": "^4.0.0"
 	}
 }
