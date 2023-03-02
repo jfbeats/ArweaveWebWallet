@@ -15,7 +15,7 @@ import Button from '@/components/atomic/Button.vue'
 import { computed } from 'vue'
 import { state } from '@/functions/Channels'
 import { sharedState } from '@/functions/Connect'
-import { useRoute } from 'vue-router'
+import { useRoute } from '@/router'
 
 const route = useRoute()
 const walletId = computed(() => Array.isArray(route.query.wallet) ? route.query.wallet[0] : route.query.wallet)

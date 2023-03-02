@@ -14,8 +14,8 @@ import { compact } from '@/functions/Utils'
 
 
 
-type AnyFile = string | FileWithPath | object | undefined
-type AnyTransaction = Transaction
+export type AnyFile = string | FileWithPath | object | undefined
+export type AnyTransaction = Transaction
 export type ExportRequest = {
 	entry: ExportEntry
 	compressed?: any

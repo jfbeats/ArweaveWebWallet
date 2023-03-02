@@ -31,7 +31,7 @@ import Selector from '@/components/atomic/Selector.vue'
 import Action from '@/components/atomic/Action.vue'
 import InterfaceStore from '@/store/InterfaceStore'
 import { toRef, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute } from '@/router'
 
 import IconNorthEast from '@/assets/icons/north_east.svg?component'
 import IconSouthWest from '@/assets/icons/south_west.svg?component'

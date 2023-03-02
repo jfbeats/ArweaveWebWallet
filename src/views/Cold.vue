@@ -70,7 +70,7 @@ import Amount from '@/components/composed/Amount.vue'
 import Button from '@/components/atomic/Button.vue'
 import TxCard from '@/components/composed/TxCard.vue'
 import { computed, onMounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter } from '@/router'
 import { coldState, getColdWalletAction, prepare } from '@/store/Cold'
 
 const flow = ref(undefined as undefined | InstanceType<typeof Flow>)

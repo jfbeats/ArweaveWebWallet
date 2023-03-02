@@ -7,7 +7,6 @@
 					<Button @click="() => PWA.install()">{{ PWA.installState }}</Button>
 				</SettingItem>
 <!--				<SettingItem name="Notifications">-->
-<!--				-->
 <!--				</SettingItem>-->
 				<SettingItem name="Gateway" description="URL of the service used to access network data">
 					<Input v-model="gateway" :submit="gatewayAction" :placeholder="ArweaveStore.gatewayURL" :icon="IconDownload" style="flex:1 1 0;" />

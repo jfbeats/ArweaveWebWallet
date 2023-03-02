@@ -1,5 +1,9 @@
 import type { RouteRecordName } from 'vue-router'
 
+export function getBaseUrl () {
+	return window.BASE_URL ?? import.meta.env.BASE_URL
+}
+
 export function findRoutePosition (name:  RouteRecordName | Null, arr: any[]) {
 	const result = findRecursive(name, arr)
 	return result.found ? result : null

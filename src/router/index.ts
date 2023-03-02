@@ -1,7 +1,9 @@
-import { createRouter, createWebHistory, createWebHashHistory, START_LOCATION, RouterOptions } from 'vue-router'
-import { Wallets, getWalletById } from '@/functions/Wallets'
+import { createRouter, createWebHashHistory, createWebHistory, RouterAlt, RouteRecordRaw, useRoute as useRouteLib, useRouter as useRouterLib } from 'vue-router'
+import { getWalletById, Wallets } from '@/functions/Wallets'
 import { emitter } from '@/store/InterfaceStore'
 import { state } from '@/functions/Channels'
+import { getBaseUrl } from '@/router/Utils'
+import { ExtractNames } from '@/router/types'
 import Wallet from '@/views/Wallet.vue'
 import TxList from '@/views/TxList.vue'
 import Send from '@/views/Send.vue'
@@ -11,9 +13,8 @@ import EditWallet from '@/views/EditWallet.vue'
 import Settings from '@/views/Settings.vue'
 import Cold from '@/views/Cold.vue'
 import Connect from '@/views/Connect.vue'
-import type { findRoutePosition } from '@/router/Utils'
 
-const routes: RouterOptions['routes'] = [
+const routes = [
 	{
 		name: 'Wallet',
 		path: '/wallet/:walletId(\\d+)',
@@ -127,33 +128,21 @@ const routes: RouterOptions['routes'] = [
 				: { name: 'Welcome' }
 		}
 	},
-]
+] as const satisfies AsConst<RouteRecordRaw[]>
+export type AllRouteNames = ExtractNames<typeof routes>
 
 const router = createRouter({
-	history: window.BASE_URL === '/' ? createWebHistory() : createWebHashHistory(),
-	routes,
+	history: getBaseUrl() === '/' ? createWebHistory() : createWebHashHistory(),
+	routes: routes as any,
 	scrollBehavior: (to, from, savedPosition) => new Promise((resolve) => {
 		// todo https://github.com/vuejs/vue-router/issues/1620
 		if (to.params.walletId && from.params.walletId && to.params.walletId === from.params.walletId) { resolve() }
 		const position = savedPosition || { top: 0 }
 		emitter.once('scrollHistory', () => resolve(position))
 	})
-})
+}) as RouterAlt
+
+export const useRouter = useRouterLib as () => RouterAlt
+export const useRoute = useRouteLib
 
 export default router
-
-
-
-declare module 'vue-router' {
-	interface RouteMeta {
-		title?: string
-		transition?: {
-			param?: {
-				from: ReturnType<typeof findRoutePosition>
-				to: ReturnType<typeof findRoutePosition>
-			}
-			nameWallet?: number
-			nameLayout?: number
-		}
-	}
-}

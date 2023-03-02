@@ -15,7 +15,7 @@ import Tabs from '@/components/atomic/Tabs.vue'
 import TransitionsManager from '@/components/visual/TransitionsManager.vue'
 import { computed, ref } from 'vue'
 import List from '@/components/layout/List.vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter } from '@/router'
 
 const props = defineProps<{ wallet: Account }>()
 const route = useRoute()
