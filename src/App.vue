@@ -33,7 +33,7 @@ import ScannerViewport from '@/components/function/ScannerViewport.vue'
 import { Wallets } from '@/functions/Wallets'
 import InterfaceStore from '@/store/InterfaceStore'
 import { findRoutePosition } from '@/router/Utils'
-import { useRouter } from 'vue-router'
+import { useRouter } from '@/router'
 import { toRef } from 'vue'
 
 const router = useRouter()

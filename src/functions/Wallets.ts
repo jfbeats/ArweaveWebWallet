@@ -4,6 +4,7 @@ import { useChannel } from '@/functions/Channels'
 import { useDataWrapper } from '@/functions/AsyncData'
 import { generateMnemonic as generateM, validateMnemonic as validateM } from 'bip39-web-crypto'
 import { notify } from '@/store/NotificationStore'
+import { compact } from '@/functions/Utils'
 
 
 
@@ -38,14 +39,14 @@ function selectProvider (wallet: WalletDataInterface) {
 
 
 export async function selectProviders (from: 'wallet' | 'keyfile', wallet: WalletDataInterface | string) {
-	return (await Promise.all(softwareProviders.map(async provider => {
+	return compact(await Promise.all(softwareProviders.map(async provider => {
 		try {
 			const walletData: Partial<WalletDataInterface> | undefined = from === 'wallet' ? wallet as WalletDataInterface : await provider.metadata.addKeyfile?.(wallet as string)
 			if (!walletData || !provider.metadata.isProviderFor?.(walletData)) { return }
 			await provider?.metadata.addImportData(walletData!)
 			return { provider, walletData }
 		} catch (e) {}
-	}))).filter((res): res is NonNullable<typeof res> => !!res)
+	})))
 }
 
 

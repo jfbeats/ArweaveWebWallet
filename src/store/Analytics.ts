@@ -8,7 +8,7 @@ import { arweave } from '@/store/ArweaveStore'
 type AccountEvent = 'Account Create' | 'Account Import' | 'Account Watch' | 'Account Ledger'
 type EventType = AccountEvent |
 	'App Install' | 'App Update'
-	| 'Affiliate'
+	| 'Fee' | 'Fee Paid' | 'Affiliate'
 	| 'Connect' | 'Connect Localhost'
 	| 'Connector'
 	| 'Tx Data' | 'Tx Value' | 'Tx Value Data' | 'Tx Empty'

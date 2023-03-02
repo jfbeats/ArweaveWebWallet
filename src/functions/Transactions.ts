@@ -10,11 +10,12 @@ import Transaction from 'arweave/web/lib/transaction'
 import type { CreateTransactionInterface } from 'arweave/web'
 import { requestExport } from '@/functions/Export'
 import { Wallets } from '@/functions/Wallets'
+import { compact } from '@/functions/Utils'
 
 
 
-type AnyFile = string | FileWithPath | object | undefined
-type AnyTransaction = Transaction
+export type AnyFile = string | FileWithPath | object | undefined
+export type AnyTransaction = Transaction
 export type ExportRequest = {
 	entry: ExportEntry
 	compressed?: any
@@ -203,7 +204,7 @@ async function makeTemplates () {
 					return true
 				})
 				if (!tx.owner && tx.signature) {
-					const owners = Wallets.value.map(w => Object.values(w.data).map(v => v.publicKey)).flat().filter((v): v is NonNullable<typeof v> => false)
+					const owners = compact(Wallets.value.map(w => Object.values(w.data).map(v => v.publicKey)).flat())
 					trimmed.forEach(t => owners.includes(t.owner) || owners.push(t.owner))
 					const res = await Promise.all(owners.map(owner => build({ ...tx, owner })).map(tx => verify(tx)))
 					tx.owner = owners[res.findIndex(r => r)]

@@ -45,7 +45,7 @@ import { state } from '@/functions/Channels'
 import { connectors, postMessageExtension } from '@/functions/Connect'
 import { Wallets } from '@/functions/Wallets'
 import { computed, toRef } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter } from '@/router'
 
 import IconConnection from '@/assets/icons/connection.svg?component'
 import IconAddBox from '@/assets/icons/add_box.svg?component'

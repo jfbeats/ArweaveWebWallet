@@ -9,14 +9,14 @@ import '@/store/Analytics'
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
-// @ts-ignore
 import { plugin as Slicksort } from 'vue-slicksort'
 import 'mosha-vue-toastify/dist/style.css'
 import { notify } from '@/store/NotificationStore'
 
 
 const app = createApp(App)
-app.use(router, Slicksort)
+app.use(router)
+app.use(Slicksort)
 
 if (['dev.arweave.app', 'jfbeats.github.io'].includes(location.host)) {
 	notify.warn('Development mode')

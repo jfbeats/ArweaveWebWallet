@@ -70,14 +70,14 @@ import Amount from '@/components/composed/Amount.vue'
 import Button from '@/components/atomic/Button.vue'
 import TxCard from '@/components/composed/TxCard.vue'
 import { computed, onMounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter } from '@/router'
 import { coldState, getColdWalletAction, prepare } from '@/store/Cold'
 
 const flow = ref(undefined as undefined | InstanceType<typeof Flow>)
 const router = useRouter()
 
 const byteSize = 5 * 1024 * 1024 * 1024
-const feeManager = fee({ byteSize })
+const feeManager = fee({ name: 'Cold', byteSize })
 const index = ref(undefined as undefined | number)
 watch(index, i => i != undefined && setTimeout(() => index.value = undefined))
 const feeRoute = async () => {
@@ -89,7 +89,9 @@ const feeRoute = async () => {
 }
 const feeAction = computed(() => ({
 	run: feeRoute,
-	name: feeManager.isPaid ? 'Paid' : feeManager.txs.length ? `Pay remaining ${round(feeManager.remaining)} AR` : 'Pay',
+	name: feeManager.isPaid ? 'Paid'
+		: feeManager.txs.length ? `Pay remaining ${round(feeManager.remaining)} AR`
+			: feeManager.isPaying ? 'Loading' : 'Pay',
 }))
 const lastPage = computed(() => feeManager.isPaid || coldState.value?.status)
 const coldWalletAction = computed(() => getColdWalletAction(true))

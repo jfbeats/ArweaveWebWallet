@@ -67,7 +67,7 @@ import { hardwareProviders, addAddress, addMnemonic, generateMnemonic, validateM
 import { track } from '@/store/Analytics'
 import { notify } from '@/store/NotificationStore'
 import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter } from '@/router'
 import LogoArweave from '@/assets/logos/arweave.svg?component'
 import IconAddBox from '@/assets/icons/add_box.svg?component'
 import IconSettings from '@/assets/icons/settings.svg?component'

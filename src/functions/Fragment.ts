@@ -1,7 +1,7 @@
 import Secrets from 'secrets.js-jf'
 import { getWordList } from '@/functions/Wallets'
 import { notify } from '@/store/NotificationStore'
-import { isUuidV4 } from '@/functions/Utils'
+import { compact, isUuidV4 } from '@/functions/Utils'
 import { base64ToHex, fromHex, hexToBase64, toHex } from '@/functions/Encode'
 
 
@@ -74,10 +74,10 @@ async function merge (value: string[]): Promise<string> {
 	const step = (fragments: Fragment[], previousFragments?: Fragment[]): string => {
 		const sets = {} as { [key: string]: Fragment[] }
 		fragments.forEach(fragment => (sets[fragment.uuid ?? 0] ??= []).push(fragment))
-		const results = Object.values(sets).map(fragments => {
+		const results = compact(Object.values(sets).map(fragments => {
 			if (!verifyThreshold(fragments)) { notify.warn('Fragments threshold not met'); return }
 			return fromHex(Secrets.combine(fragments.map(s => s.original)))
-		}).filter((r): r is NonNullable<typeof r> => !!r)
+		}))
 		if (results.length > 1) { return step(results.map(result => getFragment(result)), fragments) }
 		return results[0]
 	}

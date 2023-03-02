@@ -70,7 +70,7 @@ async function parseTags (tx?: { tags: Tag[], id: string }) {
 	const tags = unpackTags(tx.tags, { lowercase: true })
 	const name = tags.name || tags.username || tags.handle
 	const text = tags.text || tags.bio || tags.description || tags.body || tags.summary
-	const imageAddress = tags.image || tags.avatar || tags.photo || tags.picture || tags.thumbnail
+	const imageAddress = tags.image || tags.avatar || tags.photo || tags.picture || tags.thumbnail || tags.src
 	const imageContent = tags['content-type']?.includes('image') && tx.id || undefined
 	const image = ArweaveAccount.metadata.isAddress(imageAddress) ? imageAddress : imageContent
 	const identity = { name, text, image }

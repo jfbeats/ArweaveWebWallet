@@ -13,7 +13,7 @@
 import Pagination from '@/components/function/Pagination.vue'
 import Carousel from '@/components/layout/Carousel.vue'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter } from '@/router'
 
 const props = defineProps<{ index?: number }>()
 const router = useRouter()

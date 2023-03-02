@@ -35,7 +35,8 @@ import { state } from '@/functions/Channels'
 import { sharedState } from '@/functions/Connect'
 import { hasPassword, setPassword, hasUpdate, updateEncryption, hasNoTargetWallets } from '@/functions/Password'
 import { computed, watch } from 'vue'
-import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
+import { onBeforeRouteLeave } from 'vue-router'
+import { useRoute, useRouter } from '@/router'
 
 import IconWarning from '@/assets/icons/shield_warning.svg?component'
 

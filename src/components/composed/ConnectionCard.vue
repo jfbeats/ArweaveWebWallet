@@ -67,7 +67,7 @@ import { getWalletById, Wallets } from '@/functions/Wallets'
 import InterfaceStore from '@/store/InterfaceStore'
 import { navigateBack, navigateBackAvailable } from '@/functions/Connect'
 import { computed, ref, toRef, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter } from '@/router'
 
 import IconConnection from '@/assets/icons/connection.svg?component'
 import IconY from '@/assets/icons/y.svg?component'
