@@ -89,7 +89,9 @@ const feeRoute = async () => {
 }
 const feeAction = computed(() => ({
 	run: feeRoute,
-	name: feeManager.isPaid ? 'Paid' : feeManager.txs.length ? `Pay remaining ${round(feeManager.remaining)} AR` : 'Pay',
+	name: feeManager.isPaid ? 'Paid'
+		: feeManager.txs.length ? `Pay remaining ${round(feeManager.remaining)} AR`
+			: feeManager.isPaying ? 'Loading' : 'Pay',
 }))
 const lastPage = computed(() => feeManager.isPaid || coldState.value?.status)
 const coldWalletAction = computed(() => getColdWalletAction(true))
