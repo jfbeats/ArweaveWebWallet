@@ -77,7 +77,7 @@ const flow = ref(undefined as undefined | InstanceType<typeof Flow>)
 const router = useRouter()
 
 const byteSize = 5 * 1024 * 1024 * 1024
-const feeManager = fee({ byteSize })
+const feeManager = fee({ name: 'Cold', byteSize })
 const index = ref(undefined as undefined | number)
 watch(index, i => i != undefined && setTimeout(() => index.value = undefined))
 const feeRoute = async () => {

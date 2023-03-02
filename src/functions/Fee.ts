@@ -1,5 +1,6 @@
 import { arweave, arweaveQuery } from '@/store/ArweaveStore'
 import { notify } from '@/store/NotificationStore'
+import { track } from '@/store/Analytics'
 import { getWalletById, Wallets } from '@/functions/Wallets'
 import { useChannel } from '@/functions/Channels'
 import { compact } from '@/functions/Utils'
@@ -12,7 +13,12 @@ import { computed, reactive, ref, watch } from 'vue'
 
 
 
-export function fee (options: { byteSize: number, validityThreshold?: number, dustThreshold?: number }) {
+export function fee (options: {
+	name?: string,
+	byteSize: number,
+	validityThreshold?: number,
+	dustThreshold?: number
+}) {
 	const recipients = ['TId0Wix2KFl1gArtAT6Do1CbWU_0wneGvS5X9BfW5PE']
 	const tagEntries = Object.entries({
 		app: 'arweave.app'
@@ -67,9 +73,14 @@ export function fee (options: { byteSize: number, validityThreshold?: number, du
 	).toString())
 	const remaining = computed(() => ar.value && new BigNumber(ar.value).minus(hasPaid.value).toString())
 	const isPaid = computed(() => ar.value && new BigNumber(hasPaid.value).gt(new BigNumber(ar.value).times(validityThreshold)))
+	const isPaying = ref(false)
+	let timeout = undefined as any
+	watch(isPaid, b => b && (isPaying.value = false), { immediate: true })
+	watch(isPaying, b => b ? (timeout ??= setTimeout(() => { notify.warn('Seems like your transaction is not found by the network. Try again later if the problem is not solved') }, 40000)) : clearTimeout(timeout))
 	const pay = async () => {
 		// todo make sure to always at least leave the dust threshold in the wallet
 		if (!ar.value || ar.value === '0') { throw 'fee not yet defined' }
+		if (isPaying.value && !await notify.confirm('The fee is already being paid. Do you want to make a second payment?').promise) { throw 'already being paid' }
 		const quantity = arweave.ar.arToWinston(new BigNumber(ar.value).minus(hasPaid.value).toString())
 		const tx = await arweave.createTransaction({ target: getRecipient(), quantity })
 		tagEntries.forEach(e => tx.addTag(e[0], e[1]))
@@ -80,11 +91,14 @@ export function fee (options: { byteSize: number, validityThreshold?: number, du
 		})?.id
 		if (walletId == undefined) { notify.log('Fund and select a wallet to transfer tokens') }
 		if (state.channel.state.value) { state.channel.state.value.walletId = walletId }
+		track.event('Fee', options.name)
 		const signedTx = await RPC.arweave.signTransaction(tx)
+		track.event('Fee Paid', options.name)
+		isPaying.value = true
 		manageUpload(signedTx)
 		return signedTx.id
 	}
-	return reactive({ ar, remaining, hasPaid, isPaid, pay, txs })
+	return reactive({ ar, remaining, hasPaid, isPaid, isPaying, pay, txs })
 }
 
 
