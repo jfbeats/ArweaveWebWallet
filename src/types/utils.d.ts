@@ -14,10 +14,10 @@ type Union<T> = T & ExtraProperties<T>
 type AsConst<T> = { readonly [P in keyof T]: T[P] extends object ? AsConst<T[P]> : T[P] }
 
 type ReplaceType<T, OldType, NewType> = T extends OldType ? NewType
-	: T extends (...args: infer Args) => infer R ? (...args: ReplaceArray<Args, OldType, NewType>) => R
+	: T extends (...args: infer Args) => infer R ? (...args: ReplaceArrayType<Args, OldType, NewType>) => R
 		: T extends object ? { [K in keyof T]: ReplaceType<T[K], OldType, NewType> }
 			: T
 
-type ReplaceArray<T extends any[], OldType, NewType> = T extends [] ? []
-	: T extends [infer Head, ...infer Tail] ? [ReplaceType<Head, OldType, NewType>, ...ReplaceArray<Tail, OldType, NewType>]
+type ReplaceArrayType<T extends any[], OldType, NewType> = T extends [] ? []
+	: T extends [infer Head, ...infer Tail] ? [ReplaceType<Head, OldType, NewType>, ...ReplaceArrayType<Tail, OldType, NewType>]
 		: T

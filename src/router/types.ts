@@ -28,13 +28,13 @@ declare module 'vue-router' {
 	}
 	
 	interface LocationAsRelativeRawAlt {
-		name?: AllRouteNames;
-		params?: RouteParamsRaw;
+		name?: AllRouteNames
+		params?: RouteParamsRaw
 	}
 	
 	interface RouteLocationNamedRawAlt extends RouteQueryAndHash, LocationAsRelativeRawAlt, RouteLocationOptions {}
 	
-	type RouteLocationRawAlt = AllRouteNames | RouteLocationPathRaw | RouteLocationNamedRawAlt
+	export type RouteLocationRawAlt = AllRouteNames | RouteLocationPathRaw | RouteLocationNamedRawAlt
 	
 	export type RouterAlt = Override<Router, {
 		push: ReplaceType<Router['push'], RouteLocationRaw, RouteLocationRawAlt>

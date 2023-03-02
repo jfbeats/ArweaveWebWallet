@@ -1,10 +1,10 @@
 <template>
 	<FoldingLayout>
 		<template #left>
-			<div class="test-left">hello</div>
+			<div class="test-left">Check back once profiles are added</div>
 		</template>
 		<template #right>
-			<div class="test-right">hello</div>
+			<div class="test-right">Check back once profiles are added</div>
 		</template>
 	</FoldingLayout>
 </template>

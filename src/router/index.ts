@@ -1,9 +1,10 @@
-import { createRouter, createWebHashHistory, createWebHistory, RouterAlt, RouteRecordRaw, useRoute as useRouteLib, useRouter as useRouterLib } from 'vue-router'
+import { createRouter, createWebHashHistory, createWebHistory, RouteRecordRaw, useRoute as useRouteLib, useRouter as useRouterLib } from 'vue-router'
 import { getWalletById, Wallets } from '@/functions/Wallets'
 import { emitter } from '@/store/InterfaceStore'
 import { state } from '@/functions/Channels'
 import { getBaseUrl } from '@/router/Utils'
-import { ExtractNames } from '@/router/types'
+import { asyncRoute } from '@/router/routing'
+import type { ExtractNames } from '@/router/types'
 import Wallet from '@/views/Wallet.vue'
 import TxList from '@/views/TxList.vue'
 import Send from '@/views/Send.vue'
@@ -119,8 +120,9 @@ const routes = [
 	},
 	{
 		path: '/:pathMatch(.*)*',
-		redirect: () => {
+		redirect: to => {
 			// todo go back when possible
+			asyncRoute(to.path)
 			if (state.value.type !== 'client') { return { name: 'Connect' } }
 			state.value.redirect = true
 			return Wallets.value[0]
@@ -140,9 +142,9 @@ const router = createRouter({
 		const position = savedPosition || { top: 0 }
 		emitter.once('scrollHistory', () => resolve(position))
 	})
-}) as RouterAlt
+}) as Router
 
-export const useRouter = useRouterLib as () => RouterAlt
+export const useRouter = useRouterLib as () => Router
 export const useRoute = useRouteLib
 
 export default router

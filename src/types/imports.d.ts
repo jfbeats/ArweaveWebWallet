@@ -4,3 +4,5 @@ type FileWithPath = import('file-selector').FileWithPath & { normalizedPath?: st
 type AnyFile = import('@/functions/Transactions').AnyFile
 type AnyTransaction = import('@/functions/Transactions').AnyTransaction
 type AllRouteNames = import('@/router/index').AllRouteNames
+type Router = import('vue-router').RouterAlt
+type Route = import('vue-router').RouteLocationRawAlt
