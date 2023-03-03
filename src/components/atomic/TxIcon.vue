@@ -6,6 +6,7 @@
 		</transition>
 		<transition name="fade-fast">
 			<img class="image" v-if="src && canLoad" v-show="loaded" @load="loaded = true" :src="src" alt="thumbnail" draggable="false" @dragstart.prevent />
+			<Video class="image" v-else-if="vid && canLoad" :tx="tx" :thumbnail="true" />
 		</transition>
 	</Observer>
 </template>
@@ -16,6 +17,7 @@
 import Icon from '@/components/atomic/Icon.vue'
 import Observer from '@/components/function/Observer.vue'
 import ArweaveStore from '@/store/ArweaveStore'
+import Video from '@/components/handlers/Video.vue'
 import { unpackTags } from '@/functions/Transactions'
 import { computed, ref, watch } from 'vue'
 
@@ -54,11 +56,12 @@ const styleObject = computed(() => ({
 	color: props.options.isData && !props.options.isValue ? 'var(--orange)' : props.options.direction === 'in' ? 'var(--green)' : 'var(--red)',
 }))
 const src = computed(() => !props.options.isValue && tags.value['content-type']?.startsWith('image') && props.tx.id && (ArweaveStore.gatewayURL + props.tx.id) || undefined)
+const vid = computed(() => !props.options.isValue && tags.value['content-type']?.startsWith('video') && props.tx.id && (ArweaveStore.gatewayURL + props.tx.id) || undefined)
 const loaded = ref(false)
 const canLoad = ref(false)
 const intersecting = ref(false)
 const intersection = (e: IntersectionObserverEntry) => { intersecting.value = e.isIntersecting }
-watch(() => ({ src: src.value, intersecting: intersecting.value }), async (value, oldValue) => {
+watch(() => ({ src: (src.value || vid.value), intersecting: intersecting.value }), async (value, oldValue) => {
 	if (value.src !== oldValue?.src) { loaded.value = false }
 	if (!!value.src == value.intersecting) { canLoad.value = value.intersecting }
 }, { immediate: true })
