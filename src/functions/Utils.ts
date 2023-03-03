@@ -86,4 +86,4 @@ export function round (number?: number | string) {
 	return FractionDigits.length >= SignificantDigits.length ? FractionDigits : SignificantDigits
 }
 
-export function compact <T> (arr: (T | undefined | null)[]): T[] { return arr.filter(e => e != null) as T[] }
+export function compact <T> (arr: (T | undefined | null | void)[]): T[] { return arr.filter(e => e != null) as T[] }

@@ -5,11 +5,12 @@ import { awaitEffect } from '@/functions/AsyncData'
 import { getData, graphql } from '@/store/ArweaveStore'
 import { ArweaveAccount } from '@/providers/Arweave'
 import { TagFilter } from 'arweave-graphql'
+import { compact } from '@/functions/Utils'
 
 
 
 const ProfileStore = reactive({
-	arweaveId: {} as { [id: string]: ArweaveId },
+	arweaveId: {} as { [id: string]: ArweaveId | undefined },
 	arweaveIdStatus: {} as { [id: string]: any },
 	verification: {}  as { [id: string]: any },
 	verificationStatus: {} as { [id: string]: any },
@@ -33,30 +34,26 @@ export async function getArweaveId (address?: string) {
 				if (!input) { return }
 				const parsed = JSON.parse(input) as { [key: string]: string }
 				if (parsed.function !== 'claim') { return } // todo fetch additional txs
-				return { id: tx.id, tags: Object.entries(parsed).map(([name, value]) => ({ name, value })) }
+				return { ...tx, tags: Object.entries(parsed).map(([name, value]) => ({ name, value })) }
 			}),
 			async () => query([{ name: "Protocol-Name", values: ["Account", "Account-0.2", "Account-0.3"] }]).then(async tx => {
 				if (!tx) { return }
-				const data = await getData(tx.id).catch(() => {}) as { [key: string]: any }
-				tx.tags.push(...Object.entries(data).map(([name, value]) => {
+				const data = JSON.parse(await getData(tx.id) || '') as { [key: string]: any }
+				const tags = Object.entries(data).map(([name, value]) => {
 					typeof value === 'string' && value.startsWith('ar://') && (value = value.substring('ar://'.length))
 					return { name, value }
-				}))
-				tx.tags = tx.tags.filter(({ value }) => value !== 'OrG-ZG2WN3wdcwvpjz1ihPe4MI24QBJUpsJGIdL85wA')
-				return tx
+				}).filter(({ value }) => value !== 'OrG-ZG2WN3wdcwvpjz1ihPe4MI24QBJUpsJGIdL85wA')
+				return { ...tx, tags }
 			}),
 		] as const
 		const [main, ...fallback] = promises
 		ProfileStore.arweaveId[address] ??= await parseTags(await main())
-		ProfileStore.arweaveId[address] ??= await Promise.all(
-			fallback.map(f => f().catch(() => {}))
-		).then(async fbs => {
-			const tags = await Promise.all(fbs.map(async fb => fb && parseTags(fb)))
-			return tags.reduce((acc, v) => {
-				if (!v) { return acc }
-				return Object.assign(acc, Object.fromEntries(Object.entries(v).filter(([n, v]) => v)))
-			}, {})
-		})
+		if (!ProfileStore.arweaveId[address]) { await Promise.all(fallback.map(f => f().catch(() => {}))).then(async fbs => {
+			const txs = fbs.sort((a, b) => (b?.block?.height || 0) - (a?.block?.height || 0))
+			const txsTags = compact(await Promise.all(txs.map(async fb => fb && parseTags(fb))))
+			ProfileStore.arweaveId[address] ??= {}
+			txsTags.forEach(tags => Object.entries(tags).forEach(([name, value]) => ProfileStore.arweaveId[address]![name as keyof ArweaveId] ??= value))
+		}) }
 		return ProfileStore.arweaveId[address]
 	} catch (e) {
 		ProfileStore.arweaveIdStatus[address].loading = false
@@ -64,7 +61,7 @@ export async function getArweaveId (address?: string) {
 	}
 }
 
-type ArweaveId = Partial<Awaited<ReturnType<typeof parseTags>>>
+type ArweaveId = Partial<NonNullable<Awaited<ReturnType<typeof parseTags>>>>
 async function parseTags (tx?: { tags: Tag[], id: string }) {
 	if (!tx) { return }
 	const tags = unpackTags(tx.tags, { lowercase: true })
