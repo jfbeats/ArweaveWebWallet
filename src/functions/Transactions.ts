@@ -15,7 +15,6 @@ import { compact } from '@/functions/Utils'
 
 
 export type AnyFile = string | FileWithPath | object | undefined
-export type AnyTransaction = Transaction
 export type ExportRequest = {
 	entry: ExportEntry
 	compressed?: any
@@ -197,7 +196,7 @@ async function makeTemplates () {
 			},
 			init: async (tx: ReturnType<typeof trim>) => {
 				// todo handle transaction with unavailable data for both signed and unsigned
-				tx.data_root && trimmed.find((trimmed: Transaction) => {
+				tx.data_root && trimmed.find((trimmed: AnyTransaction) => {
 					if (tx.data_root !== trimmed.data_root) { return }
 					tx.chunks = trimmed.chunks
 					tx.data = trimmed.data
