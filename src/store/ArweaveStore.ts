@@ -75,7 +75,7 @@ export async function fetchPublicKey (address: string) {
 	return tx?.[0]?.node.owner.key as string | undefined
 }
 
-export async function getData (id: string) {
+export async function getData (id: string): Promise<string | undefined> {
 	let payload = undefined
 	try { payload ??= (await arweave.api.get(id)).data } catch (e) { }
 	try { payload ??= await arweave.transactions.getData(id, { decode: true, string: true }) } catch (e) { }
