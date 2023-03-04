@@ -15,7 +15,7 @@ export const exportRequest = computed(() => pending.value[0] as ExportRequest | 
 
 
 
-export async function requestExport (obj: { tx?: ExportEntry['tx'], compressed?: any, entry?: ExportEntry }) {
+export async function requestExport (obj: { tx?: AnyTransaction, compressed?: any, entry?: ExportEntry }) {
 	let controls: { resolve: ExportRequest['resolve'], reject: ExportRequest['reject'] }
 	const promise = new Promise<Transaction>((resolve, reject) => controls = { resolve, reject })
 	const newEntry: ExportEntry | undefined = obj.tx && obj.entry && { ...obj.entry, tx: obj.tx }
