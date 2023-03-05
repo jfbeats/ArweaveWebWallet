@@ -303,6 +303,7 @@ export function queryAggregator (queries: RefMaybe<ReturnType<typeof arweaveQuer
 		},
 	})
 	const state = computed(() => {
+		if (!boundary.value ) { return list.state.value }
 		const slicePos = list.state.value?.indexOf(boundary.value as any) ?? 0
 		if (slicePos < 0) { return [] }
 		if (list.state.value?.length === slicePos + 1) { return list.state.value }
