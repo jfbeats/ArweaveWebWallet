@@ -1,14 +1,15 @@
 import Arweave from 'arweave'
-import type { BlockEdge as GQLBlockEdge, TransactionEdge as GQLTransactionEdge } from 'arweave-graphql'
+import type { BlockEdge, GetTransactionsQuery, Transaction, TransactionEdge } from 'arweave-graphql'
 import arweaveGraphql, { SortOrder } from 'arweave-graphql'
-import { generateUrl } from '@/functions/Utils'
+import { compact, generateUrl } from '@/functions/Utils'
 import { useChannel } from '@/functions/Channels'
-import { getAsyncData, getQueryManager, getReactiveAsyncData } from '@/functions/AsyncData'
-import { isRef, reactive, ref, Ref, watch } from 'vue'
+import { getAsyncData, getQueryManager, getReactiveAsyncData, useDataWrapper } from '@/functions/AsyncData'
+import { computed, isRef, reactive, ref, Ref, watch, watchEffect } from 'vue'
 import { Emitter } from '@/functions/UtilsClass'
 import { notify } from '@/store/NotificationStore'
 import { track } from '@/store/Analytics'
 import InterfaceStore from '@/store/InterfaceStore'
+import { makeRef, useList } from '@/functions/UtilsVue'
 
 
 
@@ -84,8 +85,10 @@ export async function getData (id: string): Promise<string | undefined> {
 }
 
 
+const txSort = (a: Transaction, b: Transaction) => blockSort({ node: a, cursor: '' }, { node: b, cursor: '' })
+const txPrioritize = (a: Transaction, b: Transaction) => a.block && b.block ? txSort(a, b) : +!!b.block - +!!a.block
 
-const blockSort = (a: GQLTransactionEdge, b: GQLTransactionEdge) => (b.node.block?.height ?? Number.MAX_SAFE_INTEGER)
+const blockSort = (a: TransactionEdge, b: TransactionEdge) => (b.node.block?.height ?? Number.MAX_SAFE_INTEGER)
 	- (a.node.block?.height ?? Number.MAX_SAFE_INTEGER)
 
 export const graphql = () => arweaveGraphql((ArweaveStore.gatewayURL || 'https://arweave.net/') + 'graphql')
@@ -97,44 +100,47 @@ type arweaveQueryOptions = Parameters<ReturnType<typeof graphql>['getTransaction
 export function arweaveQuery (options: arweaveQueryOptions, name = 'tx list') { // todo rename to arweaveTransactions, fix changing query while loading
 	const optionsRef = isRef(options) ? options : ref(options)
 	const status = reactive({ completed: false, reset: 0 })
-	const data = ref([] as GQLTransactionEdge[])
+	const list = useList<TransactionEdge>({
+		key: a => a.node.id,
+		sort: blockSort, // todo use txSort
+		prioritize: (a, b) => a.node.block && b.node.block ? blockSort(a, b) : +!!b.node.block - +!!a.node.block // todo use txPrioritize and
+	})
 	const refresh = 10
 	const refreshEnabled = ref(false)
 	const refreshSwitch = ref(true) // todo
-	const emitter = new Emitter<{ newContent: undefined }>()
 	
 	watch(optionsRef, () => {
-		data.value = []
+		list.state.value = []
 		refreshEnabled.value = false
 		status.completed = false
 		status.reset++
 	}, { deep: true })
 	
+	const processResponse = (res: GetTransactionsQuery) => {
+		let fulfilled = false
+		const results = res.transactions.edges as TransactionEdge[]
+		const complete = !res.transactions.pageInfo.hasNextPage || results.length < (optionsRef.value?.first ?? 10)
+		if (complete) { status.completed = true; fulfilled = true }
+		return { results, fulfilled }
+	}
+	
 	const fetchQuery = getQueryManager({
 		name: name + ' fetch',
 		query: async () => {
-			if (optionsRef.value == null || status.completed) { return data.value }
+			if (optionsRef.value == null || status.completed) { return [] }
 			let fulfilled = false
-			let results: any
+			let results = undefined as undefined | TransactionEdge[]
 			try {
-				const firstFetch = !data.value.length
+				const firstFetch = !list.state.value.length
 				for (let i = 0; !fulfilled; i++) {
-					if (i === 0 && firstFetch) {
-						results = await graphql().getTransactions(optionsRef.value)
-					} else {
-						const cursor = data.value[data.value.length - 1].cursor
-						results = await graphql().getTransactions({ ...optionsRef.value, after: cursor })
-					}
-					if (!results.transactions.pageInfo.hasNextPage) { status.completed = true; fulfilled = true }
-					results = results.transactions.edges
-					if (results.length < 10) { status.completed = true; fulfilled = true } // todo remove??
+					;({ results, fulfilled } = processResponse(await graphql().getTransactions(i === 0 && firstFetch ? optionsRef.value : { ...optionsRef.value, after: list.state.value[list.state.value.length - 1].cursor })))
 					if (results[results.length - 1]?.node.block) { fulfilled = true }
-					data.value.push(...results)
+					list.add(results)
 				}
 				if (firstFetch) { setTimeout(() => refreshEnabled.value = true, refresh * 1000) }
 			}
 			catch (e) { console.error(e); await new Promise<void>(res => setTimeout(() => res(), 10000)); throw e }
-			return results as Awaited<ReturnType<ReturnType<typeof graphql>['getTransactions']>>['transactions']['edges']
+			return results
 		},
 	})
 	
@@ -142,58 +148,47 @@ export function arweaveQuery (options: arweaveQueryOptions, name = 'tx list') { 
 		name: name + ' update',
 		awaitEffect: () => !fetchQuery.queryStatus.running && refreshEnabled.value,
 		query: async () => {
-			let requireSort = false
-			let newContent = false
+			let removeContent = [] as TransactionEdge[]
+			let addContent = [] as TransactionEdge[]
 			let fulfilled = false
-			let results: any
+			let results = undefined as undefined | TransactionEdge[]
 			for (let i = 0; !fulfilled; i++) {
-				if (i === 0) { results = await graphql().getTransactions(optionsRef.value) }
-				else {
-					if (!results) { return }
-					const cursor = results[results.length - 1].cursor
-					results = await graphql().getTransactions({ ...optionsRef.value, after: cursor })
-				}
-				if (!results.transactions.pageInfo.hasNextPage) { status.completed = true; fulfilled = true }
-				results = results.transactions.edges
-				if (results.length < 10) { status.completed = true; fulfilled = true }
-				const resultsFiltered = []
+				if (i === 0) { ;({ results, fulfilled } = processResponse(await graphql().getTransactions(optionsRef.value))) }
+				else if (!results) { return }
+				else { ;({ results, fulfilled } = processResponse(await graphql().getTransactions({ ...optionsRef.value, after: results[results.length - 1].cursor }))) }
 				for (const result of results) {
-					const matchingTx = data.value.find(el => el.node.id === result.node.id)
+					const matchingTx = list.state.value.find(el => el.node.id === result.node.id)
 					if (matchingTx) {
 						if (matchingTx.node.block) { fulfilled = true }
-						else if (result.node.block) { Object.assign(matchingTx, result); requireSort = true; newContent = true }
-					} else {
-						resultsFiltered.push(result)
-						if (result.node.block) { requireSort = true; newContent = true }
-					}
+						else if (result.node.block) { removeContent.push(matchingTx); addContent.push(result) }
+					} else { addContent.push(result) }
 				}
-				if (resultsFiltered.length > 0) { data.value.splice(0, 0, ...resultsFiltered) }
-				if (requireSort) { data.value.sort(blockSort); requireSort = false }
 			}
-			if (newContent) { emitter.emit('newContent', undefined) }
-			return results as GQLTransactionEdge[]
+			list.remove(removeContent)
+			list.add(addContent)
+			return results as TransactionEdge[]
 		},
 		seconds: refresh,
-		existingState: data,
+		existingState: list.state,
 		processResult: () => {},
 		completed: () => optionsRef.value?.block?.max
 			|| optionsRef.value?.bundledIn || !refreshSwitch.value
-			|| optionsRef.value?.ids && data.value.length === (optionsRef.value?.ids.length || 1)
+			|| optionsRef.value?.ids && list.state.value.length === (optionsRef.value?.ids.length || 1)
 	})
 	
 	const fetchAll = async () => {
 		while (!status.completed) { await fetchQuery.query() }
-		return data
+		return list.state
 	}
 	
-	return { state: updateQuery.state, fetchQuery, updateQuery, status, refreshSwitch, fetchAll, on: emitter.on }
+	return { state: updateQuery.state, list, fetchQuery, updateQuery, status, refreshSwitch, fetchAll, key: '' + Math.random() }
 }
 
 
 
 export function arweaveQueryBlocks (options: Parameters<ReturnType<typeof graphql>['getBlocks']>[0]) { // todo rename to arweaveBlocks and make reactive
 	const status = reactive({ completed: false })
-	const data = ref([] as GQLBlockEdge[])
+	const data = ref([] as BlockEdge[])
 	const refresh = 10
 	const refreshEnabled = ref(false)
 	
@@ -233,80 +228,94 @@ export function arweaveQueryBlocks (options: Parameters<ReturnType<typeof graphq
 
 
 
-export function queryAggregator (queries: ReturnType<typeof arweaveQuery>[]) {
-	const status = reactive({ completed: false, reset: 0 })
-	const data = ref([] as { node: any, cursor: string }[])
+export function queryAggregator (queries: RefMaybe<ReturnType<typeof arweaveQuery>[]>) {
+	const list = useList<TransactionEdge>({ // todo generalize
+		key: a => a.node.id,
+		sort: blockSort, // todo use txSort
+		prioritize: (a, b) => a.node.block && b.node.block ? blockSort(a, b) : +!!b.node.block - +!!a.node.block // todo use txPrioritize and
+	})
 	const refresh = 10
 	const refreshSwitch = ref(true) // todo
-	
-	let initial = [] as any[]
-	let lastAdded = [] as any[]
-	
-	watch(refreshSwitch, val => queries.forEach(q => q.refreshSwitch.value = val))
-	queries.map(query => {
-		watch(() => query.updateQuery.stateRef.value?.length, () => {
-			const state = query.updateQuery.stateRef
-			if (!state.value) { return }
-			const queryIndex = queries.indexOf(query)
-			const index = state.value.indexOf(initial[queryIndex])
-			const newResults = [] as any[]
-			for (let i = index - 1; i >= 0; i--) { if (data.value.indexOf(state.value[i]) < 0) { newResults.push(state.value[i]) } }
-			if (newResults.length) { data.value.splice(0, 0, ...newResults) }
-			data.value.sort(blockSort)
+	watch(refreshSwitch, val => queriesRef.value.forEach(q => q.refreshSwitch = val))
+	const queriesRef = makeRef(queries)
+	const boundary = computed(() => {
+		let notReady = false
+		const boundaries = queriesRef.value.map(q => {
+			if (q.status.completed) { return }
+			else if (!q.list.state.length) { notReady = true; return }
+			const res = q.list.state.filter(tx => tx?.node.block)
+			if (!res?.length) { return }
+			return res[res.length - 1]
 		})
-		watch(() => query.status.reset, () => {
-			data.value = []
-			initial = []
-			lastAdded = []
-			status.completed = false
-			status.reset++
+		if (notReady) { return true } // any tx is overreach
+		const res = compact(boundaries).sort(list.sort)
+		if (!res.length) { return }
+		return res[0]
+	})
+	const overreached = computed(() => {
+		const v = boundary.value
+		if (v === true) { return queriesRef.value.map(q => q.list.state.length ? q.list.state : []) }
+		if (!v) { return [] }
+		return queriesRef.value.map(q => {
+			const slicePos = q.list.state.findIndex(el => el === v || list.sort(v!, el) < 0)
+			if (q.list.state.length === slicePos + 1) { return [] }
+			return q.list.state.slice(slicePos)
 		})
 	})
-	
+	const filterOverreach = (txs: TransactionEdge[], queries: any[]) => txs.filter(tx => {
+		const indexes = queries.map(q => queriesRef.value.indexOf(q)).filter(i => i >= 0)
+		const potentialQueries = overreached.value.filter((_, i) => indexes.includes(i))
+		if (potentialQueries.flat().includes(tx)) { return false }
+		return true
+	})
+	watch(overreached, (val, oldVal) => {
+		const newValFlat = val.flat()
+		const oldValFlat = oldVal.flat()
+		const removed = oldValFlat.filter(tx => !newValFlat.includes(tx))
+		const added = newValFlat.filter(tx => !oldValFlat.includes(tx))
+		// todo handle when new empty query is dynamically inserted
+		// todo add value only if still included in respective query
+		list.add(removed)
+	}, { deep: true })
+	const completed = computed(() => !overreached.value.flat().length && queriesRef.value.every(q => q.status.completed))
+	const status = reactive({ completed, reset: 0 })
+	const wrapper = useDataWrapper(queriesRef, el => el.key, query => {
+		const watchStop = watch(() => query.status.reset, () => {
+			list.state.value = []
+			status.reset++
+		})
+		const actions = ['add', 'remove'] as const satisfies AsConst<(keyof ReturnType<typeof useList>)[]>
+		return actions.map((action: typeof actions[number]) => {
+			const callback = (txs: TransactionEdge[]) => {
+				if (action === 'remove') { return list[action](txs) } // todo make watch(overreached) ignore removed
+				return list[action](filterOverreach(txs, [query]))
+			}
+			query.list.emitter.on(action, callback)
+			return () => { query.list.emitter.off(action, callback); watchStop() }
+		})
+	}, handlers => handlers.map(e => e()))
+	watch(wrapper, () => {}) // always use lazy computed
 	const fetchQuery = getQueryManager({
 		name: 'aggregated fetch',
 		query: async () => {
-			let fulfilled = false
-			for (let i = 0; !fulfilled; i++) {
-				const queryControls = queries.map(query => {
-					const queryIndex = queries.indexOf(query)
-					const index = query.updateQuery.stateRef.value?.indexOf(lastAdded[queryIndex]) ?? -1
-					const prep = async () => {
-						if (index + 1 === query.updateQuery.stateRef.value?.length) { await query.fetchQuery.query() }
-						if (!query.updateQuery.stateRef.value?.[index + 1]) { return }
-						if (!initial[queryIndex]) { initial[queryIndex] = query.updateQuery.stateRef.value?.[index] }
-						if (!initial[queryIndex]?.node.block && query.updateQuery.stateRef.value?.[index]?.node.block) { initial[queryIndex] = query.updateQuery.stateRef.value?.[index] }
-						return query.updateQuery.stateRef.value?.[index + 1]
-					}
-					const step = () => {
-						const nextEl = (query.updateQuery.stateRef.value!)[index + 1]
-						if (data.value.indexOf(nextEl) < 0) { data.value.push(nextEl) }
-						lastAdded[queryIndex] = nextEl
-					}
-					return { prep, step }
-				})
-				
-				let row = await Promise.all(queryControls.map(q => q.prep()))
-				const nextEl = row.find(el => el && el.node.block == null)
-					|| row.reduce((acc, el) => el && (el.node.block?.height || 0) > (acc?.node.block?.height || 0) ? el : acc, undefined)
-				if (!nextEl) { status.completed = true; break }
-				if (nextEl.node.block && i >= 10) { fulfilled = true }
-				const queryIndex = row.indexOf(nextEl)
-				queryControls[queryIndex].step()
-			}
-			return 'aggregated query fetch completed'
+			const queriesInRange = queriesRef.value.filter((query, i) => !overreached.value[i].length)
+			await Promise.all(queriesInRange.map(q => q.fetchQuery.query()))
 		},
 	})
-	
+	const state = computed(() => {
+		const slicePos = list.state.value?.indexOf(boundary.value as any) ?? 0
+		if (slicePos < 0) { return [] }
+		if (list.state.value?.length === slicePos + 1) { return list.state.value }
+		return list.state.value?.slice(0, slicePos + 1)
+	})
 	const updateQuery = getAsyncData({
 		name: 'aggregated update',
-		query: async () => (await Promise.all(queries.map(query => query.updateQuery.getState()))).flat(),
+		query: async () => (await Promise.all(queriesRef.value.map(query => query.updateQuery.getState()))).flat(),
 		seconds: refresh,
-		existingState: data,
+		existingState: state,
 		processResult: () => {},
 	})
-	
-	return { state: updateQuery.state, fetchQuery, updateQuery, status, refreshSwitch }
+	return { state: updateQuery.state, list, fetchQuery, updateQuery, status, refreshSwitch }
 }
 
 

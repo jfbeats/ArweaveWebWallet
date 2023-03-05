@@ -1,8 +1,9 @@
-import { computed, customRef, isRef, ref, Ref } from 'vue'
+import { computed, customRef, isRef, ref, Ref, UnwrapRef } from 'vue'
 import { useLink } from 'vue-router'
+import { Emitter } from '@/functions/UtilsClass'
 
-export function toRef <T> (value: RefMaybe<T>) {
-	return isRef(value) ? value : ref(value) as Ref<T>
+export function makeRef <T> (value: RefMaybe<T>) {
+	return (isRef(value) ? value : ref(value)) as Ref<UnwrapRef<T>>
 }
 
 export function useDebouncedRef<T>(value: T, delay = 200) {
@@ -25,7 +26,7 @@ export function useDebouncedRef<T>(value: T, delay = 200) {
 }
 
 export function createAction (actionInterface: RefMaybe<Action & { onClick?: (e?: MouseEvent) => any } | undefined>, forTemplate = false) {
-	const action = toRef(actionInterface)
+	const action = makeRef(actionInterface)
 	const routerParams = computed(() => ({ ...action.value, to: action.value?.to ?? '' }))
 	const routerLink = useLink(routerParams.value)
 	const hrefExternal = computed(() => {
@@ -48,4 +49,40 @@ export function createAction (actionInterface: RefMaybe<Action & { onClick?: (e?
 	const isActive = computed(() => routerLink.isActive.value)
 	const isExactActive = computed(() => routerLink.isExactActive.value)
 	return { hrefExternal, hrefRouter, isActive, isExactActive, runFunctions }
+}
+
+export function useList <T> (options: {
+	key: (a: Widen<T>) => string
+	sort: (a: Widen<T>, b: Widen<T>) => number
+	prioritize: (a: Widen<T>, b: Widen<T>) => number
+}) {
+	const { key, sort, prioritize } = options
+	const internalState = ref({} as { [key: string]: T[] })
+	const state = computed({
+		get: () => Object.values(internalState.value).map(e => e[0]).sort((a, b) => sort(a as Widen<T>, b as Widen<T>)),
+		set: v => {
+			const ids = v.map(e => key(e as Widen<T>))
+			const rem = Object.entries(internalState.value).filter(([key, _]) => !ids.includes(key)).map(([_, val]) => val).flat()
+			remove(rem); add(v) }
+	})
+	const emitter = new Emitter<{ add: T[], remove: T[] }>()
+	const add = (els: T[]) => els.forEach(el => {
+		if (!els.length) { return }
+		emitter.emit('add', els)
+		const i = key(el as any)
+		internalState.value[i] ??= []
+		if (!internalState.value[i].includes(el)) { internalState.value[i].push(el) }
+		internalState.value[i] = internalState.value[i].sort(prioritize as any)
+	})
+	const remove = (els: T[], force?: boolean) => els.forEach(el =>{
+		if (!els.length) { return }
+		emitter.emit('remove', els)
+		const i = key(el as any)
+		if (force) { return delete internalState.value[i] }
+		if (!internalState.value[i]) { return }
+		internalState.value[i] = internalState.value[i].filter(e => e !== el)
+		if (!internalState.value[i].length) { delete internalState.value[i] }
+	})
+	const includes = (el: T) => Object.values(internalState.value).flat().includes(el)
+	return { ...options, state, internalState, emitter, add, remove, includes }
 }
