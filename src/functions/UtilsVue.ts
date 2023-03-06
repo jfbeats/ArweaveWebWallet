@@ -66,23 +66,27 @@ export function useList <T> (options: {
 			remove(rem); add(v) }
 	})
 	const emitter = new Emitter<{ add: T[], remove: T[] }>()
-	const add = (els: T[]) => els.forEach(el => {
+	const add = (els: T[]) => {
 		if (!els.length) { return }
 		emitter.emit('add', els)
-		const i = key(el as any)
-		internalState.value[i] ??= []
-		if (!internalState.value[i].includes(el)) { internalState.value[i].push(el) }
-		internalState.value[i] = internalState.value[i].sort(prioritize as any)
-	})
-	const remove = (els: T[], force?: boolean) => els.forEach(el =>{
+		return els.forEach(el => {
+			const i = key(el as any)
+			internalState.value[i] ??= []
+			if (!internalState.value[i].includes(el)) { internalState.value[i].push(el) }
+			internalState.value[i] = internalState.value[i].sort(prioritize as any)
+		})
+	}
+	const remove = (els: T[], force?: boolean) => {
 		if (!els.length) { return }
 		emitter.emit('remove', els)
-		const i = key(el as any)
-		if (force) { return delete internalState.value[i] }
-		if (!internalState.value[i]) { return }
-		internalState.value[i] = internalState.value[i].filter(e => e !== el)
-		if (!internalState.value[i].length) { delete internalState.value[i] }
-	})
+		return els.forEach(el =>{
+			const i = key(el as any)
+			if (force) { return delete internalState.value[i] }
+			if (!internalState.value[i]) { return }
+			internalState.value[i] = internalState.value[i].filter(e => e !== el)
+			if (!internalState.value[i].length) { delete internalState.value[i] }
+		})
+	}
 	const includes = (el: T) => Object.values(internalState.value).flat().includes(el)
 	return { ...options, state, internalState, emitter, add, remove, includes }
 }

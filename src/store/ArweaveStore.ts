@@ -253,30 +253,30 @@ export function queryAggregator (queries: RefMaybe<ReturnType<typeof arweaveQuer
 		return res[0]
 	})
 	const overreached = computed(() => {
-		const v = boundary.value
-		if (v === true) { return queriesRef.value.map(q => q.list.state.length ? q.list.state : []) }
-		if (!v) { return [] }
+		const bound = boundary.value
+		if (bound === true) { return queriesRef.value.map(q => q.list.state.length ? q.list.state : []) }
+		if (!bound) { return [] }
 		return queriesRef.value.map(q => {
-			const slicePos = q.list.state.findIndex(el => el === v || list.sort(v!, el) < 0)
+			const slicePos = q.list.state.findIndex(el => el && (el === bound || list.sort(bound, el) < 0))
 			if (q.list.state.length === slicePos + 1) { return [] }
 			return q.list.state.slice(slicePos)
 		})
 	})
-	const filterOverreach = (txs: TransactionEdge[], queries: any[]) => txs.filter(tx => {
-		const indexes = queries.map(q => queriesRef.value.indexOf(q)).filter(i => i >= 0)
-		const potentialQueries = overreached.value.filter((_, i) => indexes.includes(i))
-		if (potentialQueries.flat().includes(tx)) { return false }
-		return true
-	})
+	const filterOverreach = (txs: TransactionEdge[], queries?: any[]) => {
+		const bound = boundary.value
+		if (bound === true) { return [] }
+		const indexes = queries?.map(q => queriesRef.value.indexOf(q)).filter(i => i >= 0)
+		const overreachedFlat = indexes?.length ? overreached.value.filter((_, i) => indexes.includes(i)).flat() : overreached.value.flat()
+		return txs.filter(tx => !overreachedFlat.includes(tx))
+	}
 	watch(overreached, (val, oldVal) => {
 		const newValFlat = val.flat()
 		const oldValFlat = oldVal.flat()
-		const removed = oldValFlat.filter(tx => !newValFlat.includes(tx))
-		const added = newValFlat.filter(tx => !oldValFlat.includes(tx))
+		const removed = oldValFlat.filter(tx => tx && !newValFlat.includes(tx))
 		// todo handle when new empty query is dynamically inserted
 		// todo add value only if still included in respective query
-		list.add(removed)
-	}, { deep: true })
+		if (removed.length) { list.add(removed) }
+	}, { deep: true, flush: 'sync' })
 	const completed = computed(() => !overreached.value.flat().length && queriesRef.value.every(q => q.status.completed))
 	const status = reactive({ completed, reset: 0 })
 	const wrapper = useDataWrapper(queriesRef, el => el.key, query => {
@@ -299,7 +299,7 @@ export function queryAggregator (queries: RefMaybe<ReturnType<typeof arweaveQuer
 		name: 'aggregated fetch',
 		query: async () => {
 			const queriesInRange = queriesRef.value.filter((query, i) => !overreached.value[i].length)
-			await Promise.all(queriesInRange.map(q => q.fetchQuery.query()))
+			return Promise.all(queriesInRange.map(q => q.fetchQuery.query()))
 		},
 	})
 	const state = computed(() => {
@@ -307,6 +307,7 @@ export function queryAggregator (queries: RefMaybe<ReturnType<typeof arweaveQuer
 		const slicePos = list.state.value?.indexOf(boundary.value as any) ?? 0
 		if (slicePos < 0) { return [] }
 		if (list.state.value?.length === slicePos + 1) { return list.state.value }
+		console.warn('corrected', list.state.value?.slice(slicePos).map(e => e.node.id))
 		return list.state.value?.slice(0, slicePos + 1)
 	})
 	const updateQuery = getAsyncData({
