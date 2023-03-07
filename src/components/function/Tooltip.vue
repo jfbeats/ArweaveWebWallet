@@ -1,10 +1,10 @@
 <template>
 	<div ref="tooltipEl" class="tooltip">
 		<slot />
-		<div v-show="false">
+		<div v-show="false" v-if="active">
 			<div ref="contentEl" :style="{ padding }">
 				<span v-if="content">{{ content }}</span>
-				<slot name="content"/> <!-- todo v-if='popup is displayed' + activate from keyboard nav -->
+				<slot name="content"/>
 			</div>
 		</div>
 	</div>
@@ -39,8 +39,11 @@ const settings: Partial<Props> = {
 const tooltipEl = ref(null as null | HTMLElement)
 const contentEl = ref(null as null | HTMLElement)
 let tooltip: ReturnType<typeof tippy>[0]
+const active = ref(false)
 
 const setProps = () => tooltip.setProps({
+	onShow: () => { active.value = true },
+	onHidden: () => { active.value = false },
 	trigger: props.content || slots.content ? 'mouseenter focus' : 'manual',
 	popperOptions: { modifiers: [{ name: 'flip', options: { padding: 8 } }] },
 	...(props || []),
