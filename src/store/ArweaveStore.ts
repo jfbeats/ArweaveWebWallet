@@ -257,8 +257,10 @@ export function queryAggregator (queries: RefMaybe<ReturnType<typeof arweaveQuer
 		if (bound === true) { return queriesRef.value.map(q => q.list.state.length ? q.list.state : []) }
 		if (!bound) { return [] }
 		return queriesRef.value.map(q => {
-			const slicePos = q.list.state.findIndex(el => el && (el === bound || list.sort(bound, el) < 0))
-			if (q.list.state.length === slicePos + 1) { return [] }
+			const pos = q.list.state.findIndex(el => el && (el === bound || list.sort(bound, el) < 0))
+			const slicePos = q.list.state[pos] === bound ? pos : pos
+			if (q.list.state.length <= slicePos + 1) { return [] }
+			if (slicePos < 0) { return [] }
 			return q.list.state.slice(slicePos)
 		})
 	})
@@ -304,11 +306,13 @@ export function queryAggregator (queries: RefMaybe<ReturnType<typeof arweaveQuer
 	})
 	const state = computed(() => {
 		if (!boundary.value ) { return list.state.value }
-		const slicePos = list.state.value?.indexOf(boundary.value as any) ?? 0
+		const pos = list.state.value?.indexOf(boundary.value as any) ?? 0
+		const slicePos = list.state.value[pos] === boundary.value ? pos + 1 : pos
 		if (slicePos < 0) { return [] }
-		if (list.state.value?.length === slicePos + 1) { return list.state.value }
-		console.warn('corrected', list.state.value?.slice(slicePos).map(e => e.node.id))
-		return list.state.value?.slice(0, slicePos + 1)
+		if (list.state.value?.length <= slicePos + 1) { return list.state.value }
+		console.warn('corrected', list.state.value?.slice(slicePos).map(e => e.node.id)) // todo figure that out
+		list.remove(list.state.value?.slice(slicePos))
+		return list.state.value
 	})
 	const updateQuery = getAsyncData({
 		name: 'aggregated update',

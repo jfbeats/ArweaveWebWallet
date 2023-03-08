@@ -69,11 +69,11 @@ export function useList <T> (options: {
 	const add = (els: T[]) => {
 		if (!els.length) { return }
 		emitter.emit('add', els)
-		return els.forEach(el => {
+		els.forEach(el => {
 			const i = key(el as any)
 			internalState.value[i] ??= []
 			if (!internalState.value[i].includes(el)) { internalState.value[i].push(el) }
-			internalState.value[i] = internalState.value[i].sort(prioritize as any)
+			if (internalState.value[i].length > 1) { internalState.value[i] = internalState.value[i].sort(prioritize as any) }
 		})
 	}
 	const remove = (els: T[], force?: boolean) => {
@@ -83,10 +83,10 @@ export function useList <T> (options: {
 			const i = key(el as any)
 			if (force) { return delete internalState.value[i] }
 			if (!internalState.value[i]) { return }
-			internalState.value[i] = internalState.value[i].filter(e => e !== el)
+			if (internalState.value[i].includes(el)) { internalState.value[i] = internalState.value[i].filter(e => e !== el) }
 			if (!internalState.value[i].length) { delete internalState.value[i] }
 		})
 	}
-	const includes = (el: T) => Object.values(internalState.value).flat().includes(el)
-	return { ...options, state, internalState, emitter, add, remove, includes }
+	const find = (el: T): T[] | undefined => internalState.value[key(el as any)]?.find(e => e === el) && internalState.value[key(el as any)]
+	return { ...options, state, internalState, emitter, add, remove, find }
 }
