@@ -2,6 +2,7 @@ import { getCurrentScope, onScopeDispose, watch, ref, effectScope, computed } fr
 import type { EffectScope, Ref, WatchStopHandle } from 'vue'
 import { useDataWrapper } from '@/functions/AsyncData'
 import type { AppSettingsInterface } from '@/store/SettingsStore'
+import type { MiningData } from '@/functions/Mining'
 
 type PrefixTable = {
 	'instanceState:': InstanceState
@@ -20,6 +21,8 @@ type PrefixTable = {
 	appSettings: AppSettingsInterface
 	cold: { status: 'active' | 'compromised', excluded: string[] }
 	storagePrice: { [height: string]: string | undefined }
+	miningData: MiningData
+	miningDataTimestamp: number
 }
 
 type DefaultValue <T extends keyof PrefixTable> = PrefixTable[T] | undefined

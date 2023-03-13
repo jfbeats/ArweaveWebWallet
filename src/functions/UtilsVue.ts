@@ -1,10 +1,9 @@
-import { computed, customRef, isRef, ref, Ref, UnwrapRef } from 'vue'
+import { computed, customRef, isRef, ref, Ref, ShallowRef, shallowRef, UnwrapRef } from 'vue'
 import { useLink } from 'vue-router'
 import { Emitter } from '@/functions/UtilsClass'
 
-export function makeRef <T> (value: RefMaybe<T>) {
-	return (isRef(value) ? value : ref(value)) as Ref<UnwrapRef<T>>
-}
+export function makeRef <T> (value: RefMaybe<T>) { return (isRef(value) ? value : ref(value)) as Ref<UnwrapRef<T>> }
+export function makeShallowRef <T> (value: RefMaybe<T>) { return (isRef(value) ? value : shallowRef(value)) as ShallowRef<T> }
 
 export function useDebouncedRef<T>(value: T, delay = 200) {
 	let timeout: any

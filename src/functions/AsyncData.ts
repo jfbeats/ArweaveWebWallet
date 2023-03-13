@@ -1,5 +1,6 @@
-import { reactive, computed, effectScope, isRef, Ref, ref, watch, watchEffect, WatchStopHandle, WritableComputedRef, shallowReactive } from 'vue'
+import { reactive, computed, effectScope, Ref, ref, watch, watchEffect, WatchStopHandle, WritableComputedRef, shallowReactive } from 'vue'
 import InterfaceStore from '@/store/InterfaceStore'
+import { makeShallowRef } from '@/functions/UtilsVue'
 
 
 
@@ -16,7 +17,7 @@ type ReactiveQueryOptions<T, P> = Override<AsyncDataOptions<T>, {
 }>
 
 type AsyncDataOptions<T> = QueryManagerOptions<T> & {
-	seconds?: number
+	seconds?: RefMaybe<number>
 	stale?: (state: T | undefined) => any
 	completed?: (state: T | undefined) => any
 	timestamp?: Ref<number | undefined>
@@ -55,15 +56,16 @@ export function getReactiveAsyncData <T, P> (options: ReactiveQueryOptions<T, P>
 }
 
 export function getAsyncData <T> (options: AsyncDataOptions<T>) {
-	const state = isRef(options.existingState) ? options.existingState : ref(options.existingState) as Ref<T | undefined>
-	const timestamp = isRef(options.timestamp) ? options.timestamp : ref(options.timestamp) as Ref<number | undefined>
+	const state = makeShallowRef(options.existingState)
+	const timestamp = makeShallowRef(options.timestamp)
+	const seconds = makeShallowRef(options.seconds)
 	let cooldown = 0
 	const { query, queryStatus } = getQueryManager(options)
 	const localClock = ref(0)
 	const getState = async (force?: boolean) => {
 		if (options.completed?.(state.value)) { return state.value! }
 		if (queryStatus.promise && (queryStatus.running || cooldown)) { timestamp.value = Date.now(); return queryStatus.promise }
-		if (!options.seconds || !force && state.value != null && timestamp.value && Date.now() - timestamp.value < (options.seconds * 1000)) { return state.value }
+		if (!seconds.value || !force && state.value != null && timestamp.value && Date.now() - timestamp.value < (seconds.value * 1000)) { return state.value }
 		const rollback = timestamp.value
 		const initTimestamp = Date.now()
 		timestamp.value = initTimestamp
@@ -84,7 +86,7 @@ export function getAsyncData <T> (options: AsyncDataOptions<T>) {
 		if (options.completed?.(state.value)) { return }
 		if (!InterfaceStore.windowVisible) { return }
 		if (queryStatus.running) { timestamp.value = Date.now(); return }
-		if (!options.seconds || !options.stale?.(state.value) && state.value != null && timestamp.value && Date.now() - timestamp.value < (options.seconds * 1000)) { return }
+		if (!seconds.value || !options.stale?.(state.value) && state.value != null && timestamp.value && Date.now() - timestamp.value < (seconds.value * 1000)) { return }
 		localClock.value++
 	}))
 	const computedState = scope.run(() => computed({

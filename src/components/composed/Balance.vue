@@ -1,14 +1,26 @@
 <template>
 	<div class="balance flex-column">
 		<div class="amounts">
-			<div class="flex-row" style="align-items: start">
-				<Ar :ar="wallet.balance" />
-				<Button v-if="wallet.balance && mint" :run="mint" style="height: 2.1em; width: 2em;">
-					<Icon icon="+" />
-				</Button>
-			</div>
-			<div>
-				<LocaleCurrency :ar="wallet.balance" />
+			<div class="flex-row">
+				<div style="flex: 1 0 0;">
+					<div class="flex-row big" style="align-items: baseline;">
+						<Ar :ar="wallet.balance" />
+						<Button v-if="wallet.balance && mint" :run="mint" style="height: 2.1em; width: 2em;">
+							<Icon icon="+" />
+						</Button>
+					</div>
+					<div class="flex-row" style="align-items: baseline;">
+						<LocaleCurrency :ar="wallet.balance" />
+					</div>
+				</div>
+				<div v-if="mining" style="flex: 1 1 auto; opacity: 0.75;">
+					<div class="flex-row big">
+						<Ar :winston="mining" />
+					</div>
+					<div>
+						<LocaleCurrency :winston="mining" />
+					</div>
+				</div>
 			</div>
 		</div>
 		<WalletInfo :wallet="wallet" />
@@ -25,6 +37,7 @@ import Button from '@/components/atomic/Button.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import ArweaveStore, { networkInfo } from '@/store/ArweaveStore'
 import { computed } from 'vue'
+import { miningData } from '@/functions/Mining'
 
 const props = defineProps<{ wallet: Wallet }>()
 
@@ -35,6 +48,8 @@ const mint = computed(() => {
 		props.wallet.queryBalance.getState(true)
 	}
 })
+
+const mining = computed(() => props.wallet.key && miningData.state.value?.[props.wallet.key]?.pendingReward.toString())
 </script>
 
 
@@ -53,7 +68,7 @@ const mint = computed(() => {
 	padding: var(--spacing);
 }
 
-.ar {
+.big {
 	font-size: 2em;
 }
 </style>

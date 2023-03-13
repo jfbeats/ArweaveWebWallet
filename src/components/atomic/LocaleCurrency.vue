@@ -9,12 +9,18 @@
 <script setup lang="ts">
 import { currency } from '@/store/CurrencyStore'
 import { computed } from 'vue'
+import { normalizeTo } from '@/store/ArweaveStore'
 
-const props = defineProps(['ar'])
+const props = defineProps<{
+	ar?: string | number
+	winston?: string | number
+}>()
+
+const ar = computed(() => normalizeTo('ar', props))
 const currencyType = computed(() => currency.settings.currency)
 const converted = computed(() => {
-	if (props.ar == null || isNaN(props.ar) || !currency.currentPrice.value) { return }
-	const num = currency.currentPrice.value * props.ar
+	if (ar.value == undefined || !currency.currentPrice.value) { return }
+	const num = currency.currentPrice.value * parseFloat(ar.value)
 	return new Intl.NumberFormat([...navigator.languages], { style: 'currency', currency: currencyType.value }).format(num)
 })
 </script>

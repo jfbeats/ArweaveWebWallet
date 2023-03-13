@@ -4,8 +4,7 @@ import arweaveGraphql, { SortOrder } from 'arweave-graphql'
 import { compact, generateUrl } from '@/functions/Utils'
 import { useChannel } from '@/functions/Channels'
 import { getAsyncData, getQueryManager, getReactiveAsyncData, useDataWrapper } from '@/functions/AsyncData'
-import { computed, isRef, reactive, ref, Ref, watch, watchEffect } from 'vue'
-import { Emitter } from '@/functions/UtilsClass'
+import { computed, isRef, reactive, ref, Ref, watch } from 'vue'
 import { notify } from '@/store/NotificationStore'
 import { track } from '@/store/Analytics'
 import InterfaceStore from '@/store/InterfaceStore'
@@ -412,3 +411,13 @@ async function loadGatewaySettings () {
 	stop()
 }
 loadGatewaySettings()
+
+
+
+export function normalizeTo (unit: 'ar' | 'winston', props: {
+	ar?: string | number
+	winston?: string | number
+}) {
+	if (props.ar != undefined) { return unit === 'ar' ? props.ar.toString() : arweave.ar.winstonToAr(props.ar.toString()) }
+	if (props.winston != undefined) { return unit === 'ar' ? arweave.ar.winstonToAr(props.winston.toString()) : props.winston.toString() }
+}
