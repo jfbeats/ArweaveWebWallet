@@ -125,7 +125,7 @@ const handleFiles = (e: DragEvent | InputEvent | FileSystemDirectoryHandle | Fil
 	if (!props.onFiles) { dropped(e, props.type) }
 	return emit('files', e)
 }
-const clearFiles = () => { emit('files') }
+const clearFiles = () => { dropped(undefined, props.type); emit('files') }
 const isFile = computed(() => Array.isArray(model.value) && model.value.length > 0)
 const checkContent = debounce(async (content: typeof model['value']) => {
 	if (typeof content !== 'string' || props.disabled) { return }
