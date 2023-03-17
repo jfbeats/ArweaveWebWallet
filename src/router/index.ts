@@ -121,7 +121,6 @@ const routes = [
 	{
 		path: '/:pathMatch(.*)*',
 		redirect: to => {
-			// todo go back when possible
 			asyncRoute(to.path)
 			if (state.value.type !== 'client') { return { name: 'Connect' } }
 			state.value.redirect = true

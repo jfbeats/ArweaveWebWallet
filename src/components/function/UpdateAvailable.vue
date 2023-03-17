@@ -12,45 +12,39 @@
 
 
 <script setup lang="ts">
-// @ts-ignore
 import { useRegisterSW } from 'virtual:pwa-register/vue'
 import { state, states } from '@/functions/Channels'
 import { track } from '@/store/Analytics'
 import { computed, ref, watch } from 'vue'
 
-if (sessionStorage.getItem('redirect')) { location.replace(sessionStorage.getItem('redirect')!); sessionStorage.removeItem('redirect') }
-const { needRefresh, updateServiceWorker } = useRegisterSW()
+const newLocation = sessionStorage.getItem('redirect')
+if (newLocation) { sessionStorage.removeItem('redirect'); location.replace(newLocation) }
+
+const { needRefresh, updateServiceWorker } = useRegisterSW({})
 let autoUpdateActive = state.value.type !== 'iframe'
 setTimeout(() => autoUpdateActive = false, 10000)
 const overlay = ref(false)
-const update = async () => {
+const processUpdate = async () => {
 	overlay.value = true
-	await new Promise(res => setTimeout(res))
 	if (state.value.origin) {
 		const urlInfo = { origin: state.value.origin, session: state.value.session! }
 		const url = new URL(location.href)
 		url.hash = new URLSearchParams(urlInfo).toString()
 		location.replace(url)
 	}
-	location.reload()
+	updateServiceWorker(true)
+	state.value.updating = 'completed'
 }
-let updating = false
 const triggerUpdate = async (e?: any) => {
+	if (overlay.value) { return }
 	overlay.value = true
-	if (updating) { return }
-	updating = true
 	track.event('App Update')
-	await new Promise(res => {
-		updateServiceWorker(false).then(res)
-		setTimeout(res, 1000)
-	})
-	states.value.filter(s => s !== state.value).forEach(s => s.updating = true)
 	if (!e && state.value.redirect && state.value.url) { sessionStorage.setItem('redirect', state.value.url) }
-	state.value.updating = true
+	states.value.forEach(s => s.updating = 'scheduled')
 }
 const otherInstance = computed(() => states.value.filter(s => s !== state.value).find(s => !s.origin || s.origin !== state.value.origin && s.session !== state.value.session))
 watch(needRefresh, needed => needed && !otherInstance.value && autoUpdateActive && triggerUpdate(), { immediate: true })
-watch(() => state.value.updating, val => val && update(), { immediate: true })
+watch(() => state.value.updating, val => val === 'scheduled' && processUpdate(), { immediate: true })
 const close = () => { needRefresh.value = false }
 </script>
 

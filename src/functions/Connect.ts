@@ -165,8 +165,7 @@ async function initConnector () {
 		if (prompt) { focusWindow() }
 	})
 	const connect = () => {
-		// todo reject transactions that are designated to current address
-		if (!sharedState.value.walletId) { return }
+		if (sharedState.value.walletId === false || sharedState.value.walletId == undefined) { return }
 		const wallet = getWalletById(sharedState.value.walletId)
 		if (!wallet) { return }
 		postMessage({ method: 'connect', params: wallet.key })
@@ -179,35 +178,34 @@ async function initConnector () {
 	}
 	if (state.value.type === 'iframe') {
 		InterfaceStore.toolbar.enabled = false
-		const unload = () => { !state.value.updating && connector.value && (connector.value.sharedStates.length > 1 ? deleteChannel() : disconnect()) }
-		onUnload(unload)
+		onUnload(() => { !state.value.updating && connector.value && (connector.value.sharedStates.length > 1 ? deleteChannel() : disconnect()) })
 	}
 	if (state.value.type === 'popup') {
-		if (!sharedState.value.walletId) { InterfaceStore.toolbar.enabled = false }
+		if (sharedState.value.walletId == undefined) { InterfaceStore.toolbar.enabled = false }
 		const keepPopup = computed(() => !sharedState.value.link)
 		watch(keepPopup, () => postMessage({ method: 'keepPopup', params: keepPopup.value }), { immediate: true })
-		const unload = () => {
-			!state.value.updating && !sharedState.value.links?.iframe && connector.value && (connector.value.sharedStates.length > 1 ? deleteChannel() : disconnect())
+		onUnload(() => {
+			if (state.value.updating) { return }
+			!sharedState.value.links?.iframe && connector.value && (connector.value.sharedStates.length > 1 ? deleteChannel() : disconnect())
 			window.close()
-		}
-		onUnload(unload)
+		})
 	}
 	watch(() => sharedState.value.walletId, id => {
 		if (id === false) { return disconnect() }
-		if (!id) { return }
+		if (id == undefined) { return }
 		connect()
 		if (!sharedState.value.connected) { track.event('Connect', sharedState.value.origin) }
 		sharedState.value.connected = true
 	})
 	watchEffect(() => {
-		const linkedState = () => sharedState.value.links.popup && sharedState.value.links.iframe
-		if (linkedState()) {
+		const linkedState = sharedState.value.links.popup && sharedState.value.links.iframe
+		if (linkedState) {
 			sharedState.value.link = true
 			postMessage({ method: 'usePopup', params: false })
 		}
 		if (state.value.type === 'iframe') {
-			const disconnectCondition = () => !state.value.updating && !linkedState() && sharedState.value.link && (sharedState.value.walletId == null || sharedState.value.walletId === false)
-			if (disconnectCondition()) { setTimeout(() => disconnectCondition() && disconnect(), 500) }
+			const disconnectCondition = !state.value.updating && !linkedState && sharedState.value.link && (sharedState.value.walletId == null || sharedState.value.walletId === false)
+			if (disconnectCondition) { setTimeout(() => disconnectCondition && disconnect(), 500) }
 		}
 	})
 	postMessage({ method: 'ready' })
@@ -228,7 +226,7 @@ async function initWebSockets () {
 		jsonRpc.pushMessage(message)
 	})
 	const connect = () => {
-		if (!sharedState.value.walletId) { return }
+		if (sharedState.value.walletId === false || sharedState.value.walletId == undefined) { return }
 		const wallet = getWalletById(sharedState.value.walletId)
 		if (!wallet) { return }
 		postMessage({ method: 'connect', params: wallet.key })

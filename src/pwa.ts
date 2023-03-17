@@ -14,7 +14,9 @@ interface BeforeInstallPromptEvent extends Event {
 
 
 export const PWA = reactive({
-	registration: new Promise(resolve => useRegisterSW({ onRegistered (r) { resolve(r) } })),
+	registration: new Promise<ServiceWorkerRegistration | undefined>(res => useRegisterSW({
+		onRegisteredSW: (swScriptUrl, registration) => res(registration)
+	})),
 	install,
 	installPrompt: undefined as undefined | BeforeInstallPromptEvent,
 	installState: undefined as undefined | 'available' | 'installed',
@@ -43,4 +45,4 @@ window.addEventListener('beforeinstallprompt', e => {
 
 // @ts-ignore
 navigator.getInstalledRelatedApps?.()?.then(apps => { PWA.installed = apps; apps.length && console.log(apps) }).catch(() => {})
-PWA.registration.then((r: any) => setInterval(() => r.update(), 60 * 60 * 1000))
+PWA.registration.then(r => setInterval(() => r?.update(), 60 * 60 * 1000))
