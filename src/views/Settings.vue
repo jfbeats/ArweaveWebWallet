@@ -114,17 +114,18 @@ const passwordAction = computed(() => ({
 
 const reset = async () => {
 	if (!await notify.confirm('Reset application?').promise) { return }
-	localStorage.clear()
-	const clear = (dbs: any[]) => Promise.all(dbs.map(db => new Promise<void>(res => {
-		if (!db.name) { return res() }
-		setTimeout(res, 1000)
-		const req = indexedDB.deleteDatabase(db.name)
-		req.onerror = () => res()
-		req.onsuccess = () => res()
-	})))
-	await indexedDB.databases().then(dbs => clear(dbs))
-	console.log('cleared')
-	location.reload()
+	const clearDB = async (db: IDBDatabaseInfo) => new Promise<void>(res => { if (!db.name) { return res() }; setTimeout(res, 1000); const req = indexedDB.deleteDatabase(db.name); req.onerror = () => res(); req.onsuccess = () => res(); })
+	const promise = Promise.all([
+		indexedDB.databases().then(dbs => Promise.all(dbs.map(clearDB))),
+		navigator.serviceWorker.getRegistrations().then(registrations => Promise.all(registrations.map(r => r.unregister()))),
+		window.caches?.keys().then(keys => Promise.all(keys.map(key => window.caches.delete(key)))),
+	].map(p => p && p.catch(e => notify.error(e))))
+	try {
+		localStorage.clear()
+		sessionStorage.clear()
+		document.cookie.split(';').forEach(c => { document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/'); })
+	} catch (e: any) { notify.error(e) }
+	await promise; notify.log('cleared'); location.reload();
 }
 </script>
 
