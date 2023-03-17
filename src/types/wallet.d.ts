@@ -11,7 +11,7 @@ type WalletDataInterface = {
 	}
 }
 
-type Wallet = Union<InstanceType<AnyProvider>>
+type Wallet = Widen<InstanceType<AnyProvider>>
 
 interface Provider extends Account {
 	metadata: InstanceMetadata<this>

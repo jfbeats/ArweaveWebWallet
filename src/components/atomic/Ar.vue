@@ -12,9 +12,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { round } from '@/functions/Utils'
+import { normalizeTo } from '@/store/ArweaveStore'
 
-const props = defineProps(['ar'])
-const amountRounded = computed(() => round(props.ar))
+const props = defineProps<{
+	ar?: string | number
+	winston?: string | number
+}>()
+const amountRounded = computed(() => round(normalizeTo('ar', props)))
 </script>
 
 

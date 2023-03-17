@@ -29,7 +29,7 @@ type InstanceState = {
 	type?: 'extension' | 'ws' | 'popup' | 'iframe' | 'client'
 	url?: string
 	redirect?: boolean
-	updating?: boolean
+	updating?: 'scheduled' | 'completed'
 }
 
 type SharedState = {

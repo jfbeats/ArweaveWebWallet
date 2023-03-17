@@ -13,3 +13,17 @@ type Action = DisplayMetadata & { // Todo type action in defineProps
 }
 
 type RefMaybe <T> = import('vue').Ref<T> | T
+
+type TagField = {
+	name: string
+	value: string
+	icon?: any
+	attrs?: { [key: string]: any }
+}
+
+type TagSchema = {
+	items: TagField[]
+	deletable: boolean
+	key: any
+	stop?: () => void
+}

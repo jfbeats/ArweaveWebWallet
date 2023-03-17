@@ -21,7 +21,9 @@ export function debounce <T extends (...args: any[]) => any> (fun: T, options?: 
 				timer = requestAnimationFrame(() => { resolve(); timer = undefined })
 			} else {
 				clearTimeout(timer)
-				timer = setTimeout(() => resolve(), options?.timeout ?? 500)
+				const timing = (options && 'timeout' in options) ? undefined
+					: options?.timeout ?? 500
+				timer = setTimeout(() => resolve(), timing)
 			}
 		})
 	}) as (...args: Parameters<T>) => Promise<ReturnType<T>>
