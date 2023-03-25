@@ -7,9 +7,8 @@ import ArweaveApp from "@zondax/ledger-arweave"
 import { ArweaveAccount, ArweaveMessageRunner } from '@/providers/Arweave'
 import { arweave } from '@/store/ArweaveStore'
 import { ArweaveVerifier as ArweaveMessageVerifier } from 'arweave-wallet-connector'
-import LogoLedger from '@/assets/logos/ledger.svg?component'
-import IconVerify from '@/assets/icons/verify.svg?component'
-import IconLaunch from '@/assets/icons/launch.svg?component'
+import { LOGO } from '@/store/Theme'
+import { ICON } from '@/store/Theme'
 import type Transaction from 'arweave/web/lib/transaction'
 import type { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
 import { track } from '@/store/Analytics'
@@ -109,7 +108,7 @@ const providerMetadata: ProviderMetadata = reactive({
 	...ArweaveAccount.metadata,
 	id: 'ledger',
 	name: 'Ledger (awaiting release)',
-	icon: markRaw(LogoLedger),
+	icon: markRaw(LOGO.ledger),
 	disabled: true,
 	addImportData: async (walletData) => {
 		walletData ??= {}
@@ -119,8 +118,8 @@ const providerMetadata: ProviderMetadata = reactive({
 		return walletData
 	},
 	actions: [
-		{ name: 'Verify address', icon: markRaw(IconVerify), run: async () => getAddress(true) },
-		{ name: 'Purchase | affiliate link', icon: markRaw(IconLaunch), to: 'https://shop.ledger.com?r=1a60a479b0af', run: () => track.event('Affiliate', { value: 'Ledger', link: 'https://shop.ledger.com?r=1a60a479b0af' }) },
+		{ name: 'Verify address', icon: markRaw(ICON.verify), run: async () => getAddress(true) },
+		{ name: 'Purchase | affiliate link', icon: markRaw(ICON.launch), to: 'https://shop.ledger.com?r=1a60a479b0af', run: () => track.event('Affiliate', { value: 'Ledger', link: 'https://shop.ledger.com?r=1a60a479b0af' }) },
 	],
 	componentSettings: markRaw(LedgerSettings)
 })

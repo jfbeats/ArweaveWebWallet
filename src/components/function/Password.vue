@@ -37,9 +37,7 @@ import { focusWindow } from '@/functions/Connect'
 import { compact } from '@/functions/Utils'
 import { notify } from '@/store/NotificationStore'
 import { computed, markRaw, Ref, ref, shallowRef, watch } from 'vue'
-
-import IconY from '@/assets/icons/y.svg?component'
-import IconShieldWarning from '@/assets/icons/shield_warning.svg?component'
+import { ICON } from '@/store/Theme'
 
 const passwordRequest = shallowRef(undefined as undefined | PasswordRequest)
 const currentWalletId = computed(() => passwordRequest.value?.wallet?.id)
@@ -72,7 +70,7 @@ emitter.on('password', callback => {
 
 const password = ref('')
 const passwordMatch = ref('')
-const passwordAction = computed(() => ({ run: submit, icon: IconY }))
+const passwordAction = computed(() => ({ run: submit, icon: ICON.y }))
 const submit = async () => {
 	if (passwordRequest.value?.match && passwordRequest.value.match !== passwordMatch.value) { return notify.error('New password does not match') }
 	if (passwordRequest.value?.reason === 'new') {
@@ -98,7 +96,7 @@ const fill = computed(() => {
 	const { width, height } = size.value.contentRect
 	return height < 700 && width < 500
 })
-const newPasswordMessage = ref(!hasPassword.value && { icon: markRaw(IconShieldWarning), message: 'Always make sure that you have a working backup of your private keys. You will not be able to recover the ones that are encrypted if you forget your password', action: { run: () => newPasswordMessage.value = undefined } } || undefined)
+const newPasswordMessage = ref(!hasPassword.value && { icon: markRaw(ICON.shieldWarning), message: 'Always make sure that you have a working backup of your private keys. You will not be able to recover the ones that are encrypted if you forget your password', action: { run: () => newPasswordMessage.value = undefined } } || undefined)
 </script>
 
 

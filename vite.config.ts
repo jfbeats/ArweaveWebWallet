@@ -7,6 +7,7 @@ import { viteSingleFile } from "vite-plugin-singlefile"
 import inject from '@rollup/plugin-inject'
 import svgLoader from 'vite-svg-loader'
 import pwaOptions from './pwaOptions.js'
+import { buildTypes } from './build.js'
 
 declare global { interface Window { BASE_URL: string } }
 
@@ -28,6 +29,7 @@ export default async (config: any) => {
 			svgLoader({ svgoConfig: { multipass: true } }),
 			VitePWA(pwaOptions(env)),
 			singleFile,
+			buildTypes,
 		],
 		resolve: { alias: { '@': path.resolve(__dirname, 'src') } },
 		build: { target: 'esnext', sourcemap: true, rollupOptions: { plugins: [

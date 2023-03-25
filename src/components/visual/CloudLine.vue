@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { normalizeColorTo } from '@/functions/Utils'
+import { normalizeColorTo } from '@/store/Theme'
 
 const props = defineProps<{
 	height?: number

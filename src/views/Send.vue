@@ -4,7 +4,7 @@
 			<!-- TODO Autocomplete local addrs -->
 			<label for="target">
 				<h2 class="heading flex-row">
-					<Icon :icon="IconNorthEast" />
+					<Icon :icon="ICON.northEast" />
 					<span>Send</span>
 				</h2>
 			</label>
@@ -68,7 +68,7 @@
 
 			<div class="row flex-row" style="align-items:flex-end; margin-top:3em;">
 				<SendFee :size="form.txSize" :target="form.target" @update="fee => form.txFee = fee" />
-				<Button @click="postTx" :disabled="loading || !form.txFee || !form.txSize || !wallet.signTransaction" :icon="IconNorthEast" :color="addressHashColor" :glow="true">{{ InterfaceStore.online ? 'Submit' : 'Sign'}}</Button>
+				<Button @click="postTx" :disabled="loading || !form.txFee || !form.txSize || !wallet.signTransaction" :icon="ICON.northEast" :color="addressHashColor" :glow="true">{{ InterfaceStore.online ? 'Submit' : 'Sign'}}</Button>
 			</div>
 			<div>
 				<transition name="slide-up">
@@ -84,7 +84,7 @@
 
 
 <script setup lang="ts">
-import InputAddress from '@/components/form/InputAddress.vue';
+import InputAddress from '@/components/form/InputAddress.vue'
 import InputAr from '@/components/form/InputAr.vue'
 import InputData from '@/components/form/InputData.vue'
 import InputTags from '@/components/form/InputTags.vue'
@@ -94,11 +94,12 @@ import Icon from '@/components/atomic/Icon.vue'
 import InterfaceStore from '@/store/InterfaceStore'
 import { form, addTag, submit, formWallet } from '@/store/FormSend'
 import { awaitEffect } from '@/functions/AsyncData'
-import { addressHashToColor, addressToHash } from '@/functions/Utils'
+import { addressToHash } from '@/functions/Utils'
+import { addressHashToColor, ICON } from '@/store/Theme'
 import BigNumber from 'bignumber.js'
 import { computed, reactive, ref, watch } from 'vue'
 
-import IconNorthEast from '@/assets/icons/north_east.svg?component'
+
 
 const props = defineProps<{ wallet: Wallet }>()
 

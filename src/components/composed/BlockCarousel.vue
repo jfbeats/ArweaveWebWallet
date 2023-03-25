@@ -5,7 +5,7 @@
 				<BlockCard :block="block" class="box" />
 			</div>
 			<div v-if="canMine && state.length" class="block fade-list-item box flex-column" style="align-items: center; justify-content: center">
-				<Icon :icon="IconCube" style="font-size: 4em; opacity: 0.8;" />
+				<Icon :icon="ICON.cube" style="font-size: 4em; opacity: 0.8;" />
 				<Button @click="mine">Mine new block</Button>
 			</div>
 		</Carousel>
@@ -17,7 +17,7 @@
 <script setup lang="ts">
 import Carousel from '@/components/layout/Carousel.vue'
 import Icon from '@/components/atomic/Icon.vue'
-import IconCube from '@/assets/icons/cube.svg?component'
+import { ICON } from '@/store/Theme'
 import { ref, computed, watch } from 'vue'
 import ArweaveStore, { arweaveQueryBlocks, networkInfo } from '@/store/ArweaveStore'
 import BlockCard from '@/components/composed/BlockCard.vue'

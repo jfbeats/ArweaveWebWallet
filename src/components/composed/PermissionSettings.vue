@@ -20,7 +20,6 @@
 import Button from '@/components/atomic/Button.vue'
 import { getMethodMetadata, getWalletById } from '@/functions/Wallets'
 import { computed, ref, watch } from 'vue'
-import IconConnection from '@/assets/icons/connection.svg?component'
 import { useChannel } from '@/functions/Channels'
 import TransitionsManager from '@/components/visual/TransitionsManager.vue'
 

@@ -4,7 +4,7 @@
 			<slot />
 			<span class="text ellipsis">{{ val }}</span>
 			<Tooltip v-if="arverify?.verified" class="icon-container" content="verified">
-				<Icon :icon="IconVerify" />
+				<Icon :icon="ICON.verify" />
 			</Tooltip>
 			<Tooltip v-if="clipboard" class="icon-container" :content="clipboardClicked ? undefined : 'copy'">
 				<Link :run="clipboard" style="display: flex">
@@ -15,7 +15,7 @@
 				<template #content>
 					<QR :qr="val" />
 				</template>
-				<Icon :icon="IconQR" />
+				<Icon :icon="ICON.qr" />
 			</Tooltip>
 		</span>
 	</div>
@@ -30,11 +30,7 @@ import QR from '@/components/atomic/QR.vue'
 import Link from '@/components/function/Link.vue'
 import ProfileStore, { getVerification } from '@/store/ProfileStore'
 import { computed, ref, watch } from 'vue'
-
-import IconVerify from '@/assets/icons/verify.svg?component'
-import IconCopy from '@/assets/icons/copy.svg?component'
-import IconQR from '@/assets/icons/qr.svg?component'
-import IconY from '@/assets/icons/y.svg?component'
+import { ICON } from '@/store/Theme'
 
 const props = defineProps<{
 	address?: string
@@ -54,7 +50,7 @@ const clipboard = computed(() => {
 
 const clipboardClicked = ref()
 watch(clipboardClicked, clicked => clicked && setTimeout(() => clipboardClicked.value = false, 2000))
-const clipboardIcon = computed(() => clipboardClicked.value ? IconY : IconCopy)
+const clipboardIcon = computed(() => clipboardClicked.value ? ICON.y : ICON.copy)
 </script>
 
 

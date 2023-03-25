@@ -4,7 +4,7 @@
 			<h2>Wallet{{ selectedWallets.length > 1 ? 's' : '' }}</h2>
 			<TransitionsManager :fast="true">
 				<Link v-if="securityMismatch" class="update-message" :key="'' + hasNoTargetWallets + hasPassword" @click="securityMismatchAction" style="text-align: right;">
-					<Icon :icon="IconWarning" style="vertical-align: text-top" />
+					<Icon :icon="ICON.shieldWarning" style="vertical-align: text-top" />
 					<span v-if="hasNoTargetWallets"> Select wallets to encrypt or click here to remove password</span>
 					<span v-else-if="hasPassword"> Click here to update encryption</span>
 					<span v-else> Click here to create a new password</span>
@@ -37,8 +37,7 @@ import { hasPassword, setPassword, hasUpdate, updateEncryption, hasNoTargetWalle
 import { computed, watch } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 import { useRoute, useRouter } from '@/router'
-
-import IconWarning from '@/assets/icons/shield_warning.svg?component'
+import { ICON } from '@/store/Theme'
 
 const route = useRoute()
 const router = useRouter()

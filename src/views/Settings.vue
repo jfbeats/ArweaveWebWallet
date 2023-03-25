@@ -9,10 +9,10 @@
 <!--				<SettingItem name="Notifications">-->
 <!--				</SettingItem>-->
 				<SettingItem name="Gateway" description="URL of the service used to access network data">
-					<Input v-model="gateway" :submit="gatewayAction" :placeholder="ArweaveStore.gatewayURL" :icon="IconDownload" style="flex:1 1 0;" />
+					<Input v-model="gateway" :submit="gatewayAction" :placeholder="ArweaveStore.gatewayURL" :icon="ICON.download" style="flex:1 1 0;" />
 				</SettingItem>
 				<SettingItem name="Bundler" description="URL of the service used to submit data to the network when possible instead of using the gateway">
-					<Input v-model="bundler" :submit="bundlerAction" :placeholder="ArweaveStore.bundlerURL" :icon="IconUpload" style="flex:1 1 0;" />
+					<Input v-model="bundler" :submit="bundlerAction" :placeholder="ArweaveStore.bundlerURL" :icon="ICON.upload" style="flex:1 1 0;" />
 				</SettingItem>
 				<SettingItem name="Currency">
 					<Select v-model="currentSetting" :options="redstoneOptions" :icon="currency.symbol" />
@@ -27,7 +27,7 @@
 					<Select v-model="AppSettings.password.invalidateCache" :options="AppSettingsOptions.password.invalidateCache" />
 				</SettingItem>
 				<SettingItem name="Reset application" description="Clear all accounts, settings and password" row="true">
-					<Button :run="reset" :icon="IconX" :glow="true" color="var(--red)">Reset</Button>
+					<Button :run="reset" :icon="ICON.x" :glow="true" color="var(--red)">Reset</Button>
 				</SettingItem>
 			</div>
 			<WalletsOptions />
@@ -70,11 +70,7 @@ import { AppSettings, AppSettingsOptions } from '@/store/SettingsStore'
 import { currency, redstoneOptions } from '@/store/CurrencyStore'
 import { notify } from '@/store/NotificationStore'
 import { computed, ref } from 'vue'
-
-import IconDownload from '@/assets/icons/download.svg?component'
-import IconUpload from '@/assets/icons/upload.svg?component'
-import IconY from '@/assets/icons/y.svg?component'
-import IconX from '@/assets/icons/x.svg?component'
+import { ICON } from '@/store/Theme'
 
 const gateway = ref('')
 const setGateway = async () => {
@@ -84,7 +80,7 @@ const setGateway = async () => {
 }
 const gatewayAction = computed(() => {
 	if (!gateway.value && ArweaveStore.gatewayURL === gatewayDefault) { return }
-	return { run: setGateway, icon: gateway.value ? IconY : IconX }
+	return { run: setGateway, icon: gateway.value ? ICON.y : ICON.x }
 })
 
 const bundler = ref('')
@@ -95,7 +91,7 @@ const setBundler = async () => {
 }
 const bundlerAction = computed(() => {
 	if (!bundler.value && ArweaveStore.bundlerURL === bundlerDefault) { return }
-	return { run: setBundler, icon: bundler.value ? IconY : IconX }
+	return { run: setBundler, icon: bundler.value ? ICON.y : ICON.x }
 })
 
 const currentSetting = computed<{ currency: string, provider: string }>({
@@ -109,7 +105,7 @@ const currentSetting = computed<{ currency: string, provider: string }>({
 const password = ref('')
 const passwordAction = computed(() => ({
 	run: async () => await setPassword(password.value) && (password.value = ''),
-	icon: hasPassword.value && !password.value ? IconX : IconY
+	icon: hasPassword.value && !password.value ? ICON.x : ICON.y
 }))
 
 const reset = async () => {

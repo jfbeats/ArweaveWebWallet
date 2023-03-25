@@ -12,9 +12,10 @@
 
 
 <script setup lang="ts">
-import { debounce, normalizeColorTo } from '@/functions/Utils'
+import { debounce } from '@/functions/Utils'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import Observer from '@/components/function/Observer.vue'
+import { normalizeColorTo } from '@/store/Theme'
 
 const props = defineProps<{ color?: string }>()
 

@@ -20,13 +20,12 @@ import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
 import { state } from '@/functions/Channels'
 import { connectors as unordered, postMessageExtension } from '@/functions/Connect'
 import { computed, ref, watch } from 'vue'
-
-import IconPlug from '@/assets/icons/plug.svg?component'
+import { ICON } from '@/store/Theme'
 
 const connectors = computed(() => unordered.value.sort((a, b) => +(b.origin === 'local') - +(a.origin === 'local')))
 const connectPrompt = computed(() => ({
 	action: {
-		icon: IconPlug,
+		icon: ICON.plug,
 		name: 'Connect to ' + extensionOrigin.value,
 		run: () => postMessageExtension('connect')
 	}

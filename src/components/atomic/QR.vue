@@ -2,7 +2,7 @@
 	<div class="qr" style="overflow: hidden; position: relative;">
 		<div ref="canvas" class="qr-container" />
 		<div v-if="hasLogo" class="logo" style="filter:url(#blob2);">
-			<Icon :icon="ArweaveLogo" />
+			<Icon :icon="LOGO.arweaveOutline" />
 		</div>
 	</div>
 </template>
@@ -12,7 +12,7 @@
 <script setup lang="ts">
 import QRCodeStyling from 'qr-code-styling'
 import { computed, onBeforeUnmount, onMounted, ref, watchEffect } from 'vue'
-import ArweaveLogo from '@/assets/logos/arweaveOutline.svg?component'
+import { LOGO } from '@/store/Theme'
 import Icon from '@/components/atomic/Icon.vue'
 
 const props = defineProps<{ qr?: string }>()

@@ -24,7 +24,7 @@
 <script setup lang="ts">
 import Input from '@/components/form/Input.vue'
 import List from '@/components/layout/List.vue'
-import IconSearch from '@/assets/icons/search.svg?component'
+import { ICON } from '@/store/Theme'
 import { computed } from 'vue'
 import { arweaveQuery, queryAggregator } from '@/store/ArweaveStore'
 import TxCard from '@/components/composed/TxCard.vue'
@@ -36,7 +36,7 @@ import { useDebouncedRef } from '@/functions/UtilsVue'
 
 const search = useDebouncedRef('', 1000)
 const isId = computed(() => ArweaveAccount.metadata.isAddress(search.value))
-const searchAction = { run: () => {}, icon: IconSearch }
+const searchAction = { run: () => {}, icon: ICON.search }
 
 const wallet = computed(() => isId.value && userTxQuery?.state?.value?.length && getAccountByAddress(search.value))
 

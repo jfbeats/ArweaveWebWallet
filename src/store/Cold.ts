@@ -5,9 +5,7 @@ import InterfaceStore from '@/store/InterfaceStore'
 import { notify } from '@/store/NotificationStore'
 import { awaitEffect } from '@/functions/AsyncData'
 import router from '@/router'
-import IconSnow from '@/assets/icons/snow.svg?component'
-import IconLock from '@/assets/icons/lock.svg?component'
-import IconUnlock from '@/assets/icons/unlock.svg?component'
+import { ICON } from '@/store/Theme'
 
 export const { state: coldState } = useChannel('cold')
 
@@ -25,18 +23,18 @@ export function getColdWalletAction (launch?: boolean): Action {
 		run: () => coldState.value = undefined,
 	} }
 	if (!ready.value && (launch || coldState.value?.status === 'active')) { return {
-		icon: IconUnlock,
+		icon: ICON.unlock,
 		name: `Device must be offline`,
 		color: 'var(--red)',
 		run: () => launchVault(),
 	} }
 	if (coldState.value?.status === 'active') { return {
-		icon: IconLock,
+		icon: ICON.lock,
 		name: `Active`,
 		to: 'cold',
 	} }
 	if (launch) { return {
-		icon: IconSnow,
+		icon: ICON.snow,
 		name: 'Launch',
 		color: 'var(--blue)',
 		run: () => launchVault(),
@@ -56,7 +54,7 @@ export async function launchVault () {
 	if (coldState.value) { return }
 	const excluded = Wallets.value.filter(wallet => wallet.state.hot).map(wallet => wallet.key!)
 	coldState.value = { status: 'active', excluded }
-	router.push('add')
+	router.push('AddWallet')
 	notify.log('You can now create or import vault accounts')
 }
 
@@ -69,13 +67,13 @@ async function init () {
 			requireInteraction: true,
 			title: `Online presence detected`,
 			body: `Cold wallets are at risk of being compromised. You must transfer everything to new cold accounts in order to restore the same security properties.`,
-			actions: [{ name: 'Disable', icon: IconUnlock, run: () => coldState.value = undefined  }],
+			actions: [{ name: 'Disable', icon: ICON.unlock, run: () => coldState.value = undefined  }],
 		}) }
 		else if (status === 'active' && !ready) { notify.warn({
 			requireInteraction: true,
 			title: `Online presence detected`,
 			body: `You must go back offline to securely import cold accounts.`,
-			actions: [{ name: 'Disable', icon: IconUnlock, run: () => coldState.value = undefined  }],
+			actions: [{ name: 'Disable', icon: ICON.unlock, run: () => coldState.value = undefined  }],
 		}) }
 	}, { immediate: true })
 }

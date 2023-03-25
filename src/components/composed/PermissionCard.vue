@@ -40,9 +40,7 @@ import { getMessage } from '@/functions/JsonRpc'
 import { computed, ref, watch } from 'vue'
 import type { ArweaveVerifier } from 'arweave-wallet-connector/lib/Arweave.js'
 
-import IconY from '@/assets/icons/y.svg?component'
-import IconX from '@/assets/icons/x.svg?component'
-import IconConnection from '@/assets/icons/connection.svg?component'
+import { ICON } from '@/store/Theme'
 
 const props = defineProps<{ messageEntry: MessageEntry }>()
 
@@ -60,10 +58,10 @@ watch(() => props.messageEntry, async () => {
 }, { immediate: true })
 
 const actions = [
-	{ name: 'Accept', icon: IconY, run: () => props.messageEntry.status = 'accepted' },
-	{ name: 'Reject', icon: IconX, run: () => props.messageEntry.status = 'rejected' },
+	{ name: 'Accept', icon: ICON.y, run: () => props.messageEntry.status = 'accepted' },
+	{ name: 'Reject', icon: ICON.x, run: () => props.messageEntry.status = 'rejected' },
 ]
-const actionsPending = [{ name: 'Pending', icon: IconConnection, run: () => {} }]
+const actionsPending = [{ name: 'Pending', icon: ICON.connection, run: () => {} }]
 </script>
 
 

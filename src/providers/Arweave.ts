@@ -9,7 +9,7 @@ import { manageUpload } from '@/functions/Transactions'
 import Transaction from 'arweave/web/lib/transaction'
 import { computed } from 'vue'
 import axios from 'axios'
-import LogoArweave from '@/assets/logos/arweave.svg?component'
+import { LOGO } from '@/store/Theme'
 import type { ArweaveProviderInterface } from 'arweave-wallet-connector/lib/Arweave'
 import type { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
 import type { TransactionInterface } from 'arweave/web/lib/transaction'
@@ -23,7 +23,7 @@ import { encode } from '@/functions/Encode'
 
 const displayMetadata: DisplayMetadata = {
 	name: 'Arweave address',
-	icon: LogoArweave
+	icon: LOGO.arweave
 }
 
 const accountMetadata: AccountMetadata = {
@@ -203,7 +203,9 @@ export class ArweaveMessageRunner implements MessageRunner<ArweaveProviderInterf
 			reward: txObject.reward
 		}
 	}
-	async signDataItem (tx: any) { throw 'not implemented'; return undefined as any }
+	async signDataItem (tx: Parameters<ArweaveProviderInterface['signDataItem']>[0]) {
+		return this.wallet.createDataItem(tx as any)
+	}
 	async signMessage (message: ArrayBufferView, options: Parameters<ArweaveProviderInterface['signMessage']>[1]) {
 		const hash = await window.crypto.subtle.digest(options.hashAlgorithm, message)
 		return this.wallet.sign(hash, options) // hashed a second time with the same algo in the sign function

@@ -14,8 +14,7 @@
 import Observer from '@/components/function/Observer.vue'
 import LoaderBlock from '@/components/layout/LoaderBlock.vue'
 import { computed } from 'vue'
-
-import IconNoResult from '@/assets/icons/no_result.svg?component'
+import { ICON } from '@/store/Theme'
 
 const props = defineProps<{
 	query: any
@@ -29,7 +28,7 @@ const txs = computed(() => props.query.updateQuery.state.value || props.query.up
 const completedQuery = computed(() => props.query.status?.completed)
 const fetchQuery = () => props.query.fetchQuery.query()
 const icon = computed(() => {
-	if (txs.value && !txs.value.length && completedQuery.value) return IconNoResult
+	if (txs.value && !txs.value.length && completedQuery.value) return ICON.noResult
 	if (!completedQuery.value) return 'loader'
 })
 </script>

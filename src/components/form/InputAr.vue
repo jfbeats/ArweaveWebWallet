@@ -1,7 +1,7 @@
 <template>
 	<div class="input-ar input-box" :class="{ focus }">
 		<div class="input">
-			<Icon :icon="LogoArweave"></Icon>
+			<Icon :icon="LOGO.arweave"></Icon>
 			<RawInput v-model="model" inputmode="numeric" class="text" placeholder="AR" @focus="focus = 1" @blur="focus = 0" :disabled="disabled" :id="id" />
 		</div>
 		<div v-if="currentPrice" class="spacer"></div>
@@ -19,7 +19,7 @@ import RawInput from '@/components/form/RawInput.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import { currency } from '@/store/CurrencyStore'
 import { computed, ref, watch } from 'vue'
-import LogoArweave from '@/assets/logos/arweave.svg?component'
+import { LOGO } from '@/store/Theme'
 
 const props = defineProps(['modelValue', 'disabled', 'id'])
 const emit = defineEmits(['update:modelValue'])

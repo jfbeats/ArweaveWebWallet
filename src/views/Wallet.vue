@@ -32,18 +32,14 @@ import Action from '@/components/atomic/Action.vue'
 import InterfaceStore from '@/store/InterfaceStore'
 import { toRef, computed } from 'vue'
 import { useRoute } from '@/router'
-
-import IconNorthEast from '@/assets/icons/north_east.svg?component'
-import IconSouthWest from '@/assets/icons/south_west.svg?component'
-import IconSwap from '@/assets/icons/swap.svg?component'
-import IconCircle from '@/assets/icons/cloud_circle.svg?component'
+import { ICON } from '@/store/Theme'
 
 const props = defineProps<{ wallet: Wallet }>()
 
 const actions = [
-	{ name: 'Send', icon: IconNorthEast, text: 'Send' },
+	{ name: 'Send', icon: ICON.northEast, text: 'Send' },
 	// { name: 'Send', icon: IconSouthWest, text: 'Receive' },
-	{ name: 'TxList', icon: IconSwap, text: 'Transactions' },
+	{ name: 'TxList', icon: ICON.swap, text: 'Transactions' },
 	// { name: 'Tokens', icon: IconCircle, text: 'Tokens' },
 ]
 const verticalLayout = toRef(InterfaceStore.breakpoints, 'verticalLayout')

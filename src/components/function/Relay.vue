@@ -26,7 +26,7 @@
 							<QR :qr="txString"/>
 							<div class="flex-row" style="align-items: stretch; justify-content: stretch;">
 								<Button :run="doDownload" style="flex: 1 1 auto; height: initial;">Download File</Button>
-								<Button :square="true" :run="share" :icon="IconShare" />
+								<Button :square="true" :run="share" :icon="ICON.share" />
 							</div>
 						</Link>
 					</FadeOverflow>
@@ -51,7 +51,7 @@ import FadeOverflow from '@/components/function/FadeOverflow.vue'
 import { relayRequest } from '@/functions/Export'
 import { computed, ref } from 'vue'
 import { download } from '@/functions/File'
-import IconShare from '@/assets/icons/share.svg?component'
+import { ICON } from '@/store/Theme'
 import Flow from '@/components/layout/Flow.vue'
 
 const flow = ref(undefined as undefined | InstanceType<typeof Flow>)

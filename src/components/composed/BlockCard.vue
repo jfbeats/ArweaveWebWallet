@@ -4,7 +4,7 @@
 			<Observer @intersection="visible = true" :threshold="0.5">
 				<div class="flex-row" style="align-items: center; justify-content: space-between; flex-wrap: wrap;">
 					<h2 class="flex-row" style="align-items: center;">
-						<Icon :icon="IconCube" style="font-size: 1.5em; color: var(--orange);" />
+						<Icon :icon="ICON.cube" style="font-size: 1.5em; color: var(--orange);" />
 						<span>Block {{ block.node.height }}</span>
 					</h2>
 					<TransitionsManager>
@@ -34,7 +34,7 @@ import Icon from '@/components/atomic/Icon.vue'
 import TxCard from '@/components/composed/TxCard.vue'
 import List from '@/components/layout/List.vue'
 import Observer from '@/components/function/Observer.vue'
-import IconCube from '@/assets/icons/cube.svg?component'
+import { ICON } from '@/store/Theme'
 import { ref } from 'vue'
 import { arweave, arweaveQuery } from '@/store/ArweaveStore'
 import { humanFileSize } from '@/functions/Utils'
