@@ -126,7 +126,8 @@ export function arweaveQuery (options: arweaveQueryOptions, name = 'tx list') { 
 	const fetchQuery = getQueryManager({
 		name: name + ' fetch',
 		query: async () => {
-			if (optionsRef.value == null || status.completed) { return [] }
+			if (optionsRef.value == null) { status.completed = true }
+			if (status.completed) { return [] }
 			let fulfilled = false
 			let results = undefined as undefined | TransactionEdge[]
 			try {
@@ -222,7 +223,7 @@ export function arweaveQueryBlocks (options: Parameters<ReturnType<typeof graphq
 		processResult: () => {},
 	})
 	
-	return { state: updateQuery.state, fetchQuery, updateQuery, status }
+	return { state: updateQuery.state, fetchQuery, updateQuery, status, key: '' + Math.random() }
 }
 
 
@@ -234,9 +235,9 @@ export function queryAggregator (queries: RefMaybe<ReturnType<typeof arweaveQuer
 		prioritize: (a, b) => a.node.block && b.node.block ? blockSort(a, b) : +!!b.node.block - +!!a.node.block // todo use txPrioritize and
 	})
 	const refresh = 10
+	const queriesRef = makeRef(queries)
 	const refreshSwitch = ref(true) // todo
 	watch(refreshSwitch, val => queriesRef.value.forEach(q => q.refreshSwitch = val))
-	const queriesRef = makeRef(queries)
 	const boundary = computed(() => {
 		let notReady = false
 		const boundaries = queriesRef.value.map(q => {
@@ -278,7 +279,7 @@ export function queryAggregator (queries: RefMaybe<ReturnType<typeof arweaveQuer
 		// todo add value only if still included in respective query
 		if (removed.length) { list.add(removed) }
 	}, { deep: true, flush: 'sync' })
-	const completed = computed(() => !overreached.value.flat().length && queriesRef.value.every(q => q.status.completed))
+	const completed = computed(() => queriesRef.value.length === 0 || !overreached.value.flat().length && queriesRef.value.every(q => q.status.completed))
 	const status = reactive({ completed, reset: 0 })
 	const wrapper = useDataWrapper(queriesRef, el => el.key, query => {
 		const watchStop = watch(() => query.status.reset, () => {
@@ -296,13 +297,6 @@ export function queryAggregator (queries: RefMaybe<ReturnType<typeof arweaveQuer
 		})
 	}, handlers => handlers.map(e => e()))
 	watch(wrapper, () => {}) // always use lazy computed
-	const fetchQuery = getQueryManager({
-		name: 'aggregated fetch',
-		query: async () => {
-			const queriesInRange = queriesRef.value.filter((query, i) => !overreached.value[i].length)
-			return Promise.all(queriesInRange.map(q => q.fetchQuery.query()))
-		},
-	})
 	const state = computed(() => {
 		if (!boundary.value ) { return list.state.value }
 		const pos = list.state.value?.indexOf(boundary.value as any) ?? 0
@@ -313,14 +307,22 @@ export function queryAggregator (queries: RefMaybe<ReturnType<typeof arweaveQuer
 		list.remove(list.state.value?.slice(slicePos))
 		return list.state.value
 	})
+	const fetchQuery = getQueryManager({
+		name: 'aggregated fetch',
+		query: async () => {
+			const queriesInRange = queriesRef.value.filter((query, i) => !overreached.value[i]?.length)
+			return Promise.all(queriesInRange.map(q => q.fetchQuery.query())).then(res => compact(res).flat())
+		},
+	})
 	const updateQuery = getAsyncData({
 		name: 'aggregated update',
-		query: async () => (await Promise.all(queriesRef.value.map(query => query.updateQuery.getState()))).flat(),
+		query: async () => Promise.all(queriesRef.value.map(query => query.updateQuery.getState())).then(res => compact(res).flat()),
 		seconds: refresh,
 		existingState: state,
-		processResult: () => {},
+		processResult: () => undefined as any,
 	})
-	return { state: updateQuery.state, list, fetchQuery, updateQuery, status, refreshSwitch }
+	const fetchAll = () => Promise.all(queriesRef.value.map(q => q.fetchAll())) as any
+	return { state: updateQuery.state, list, fetchQuery, updateQuery, status, refreshSwitch, fetchAll, key: '' + Math.random() }
 }
 
 
