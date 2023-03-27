@@ -1,6 +1,6 @@
 import { useRegisterSW } from 'virtual:pwa-register/vue'
 import { reactive } from 'vue'
-import { track } from '@/store/Analytics'
+import { track } from '@/store/Telemetry'
 import { prepare } from '@/store/Cold'
 
 

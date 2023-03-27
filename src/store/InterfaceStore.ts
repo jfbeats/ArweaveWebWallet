@@ -70,9 +70,22 @@ function dragStart (e: DragEvent) {
 
 
 
-if (navigator.appVersion.indexOf("Win") != -1 || navigator.appVersion.indexOf('Macintosh') != -1) {
-	document.documentElement.classList.add('styleScroll')
-}
+const scrollbarSize = (() => {
+	const el = document.createElement('div')
+	el.style.width = '100px'
+	el.style.height = '100px'
+	el.style.overflow = 'scroll'
+	el.style.visibility = 'hidden'
+	el.innerHTML = '<div style="width: 200px; height: 200px;"></div>'
+	document.body.appendChild(el)
+	const v = el.offsetWidth - el.clientWidth
+	const h = el.offsetHeight - el.clientHeight
+	document.body.removeChild(el)
+	return { v, h, value: v || h || undefined }
+})()
+if (scrollbarSize.value) { document.documentElement.classList.add('styleScroll') }
+
+
 
 const faviconEl = document.createElement('link')
 faviconEl.setAttribute('rel', 'favicon icon')

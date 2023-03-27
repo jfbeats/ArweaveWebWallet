@@ -14,7 +14,7 @@
 <script setup lang="ts">
 import { useRegisterSW } from 'virtual:pwa-register/vue'
 import { state, states } from '@/functions/Channels'
-import { track } from '@/store/Analytics'
+import { track } from '@/store/Telemetry'
 import { computed, ref, watch } from 'vue'
 
 const newLocation = sessionStorage.getItem('redirect')

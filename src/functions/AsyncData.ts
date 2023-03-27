@@ -22,13 +22,14 @@ type AsyncDataOptions<T> = QueryManagerOptions<T> & {
 	completed?: (state: T | undefined) => any
 	timestamp?: Ref<number | undefined>
 	existingState?: Ref<T | undefined>
-	processResult?: (state: T, options: AsyncDataOptions<T>) => void
+	processResult?: (state: T, options: AsyncDataOptions<T>) => T | Null
 }
 
 type QueryManagerOptions<T> = {
 	name?: string
 	query: () => Promise<T>
 	awaitEffect?: () => any
+	log?: false
 }
 
 type QueryStatusInterface<T> = {
@@ -43,7 +44,7 @@ export function getReactiveAsyncData <T, P> (options: ReactiveQueryOptions<T, P>
 	const { query, params, ...newOptions } = options
 	const state = ref<T | undefined>()
 	watch(params, (val, oldVal) => {
-		if (val == null) { return }
+		if (val == undefined) { return }
 		if (JSON.stringify(val) === JSON.stringify(oldVal)) { return }
 		state.value = undefined
 	}, { immediate: true, deep: true })
@@ -60,20 +61,21 @@ export function getAsyncData <T> (options: AsyncDataOptions<T>) {
 	const timestamp = makeShallowRef(options.timestamp)
 	const seconds = makeShallowRef(options.seconds)
 	let cooldown = 0
-	const { query, queryStatus } = getQueryManager(options)
+	const { query, queryStatus } = getQueryManager({ ...options, log: false })
 	const localClock = ref(0)
 	const getState = async (force?: boolean) => {
 		if (options.completed?.(state.value)) { return state.value! }
 		if (queryStatus.promise && (queryStatus.running || cooldown)) { timestamp.value = Date.now(); return queryStatus.promise }
-		if (!seconds.value || !force && state.value != null && timestamp.value && Date.now() - timestamp.value < (seconds.value * 1000)) { return state.value }
+		if (!seconds.value || !force && state.value != undefined && timestamp.value && Date.now() - timestamp.value < (seconds.value * 1000)) { return state.value }
 		const rollback = timestamp.value
 		const initTimestamp = Date.now()
 		timestamp.value = initTimestamp
 		return new Promise<T>((resolve, reject) => {
 			query().then(res => {
 				timestamp.value = Date.now()
-				if (!res) { throw new Error('not found') }
-				options.processResult ? options.processResult(res, options) : state.value = res
+				if (res != undefined || !options.processResult) { state.value = res }
+				if (res == undefined && !options.processResult) { throw new Error(options.name + ' query found nothing') }
+				log(options, state.value)
 				resolve(state.value!)
 			}).catch(e => {
 				cooldown = Math.max(0, 20000 - (Date.now() - initTimestamp))
@@ -86,7 +88,7 @@ export function getAsyncData <T> (options: AsyncDataOptions<T>) {
 		if (options.completed?.(state.value)) { return }
 		if (!InterfaceStore.windowVisible) { return }
 		if (queryStatus.running) { timestamp.value = Date.now(); return }
-		if (!seconds.value || !options.stale?.(state.value) && state.value != null && timestamp.value && Date.now() - timestamp.value < (seconds.value * 1000)) { return }
+		if (!seconds.value || !options.stale?.(state.value) && state.value != undefined && timestamp.value && Date.now() - timestamp.value < (seconds.value * 1000)) { return }
 		localClock.value++
 	}))
 	const computedState = scope.run(() => computed({
@@ -97,6 +99,7 @@ export function getAsyncData <T> (options: AsyncDataOptions<T>) {
 }
 
 export function getQueryManager <T> (options: QueryManagerOptions<T>) {
+	const parentOptions = options as AsyncDataOptions<T>
 	const queryStatus: QueryStatusInterface<T> = reactive({ running: false })
 	const query = () => {
 		if (queryStatus.running && queryStatus.promise) { return queryStatus.promise }
@@ -104,13 +107,24 @@ export function getQueryManager <T> (options: QueryManagerOptions<T>) {
 		queryStatus.error = undefined
 		queryStatus.promise = new Promise<T>(async (resolve, reject) => {
 			if (options.awaitEffect) { await awaitEffect(() => options.awaitEffect?.()) }
-			const query = options.query()
+			const queryRes = options.query()
+			const process = (res: T) => {
+				const result = parentOptions.processResult ? parentOptions.processResult(res, options) as T : res
+				return result
+			}
+			const query = queryRes.then(process)
 			query.then(resolve).catch(e => { queryStatus.error = e; reject(e) }).finally(() => queryStatus.running = false)
-			query.then(res => console.log(new Date(Date.now()).toLocaleTimeString() + '\n', options.name, { options, res }))
+			if (options.log !== false) { query.then(res => log(options, res)) }
 		})
 		return queryStatus.promise
 	}
 	return { query, queryStatus }
+}
+
+
+
+function log (options: Partial<AsyncDataOptions<any>>, res: any) {
+	console.log(new Date(Date.now()).toLocaleTimeString() + '\n', options.name, { options, res })
 }
 
 

@@ -4,7 +4,7 @@ import { computed, effectScope, reactive, Ref, ref, shallowRef, watch, watchEffe
 import { getWalletById, Wallets } from '@/functions/Wallets'
 import { useDataWrapper } from '@/functions/AsyncData'
 import InterfaceStore, { onUnload } from '@/store/InterfaceStore'
-import { track } from '@/store/Analytics'
+import { track } from '@/store/Telemetry'
 import { Emitter } from '@/functions/UtilsClass'
 import { ArweaveApi } from 'arweave-wallet-connector'
 import type { Connection } from 'arweave-wallet-connector/lib/types'

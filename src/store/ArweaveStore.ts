@@ -6,7 +6,7 @@ import { useChannel } from '@/functions/Channels'
 import { getAsyncData, getQueryManager, getReactiveAsyncData, useDataWrapper } from '@/functions/AsyncData'
 import { computed, isRef, reactive, ref, Ref, watch } from 'vue'
 import { notify } from '@/store/NotificationStore'
-import { track } from '@/store/Analytics'
+import { track } from '@/store/Telemetry'
 import InterfaceStore from '@/store/InterfaceStore'
 import { makeRef, useList } from '@/functions/UtilsVue'
 
@@ -50,8 +50,9 @@ export async function updateArweave (url?: string, sync?: boolean): Promise<true
 async function testGateway (settings: ReturnType<typeof urlToSettings> | string): Promise<true> {
 	settings = typeof settings === 'string' ? urlToSettings(settings) : settings
 	const arweaveTest = Arweave.init(settings)
-	const net = await arweaveTest.network.getInfo()
-	if (!net.network) { throw 'Gateway Unreachable' }
+	let net = await arweaveTest.network.getInfo() as any
+	try { if (typeof net === 'string') { net = JSON.parse(net) } } catch (e) {}
+	if (!net?.network) { console.error(net); throw 'Gateway Unreachable' }
 	return true
 }
 
@@ -319,7 +320,7 @@ export function queryAggregator (queries: RefMaybe<ReturnType<typeof arweaveQuer
 		query: async () => Promise.all(queriesRef.value.map(query => query.updateQuery.getState())).then(res => compact(res).flat()),
 		seconds: refresh,
 		existingState: state,
-		processResult: () => undefined as any,
+		processResult: () => {},
 	})
 	const fetchAll = () => Promise.all(queriesRef.value.map(q => q.fetchAll())) as any
 	return { state: updateQuery.state, list, fetchQuery, updateQuery, status, refreshSwitch, fetchAll, key: '' + Math.random() }
@@ -373,15 +374,27 @@ export function queryAggregator (queries: RefMaybe<ReturnType<typeof arweaveQuer
 const networkInfoData = getAsyncData({
 	name: 'network info',
 	query: () => arweave.network.getInfo(),
+	processResult: state => typeof state === 'string' ? JSON.parse(state) : state,
 	seconds: 10,
 })
 watch(() => ArweaveStore.gatewayURL, () => networkInfoData.state.value = undefined)
 export const networkInfo = networkInfoData.state
 
 
+
+export async function getIndepHash () {
+	const res = await networkInfoData.getState()
+	const indepHash = res?.current
+	if (!indepHash) { throw 'failed to get indepHash' }
+	return indepHash
+}
+
+
+
 export const currentBlockData = getAsyncData({
 	name: 'current block',
-	query: () => arweave.blocks.getCurrent(),
+	query: () => getIndepHash().then(h => arweave.blocks.get(h)),
+	processResult: state => typeof state === 'string' ? JSON.parse(state) : state,
 	seconds: 60,
 	stale: (state) => networkInfoData.stateRef.value && state && networkInfoData.stateRef.value.height > state.height,
 	completed: (state) => networkInfoData.stateRef.value && state && networkInfoData.stateRef.value.height == state.height,

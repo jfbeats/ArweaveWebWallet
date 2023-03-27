@@ -1,6 +1,6 @@
 import { arweave, arweaveQuery } from '@/store/ArweaveStore'
 import { notify } from '@/store/NotificationStore'
-import { track } from '@/store/Analytics'
+import { track } from '@/store/Telemetry'
 import { getWalletById, Wallets } from '@/functions/Wallets'
 import { useChannel } from '@/functions/Channels'
 import { compact } from '@/functions/Utils'
