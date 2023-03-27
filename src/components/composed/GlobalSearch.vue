@@ -66,6 +66,7 @@ const idTxQuery = queryAggregator(idTxRef)
 const nameRef = ref([] as ReturnType<typeof getNameTxQuery>)
 const nameQuery = queryAggregator(nameRef)
 watch(() => [search.value, subSearch.value] as const, (val, old) => {
+	if (!val[0] && old?.[0]) { subSearch.value = '' }
 	if (isId.value) {
 		if (userTxRef.value.length === 0) { userTxRef.value = getUserTxQuery() }
 		if (idTxRef.value.length === 0) { idTxRef.value = getIdTxQuery() }
