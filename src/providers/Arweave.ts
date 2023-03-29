@@ -146,7 +146,7 @@ export class ArweaveProvider extends mix(ArweaveAccount).with(WalletProxy) imple
 	}
 	async sign (data: BufferSource, options?: Parameters<ArweaveProviderInterface['signMessage']>[1]) {
 		const signingKey = await getSigningKey(await this.getPrivateKey() as JsonWebKey, options?.hashAlgorithm)
-		const signed = await window.crypto.subtle.sign({ name: 'RSA-PSS' }, signingKey, data)
+		const signed = await window.crypto.subtle.sign({ name: 'RSA-PSS', saltLength: 32 }, signingKey, data)
 		return new Uint8Array(signed)
 	}
 	async decrypt (data: BufferSource, options: Parameters<ArweaveProviderInterface['decrypt']>[1]) {
@@ -204,7 +204,7 @@ export class ArweaveMessageRunner implements MessageRunner<ArweaveProviderInterf
 		}
 	}
 	async signDataItem (tx: Parameters<ArweaveProviderInterface['signDataItem']>[0]) {
-		return this.wallet.createDataItem(tx as any)
+		return this.wallet.createDataItem(tx as any).then(item => item.getRaw())
 	}
 	async signMessage (message: ArrayBufferView, options: Parameters<ArweaveProviderInterface['signMessage']>[1]) {
 		const hash = await window.crypto.subtle.digest(options.hashAlgorithm, message)
