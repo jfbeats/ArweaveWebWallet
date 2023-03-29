@@ -157,10 +157,8 @@ async function initConnector () {
 		if (e.source !== windowRef || e.origin !== origin) { return }
 		if (e.data?.method === 'ready') { return postMessage({ id: e.data?.id, method: 'ready' }) }
 		if (e.data?.method === 'connect') { return }
-		if (e.data?.method === 'disconnect') {
-			sharedState.value.walletId = false
-			return postMessage({ id: e.data?.id })
-		}
+		if (e.data?.method === 'disconnect') { sharedState.value.walletId = false; return postMessage({ id: e.data?.id }) }
+		if (e.data?.method === 'showIframe') { return }
 		const prompt = await jsonRpc.pushMessage(e.data)
 		if (prompt) { focusWindow() }
 	})
