@@ -10,6 +10,11 @@
 			<TxCard :tx="tx" />
 			<TxCardExtension :tx="tx" />
 		</template>
+		<template v-if="message?.method === 'signDataItem'">
+			<span>Sign data</span>
+			<TxCard :tx="tx" />
+			<TxCardExtension :tx="tx" />
+		</template>
 		<template v-else-if="message?.method === 'getPublicKey'" class="permission-card">
 			Share the public key
 		</template>
@@ -47,8 +52,10 @@ const props = defineProps<{ messageEntry: MessageEntry }>()
 const message = ref(null as null | StoredMessage)
 
 const tx = computed(() => {
-	if (message.value?.method !== 'signTransaction' && message.value?.method !== 'dispatch') { return }
-	const receivedTx = message.value?.params?.[0] as Parameters<ArweaveVerifier['signTransaction']>[0]
+	if (!['signTransaction', 'dispatch', 'signDataItem'].includes(message.value?.method!)) { return }
+	const receivedTx = message.value?.params?.[0] as Parameters<ArweaveVerifier['signTransaction'] | ArweaveVerifier['signDataItem']>[0] | undefined
+	if (!receivedTx) { return }
+	if (message.value?.method === 'signDataItem') { return receivedTx }
 	const tags = receivedTx.tags?.map(({name, value}) => ({ name: arweave.utils.b64UrlToString(name), value: arweave.utils.b64UrlToString(value) }))
 	return { ...receivedTx, tags }
 })
