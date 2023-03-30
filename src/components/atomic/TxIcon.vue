@@ -20,14 +20,7 @@ import ArweaveStore from '@/store/ArweaveStore'
 import Video from '@/components/handlers/Video.vue'
 import { unpackTags } from '@/functions/Transactions'
 import { computed, ref, watch } from 'vue'
-
-import IconTxIn from '@/assets/icons/tx_in.svg?component'
-import IconTxOut from '@/assets/icons/tx_out.svg?component'
-import IconTxInData from '@/assets/icons/tx_in_data.svg?component'
-import IconTxOutData from '@/assets/icons/tx_out_data.svg?component'
-import IconCube from '@/assets/icons/cube.svg?component'
-import IconTxInFull from '@/assets/icons/tx_in_full.svg?component'
-import IconTxOutFull from '@/assets/icons/tx_out_full.svg?component'
+import { ICON } from '@/store/Theme'
 
 export type TxDisplayOptions = {
 	isData: boolean
@@ -44,13 +37,13 @@ const props = defineProps<{
 const tags = computed(() => unpackTags(props.tx.tags, { lowercase: true }))
 const uploadProgress = computed(() => ArweaveStore.uploads[props.tx.id]?.upload)
 const icon = computed(() => {
-	if (tags.value['bundle-version']) return IconCube
-	if (props.options.direction === 'in' && !props.options.isData) return IconTxIn
-	if (props.options.direction === 'out' && !props.options.isData) return IconTxOut
-	if (props.options.direction === 'in' && !props.options.isValue) return IconTxInData
-	if (props.options.direction === 'out' && !props.options.isValue) return IconTxOutData
-	if (props.options.direction === 'in') return IconTxInFull
-	if (props.options.direction === 'out') return IconTxOutFull
+	if (tags.value['bundle-version']) return ICON.cube
+	if (props.options.direction === 'in' && !props.options.isData) return ICON.txIn
+	if (props.options.direction === 'out' && !props.options.isData) return ICON.txOut
+	if (props.options.direction === 'in' && !props.options.isValue) return ICON.txInData
+	if (props.options.direction === 'out' && !props.options.isValue) return ICON.txOutData
+	if (props.options.direction === 'in') return ICON.txInFull
+	if (props.options.direction === 'out') return ICON.txOutFull
 })
 const styleObject = computed(() => ({
 	color: props.options.isData && !props.options.isValue ? 'var(--orange)' : props.options.direction === 'in' ? 'var(--green)' : 'var(--red)',

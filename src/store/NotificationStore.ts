@@ -2,8 +2,7 @@ import Notification from '@/components/composed/Notification.vue'
 import { getDB } from '@/store/IndexedDB'
 import { createToast, withProps } from 'mosha-vue-toastify'
 import { reactive, Ref, ref } from 'vue'
-import IconY from '@/assets/icons/y.svg?component'
-import IconX from '@/assets/icons/x.svg?component'
+import { ICON } from '@/store/Theme'
 
 export type NotificationData = Override<NotificationOptions, {
 	title?: string
@@ -44,7 +43,7 @@ function createNotification (type: keyof typeof toastType, notify: Notify, push?
 			const run = () => { a.run && a.run?.(); res(true) }
 			return { ...a, run }
 		})
-		if (type === 'confirm') { actions = [{ name: 'Accept', icon: IconY, run: () => res(true) }, { name: 'Cancel', icon: IconX, run: () => res(false) }, ...actions] }
+		if (type === 'confirm') { actions = [{ name: 'Accept', icon: ICON.y, run: () => res(true) }, { name: 'Cancel', icon: ICON.x, run: () => res(false) }, ...actions] }
 		close = () => res(false)
 	})
 	const toastSettings = { title, description: options.body }

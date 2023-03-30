@@ -4,7 +4,7 @@ import { computed, effectScope, reactive, Ref, ref, shallowRef, watch, watchEffe
 import { getWalletById, Wallets } from '@/functions/Wallets'
 import { useDataWrapper } from '@/functions/AsyncData'
 import InterfaceStore, { onUnload } from '@/store/InterfaceStore'
-import { track } from '@/store/Analytics'
+import { track } from '@/store/Telemetry'
 import { Emitter } from '@/functions/UtilsClass'
 import { ArweaveApi } from 'arweave-wallet-connector'
 import type { Connection } from 'arweave-wallet-connector/lib/types'
@@ -157,10 +157,8 @@ async function initConnector () {
 		if (e.source !== windowRef || e.origin !== origin) { return }
 		if (e.data?.method === 'ready') { return postMessage({ id: e.data?.id, method: 'ready' }) }
 		if (e.data?.method === 'connect') { return }
-		if (e.data?.method === 'disconnect') {
-			sharedState.value.walletId = false
-			return postMessage({ id: e.data?.id })
-		}
+		if (e.data?.method === 'disconnect') { sharedState.value.walletId = false; return postMessage({ id: e.data?.id }) }
+		if (e.data?.method === 'showIframe') { return }
 		const prompt = await jsonRpc.pushMessage(e.data)
 		if (prompt) { focusWindow() }
 	})

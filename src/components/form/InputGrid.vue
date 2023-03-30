@@ -8,7 +8,7 @@
 				</div>
 			</div>
 			<button v-if="row.deletable" class="remove" @click="removeRow(index)" type="button">
-				<Icon :icon="IconX" />
+				<Icon :icon="ICON.x" />
 			</button>
 		</div>
 	</div>
@@ -19,7 +19,7 @@
 <script setup lang="ts">
 import RawInput from '@/components/form/RawInput.vue'
 import Icon from '@/components/atomic/Icon.vue'
-import IconX from '@/assets/icons/x.svg?component'
+import { ICON } from '@/store/Theme'
 import { computed, ref } from 'vue'
 
 const props = defineProps<{

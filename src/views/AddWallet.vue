@@ -20,9 +20,9 @@
 			</OverlayPrompt>
 		</div>
 		<div class="card">
-			<h2 class="flex-row" style="align-items: center;"><Icon :icon="IconSearch" /><span>Watch public address</span></h2>
+			<h2 class="flex-row" style="align-items: center;"><Icon :icon="ICON.search" /><span>Watch public address</span></h2>
 			<InputAddress v-model="targetInput" :submit="importAddressOnlyAction" />
-			<h2 class="flex-row" style="align-items: center;"><Icon :icon="IconSnow" /><span>Permafrost Vault</span></h2>
+			<h2 class="flex-row" style="align-items: center;"><Icon :icon="ICON.snow" /><span>Permafrost Vault</span></h2>
 			<Button v-bind="coldWalletAction" class="main" :glow="true">{{ coldWalletAction.name }}</Button>
 		</div>
 		<div class="card" v-for="(provider, number) in hardwareProviders" :key="provider.metadata.name">
@@ -32,7 +32,7 @@
 					<Button :disabled="provider.metadata.disabled" @click="importProvider(provider)" class="main" :glow="true">
 						{{ provider.metadata.disabled ? `${provider.metadata.name} not supported for this browser` : `Connect with ${provider.metadata.name}` }}
 					</Button>
-					<Button v-if="provider.metadata.componentSettings" :icon="IconSettings" :square="true" @click="activeSettings = number" />
+					<Button v-if="provider.metadata.componentSettings" :icon="ICON.settings" :square="true" @click="activeSettings = number" />
 				</div>
 				<div class="flex-row">
 					<Button v-for="action in provider.metadata.actions" :key="action.name" v-bind="action">{{ action.name }}</Button>
@@ -64,15 +64,11 @@ import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
 import Viewport from '@/components/layout/Viewport.vue'
 import WalletSelector from '@/components/composed/WalletSelector.vue'
 import { hardwareProviders, addAddress, addMnemonic, generateMnemonic, validateMnemonic } from '@/functions/Wallets'
-import { track } from '@/store/Analytics'
+import { track } from '@/store/Telemetry'
 import { notify } from '@/store/NotificationStore'
 import { computed, ref } from 'vue'
 import { useRouter } from '@/router'
-import LogoArweave from '@/assets/logos/arweave.svg?component'
-import IconAddBox from '@/assets/icons/add_box.svg?component'
-import IconSettings from '@/assets/icons/settings.svg?component'
-import IconSnow from '@/assets/icons/snow.svg?component'
-import IconSearch from '@/assets/icons/search.svg?component'
+import { ICON } from '@/store/Theme'
 import { getColdWalletAction } from '@/store/Cold'
 
 const router = useRouter()
@@ -122,7 +118,7 @@ const importProvider = async (provider: AnyProvider) => {
 		track.account('Account Ledger')
 	} catch (e: any) { console.error(e); notify.error(e.message || e) }
 }
-const importAddressOnlyAction = { icon: IconAddBox, run: async () => {
+const importAddressOnlyAction = { icon: ICON.addBox, run: async () => {
 	const walletData = await addAddress(targetInput.value)
 	router.push({ name: 'EditWallet', query: { wallet: walletData.id } })
 	track.account('Account Watch')

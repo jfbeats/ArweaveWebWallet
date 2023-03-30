@@ -3,12 +3,12 @@
 		<template #header>
 			<div class="flex-row">
 				<button type="button" class="info flex-row" @click="navigateBack" :disabled="!navigateBackAvailable(state.origin, state.session)">
-					<IconBackground :img="state.appInfo?.logo" :icon="IconConnection" />
+					<IconBackground :img="state.appInfo?.logo" :icon="ICON.connection" />
 					<div style="min-width: 0;">
 						<div class="ellipsis">{{ state.appInfo?.name || 'Connector' }}</div>
 						<div class="secondary-text ellipsis">{{ state.origin }}</div>
 					</div>
-					<Icon v-if="navigateBackAvailable(state.origin, state.session)" :icon="IconLaunch" />
+					<Icon v-if="navigateBackAvailable(state.origin, state.session)" :icon="ICON.launch" />
 				</button>
 				<WalletSelector v-model="state.walletId" :active="!selectActive" @selectWallet="selectWallet" @exit="disconnect" />
 			</div>
@@ -16,7 +16,7 @@
 		</template>
 		<template #default>
 			<TransitionsManager :vector="transitionName" axis="x">
-				<OverlayPrompt v-if="!Wallets.length" :options="{ action: { icon: IconAddBox, name: 'Add wallet', run: () => router.push('/add') } }" />
+				<OverlayPrompt v-if="!Wallets.length" :options="{ action: { icon: ICON.addBox, name: 'Add wallet', run: () => router.push('/add') } }" />
 				<div v-else class="container-scroll" :key="contentKey">
 					<transition-group name="fade-list">
 						<WalletTabs v-if="selectActive" v-model="currentId" class="fade-list-item" key="-1" />
@@ -68,12 +68,7 @@ import InterfaceStore from '@/store/InterfaceStore'
 import { navigateBack, navigateBackAvailable } from '@/functions/Connect'
 import { computed, ref, toRef, watch } from 'vue'
 import { useRouter } from '@/router'
-
-import IconConnection from '@/assets/icons/connection.svg?component'
-import IconY from '@/assets/icons/y.svg?component'
-import IconX from '@/assets/icons/x.svg?component'
-import IconLaunch from '@/assets/icons/launch.svg?component'
-import IconAddBox from '@/assets/icons/add_box.svg?component'
+import { ICON } from '@/store/Theme'
 import OverlayPrompt from '@/components/layout/OverlayPrompt.vue'
 
 const props = defineProps<{ state: ConnectorState }>()
@@ -119,7 +114,7 @@ const selectWallet = () => {
 }
 
 const connectOptions = computed(() => ({
-	actions: [{ name: props.state.walletId ? 'Switch' : 'Connect', icon: IconY, run: connect }],
+	actions: [{ name: props.state.walletId ? 'Switch' : 'Connect', icon: ICON.y, run: connect }],
 }))
 
 

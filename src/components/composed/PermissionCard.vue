@@ -10,6 +10,11 @@
 			<TxCard :tx="tx" />
 			<TxCardExtension :tx="tx" />
 		</template>
+		<template v-if="message?.method === 'signDataItem'">
+			<span>Sign data</span>
+			<TxCard :tx="tx" />
+			<TxCardExtension :tx="tx" />
+		</template>
 		<template v-else-if="message?.method === 'getPublicKey'" class="permission-card">
 			Share the public key
 		</template>
@@ -40,17 +45,17 @@ import { getMessage } from '@/functions/JsonRpc'
 import { computed, ref, watch } from 'vue'
 import type { ArweaveVerifier } from 'arweave-wallet-connector/lib/Arweave.js'
 
-import IconY from '@/assets/icons/y.svg?component'
-import IconX from '@/assets/icons/x.svg?component'
-import IconConnection from '@/assets/icons/connection.svg?component'
+import { ICON } from '@/store/Theme'
 
 const props = defineProps<{ messageEntry: MessageEntry }>()
 
 const message = ref(null as null | StoredMessage)
 
 const tx = computed(() => {
-	if (message.value?.method !== 'signTransaction' && message.value?.method !== 'dispatch') { return }
-	const receivedTx = message.value?.params?.[0] as Parameters<ArweaveVerifier['signTransaction']>[0]
+	if (!['signTransaction', 'dispatch', 'signDataItem'].includes(message.value?.method!)) { return }
+	const receivedTx = message.value?.params?.[0] as Parameters<ArweaveVerifier['signTransaction'] | ArweaveVerifier['signDataItem']>[0] | undefined
+	if (!receivedTx) { return }
+	if (message.value?.method === 'signDataItem') { return receivedTx }
 	const tags = receivedTx.tags?.map(({name, value}) => ({ name: arweave.utils.b64UrlToString(name), value: arweave.utils.b64UrlToString(value) }))
 	return { ...receivedTx, tags }
 })
@@ -60,10 +65,10 @@ watch(() => props.messageEntry, async () => {
 }, { immediate: true })
 
 const actions = [
-	{ name: 'Accept', icon: IconY, run: () => props.messageEntry.status = 'accepted' },
-	{ name: 'Reject', icon: IconX, run: () => props.messageEntry.status = 'rejected' },
+	{ name: 'Accept', icon: ICON.y, run: () => props.messageEntry.status = 'accepted' },
+	{ name: 'Reject', icon: ICON.x, run: () => props.messageEntry.status = 'rejected' },
 ]
-const actionsPending = [{ name: 'Pending', icon: IconConnection, run: () => {} }]
+const actionsPending = [{ name: 'Pending', icon: ICON.connection, run: () => {} }]
 </script>
 
 

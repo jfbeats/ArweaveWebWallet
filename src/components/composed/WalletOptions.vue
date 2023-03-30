@@ -11,9 +11,9 @@
 				<Select v-model="wallet.settings.securityLevel" :options="securityOptions" />
 			</div>
 			<div class="flex-row">
-				<Button v-if="addRelay" :run="addRelay" :icon="IconUpload" :glow="glow" color="var(--blue)">Add Relay</Button>
-				<Button v-if="wallet.download && !wallet.metadata.methods.download?.unavailable" :icon="IconDownload" @click="() => wallet.download()">Backup Keyfile</Button>
-				<Button :icon="IconX" @click="deleteWallet(wallet)">Delete</Button>
+				<Button v-if="addRelay" :run="addRelay" :icon="ICON.upload" :glow="glow" color="var(--blue)">Add Relay</Button>
+				<Button v-if="wallet.download && !wallet.metadata.methods.download?.unavailable" :icon="ICON.download" @click="() => wallet.download()">Backup Keyfile</Button>
+				<Button :icon="ICON.x" @click="deleteWallet(wallet)">Delete</Button>
 			</div>
 		</div>
 	</div>
@@ -30,21 +30,16 @@ import { deleteWallet } from '@/functions/Wallets'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { coldState } from '@/store/Cold'
 import { requestRelay } from '@/functions/Export'
-
-import IconDownload from '@/assets/icons/download.svg?component'
-import IconUpload from '@/assets/icons/share.svg?component'
-import IconX from '@/assets/icons/x.svg?component'
-import IconLock from '@/assets/icons/lock.svg?component'
-import IconUnlock from '@/assets/icons/unlock.svg?component'
+import { ICON } from '@/store/Theme'
 
 const props = defineProps<{
 	wallet: Wallet
 }>()
 
 const securityOptions = [
-	{ value: undefined, text: 'Unencrypted', icon: IconUnlock },
-	{ value: 'inactivity', text: 'Encrypted - Lock when away', icon: IconLock },
-	{ value: 'always', text: 'Encrypted - Always locked', icon: IconLock },
+	{ value: undefined, text: 'Unencrypted', icon: ICON.unlock },
+	{ value: 'inactivity', text: 'Encrypted - Lock when away', icon: ICON.lock },
+	{ value: 'always', text: 'Encrypted - Always locked', icon: ICON.lock },
 ]
 const glow = ref(true)
 onMounted(async () => {

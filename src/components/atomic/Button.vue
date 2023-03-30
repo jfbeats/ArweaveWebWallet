@@ -11,7 +11,7 @@
 import Icon from '@/components/atomic/Icon.vue'
 import Link from '@/components/function/Link.vue'
 import { computed, useSlots } from 'vue'
-import { normalizeColorTo } from '@/functions/Utils'
+import { normalizeColorTo } from '@/store/Theme'
 
 const props = defineProps<{
 	glow?: boolean

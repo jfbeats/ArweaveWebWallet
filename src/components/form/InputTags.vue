@@ -8,7 +8,7 @@
 import InputGrid, { TagSchema } from '@/components/form/InputGrid.vue'
 import { useDataWrapper } from '@/functions/AsyncData'
 import { computed, effectScope, markRaw, reactive, toRef, watch } from 'vue'
-import IconLabel from '@/assets/icons/label.svg?component'
+import { ICON } from '@/store/Theme'
 
 const props = defineProps<{
 	modelValue: Tag[]
@@ -40,7 +40,7 @@ const schema = useDataWrapper(model,
 
 function tagSchema (name = '', value = ''): TagSchema { return reactive({
 	items: [
-		{ name: 'Tag', value: name, icon: markRaw(IconLabel), attrs: { disabled: props.disabled } },
+		{ name: 'Tag', value: name, icon: markRaw(ICON.label), attrs: { disabled: props.disabled } },
 		{ name: 'Value', value, attrs: { disabled: props.disabled }  }
 	], deletable: !props.disabled, key: Math.random()
 })}

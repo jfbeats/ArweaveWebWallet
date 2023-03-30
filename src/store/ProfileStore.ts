@@ -26,7 +26,7 @@ export async function getArweaveId (address?: string) {
 	ProfileStore.arweaveIdStatus[address].loading = true
 	await awaitEffect(() => InterfaceStore.windowVisible)
 	try {
-		const query = async (tags: TagFilter[]) => (await graphql().getTransactions({ owners: [address], tags, first: 1 }).catch(() => {}))?.transactions?.edges?.[0]?.node
+		const query = async (tags: TagFilter[]) => (await graphql.getTransactions({ owners: [address], tags, first: 1 }).catch(() => {}))?.transactions?.edges?.[0]?.node
 		const promises = [
 			async () => query([{ name: 'App-Name', values: ['arweave-id'] }]),
 			async () => query([{ name: 'Contract', values: ['t9T7DIOGxx4VWXoCEeYYarFYeERTpWIC1V3y-BPZgKE'] }]).then(tx => {

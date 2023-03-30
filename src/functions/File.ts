@@ -3,7 +3,7 @@ import { requestImport } from '@/functions/Export'
 import { findTransactions } from '@/functions/Transactions'
 import { addFiles, form } from '@/store/FormSend'
 import router from '@/router'
-import { track } from '@/store/Analytics'
+import { track } from '@/store/Telemetry'
 import { fromEvent } from 'file-selector'
 import { isDraggingFromOutside } from '@/store/InterfaceStore'
 

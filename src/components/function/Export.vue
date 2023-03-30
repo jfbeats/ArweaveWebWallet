@@ -24,7 +24,7 @@
 							<QR :qr="compressed"/>
 							<div class="flex-row" style="align-items: stretch; justify-content: stretch;">
 								<Button :run="doDownload" style="flex: 1 1 auto; height: initial;">Download File</Button>
-								<Button :square="true" :run="share" :icon="IconShare" />
+								<Button :square="true" :run="share" :icon="ICON.share" />
 							</div>
 						</div>
 					</FadeOverflow>
@@ -60,7 +60,7 @@ import { exportRequest } from '@/functions/Export'
 import { computed, ref, watch } from 'vue'
 import { download } from '@/functions/File'
 import InterfaceStore from '@/store/InterfaceStore'
-import IconShare from '@/assets/icons/share.svg?component'
+import { ICON } from '@/store/Theme'
 
 watch(exportRequest, () => index.value = 0)
 const txString = computed(() => {

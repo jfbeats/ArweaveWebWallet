@@ -13,20 +13,20 @@
 			<div class="controls" v-if="links">
 				<transition name="fade-fast">
 					<router-link v-if="connectors.length" class="item control" :class="{ verticalLayout }" to="/connect" aria-label="Add Wallet">
-						<Icon :icon="IconConnection" class="small" alt="Connections" />
+						<Icon :icon="ICON.connection" class="small" alt="Connections" />
 					</router-link>
 				</transition>
 				<router-link class="item control" :class="{ verticalLayout }" to="/explore" aria-label="Explore">
-					<Icon :icon="IconSearch" class="small" alt="Explore" />
+					<Icon :icon="ICON.search" class="small" alt="Explore" />
 				</router-link>
 				<router-link class="item control" :class="{ verticalLayout }" to="/add" aria-label="Add Wallet">
-					<Icon :icon="IconAddBox" class="small" alt="Add Wallet" />
+					<Icon :icon="ICON.addBox" class="small" alt="Add Wallet" />
 				</router-link>
 				<router-link class="item control" :class="{ verticalLayout }" to="/settings" aria-label="Settings">
-					<Icon :icon="IconSettings" class="small" alt="Settings" />
+					<Icon :icon="ICON.settings" class="small" alt="Settings" />
 				</router-link>
 				<div v-if="state.type === 'extension'" class="item control" :class="{ verticalLayout }" @click="postMessageExtensionConnect">
-					<Icon :icon="IconPlug" class="small" alt="plug" />
+					<Icon :icon="ICON.plug" class="small" alt="plug" />
 				</div>
 			</div>
 		</transition>
@@ -46,12 +46,7 @@ import { connectors, postMessageExtension } from '@/functions/Connect'
 import { Wallets } from '@/functions/Wallets'
 import { computed, toRef } from 'vue'
 import { useRoute, useRouter } from '@/router'
-
-import IconConnection from '@/assets/icons/connection.svg?component'
-import IconAddBox from '@/assets/icons/add_box.svg?component'
-import IconSettings from '@/assets/icons/settings.svg?component'
-import IconSearch from '@/assets/icons/search.svg?component'
-import IconPlug from '@/assets/icons/plug.svg?component'
+import { ICON } from '@/store/Theme'
 
 const route = useRoute()
 const router = useRouter()

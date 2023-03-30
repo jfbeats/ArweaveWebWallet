@@ -1,6 +1,6 @@
 <template>
 	<div class="row flex-row">
-		<Input v-model.trim="model" :icon="IconPerson" placeholder="Address" :mask="maskAddress" :actions="actions" :submit="submit" :disabled="disabled" :id="id"/>
+		<Input v-model.trim="model" :icon="ICON.person" placeholder="Address" :mask="maskAddress" :actions="actions" :submit="submit" :disabled="disabled" :id="id"/>
 		<AddressIcon class="address-icon" :address="model"/>
 	</div>
 </template>
@@ -13,8 +13,7 @@ import Input from '@/components/form/Input.vue'
 import { scan, hasCamera } from '@/functions/Scanner'
 import { computed } from 'vue'
 
-import IconPerson from '@/assets/icons/person.svg?component'
-import IconQR from '@/assets/icons/qr.svg?component'
+import { ICON } from '@/store/Theme'
 import { ArweaveAccount } from '@/providers/Arweave'
 
 const props = defineProps<{
@@ -41,7 +40,7 @@ const scanAddress = async () => {
 
 const actions = computed<Action[]>(() => {
 	const result: Action[] = []
-	if (hasCamera.value) { result.push({ icon: IconQR, run: () => scanAddress() }) }
+	if (hasCamera.value) { result.push({ icon: ICON.qr, run: () => scanAddress() }) }
 	if (props.actions) { result.push(...props.actions) }
 	return result
 })

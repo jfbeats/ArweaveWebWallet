@@ -1,7 +1,7 @@
 <template>
 	<TransitionsManager>
 		<div v-if="data.handler === 'intent'" @click="data.intent = true" class="selector data-container min-height box" style="display: flex; justify-content: center; padding-top: 5em;">
-			<Button :icon="IconDownload">Load large file</Button>
+			<Button :icon="ICON.download">Load large file</Button>
 		</div>
 		<div v-else-if="data.handler === 'raw'" key="json" class="selector data-container min-height box">
 			<TransitionsManager>
@@ -33,7 +33,7 @@ import TxCard from '@/components/composed/TxCard.vue'
 import LoaderBlock from '@/components/layout/LoaderBlock.vue'
 import TransitionsManager from '@/components/visual/TransitionsManager.vue'
 import { notify } from '@/store/NotificationStore'
-import IconDownload from '@/assets/icons/download.svg?component'
+import { ICON } from '@/store/Theme'
 import ArweaveStore, { arweave, arweaveQuery, getData } from '@/store/ArweaveStore'
 import { unpackTags } from '@/functions/Transactions'
 import { computed, markRaw, reactive, ref, watch } from 'vue'

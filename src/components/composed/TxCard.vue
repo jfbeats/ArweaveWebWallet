@@ -44,9 +44,10 @@ import InterfaceStore from '@/store/InterfaceStore'
 import { unpackTags } from '@/functions/Transactions'
 import { computed } from 'vue'
 import { humanFileSize } from '@/functions/Utils'
+import { DataItemParams } from 'arweave-wallet-connector/lib/Arweave'
 
 const props = defineProps<{
-	tx: any
+	tx: Widen<AnyTransaction | DataItemParams>
 	options?: {
 		currentAddress?: any
 		half?: any
@@ -63,8 +64,8 @@ const statusText = computed(() => {
 })
 const direction = computed(() => props.tx.recipient && props.tx.recipient === props.options?.currentAddress ? 'in' : 'out')
 const relativeAddress = computed(() => direction.value === 'in' ? props.tx.owner.address : (props.tx.recipient || props.tx.target))
-const value = computed(() => props.tx.quantity?.ar || arweave.ar.winstonToAr(props.tx.quantity))
-const isValue = computed(() => value.value > 0)
+const value = computed(() => props.tx.quantity && (props.tx.quantity?.ar || arweave.ar.winstonToAr(props.tx.quantity)))
+const isValue = computed(() => value.value && parseFloat(value.value) > 0)
 const isData = computed(() => (ArrayBuffer.isView(props.tx.data) && props.tx.data.size > 0) || (props.tx.data?.size || props.tx.data_size) > 0)
 const status = computed(() => {
 	if (!props.tx.id || !props.tx.block) { return 'pending' }

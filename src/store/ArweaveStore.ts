@@ -6,7 +6,7 @@ import { useChannel } from '@/functions/Channels'
 import { getAsyncData, getQueryManager, getReactiveAsyncData, useDataWrapper } from '@/functions/AsyncData'
 import { computed, isRef, reactive, ref, Ref, watch } from 'vue'
 import { notify } from '@/store/NotificationStore'
-import { track } from '@/store/Analytics'
+import { track } from '@/store/Telemetry'
 import InterfaceStore from '@/store/InterfaceStore'
 import { makeRef, useList } from '@/functions/UtilsVue'
 
@@ -26,6 +26,7 @@ const ArweaveStore = reactive({
 
 export default ArweaveStore
 export var arweave: Arweave
+export var graphql: ReturnType<typeof arweaveGraphql>
 
 
 
@@ -42,6 +43,7 @@ export async function updateArweave (url?: string, sync?: boolean): Promise<true
 	const settings = urlToSettings(url)
 	if (!sync && url !== gatewayDefault) { await testGateway(settings) }
 	arweave = Arweave.init(settings)
+	graphql = arweaveGraphql(url + 'graphql')
 	ArweaveStore.gatewayURL = url !== gatewayDefault ? url : undefined as any
 	return true
 	// todo if network name is different, clear all cache
@@ -50,8 +52,9 @@ export async function updateArweave (url?: string, sync?: boolean): Promise<true
 async function testGateway (settings: ReturnType<typeof urlToSettings> | string): Promise<true> {
 	settings = typeof settings === 'string' ? urlToSettings(settings) : settings
 	const arweaveTest = Arweave.init(settings)
-	const net = await arweaveTest.network.getInfo()
-	if (!net.network) { throw 'Gateway Unreachable' }
+	let net = await arweaveTest.network.getInfo() as any
+	try { if (typeof net === 'string') { net = JSON.parse(net) } } catch (e) {}
+	if (!net?.network) { console.error(net); throw 'Gateway Unreachable' }
 	return true
 }
 
@@ -64,14 +67,14 @@ export function useWatchTx (txId: Ref<string | undefined>) {
 	return getReactiveAsyncData({
 		name: 'single tx header',
 		params: txId,
-		query: async (txId) => (await graphql().getTransactions({ ids: [txId] })).transactions.edges[0]?.node,
+		query: async (txId) => (await graphql.getTransactions({ ids: [txId] })).transactions.edges[0]?.node,
 		completed: (state: any) => state?.block,
 		seconds: 10,
 	})
 }
 
 export async function fetchPublicKey (address: string) {
-	const tx = (await graphql().getTransactions({ owners: [address] })).transactions.edges
+	const tx = (await graphql.getTransactions({ owners: [address] })).transactions.edges
 	return tx?.[0]?.node.owner.key as string | undefined
 }
 
@@ -90,11 +93,10 @@ const txPrioritize = (a: Transaction, b: Transaction) => a.block && b.block ? tx
 const blockSort = (a: TransactionEdge, b: TransactionEdge) => (b.node.block?.height ?? Number.MAX_SAFE_INTEGER)
 	- (a.node.block?.height ?? Number.MAX_SAFE_INTEGER)
 
-export const graphql = () => arweaveGraphql((ArweaveStore.gatewayURL || 'https://arweave.net/') + 'graphql')
 
 
 
-type arweaveQueryOptions = Parameters<ReturnType<typeof graphql>['getTransactions']>[0] | Ref<Parameters<ReturnType<typeof graphql>['getTransactions']>[0]>
+type arweaveQueryOptions = Parameters<typeof graphql['getTransactions']>[0] | Ref<Parameters<typeof graphql['getTransactions']>[0]>
 
 export function arweaveQuery (options: arweaveQueryOptions, name = 'tx list') { // todo rename to arweaveTransactions, fix changing query while loading
 	const optionsRef = isRef(options) ? options : ref(options)
@@ -126,13 +128,14 @@ export function arweaveQuery (options: arweaveQueryOptions, name = 'tx list') { 
 	const fetchQuery = getQueryManager({
 		name: name + ' fetch',
 		query: async () => {
-			if (optionsRef.value == null || status.completed) { return [] }
+			if (optionsRef.value == null) { status.completed = true }
+			if (status.completed) { return [] }
 			let fulfilled = false
 			let results = undefined as undefined | TransactionEdge[]
 			try {
 				const firstFetch = !list.state.value.length
 				for (let i = 0; !fulfilled; i++) {
-					;({ results, fulfilled } = processResponse(await graphql().getTransactions(i === 0 && firstFetch ? optionsRef.value : { ...optionsRef.value, after: list.state.value[list.state.value.length - 1].cursor })))
+					;({ results, fulfilled } = processResponse(await graphql.getTransactions(i === 0 && firstFetch ? optionsRef.value : { ...optionsRef.value, after: list.state.value[list.state.value.length - 1].cursor })))
 					if (results[results.length - 1]?.node.block) { fulfilled = true }
 					list.add(results)
 				}
@@ -152,9 +155,9 @@ export function arweaveQuery (options: arweaveQueryOptions, name = 'tx list') { 
 			let fulfilled = false
 			let results = undefined as undefined | TransactionEdge[]
 			for (let i = 0; !fulfilled; i++) {
-				if (i === 0) { ;({ results, fulfilled } = processResponse(await graphql().getTransactions(optionsRef.value))) }
+				if (i === 0) { ;({ results, fulfilled } = processResponse(await graphql.getTransactions(optionsRef.value))) }
 				else if (!results) { return }
-				else { ;({ results, fulfilled } = processResponse(await graphql().getTransactions({ ...optionsRef.value, after: results[results.length - 1].cursor }))) }
+				else { ;({ results, fulfilled } = processResponse(await graphql.getTransactions({ ...optionsRef.value, after: results[results.length - 1].cursor }))) }
 				for (const result of results) {
 					const matchingTx = list.state.value.find(el => el.node.id === result.node.id)
 					if (matchingTx) {
@@ -185,7 +188,7 @@ export function arweaveQuery (options: arweaveQueryOptions, name = 'tx list') { 
 
 
 
-export function arweaveQueryBlocks (options: Parameters<ReturnType<typeof graphql>['getBlocks']>[0]) { // todo rename to arweaveBlocks and make reactive
+export function arweaveQueryBlocks (options: Parameters<typeof graphql['getBlocks']>[0]) { // todo rename to arweaveBlocks and make reactive
 	const status = reactive({ completed: false })
 	const data = ref([] as BlockEdge[])
 	const refresh = 10
@@ -198,8 +201,8 @@ export function arweaveQueryBlocks (options: Parameters<ReturnType<typeof graphq
 			let results: any
 			try {
 				const cursor = data.value[data.value.length - 1]?.cursor
-				if (!cursor) { results = await graphql().getBlocks(options) }
-				else { results = await graphql().getBlocks({ ...options, after: cursor }) }
+				if (!cursor) { results = await graphql.getBlocks(options) }
+				else { results = await graphql.getBlocks({ ...options, after: cursor }) }
 				if (!results.blocks.pageInfo.hasNextPage) { status.completed = true }
 				results = results.blocks.edges
 				if (results.length < 10) { status.completed = true } // todo remove??
@@ -213,7 +216,7 @@ export function arweaveQueryBlocks (options: Parameters<ReturnType<typeof graphq
 		name: 'block list update',
 		awaitEffect: () => !fetchQuery.queryStatus.running && refreshEnabled.value,
 		query: async () => {
-			let results = (await graphql().getBlocks({ ...options, height: { min: data.value[0].node.height + 1 }, sort: SortOrder.HeightAsc })).blocks.edges
+			let results = (await graphql.getBlocks({ ...options, height: { min: data.value[0].node.height + 1 }, sort: SortOrder.HeightAsc })).blocks.edges
 			if (results.length > 0) { data.value.splice(0, 0, ...results.reverse()) }
 			return results
 		},
@@ -222,7 +225,7 @@ export function arweaveQueryBlocks (options: Parameters<ReturnType<typeof graphq
 		processResult: () => {},
 	})
 	
-	return { state: updateQuery.state, fetchQuery, updateQuery, status }
+	return { state: updateQuery.state, fetchQuery, updateQuery, status, key: '' + Math.random() }
 }
 
 
@@ -234,9 +237,9 @@ export function queryAggregator (queries: RefMaybe<ReturnType<typeof arweaveQuer
 		prioritize: (a, b) => a.node.block && b.node.block ? blockSort(a, b) : +!!b.node.block - +!!a.node.block // todo use txPrioritize and
 	})
 	const refresh = 10
+	const queriesRef = makeRef(queries)
 	const refreshSwitch = ref(true) // todo
 	watch(refreshSwitch, val => queriesRef.value.forEach(q => q.refreshSwitch = val))
-	const queriesRef = makeRef(queries)
 	const boundary = computed(() => {
 		let notReady = false
 		const boundaries = queriesRef.value.map(q => {
@@ -278,7 +281,7 @@ export function queryAggregator (queries: RefMaybe<ReturnType<typeof arweaveQuer
 		// todo add value only if still included in respective query
 		if (removed.length) { list.add(removed) }
 	}, { deep: true, flush: 'sync' })
-	const completed = computed(() => !overreached.value.flat().length && queriesRef.value.every(q => q.status.completed))
+	const completed = computed(() => queriesRef.value.length === 0 || !overreached.value.flat().length && queriesRef.value.every(q => q.status.completed))
 	const status = reactive({ completed, reset: 0 })
 	const wrapper = useDataWrapper(queriesRef, el => el.key, query => {
 		const watchStop = watch(() => query.status.reset, () => {
@@ -296,13 +299,6 @@ export function queryAggregator (queries: RefMaybe<ReturnType<typeof arweaveQuer
 		})
 	}, handlers => handlers.map(e => e()))
 	watch(wrapper, () => {}) // always use lazy computed
-	const fetchQuery = getQueryManager({
-		name: 'aggregated fetch',
-		query: async () => {
-			const queriesInRange = queriesRef.value.filter((query, i) => !overreached.value[i].length)
-			return Promise.all(queriesInRange.map(q => q.fetchQuery.query()))
-		},
-	})
 	const state = computed(() => {
 		if (!boundary.value ) { return list.state.value }
 		const pos = list.state.value?.indexOf(boundary.value as any) ?? 0
@@ -313,14 +309,22 @@ export function queryAggregator (queries: RefMaybe<ReturnType<typeof arweaveQuer
 		list.remove(list.state.value?.slice(slicePos))
 		return list.state.value
 	})
+	const fetchQuery = getQueryManager({
+		name: 'aggregated fetch',
+		query: async () => {
+			const queriesInRange = queriesRef.value.filter((query, i) => !overreached.value[i]?.length)
+			return Promise.all(queriesInRange.map(q => q.fetchQuery.query())).then(res => compact(res).flat())
+		},
+	})
 	const updateQuery = getAsyncData({
 		name: 'aggregated update',
-		query: async () => (await Promise.all(queriesRef.value.map(query => query.updateQuery.getState()))).flat(),
+		query: async () => Promise.all(queriesRef.value.map(query => query.updateQuery.getState())).then(res => compact(res).flat()),
 		seconds: refresh,
 		existingState: state,
 		processResult: () => {},
 	})
-	return { state: updateQuery.state, list, fetchQuery, updateQuery, status, refreshSwitch }
+	const fetchAll = () => Promise.all(queriesRef.value.map(q => q.fetchAll())) as any
+	return { state: updateQuery.state, list, fetchQuery, updateQuery, status, refreshSwitch, fetchAll, key: '' + Math.random() }
 }
 
 
@@ -371,15 +375,27 @@ export function queryAggregator (queries: RefMaybe<ReturnType<typeof arweaveQuer
 const networkInfoData = getAsyncData({
 	name: 'network info',
 	query: () => arweave.network.getInfo(),
+	processResult: state => typeof state === 'string' ? JSON.parse(state) : state,
 	seconds: 10,
 })
 watch(() => ArweaveStore.gatewayURL, () => networkInfoData.state.value = undefined)
 export const networkInfo = networkInfoData.state
 
 
+
+export async function getIndepHash () {
+	const res = await networkInfoData.getState()
+	const indepHash = res?.current
+	if (!indepHash) { throw 'failed to get indepHash' }
+	return indepHash
+}
+
+
+
 export const currentBlockData = getAsyncData({
 	name: 'current block',
-	query: () => arweave.blocks.getCurrent(),
+	query: () => getIndepHash().then(h => arweave.blocks.get(h)),
+	processResult: state => typeof state === 'string' ? JSON.parse(state) : state,
 	seconds: 60,
 	stale: (state) => networkInfoData.stateRef.value && state && networkInfoData.stateRef.value.height > state.height,
 	completed: (state) => networkInfoData.stateRef.value && state && networkInfoData.stateRef.value.height == state.height,

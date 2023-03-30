@@ -18,15 +18,14 @@ import Icon from '@/components/atomic/Icon.vue'
 import ProfileStore, { getArweaveId } from '@/store/ProfileStore'
 import { computed, watch } from 'vue'
 import { coldState } from '@/store/Cold'
-import LogoArweave from '@/assets/logos/arweave.svg?component'
-import IconSnow from '@/assets/icons/snow.svg?component'
-import IconUnlock from '@/assets/icons/unlock.svg?component'
+import { LOGO } from '@/store/Theme'
+import { ICON } from '@/store/Theme'
 
 const props = defineProps<{ wallet: Wallet }>()
 const arweaveId = computed(() => (ProfileStore.arweaveId as any)[props.wallet.key!])
 const walletInfo = computed(() => coldState.value && props.wallet.hasPrivateKey
-	? props.wallet.state.hot ? { icon: IconUnlock, name: 'Hot Wallet' } : { icon: IconSnow, name: 'Cold Wallet' }
-	: props.wallet.metadata || { icon: LogoArweave, name: 'Arweave wallet' })
+	? props.wallet.state.hot ? { icon: ICON.unlock, name: 'Hot Wallet' } : { icon: ICON.snow, name: 'Cold Wallet' }
+	: props.wallet.metadata || { icon: LOGO.arweave, name: 'Arweave wallet' })
 watch(() => props.wallet.key, () => getArweaveId(props.wallet.key))
 </script>
 

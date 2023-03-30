@@ -25,8 +25,9 @@
 
 <script setup>
 import TravellingBlocks from '@/components/visual/TravellingBlocks.vue'
-import ArweaveOutlineLogo from '@/assets/logos/arweaveOutline.svg?component'
+import { LOGO } from '@/store/Theme'
 
+const ArweaveOutlineLogo = LOGO.arweaveOutline
 const description = import.meta.env.VITE_DESCRIPTION
 const title = import.meta.env.VITE_TITLE
 </script>

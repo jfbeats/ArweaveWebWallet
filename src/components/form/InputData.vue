@@ -3,11 +3,11 @@
 		<textarea ref="textarea" v-show="!isFile" v-model="model" @focus="focus = 1" @blur="focus = 0" :disabled="disabled" :id="id" :placeholder="placeholder" :autocapitalize="autocapitalize"></textarea>
 		<transition name="fade">
 			<div v-if="!model" class="overlay passthrough">
-				<Icon :icon="IconText" class="big-icon-container not-passthrough img text" style="flex: 0 1 auto;" @click="() => textarea?.focus()" />
+				<Icon :icon="ICON.text" class="big-icon-container not-passthrough img text" style="flex: 0 1 auto;" @click="() => textarea?.focus()" />
 				<div class="spacer" />
 				<Link class="big-icon-container not-passthrough" @click="() => filePicker?.click()" :class="{ isDragging: dragOverlay }">
 					<div class="file-picker-label">
-						<Icon :icon="IconDrop" class="img" style="width: 100%; height: 100%;" />
+						<Icon :icon="ICON.drop" class="img" style="width: 100%; height: 100%;" />
 					</div>
 					<input ref="filePicker" type="file" id="file-picker" class="file-input" @change="handleFiles" :disabled="disabled" multiple />
 				</Link>
@@ -15,7 +15,7 @@
 					<div class="spacer" />
 					<Link class="big-icon-container not-passthrough" @click="() => directoryPicker?.click()" :class="{ isDragging: dragOverlay }">
 						<div class="file-picker-label">
-							<Icon :icon="IconFolder" class="img" style="width: 100%; height: 100%;" />
+							<Icon :icon="ICON.folder" class="img" style="width: 100%; height: 100%;" />
 						</div>
 						<input ref="directoryPicker" type="file" id="directory-picker" class="file-input" @change="handleFiles" :disabled="disabled" webkitdirectory directory multiple />
 					</Link>
@@ -24,7 +24,7 @@
 					<div class="spacer" />
 					<Link class="big-icon-container not-passthrough" @click="scanData">
 						<div class="file-picker-label">
-							<Icon :icon="IconQR" class="img" style="width: 100%; height: 100%;" />
+							<Icon :icon="ICON.qr" class="img" style="width: 100%; height: 100%;" />
 						</div>
 					</Link>
 				</template>
@@ -37,7 +37,7 @@
 				</div>
 				<Link class="clear" @click="clearFiles" type="button">
 					<div class="icon-container">
-						<Icon :icon="IconX" class="iconX no-select" draggable="false" />
+						<Icon :icon="ICON.x" class="iconX no-select" draggable="false" />
 					</div>
 				</Link>
 			</div>
@@ -56,12 +56,7 @@ import InterfaceStore from '@/store/InterfaceStore'
 import { state } from '@/functions/Channels'
 import { dropped } from '@/functions/File'
 import { computed, ref, toRef, useAttrs, watch } from 'vue'
-
-import IconText from '@/assets/icons/text.svg?component'
-import IconDrop from '@/assets/icons/drop.svg?component'
-import IconFolder from '@/assets/icons/folder.svg?component'
-import IconQR from '@/assets/icons/qr.svg?component'
-import IconX from '@/assets/icons/x.svg?component'
+import { ICON } from '@/store/Theme'
 import { debounce } from '@/functions/Utils'
 
 const props = defineProps<{

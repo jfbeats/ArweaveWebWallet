@@ -11,8 +11,9 @@
 <script setup lang="ts">
 // Vue component made from https://github.com/stewartlord/identicon.js/
 // from a SHA-256 hash of the arweave address
-import { addressHashToColor, addressToHash } from '@/functions/Utils'
+import { addressToHash } from '@/functions/Utils'
 import { computed, ref, watch } from 'vue'
+import { addressHashToColor } from '@/store/Theme'
 
 const props = defineProps<{ address: string }>()
 

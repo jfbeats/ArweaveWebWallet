@@ -1,6 +1,6 @@
 <template>
 	<div class="scanner">
-		<Icon :icon="IconQR" class="background" />
+		<Icon :icon="ICON.qr" class="background" />
 		<video ref="video" class="video" :class="{ isPlaying }"></video>
 		<div class="actions-row-container">
 			<ActionsRow :actions="actions" />
@@ -19,10 +19,7 @@ import { awaitEffect } from '@/functions/AsyncData'
 import { emitter, getScanner } from '@/functions/Scanner'
 import QrScanner from 'qr-scanner'
 import { onUnmounted, onMounted, ref, inject } from 'vue'
-
-import IconQR from '@/assets/icons/qr.svg?component'
-import IconSwap from '@/assets/icons/swap.svg?component'
-import IconX from '@/assets/icons/x.svg?component'
+import { ICON } from '@/store/Theme'
 import Icon from '@/components/atomic/Icon.vue'
 
 const parentTransitionState = inject('transitionState', null as any)
@@ -33,8 +30,8 @@ const scannerCamera = useChannel('scannerCamera').state
 let cameras: QrScanner.Camera[]
 let qrScanner: QrScanner
 const actions: Action[] = [
-	{ icon: IconSwap, run: () => switchCamera() },
-	{ icon: IconX, run: () => emitter.emit('event', undefined) }
+	{ icon: ICON.swap, run: () => switchCamera() },
+	{ icon: ICON.x, run: () => emitter.emit('event', undefined) }
 ]
 
 const switchCamera = async () => {

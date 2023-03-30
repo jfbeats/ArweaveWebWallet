@@ -1,14 +1,12 @@
 import { getAsyncData } from '@/functions/AsyncData'
-import ArweaveStore, { currentBlockData } from '@/store/ArweaveStore'
+import ArweaveStore, { getIndepHash } from '@/store/ArweaveStore'
 import { Wallets } from '@/functions/Wallets'
 import { compact } from '@/functions/Utils'
 import { useChannel } from '@/functions/Channels'
 import { computed } from 'vue'
 
 async function get_reward_history () {
-	const indep_hash = (await currentBlockData.getState())?.indep_hash
-	if (!indep_hash) { throw 'Failed to get indep_hash' }
-	const url = `${ArweaveStore.gatewayURL}reward_history/${indep_hash}` as string
+	const url = `${ArweaveStore.gatewayURL}reward_history/${await getIndepHash()}` as string
 	return fetch(url).then(response => response.arrayBuffer()).then(r => new Uint8Array(r))
 }
 
