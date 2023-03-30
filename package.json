@@ -22,7 +22,7 @@
 		"@zondax/ledger-arweave": "^1.0.0",
 		"arweave": "^1.10.23",
 		"arweave-graphql": "^0.0.2",
-		"arweave-wallet-connector": "^1.0.0",
+		"arweave-wallet-connector": "^1.0.2",
 		"axios": "^1.2.3",
 		"bignumber.js": "^9.0.1",
 		"bip39-web-crypto": "^4.0.1",
