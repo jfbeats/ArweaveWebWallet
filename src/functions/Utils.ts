@@ -49,11 +49,11 @@ export function generateUrl (url: string) {
 	return new URL(url).href
 }
 
-export function round (number?: number | string) {
+export function round (number?: number | string, fractionDigits = 3) {
 	if (number == undefined) { return '' }
 	const parsed = typeof number === 'string' ? parseFloat(number) : number
 	if (parsed == null || isNaN(parsed)) { return '' }
-	const FractionDigits = new Intl.NumberFormat([...navigator.languages], { maximumFractionDigits: 3 }).format(parsed)
+	const FractionDigits = new Intl.NumberFormat([...navigator.languages], { maximumFractionDigits: fractionDigits }).format(parsed)
 	const SignificantDigits = new Intl.NumberFormat([...navigator.languages], { maximumSignificantDigits: 1 }).format(parsed)
 	return FractionDigits.length >= SignificantDigits.length ? FractionDigits : SignificantDigits
 }

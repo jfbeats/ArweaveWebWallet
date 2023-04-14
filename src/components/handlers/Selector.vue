@@ -76,7 +76,7 @@ async function load () {
 		data.loaded = true
 		return data.handler = {
 			is: markRaw(List),
-			attrs: { query: arweaveQuery({ bundledIn: props.tx.id }), component: markRaw(TxCard), componentProps: { options: { space: true } }, class: ['column'] },
+			attrs: { query: markRaw(arweaveQuery({ bundledIn: props.tx.id })), component: markRaw(TxCard), componentProps: { options: { space: true } }, class: ['column'] },
 			containerAttrs: { class: ['data-container', 'column-container', 'padding'] }
 		}
 	}

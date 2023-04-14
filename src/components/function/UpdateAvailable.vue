@@ -12,39 +12,10 @@
 
 
 <script setup lang="ts">
-import { useRegisterSW } from 'virtual:pwa-register/vue'
-import { state, states } from '@/functions/Channels'
-import { track } from '@/store/Telemetry'
-import { computed, ref, watch } from 'vue'
+import InterfaceStore from '@/store/InterfaceStore';
+import { toRefs } from 'vue';
 
-const newLocation = sessionStorage.getItem('redirect')
-if (newLocation) { sessionStorage.removeItem('redirect'); location.replace(newLocation) }
-
-const { needRefresh, updateServiceWorker } = useRegisterSW({})
-let autoUpdateActive = state.value.type !== 'iframe'
-setTimeout(() => autoUpdateActive = false, 10000)
-const overlay = ref(false)
-const processUpdate = async () => {
-	overlay.value = true
-	if (state.value.origin) {
-		const urlInfo = { origin: state.value.origin, session: state.value.session! }
-		const url = new URL(location.href)
-		url.hash = new URLSearchParams(urlInfo).toString()
-		location.replace(url)
-	}
-	updateServiceWorker(true)
-	state.value.updating = 'completed'
-}
-const triggerUpdate = async (e?: any) => {
-	if (overlay.value) { return }
-	overlay.value = true
-	track.event('App Update')
-	if (!e && state.value.redirect && state.value.url) { sessionStorage.setItem('redirect', state.value.url) }
-	states.value.forEach(s => s.updating = 'scheduled')
-}
-const otherInstance = computed(() => states.value.filter(s => s !== state.value).find(s => !s.origin || s.origin !== state.value.origin && s.session !== state.value.session))
-watch(needRefresh, needed => needed && !otherInstance.value && autoUpdateActive && triggerUpdate(), { immediate: true })
-watch(() => state.value.updating, val => val === 'scheduled' && processUpdate(), { immediate: true })
+const { needRefresh, triggerUpdate, overlay } = toRefs(InterfaceStore)
 const close = () => { needRefresh.value = false }
 </script>
 

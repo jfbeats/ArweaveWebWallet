@@ -1,8 +1,33 @@
 import { getCurrentScope, onScopeDispose, watch, ref, effectScope, computed } from 'vue'
 import type { EffectScope, Ref, WatchStopHandle } from 'vue'
 import { useDataWrapper } from '@/functions/AsyncData'
+import InterfaceStore from '@/store/InterfaceStore'
 import type { AppSettingsInterface } from '@/store/SettingsStore'
 import type { MiningData } from '@/functions/Mining'
+
+
+
+const channelInstances = {} as { [key: string]: { channel: ReturnType<typeof ChannelRef<any, any>>, subscribers: number, scope: EffectScope } }
+const url = window.location.href
+const hash = new URLSearchParams(window.location.hash.slice(1))
+const origin = hash.get('origin') || undefined
+const session = hash.get('session') || undefined
+const appInfo = { name: hash.get('name') || undefined, logo: hash.get('logo') || undefined }
+const instance = origin + Math.random().toString().slice(2)
+const storageKeys = ref(Object.keys(localStorage)) as Ref<string[]>
+const { state, deleteChannel } = useChannel('instanceState:', instance, { origin, session, url }, true)
+const { states } = getChannels('instanceState:')
+watch(states, () => {})
+const connectorChannels = getChannels('sharedState:')
+export { state, states, connectorChannels, appInfo }
+watch(() => state.value.updating, val => val === 'scheduled' && InterfaceStore.reload(true), { immediate: true })
+cleanHeartbeats()
+globalStorageListener()
+window.addEventListener('storage', globalStorageListener)
+window.addEventListener('beforeunload', () => deleteChannel())
+window.addEventListener('unload', () => deleteChannel())
+
+
 
 type PrefixTable = {
 	'instanceState:': InstanceState
@@ -78,8 +103,6 @@ function ChannelRef <T extends keyof PrefixTable, U extends DefaultValue<T> = un
 
 
 
-const channelInstances = {} as { [key: string]: { channel: ReturnType<typeof ChannelRef<any, any>>, subscribers: number, scope: EffectScope } }
-
 export function useChannel <T extends keyof PrefixTable, U extends DefaultValue<T> = undefined> (prefix: T, instanceName = '', init?: U, writeInit?: boolean): Result<T, U> {
 	const key = prefix + instanceName
 	
@@ -145,21 +168,6 @@ export function useLock (channel: Ref<number | undefined>) {
 
 
 
-const url = window.location.href
-const hash = new URLSearchParams(window.location.hash.slice(1))
-const origin = hash.get('origin') || undefined
-const session = hash.get('session') || undefined
-const appInfo = { name: hash.get('name') || undefined, logo: hash.get('logo') || undefined }
-const instance = origin + Math.random().toString().slice(2)
-const storageKeys = ref(Object.keys(localStorage)) as Ref<string[]>
-const { state, deleteChannel } = useChannel('instanceState:', instance, { origin, session, url }, true)
-const { states } = getChannels('instanceState:')
-watch(states, () => {})
-const connectorChannels = getChannels('sharedState:')
-export { state, states, connectorChannels, appInfo }
-
-
-
 async function heartbeat (instanceName: string, timeout?: number) {
 	if (instanceName === instance) { return true }
 	const fullKey = 'heartbeat:' + instanceName + instance
@@ -205,11 +213,3 @@ export async function hasStorageAccess () {
 export async function awaitStorageAccess () {
 	while (!await hasStorageAccess()) { await new Promise(resolve => setTimeout(resolve, 1000)) }
 }
-
-
-
-cleanHeartbeats()
-globalStorageListener()
-window.addEventListener('storage', globalStorageListener)
-window.addEventListener('beforeunload', () => deleteChannel())
-window.addEventListener('unload', () => deleteChannel())

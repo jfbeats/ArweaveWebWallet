@@ -1,8 +1,14 @@
-import { Emitter } from '@/functions/UtilsClass'
-import { reactive, ref, watch } from 'vue'
-
 import logoArweaveBlack from '@/assets/logos/arweaveBlack.svg?url'
 import logoArweaveWhite from '@/assets/logos/arweaveWhite.svg?url'
+import { Emitter } from '@/functions/UtilsClass'
+import { state, states } from '@/functions/Channels'
+import { track } from '@/store/Telemetry'
+import { useRegisterSW } from 'virtual:pwa-register/vue'
+import { reactive, ref, watch } from 'vue'
+
+const { needRefresh, updateServiceWorker } = useRegisterSW({})
+
+
 
 const InterfaceStore = reactive({
 	windowWidth: window.innerWidth,
@@ -18,8 +24,46 @@ const InterfaceStore = reactive({
 	sticky: false,
 	dragOverlay: false,
 	online: navigator.onLine,
+	overlay: false,
+	autoUpdateActive: true,
+	needRefresh,
+	reload,
+	triggerUpdate,
 })
 export default InterfaceStore
+
+
+
+const newLocation = sessionStorage.getItem('redirect')
+if (newLocation) { sessionStorage.removeItem('redirect'); location.replace(newLocation) }
+setTimeout(() => InterfaceStore.autoUpdateActive = false, 10000)
+watch(needRefresh, needed => {
+	const hasOtherInstance = () => states.value.filter(s => s !== state.value).find(s => !s.origin || s.origin !== state.value.origin && s.session !== state.value.session)
+	if (needed && InterfaceStore.autoUpdateActive && state.value.type !== 'iframe' && !hasOtherInstance()) { triggerUpdate() }
+}, { immediate: true })
+
+
+
+async function reload (update?: boolean) {
+	InterfaceStore.overlay = true
+	const possibleRedirect = state.value.type !== 'iframe' && InterfaceStore.autoUpdateActive && state.value.redirect
+	if (possibleRedirect && state.value.url) { sessionStorage.setItem('redirect', state.value.url) }
+	if (state.value.origin) {
+		const urlInfo = { origin: state.value.origin, session: state.value.session! }
+		const url = new URL(location.href)
+		url.hash = new URLSearchParams(urlInfo).toString()
+		location.replace(url)
+	}
+	if (update) { updateServiceWorker(true); state.value.updating = 'completed' }
+	else { location.reload() }
+}
+
+async function triggerUpdate () {
+	if (InterfaceStore.overlay) { return }
+	InterfaceStore.overlay = true
+	track.event('App Update')
+	states.value.forEach(s => s.updating = 'scheduled')
+}
 
 
 

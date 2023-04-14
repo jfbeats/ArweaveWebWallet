@@ -7,36 +7,39 @@
 
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { useDataWrapper } from '@/functions/AsyncData'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 const props = defineProps<{
 	threshold?: number
 	once?: boolean
-	onIntersection?: any
-	onResize?: any
-	onMutation?: any
+	onIntersection?: (entry: IntersectionObserverEntry) => any
+	onIntersecting?: (entry: IntersectionObserverEntry) => any
+	onResize?: (entry: ResizeObserverEntry) => any
+	onMutation?: (entry: MutationRecord) => any
 }>()
 const emit = defineEmits<{
 	(e: 'intersection', value: IntersectionObserverEntry): void
+	(e: 'intersecting', value: IntersectionObserverEntry): void
 	(e: 'resize', value: ResizeObserverEntry): void
 	(e: 'mutation', value: MutationRecord): void
 }>()
 const observed = ref(null)
 defineExpose({ el: observed })
 
-if (props.onIntersection) {
+const intersection = (filter?: boolean) => {
 	const intersectionObserver = new IntersectionObserver((entries) => {
-		const intersections = entries.filter(e => e.isIntersecting)
-		if (!intersections) { return }
-		intersections.forEach(e => emit('intersection', e))
+		const intersections = filter ? entries.filter(e => e.isIntersecting) : entries
+		intersections.forEach(e => filter ? emit('intersecting', e) : emit('intersection', e))
 		if (props.once) { unobserve() }
 	}, { threshold: [props.threshold || 0] })
 	const unobserve = () => observed.value && intersectionObserver.unobserve(observed.value)
 	onMounted(() => intersectionObserver.observe(observed.value!))
 	onBeforeUnmount(unobserve)
+	return unobserve
 }
 
-if (props.onResize) {
+const resize = () => {
 	const resizeObserver = new ResizeObserver((entries) => {
 		entries.forEach(e => emit('resize', e))
 		if (props.once) { unobserve() }
@@ -44,9 +47,10 @@ if (props.onResize) {
 	const unobserve = () => observed.value && resizeObserver.unobserve(observed.value)
 	onMounted(() => resizeObserver.observe(observed.value!))
 	onBeforeUnmount(unobserve)
+	return unobserve
 }
 
-if (props.onMutation) {
+const mutation = () => {
 	const mutationObserver = new MutationObserver((entries) => {
 		entries.forEach(e => emit('mutation', e))
 		if (props.once) { unobserve() }
@@ -54,5 +58,16 @@ if (props.onMutation) {
 	const unobserve = () => observed.value && mutationObserver.disconnect()
 	onMounted(() => mutationObserver.observe(observed.value!, { childList: true, attributes: true, subtree: true }))
 	onBeforeUnmount(unobserve)
+	return unobserve
 }
+
+const listeners = {
+	onIntersection: () => intersection(false),
+	onIntersecting: () => intersection(true),
+	onResize: () => resize(),
+	onMutation: () => mutation(),
+} satisfies { [keys in keyof Partial<typeof props>]: Function }
+const activeListeners = computed(() => (Object.keys(listeners) as [keyof typeof listeners]).filter(key => props[key]))
+const wrapped = useDataWrapper(activeListeners, i => i, key => listeners[key](), i => i())
+watch(wrapped, () => {})
 </script>

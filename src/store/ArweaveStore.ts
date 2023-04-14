@@ -45,6 +45,10 @@ export async function updateArweave (url?: string, sync?: boolean): Promise<true
 	arweave = Arweave.init(settings)
 	graphql = arweaveGraphql(url + 'graphql')
 	ArweaveStore.gatewayURL = url !== gatewayDefault ? url : undefined as any
+	if (url !== gatewayDefault) { await fetch(url + 'graphql').then(res => {
+		if (res.status >= 200 && res.status < 300) { return }
+		graphql = arweaveGraphql(gatewayDefault + 'graphql')
+	}) }
 	return true
 	// todo if network name is different, clear all cache
 }
@@ -108,7 +112,7 @@ export function arweaveQuery (options: arweaveQueryOptions, name = 'tx list') { 
 	})
 	const refresh = 10
 	const refreshEnabled = ref(false)
-	const refreshSwitch = ref(true) // todo
+	const refreshSwitch = ref(true)
 	
 	watch(optionsRef, () => {
 		list.state.value = []
@@ -193,6 +197,7 @@ export function arweaveQueryBlocks (options: Parameters<typeof graphql['getBlock
 	const data = ref([] as BlockEdge[])
 	const refresh = 10
 	const refreshEnabled = ref(false)
+	const refreshSwitch = ref(true)
 	
 	const fetchQuery = getQueryManager({
 		name: 'block list fetch',
@@ -223,9 +228,10 @@ export function arweaveQueryBlocks (options: Parameters<typeof graphql['getBlock
 		seconds: refresh,
 		existingState: data,
 		processResult: () => {},
+		completed: () => !refreshSwitch.value,
 	})
 	
-	return { state: updateQuery.state, fetchQuery, updateQuery, status, key: '' + Math.random() }
+	return { state: updateQuery.state, fetchQuery, updateQuery, status, refreshSwitch, key: '' + Math.random() }
 }
 
 

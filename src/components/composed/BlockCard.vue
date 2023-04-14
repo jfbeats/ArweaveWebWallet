@@ -1,7 +1,7 @@
 <template>
 	<ListContainer class="block-card">
 		<template #header>
-			<Observer @intersection="visible = true" :threshold="0.5">
+			<Observer @intersecting="visible = true" :threshold="0.5">
 				<div class="flex-row" style="align-items: center; justify-content: space-between; flex-wrap: wrap;">
 					<h2 class="flex-row" style="align-items: center;">
 						<Icon :icon="ICON.cube" style="font-size: 1.5em; color: var(--orange);" />
@@ -48,6 +48,7 @@ const blockData = getAsyncData({
 	name: 'single block header',
 	awaitEffect: () => visible.value,
 	query: async () => arweave.blocks.get(props.block.node.id),
+	processResult: r => typeof r === 'string' ? JSON.parse(r) : r,
 	seconds: 10,
 	completed: state => state
 }).state

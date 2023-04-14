@@ -7,22 +7,20 @@
 					<h2><span style="text-transform: capitalize;">{{ gatewayHostname }}</span> Gateway State</h2>
 					<div class="flex-column">
 						<div>Peers: {{ networkInfo?.peers ?? '...' }}</div>
-						<div>Queue: {{ networkInfo?.queue_length ?? '...' }}</div>
-						<div>State Latency: {{ networkInfo?.node_state_latency ?? '...' }}</div>
 						<div>Pending Transactions: {{ pendingList?.length ?? '...' }}</div>
+						<div>Network Height: {{ networkInfo?.height ?? '...' }}{{ totalStored }}</div>
 					</div>
 				</div>
 				<div class="group">
 					<h2>Weave State</h2>
 					<div class="flex-column">
-						<div>Network Height: {{ networkInfo?.height ?? '...' }}</div>
 						<div>Weave Size: {{ currentBlock?.weave_size && humanFileSize(currentBlock?.weave_size) || '...' }}</div>
 						<div>Endowment Pool: <Amount :winston="currentBlock?.reward_pool" /></div>
 					</div>
 				</div>
 			</div>
 		</div>
-		<BlockCarousel />
+		<BlockCarousel :height="networkInfo?.height" />
 	</div>
 </template>
 
@@ -30,7 +28,7 @@
 
 <script setup lang="ts">
 import ArweaveStore, { currentBlock, networkInfo } from '@/store/ArweaveStore'
-import { humanFileSize } from '@/functions/Utils'
+import { humanFileSize, round } from '@/functions/Utils'
 import Amount from '@/components/composed/Amount.vue'
 import { pendingList } from '@/store/BlockStore'
 import GlobalSearch from '@/components/composed/GlobalSearch.vue'
@@ -38,6 +36,14 @@ import BlockCarousel from '@/components/composed/BlockCarousel.vue'
 import { computed } from 'vue'
 
 const gatewayHostname = computed(() => ArweaveStore.gatewayURL && new URL(ArweaveStore.gatewayURL).hostname)
+const totalStored = computed(() => {
+	const blocks = networkInfo.value?.blocks
+	const height = networkInfo.value?.height
+	if (blocks == null || height == null) { return '' }
+	const percent = 100 * Math.min(blocks / Math.max(height - 1, 1), 1)
+	if (percent === 100) { return '' }
+	return ` (${round(percent, 2)}% known)`
+})
 </script>
 
 
