@@ -2,7 +2,7 @@
 	<div class="settings">
 		<div class="container">
 			<div class="column">
-				<GlobalSearch />
+				<GlobalSearch @height="goTo = $event" style="z-index: 2;" />
 				<div class="group">
 					<h2><span style="text-transform: capitalize;">{{ gatewayHostname }}</span> Gateway State</h2>
 					<div class="flex-column">
@@ -20,7 +20,7 @@
 				</div>
 			</div>
 		</div>
-		<BlockCarousel :height="networkInfo?.height" />
+		<BlockCarousel :height="networkInfo?.height" :goTo="goTo" />
 	</div>
 </template>
 
@@ -33,7 +33,7 @@ import Amount from '@/components/composed/Amount.vue'
 import { pendingList } from '@/store/BlockStore'
 import GlobalSearch from '@/components/composed/GlobalSearch.vue'
 import BlockCarousel from '@/components/composed/BlockCarousel.vue'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 const gatewayHostname = computed(() => ArweaveStore.gatewayURL && new URL(ArweaveStore.gatewayURL).hostname)
 const totalStored = computed(() => {
@@ -44,6 +44,7 @@ const totalStored = computed(() => {
 	if (percent === 100) { return '' }
 	return ` (${round(percent, 2)}% known)`
 })
+const goTo = ref(undefined as undefined | number)
 </script>
 
 

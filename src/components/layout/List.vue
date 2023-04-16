@@ -1,12 +1,12 @@
 <template>
-	<div class="list flex-column">
+	<Observer class="list flex-column" @resize="setSize">
 		<Observer @intersection="updateQuery" class="top" />
 		<transition-group name="fade-list-rise">
-			<component v-for="tx in txs" :tx="tx.node" :key="tx.node.id" :is="component" v-bind="componentProps" class="fade-list-item" :class="[card && 'card']" />
+			<component v-for="tx in txs" :[itemName]="tx.node" :key="tx.node.id" :is="component" v-bind="componentProps" class="fade-list-item" :class="[card && 'card']" />
 		</transition-group>
-		<LoaderBlock v-if="icon" :icon="icon" />
+		<LoaderBlock v-if="icon" :icon="icon" :minHeight="sizeCSS"  />
 		<Observer @intersecting="fetchQuery" class="bottom" v-show="!fetchLoading && !completedQuery" />
-	</div>
+	</Observer>
 </template>
 
 
@@ -14,12 +14,13 @@
 <script setup lang="ts">
 import Observer from '@/components/function/Observer.vue'
 import LoaderBlock from '@/components/layout/LoaderBlock.vue'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { ICON } from '@/store/Theme'
 
 const props = defineProps<{
 	query: any
 	component: any
+	itemName?: string
 	componentProps?: object
 	card?: any
 }>()
@@ -33,6 +34,18 @@ const icon = computed(() => {
 	if (txs.value && !txs.value.length && completedQuery.value) return ICON.noResult
 	if (!completedQuery.value) return 'loader'
 })
+const itemName = computed(() => props.itemName ?? 'tx')
+const size = ref(undefined as undefined | number)
+const setSize = (e: ResizeObserverEntry) => {
+	// resize observer loop limit exceeded?
+	const el = e.target.parentElement
+	if (!el) { return size.value = undefined }
+	const style = getComputedStyle(e.target)
+	const height = el.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom)
+	size.value = height > 0 ? height : undefined
+}
+const sizeCSS = computed(() => size.value ? `${size.value - 1}px` : undefined)
+const sizeObserversCSS = computed(() => size.value ? `${0.4 * size.value}px` : `calc(200px + 40vh)`)
 </script>
 
 
@@ -46,8 +59,10 @@ const icon = computed(() => {
 .top {
 	position: absolute;
 	top: 0;
+	left: 0;
+	right: 0;
 	width: 100%;
-	height: calc(200px + 40vh);
+	height: v-bind(sizeObserversCSS);
 	z-index: 1;
 	pointer-events: none;
 	touch-action: none;
@@ -56,8 +71,10 @@ const icon = computed(() => {
 .bottom {
 	position: absolute;
 	bottom: 0;
+	left: 0;
+	right: 0;
 	width: 100%;
-	height: calc(200px + 40vh);
+	height: v-bind(sizeObserversCSS);
 	z-index: 1;
 	pointer-events: none;
 	touch-action: none;

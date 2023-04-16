@@ -22,7 +22,7 @@ type AsyncDataOptions<T> = QueryManagerOptions<T> & {
 	completed?: (state: T | undefined) => any
 	timestamp?: Ref<number | undefined>
 	existingState?: Ref<T | undefined>
-	processResult?: (state: T, options: AsyncDataOptions<T>) => T | Null
+	processResult?: (state: T, options: AsyncDataOptions<T>, oldState: T | undefined) => T | Null
 }
 
 type QueryManagerOptions<T> = {
@@ -61,7 +61,7 @@ export function getAsyncData <T> (options: AsyncDataOptions<T>) {
 	const timestamp = makeShallowRef(options.timestamp)
 	const seconds = makeShallowRef(options.seconds)
 	let cooldown = 0
-	const { query, queryStatus } = getQueryManager({ ...options, log: false })
+	const { query, queryStatus } = getQueryManager({ ...options, log: false }, state)
 	const localClock = ref(0)
 	const getState = async (force?: boolean) => {
 		if (options.completed?.(state.value)) { return state.value! }
@@ -98,7 +98,7 @@ export function getAsyncData <T> (options: AsyncDataOptions<T>) {
 	return { state: computedState, stateRef: state, getState, queryStatus, stop: () => scope.stop() }
 }
 
-export function getQueryManager <T> (options: QueryManagerOptions<T>) {
+export function getQueryManager <T> (options: QueryManagerOptions<T>, stateRef?: Ref<T>) {
 	const parentOptions = options as AsyncDataOptions<T>
 	const queryStatus: QueryStatusInterface<T> = reactive({ running: false })
 	const query = () => {
@@ -109,7 +109,7 @@ export function getQueryManager <T> (options: QueryManagerOptions<T>) {
 			if (options.awaitEffect) { await awaitEffect(() => options.awaitEffect?.()) }
 			const queryRes = options.query()
 			const process = (res: T) => {
-				const result = parentOptions.processResult ? parentOptions.processResult(res, options) as T : res
+				const result = parentOptions.processResult ? parentOptions.processResult(res, options, stateRef?.value) as T : res
 				return result
 			}
 			const query = queryRes.then(process)
@@ -168,7 +168,7 @@ function isPromise <T> (param: T | Promise<T>): param is Promise<T> {
 
 export function useDataWrapper <SourceType, RuntimeType> (
 	source: Ref<SourceType[]>,
-	identify: (item: SourceType) => string,
+	identify: (item: SourceType) => string, // todo make optional 
 	constructor: (source: SourceType) => RuntimeType | Promise<RuntimeType>,
 	destructor?: (runtime: RuntimeType) => any,
 ) {

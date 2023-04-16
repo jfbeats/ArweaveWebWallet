@@ -2,7 +2,7 @@
 	<div class="block-carousel">
 		<Carousel :index="index" @index="onIndex = $event" :options="{ align: 'center', overscroll: true, immediate: true }" @start="start" @end="end" class="block-carousel">
 			<div v-for="block in state" :key="block.node.id" class="block fade-list-item" :class="{ active: height && height == block.node.height }">
-				<BlockCard :block="block" class="box" />
+				<BlockCard :block="block" :active="height && height == block.node.height" class="box" />
 			</div>
 			<div v-if="canMine && state?.length" class="block fade-list-item box flex-column" style="align-items: center; justify-content: center">
 				<Icon :icon="ICON.cube" style="font-size: 4em; opacity: 0.8;" />
@@ -18,7 +18,7 @@
 import Carousel from '@/components/layout/Carousel.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import { ICON } from '@/store/Theme'
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, toRef } from 'vue'
 import ArweaveStore, { arweaveQueryBlocks, networkInfo } from '@/store/ArweaveStore'
 import BlockCard from '@/components/composed/BlockCard.vue'
 import Button from '@/components/atomic/Button.vue'
@@ -26,6 +26,7 @@ import Button from '@/components/atomic/Button.vue'
 const props = defineProps<{
 	height?: number | string
 	onHeight?: number | string
+	goTo?: number
 }>()
 const emit = defineEmits<{
 	(e: 'height', val: number | string): void
@@ -33,11 +34,17 @@ const emit = defineEmits<{
 
 const index = ref(undefined as undefined | number)
 const onIndex = ref(undefined as undefined | number)
-const query = arweaveQueryBlocks({})
+const query = arweaveQueryBlocks({}, toRef(props, 'goTo'))
 const state = computed(() => query.state.value && [...query.state.value].reverse())
+watch(() => query.status.index, i => {
+	if (i == undefined) { return index.value != undefined && (index.value = undefined) }
+	if (!state.value?.length) { return }
+	index.value = state.value.length - 1 - i
+}, { immediate: true, flush: 'post' })
 watch(onIndex, i => i != null && state.value?.[i] && emit('height', state.value?.[i].node.height))
 watch(state, (state, oldState) => {
-	if (!state) { return }
+	if (!state?.length) { return }
+	if (props.goTo != undefined) { return }
 	if (!oldState?.length && state.length) { index.value = state.length - 1 }
 	if (oldState && oldState.length !== state.length && onIndex.value === oldState.length - 1) { setTimeout(() => index.value = state.length - 1, 1000) }
 })
@@ -88,14 +95,33 @@ const end = (val: IntersectionObserverEntry) => query.refreshSwitch.value = val.
 	left: 0;
 	right: 0;
 	opacity: 0;
-	transition: 2s ease;
     outline: 0.5px solid var(--border);
-	overflow: visible;
+	transition: 1s ease;
+}
+
+.block > *::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 1;
+	pointer-events: none;
+	touch-action: none;
+	box-shadow: inset 0 12px 18px -10px var(--orange);
+	transition: 1s ease;
+	opacity: 0;
 }
 
 .block.active > *::before {
-	opacity: 0.6;
+	opacity: 0.8;
 }
+
+.block.active > *::after {
+	opacity: 0.4;
+}
+
+
 
 .box {
 	flex: 1 1 0;
