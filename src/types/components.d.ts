@@ -12,7 +12,7 @@ type Action = DisplayMetadata & { // Todo type action in defineProps
 	to?: import('vue-router').RouteLocationRaw
 }
 
-type RefMaybe <T> = import('vue').Ref<T> | T
+type RefMaybe <T> = import('vue').Ref<import('vue').UnwrapRef<T>> | import('vue').Ref<T> | T
 
 type TagField = {
 	name: string

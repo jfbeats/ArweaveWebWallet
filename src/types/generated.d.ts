@@ -14,6 +14,7 @@ type SVGIcon = {
 	'northEast': Icon
 	'notification': Icon
 	'noResult': Icon
+	'pendingReward': Icon
 	'person': Icon
 	'plug': Icon
 	'qr': Icon
