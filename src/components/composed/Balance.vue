@@ -13,12 +13,15 @@
 						<LocaleCurrency :ar="wallet.balance" />
 					</div>
 				</div>
-				<div v-if="mining" style="flex: 1 1 auto; opacity: 0.75;">
-					<div class="flex-row big">
-						<Ar :winston="mining" />
-					</div>
-					<div>
-						<LocaleCurrency :winston="mining" />
+				<div v-if="mining" class="flex-row" style="flex: 1 1 auto; opacity: 0.75; align-items: center;">
+					<Icon :icon="ICON.pendingReward" style="font-size: 1.5em;"/>
+					<div style="flex: 1 1 auto">
+						<div class="flex-row big">
+							<Ar :winston="mining" />
+						</div>
+						<div>
+							<LocaleCurrency :winston="mining" />
+						</div>
 					</div>
 				</div>
 			</div>
@@ -38,6 +41,7 @@ import Icon from '@/components/atomic/Icon.vue'
 import ArweaveStore, { networkInfo } from '@/store/ArweaveStore'
 import { computed } from 'vue'
 import { miningData } from '@/functions/Mining'
+import { ICON } from '@/store/Theme'
 
 const props = defineProps<{ wallet: Wallet }>()
 
