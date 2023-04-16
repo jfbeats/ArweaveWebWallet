@@ -36,7 +36,6 @@ export function fee (options: {
 	const addresses = computed(() => hotWallets.value.map(w => w.key).filter((w): w is NonNullable<typeof w> => !!w))
 	const queryParams: Parameters<typeof arweaveQuery>[0] = ref({ owners: addresses.value, recipients, tags: tagEntries.map(t => ({ name: t[0], values: [t[1]] })) })
 	const query = arweaveQuery(queryParams)
-	// query.refreshSwitch.value = true
 	watch(addresses, (value, oldValue) => {
 		if (!value.length || JSON.stringify(value) === JSON.stringify(oldValue)) { return }
 		queryParams.value!.owners = value
