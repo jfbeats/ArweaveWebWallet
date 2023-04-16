@@ -10,6 +10,7 @@
 		"dev": "vite",
 		"build": "vite build",
 		"buildFile": "vite build --mode file",
+		"buildEdge": "vite build --mode edge",
 		"serve": "vite build && vite preview",
 		"deploy": "npm run build && arkb deploy dist --wallet ../arweaveWallet.json --use-bundler http://bundler.arweave.net:10000",
 		"deploy-confirm": "npm run build && arkb deploy dist --wallet ../arweaveWallet.json --auto-confirm --use-bundler http://bundler.arweave.net:10000"

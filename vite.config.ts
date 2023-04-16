@@ -8,12 +8,27 @@ import inject from '@rollup/plugin-inject'
 import svgLoader from 'vite-svg-loader'
 import pwaOptions from './pwaOptions.js'
 import { buildTypes } from './build.js'
+import { buildMeta } from './edge/meta.js'
+import { resolve } from 'path'
 
 declare global { interface Window { BASE_URL: string } }
 
 export default async (config: any) => {
 	const { command, mode } = config
 	const env = { ...process.env, ...loadEnv(mode, process.cwd()) }
+
+	if (mode === 'edge') { return defineConfig({
+		build: {
+			lib: {
+				name: 'edge',
+				entry: resolve(__dirname, 'edge/netlify.ts'),
+				formats: ['es'],
+				fileName: 'netlify/edge-functions/edge.js'
+			},
+			copyPublicDir: false,
+			rollupOptions: {},
+		},
+	})}
 	
 	const singleFile = (() => {
 		if (mode !== 'file') { return }
@@ -25,7 +40,7 @@ export default async (config: any) => {
 		base: env.BASE_URL ?? '/',
 		plugins: [
 			vue(),
-			createHtmlPlugin({ inject: { data: { ...env } }, minify: true }),
+			createHtmlPlugin({ inject: { data: { VITE_META: buildMeta(env) } }, minify: true }),
 			svgLoader({ svgoConfig: { multipass: true } }),
 			VitePWA(pwaOptions(env)),
 			singleFile,
