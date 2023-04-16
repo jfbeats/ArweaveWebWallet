@@ -16,6 +16,7 @@
 		"strict": true,
 		"allowJs": true,
 		"jsx": "preserve",
-		"allowSyntheticDefaultImports": true
+		"allowSyntheticDefaultImports": true,
+		"allowImportingTsExtensions": true,
 	}
 }

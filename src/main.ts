@@ -21,7 +21,7 @@ app.use(Slicksort)
 
 if (isLocalhost || ['dev.arweave.app', 'jfbeats.github.io'].includes(location.host)) {
 	notify.warn('Development mode')
-	const error = (e: string) => !['', 'AxiosError: Network Error', 'TypeError: Network request failed'].includes(e) && notify.error(e)
+	const error = (e: string) => !['', 'AxiosError: Network Error', 'TypeError: Network request failed', 'ResizeObserver loop limit exceeded'].includes(e) && notify.error(e)
 	console = new Proxy(console, { get: (target: any, p: string | symbol, receiver: any) => p === 'error' ? (...args: any[]) => { error('' + args[0]); target[p](...args) } : target[p] })
 	window.onerror = (event) => { error('' + event) }
 	window.onunhandledrejection = (event) => { error('' + event.reason) }
