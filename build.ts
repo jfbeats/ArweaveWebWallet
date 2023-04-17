@@ -1,7 +1,7 @@
-import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
-import { debounce, fileNameToKey } from './src/functions/Utils.js'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { debounce, fileNameToKey } from './src/functions/Utils.ts'
 import type { PluginOption } from 'vite'
 
 

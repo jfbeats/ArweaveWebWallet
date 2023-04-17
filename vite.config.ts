@@ -1,15 +1,14 @@
 import { defineConfig, loadEnv } from 'vite'
-import path from 'path'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 import { createHtmlPlugin } from 'vite-plugin-html'
 import { viteSingleFile } from "vite-plugin-singlefile"
 import inject from '@rollup/plugin-inject'
 import svgLoader from 'vite-svg-loader'
-import pwaOptions from './pwaOptions.js'
-import { buildTypes } from './build.js'
-import { buildMeta } from './edge/meta.js'
-import { resolve } from 'path'
+import pwaOptions from './pwaOptions.ts'
+import { buildTypes } from './build.ts'
+import { buildMeta } from './edge/meta.ts'
+import { resolve } from 'node:path'
 
 declare global { interface Window { BASE_URL: string } }
 
@@ -46,7 +45,7 @@ export default async (config: any) => {
 			singleFile,
 			buildTypes,
 		],
-		resolve: { alias: { '@': path.resolve(__dirname, 'src') } },
+		resolve: { alias: { '@': resolve(__dirname, 'src') } },
 		build: { target: 'esnext', sourcemap: true, rollupOptions: { plugins: [
 			inject({ include: ['node_modules/@ledgerhq/**'], modules: { Buffer: ['buffer', 'Buffer'], } }),
 		] } },
