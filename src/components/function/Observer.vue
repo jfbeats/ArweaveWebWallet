@@ -8,18 +8,19 @@
 
 <script setup lang="ts">
 import { useDataWrapper } from '@/functions/AsyncData'
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import InterfaceStore from '@/store/InterfaceStore'
+import { WatchStopHandle, computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 const props = defineProps<{
 	threshold?: number
 	once?: boolean
-	onIntersection?: (entry: IntersectionObserverEntry) => any
+	onIntersection?: (entry: Partial<IntersectionObserverEntry>) => any
 	onIntersecting?: (entry: IntersectionObserverEntry) => any
 	onResize?: (entry: ResizeObserverEntry) => any
 	onMutation?: (entry: MutationRecord) => any
 }>()
 const emit = defineEmits<{
-	(e: 'intersection', value: IntersectionObserverEntry): void
+	(e: 'intersection', value: Partial<IntersectionObserverEntry>): void
 	(e: 'intersecting', value: IntersectionObserverEntry): void
 	(e: 'resize', value: ResizeObserverEntry): void
 	(e: 'mutation', value: MutationRecord): void
@@ -28,12 +29,24 @@ const observed = ref(null)
 defineExpose({ el: observed })
 
 const intersection = (filter?: boolean) => {
+	const intersectionObserverState = ref(undefined as undefined | Partial<IntersectionObserverEntry>)
+	let watchStop = undefined as undefined | WatchStopHandle
+	if (!filter){ watchStop = watch(() => InterfaceStore.windowVisible, visible => {
+		if (!intersectionObserverState.value) { return }
+		const wasIntersecting = intersectionObserverState.value.isIntersecting
+		if (visible === wasIntersecting) { return }
+		intersectionObserverState.value = { isIntersecting: visible }
+		emit('intersection', intersectionObserverState.value)
+	}) }
 	const intersectionObserver = new IntersectionObserver((entries) => {
 		const intersections = filter ? entries.filter(e => e.isIntersecting) : entries
-		intersections.forEach(e => filter ? emit('intersecting', e) : emit('intersection', e))
-		if (props.once) { unobserve() }
+		intersections.forEach(e => {
+			intersectionObserverState.value = e
+			filter ? emit('intersecting', e) : emit('intersection', e)
+		})
+		if (props.once && entries.filter(e => e.isIntersecting).length) { unobserve() }
 	}, { threshold: [props.threshold || 0] })
-	const unobserve = () => observed.value && intersectionObserver.unobserve(observed.value)
+	const unobserve = () => watchStop?.() || observed.value && intersectionObserver.unobserve(observed.value)
 	onMounted(() => intersectionObserver.observe(observed.value!))
 	onBeforeUnmount(unobserve)
 	return unobserve
