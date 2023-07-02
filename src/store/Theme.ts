@@ -23,7 +23,7 @@ const getDefault = () => ({
 }) as const
 export const colors = ref(getDefault())
 watch(colors, colors => Object.entries(colors).forEach(
-	([color, value]) => document.documentElement.style.setProperty('--' + color, value)
+	([color, value]) => document?.documentElement.style.setProperty('--' + color, value)
 ), { immediate: true })
 
 export const ICON: SVGIcon = fileStructureFromGlobImport('/src/assets/icons/', import.meta.glob('/src/assets/icons/**', { import: 'default', eager: true }))

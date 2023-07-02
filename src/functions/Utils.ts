@@ -1,5 +1,6 @@
 // @ts-ignore
 import { v4, validate, version } from 'uuid'
+import { markRaw } from 'vue'
 // Used by build.ts, no imports
 
 export function uuidV4 () { return v4() as string }
@@ -58,7 +59,8 @@ export function round (number?: number | string, fractionDigits = 3) {
 	return FractionDigits.length >= SignificantDigits.length ? FractionDigits : SignificantDigits
 }
 
-export function compact <T> (arr: (T | undefined | null | void)[]): T[] { return arr.filter(e => e != null) as T[] }
+export function compact <T> (arr: (T | Null)[]): T[] { return arr.filter(e => e != null) as T[] }
+export function compactTrue <T> (arr: (T | Null | false | 0 | '' | typeof NaN)[]): T[] { return arr.filter(e => !!e) as T[] }
 
 export function fileNameToKey (name: string) {
 	const split = (name: string, s: string): string => {
@@ -79,7 +81,10 @@ export function fileStructureFromGlobImport (root: string, globObj: Record<strin
 			let currentObj = fileStructure
 			for (let i = 0; i < pathParts.length; i++) {
 				const pathPart = pathParts[i]
-				if (i === pathParts.length - 1) { currentObj[pathPart] = globObj[key] } else {
+				if (i === pathParts.length - 1) {
+					if (globObj[key]?.render) { currentObj[pathPart] = markRaw(globObj[key]) }
+					else { currentObj[pathPart] = globObj[key] }
+				} else {
 					if (!currentObj[pathPart]) { currentObj[pathPart] = {} }
 					currentObj = currentObj[pathPart]
 				}
