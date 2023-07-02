@@ -4,3 +4,6 @@ dist
 dist-ssr
 *.local
 .idea
+netlify
+# Local Netlify folder
+.netlify
