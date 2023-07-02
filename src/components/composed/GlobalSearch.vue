@@ -58,7 +58,7 @@ const search = useDebouncedRef(typeof route.query.q === 'string' ? route.query.q
 const subSearch = useDebouncedRef('', 1000)
 const hidden = ref(false)
 const isId = computed(() => ArweaveAccount.metadata.isAddress(search.value))
-const isBlockId = computed(() => search.value.match(/^[a-z0-9_-]{64}$/i))
+const isBlockId = computed(() => ArweaveAccount.metadata.isBlock(search.value))
 const isHeight = computed(() => {
 	if (!networkInfo.value) { return }
 	const potentialHeight = (Number.isInteger(parseFloat(search.value)) || undefined) && parseInt(search.value)
