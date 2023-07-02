@@ -1,9 +1,7 @@
 import ArweaveStore, { graphql } from '@/store/ArweaveStore'
 import type { Transaction as GQLTransaction } from 'arweave-graphql'
 
-import InterfaceStore from '@/store/InterfaceStore'
 import { reactive, watch } from 'vue'
-import axios from 'axios'
 import { awaitEffect, getAsyncData } from '@/functions/AsyncData'
 
 
@@ -25,7 +23,7 @@ export default BlockStore
 
 const pendingListData = getAsyncData({
 	name: 'mempool list',
-	query: async () => (await axios.get(ArweaveStore.gatewayURL + 'tx/pending')).data,
+	query: async () => (await fetch(ArweaveStore.gatewayURL + 'tx/pending')).json(),
 	seconds: 30,
 })
 export const pendingList = pendingListData.state

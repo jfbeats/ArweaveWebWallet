@@ -2,7 +2,7 @@ import Secrets from 'secrets.js-jf'
 import { getWordList } from '@/functions/Wallets'
 import { notify } from '@/store/NotificationStore'
 import { compact, isUuidV4 } from '@/functions/Utils'
-import { base64ToHex, fromHex, hexToBase64, toHex } from '@/functions/Encode'
+import { base64ToHex, hexToBase64 } from '@/functions/Encode'
 
 
 
@@ -57,7 +57,7 @@ export async function findAndMergeFragments (files: any[]) {
 }
 
 export async function fragment (value: string, threshold: number, numShares: number, padLength: number): Promise<string[]> {
-	const secret = toHex(value)
+	const secret = Secrets.str2hex(value, 1)
 	return Secrets.share(secret, numShares, threshold, padLength)
 		.map(fragment => getFragment(fragment, `${threshold}/${numShares}`).value)
 }
@@ -76,7 +76,7 @@ async function merge (value: string[]): Promise<string> {
 		fragments.forEach(fragment => (sets[fragment.uuid ?? 0] ??= []).push(fragment))
 		const results = compact(Object.values(sets).map(fragments => {
 			if (!verifyThreshold(fragments)) { notify.warn('Fragments threshold not met'); return }
-			return fromHex(Secrets.combine(fragments.map(s => s.original)))
+			return Secrets.hex2str(Secrets.combine(fragments.map(s => s.original)), 1)
 		}))
 		if (results.length > 1) { return step(results.map(result => getFragment(result)), fragments) }
 		return results[0]

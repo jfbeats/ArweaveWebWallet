@@ -8,16 +8,15 @@ import { getDecryptionKey, getEncryptionKey, getSigningKey, getVerificationKey, 
 import { manageUpload } from '@/functions/Transactions'
 import Transaction from 'arweave/web/lib/transaction'
 import { computed } from 'vue'
-import axios from 'axios'
 import { LOGO } from '@/store/Theme'
+// @ts-ignore
+import { getKeyPairFromMnemonic } from 'human-crypto-keys'
+import { requestExport } from '@/functions/Export'
+import { encode, recode } from '@/functions/Encode'
 import type { ArweaveProviderInterface } from 'arweave-wallet-connector/lib/Arweave'
 import type { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
 import type { TransactionInterface } from 'arweave/web/lib/transaction'
 import type { JWKInterface } from 'arweave/web/lib/wallet'
-// @ts-ignore
-import { getKeyPairFromMnemonic } from 'human-crypto-keys'
-import { requestExport } from '@/functions/Export'
-import { encode } from '@/functions/Encode'
 
 
 
@@ -28,7 +27,8 @@ const displayMetadata: DisplayMetadata = {
 
 const accountMetadata: AccountMetadata = {
 	...displayMetadata,
-	isAddress: (address, partial) => !partial ? !!address?.match(/^[a-z0-9_-]{43}$/i) : !!address?.match(/^[a-z0-9_-]{0,43}$/i)
+	isAddress: (address, partial) => !partial ? !!address?.match(/^[a-z0-9_-]{43}$/i) : !!address?.match(/^[a-z0-9_-]{0,43}$/i),
+	isBlock: (address) => !!address?.match(/^[a-z0-9_-]{64}$/i),
 }
 
 const providerMetadata: ProviderMetadata = {
@@ -133,7 +133,7 @@ export class ArweaveProvider extends mix(ArweaveAccount).with(WalletProxy) imple
 		const { data, tags, target } = item
 		const sk = await this.getPrivateKey()
 		const signer = new signers.ArweaveSigner(sk)
-		const anchor = arweave.utils.bufferTob64(crypto.getRandomValues(new Uint8Array(32))).slice(0, 32)
+		const anchor = recode(crypto.getRandomValues(new Uint8Array(32)), 'buffer', 'b64').slice(0, 32)
 		const dataItem = createData(data, signer, { tags, target, anchor })
 		await dataItem.sign(signer)
 		return dataItem
@@ -228,9 +228,10 @@ export class ArweaveMessageRunner implements MessageRunner<ArweaveProviderInterf
 				}))
 				const target = txObject.target
 				const bundleTx = await this.wallet.createDataItem({ data, tags, target })
-				const res = await axios.post(ArweaveStore.bundlerURL + 'tx', bundleTx.getRaw(), {
+				const res = await fetch(ArweaveStore.bundlerURL + 'tx', {
+					method: 'POST',
 					headers: { 'Content-Type': 'application/octet-stream' },
-					maxBodyLength: Infinity,
+					body: bundleTx.getRaw(),
 				})
 				if (res.status >= 200 && res.status < 300) { dispatchResult = { id: bundleTx.id, type: 'BUNDLED' } }
 			} catch (e) { console.error(e) }

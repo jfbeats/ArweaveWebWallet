@@ -1,7 +1,6 @@
 import { Wallets } from '@/functions/Wallets'
 import { useChannel } from '@/functions/Channels'
-import { base32Decode } from '@/functions/Encoding'
-import { arweave } from '@/store/ArweaveStore'
+import { recode } from '@/functions/Encode'
 
 
 
@@ -62,7 +61,7 @@ function init () {
 	let currentRef = document.referrer
 	let cache: string
 	
-	const trackingDisabled = () => localStorage && localStorage.getItem('umami.disabled') || dnt && doNotTrack()
+	const trackingDisabled = () => !history || localStorage && localStorage.getItem('umami.disabled') || dnt && doNotTrack()
 	const collect = async (type: string, payload: object) => {
 		if (trackingDisabled()) { return }
 		return fetch(`${root}/c`, {
@@ -97,10 +96,10 @@ function init () {
 		update()
 	}
 	
-	let walletsLength: number
-	setTimeout(() => walletsLength = Wallets.value.length)
+	let walletsLength = undefined as undefined | number
+	if (!trackingDisabled) { setTimeout(() => walletsLength = Wallets.value.length) }
 	const account = (event_name: AccountEvent, options?: {}) => {
-		if (!walletsLength && !eventRecords.value.firstAccount) {
+		if (walletsLength === 0 && !eventRecords.value.firstAccount) {
 			eventRecords.value.firstAccount = true
 			options ??= {}
 			;(options as any).first = true
@@ -122,5 +121,5 @@ function extractId (url: string) {
 		return regex.test(s)
 	})
 	if (!id) { throw '' }
-	return arweave.utils.bufferTob64Url(base32Decode(id.toUpperCase()))
+	return recode(id.toUpperCase(), 'b32', 'b64url')
 }

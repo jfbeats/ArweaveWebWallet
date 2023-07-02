@@ -40,12 +40,11 @@
 import TxCard from '@/components/composed/TxCard.vue'
 import TxCardExtension from '@/components/composed/TxCardExtension.vue'
 import ActionList from '@/components/composed/ActionsList.vue'
-import { arweave } from '@/store/ArweaveStore'
 import { getMessage } from '@/functions/JsonRpc'
 import { computed, ref, watch } from 'vue'
-import type { ArweaveVerifier } from 'arweave-wallet-connector/lib/Arweave.js'
-
 import { ICON } from '@/store/Theme'
+import { recode } from '@/functions/Encode'
+import type { ArweaveVerifier } from 'arweave-wallet-connector/lib/Arweave.js'
 
 const props = defineProps<{ messageEntry: MessageEntry }>()
 
@@ -56,7 +55,7 @@ const tx = computed(() => {
 	const receivedTx = message.value?.params?.[0] as Parameters<ArweaveVerifier['signTransaction'] | ArweaveVerifier['signDataItem']>[0] | undefined
 	if (!receivedTx) { return }
 	if (message.value?.method === 'signDataItem') { return receivedTx }
-	const tags = receivedTx.tags?.map(({name, value}) => ({ name: arweave.utils.b64UrlToString(name), value: arweave.utils.b64UrlToString(value) }))
+	const tags = receivedTx.tags?.map(({name, value}) => ({ name: recode(name, 'b64url', 'string'), value: recode(value, 'b64url', 'string') }))
 	return { ...receivedTx, tags }
 })
 

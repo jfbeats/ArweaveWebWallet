@@ -16,6 +16,7 @@ import { computed, markRaw, reactive, ref, watch } from 'vue'
 import { computedAsync } from '@/functions/AsyncData'
 import LedgerSettings from '@/providers/LedgerSettings.vue'
 import { useChannel } from '@/functions/Channels'
+import { recode } from '@/functions/Encode'
 
 
 
@@ -93,8 +94,8 @@ async function sign (tx: Transaction) {
 		const id = await arweave.crypto.hash(response.signature)
 		const sigjs = {
 			owner: addr.owner,
-			signature: await arweave.utils.bufferTob64Url(response.signature),
-			id: await arweave.utils.bufferTob64Url(id)
+			signature: recode(response.signature, 'buffer', 'b64url'),
+			id: recode(id , 'buffer', 'b64url')
 		}
 		await tx.setSignature(sigjs)
 		console.info("Transaction signed", tx)
@@ -107,8 +108,8 @@ async function sign (tx: Transaction) {
 const providerMetadata: ProviderMetadata = reactive({
 	...ArweaveAccount.metadata,
 	id: 'ledger',
-	name: 'Ledger (awaiting release)',
-	icon: markRaw(LOGO.ledger),
+	name: 'Ledger',
+	icon: LOGO.ledger,
 	disabled: true,
 	addImportData: async (walletData) => {
 		walletData ??= {}
@@ -118,13 +119,13 @@ const providerMetadata: ProviderMetadata = reactive({
 		return walletData
 	},
 	actions: [
-		{ name: 'Verify address', icon: markRaw(ICON.verify), run: async () => getAddress(true) },
-		{ name: 'Purchase | affiliate link', icon: markRaw(ICON.launch), to: 'https://shop.ledger.com?r=1a60a479b0af', run: () => track.event('Affiliate', { value: 'Ledger', link: 'https://shop.ledger.com?r=1a60a479b0af' }) },
+		{ name: 'Verify address', icon: ICON.verify, run: async () => getAddress(true) },
+		{ name: 'Purchase | affiliate link', icon: ICON.launch, to: 'https://shop.ledger.com?r=1a60a479b0af', run: () => track.event('Affiliate', { value: 'Ledger', link: 'https://shop.ledger.com?r=1a60a479b0af' }) },
 	],
 	componentSettings: markRaw(LedgerSettings)
 })
 
-watch(availableTransports, t => providerMetadata.disabled = !t.length, { immediate: true })
+setTimeout(() => watch(availableTransports, t => providerMetadata.disabled = !t.length, { immediate: true }))
 
 
 

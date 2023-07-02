@@ -1,6 +1,5 @@
 import { useChannel } from '@/functions/Channels'
 import { getAsyncData } from '@/functions/AsyncData'
-import axios from 'axios'
 import { computed, reactive, Ref, toRef, watch } from 'vue'
 import { AppSettings } from '@/store/SettingsStore'
 
@@ -18,11 +17,11 @@ function getConversion () {
 			const provider = settings.provider
 			if (provider === 'redstone') {
 				if (currency === 'USD') {
-					const result = await axios.get('https://api.redstone.finance/prices/?symbols=AR&provider=redstone')
-					return result.data['AR'].value
+					const result = await fetch('https://api.redstone.finance/prices/?symbols=AR&provider=redstone').then(r => r.json())
+					return result['AR'].value
 				} else {
-					const result = await axios.get('https://api.redstone.finance/prices/?symbols=AR,' + currency + '&provider=redstone')
-					return result.data['AR'].value / result.data[currency!].value
+					const result = await fetch('https://api.redstone.finance/prices/?symbols=AR,' + currency + '&provider=redstone').then(r => r.json())
+					return result['AR'].value / result[currency!].value
 				}
 			}
 		},
@@ -40,7 +39,7 @@ export const { state: redstoneOptions } = getAsyncData({
 	query: async () => {
 		type currencyOptions = { value: { currency: string, provider: string }, text: string }[]
 		const options = [] as currencyOptions
-		const res = (await axios.get('https://api.redstone.finance/configs/tokens')).data
+		const res = await fetch('https://api.redstone.finance/configs/tokens').then(r => r.json())
 		const message = ' Redstone Finance'
 		options.push({ value: { currency: 'USD', provider: 'redstone' }, text: 'USD' + message })
 		for (const key in res) {
