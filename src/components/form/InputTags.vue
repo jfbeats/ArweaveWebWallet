@@ -5,9 +5,9 @@
 
 
 <script setup lang="ts">
-import InputGrid, { TagSchema } from '@/components/form/InputGrid.vue'
+import InputGrid from '@/components/form/InputGrid.vue'
 import { useDataWrapper } from '@/functions/AsyncData'
-import { computed, effectScope, markRaw, reactive, toRef, watch } from 'vue'
+import { computed, effectScope, reactive, watch } from 'vue'
 import { ICON } from '@/store/Theme'
 
 const props = defineProps<{
@@ -40,7 +40,7 @@ const schema = useDataWrapper(model,
 
 function tagSchema (name = '', value = ''): TagSchema { return reactive({
 	items: [
-		{ name: 'Tag', value: name, icon: markRaw(ICON.label), attrs: { disabled: props.disabled } },
+		{ name: 'Tag', value: name, icon: ICON.label, attrs: { disabled: props.disabled } },
 		{ name: 'Value', value, attrs: { disabled: props.disabled }  }
 	], deletable: !props.disabled, key: Math.random()
 })}

@@ -36,7 +36,7 @@ import { emitter, testPassword, PasswordRequest, hasPassword, passwordValidation
 import { focusWindow } from '@/functions/Connect'
 import { compact } from '@/functions/Utils'
 import { notify } from '@/store/NotificationStore'
-import { computed, markRaw, Ref, ref, shallowRef, watch } from 'vue'
+import { computed, Ref, ref, shallowRef, watch } from 'vue'
 import { ICON } from '@/store/Theme'
 
 const passwordRequest = shallowRef(undefined as undefined | PasswordRequest)
@@ -96,7 +96,7 @@ const fill = computed(() => {
 	const { width, height } = size.value.contentRect
 	return height < 700 && width < 500
 })
-const newPasswordMessage = ref(!hasPassword.value && { icon: markRaw(ICON.shieldWarning), message: 'Always make sure that you have a working backup of your private keys. You will not be able to recover the ones that are encrypted if you forget your password', action: { run: () => newPasswordMessage.value = undefined } } || undefined)
+const newPasswordMessage = ref(!hasPassword.value && { icon: ICON.shieldWarning, message: 'Always make sure that you have a working backup of your private keys. You will not be able to recover the ones that are encrypted if you forget your password', action: { run: () => newPasswordMessage.value = undefined } } || undefined)
 </script>
 
 
