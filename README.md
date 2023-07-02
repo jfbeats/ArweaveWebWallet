@@ -10,7 +10,7 @@ https://arweave.app
 
 - Local-first, self-custodial wallet
 - Create / Import / Export wallets by passphrase or key file
-- Ledger support (awaiting release on Ledger app store)
+- Ledger support
 - Send and receive AR tokens
 - Upload permanent data (text, files, folders, deploy static websites)
 - View transactions and data
