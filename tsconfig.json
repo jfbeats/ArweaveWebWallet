@@ -18,5 +18,13 @@
 		"jsx": "preserve",
 		"allowSyntheticDefaultImports": true,
 		"allowImportingTsExtensions": true,
-	}
+		"skipLibCheck": false,
+	},
+	"include": [
+		"src",
+		"edge",
+		"build.ts",
+		"vite.config.ts",
+		"pwaOptions.ts",
+	]
 }
