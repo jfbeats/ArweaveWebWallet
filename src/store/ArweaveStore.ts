@@ -4,16 +4,17 @@ import arweaveGraphql, { SortOrder } from 'arweave-graphql'
 import { compact, generateUrl } from '@/functions/Utils'
 import { useChannel } from '@/functions/Channels'
 import { awaitEffect, getAsyncData, getQueryManager, getReactiveAsyncData, useDataWrapper } from '@/functions/AsyncData'
-import { computed, isRef, reactive, ref, Ref, watch } from 'vue'
+import { computed, reactive, ref, Ref, watch } from 'vue'
 import { notify } from '@/store/NotificationStore'
 import { track } from '@/store/Telemetry'
-import InterfaceStore from '@/store/InterfaceStore'
 import { makeRef, useList } from '@/functions/UtilsVue'
 
 
 
-export const gatewayDefault = 'https://arweave.net/'
-export const bundlerDefault = 'https://node2.bundlr.network/'
+export const gatewayDefault = import.meta.env.VITE_GATEWAY
+export const gatewayDefaults = import.meta.env.VITE_GATEWAYS
+export const bundlerDefault = import.meta.env.VITE_BUNDLER
+export const bundlerDefaults = import.meta.env.VITE_BUNDLERS
 
 if (localStorage.getItem('gateway') === JSON.stringify(gatewayDefault)) { localStorage.removeItem('gateway') } // todo remove, temp conversion
 if (localStorage.getItem('bundler') === JSON.stringify(bundlerDefault)) { localStorage.removeItem('bundler') } // todo remove, temp conversion
@@ -25,8 +26,8 @@ const ArweaveStore = reactive({
 })
 
 export default ArweaveStore
-export var arweave: Arweave
-export var graphql: ReturnType<typeof arweaveGraphql>
+export let arweave: Arweave
+export let graphql: ReturnType<typeof arweaveGraphql>
 
 
 
@@ -453,7 +454,7 @@ async function loadGatewaySettings () {
 	updateBundler(ArweaveStore.bundlerURL || bundlerDefault, true)
 	const { state, stop } = useChannel('localGatewayTest')
 	if (state.value && Date.now() - state.value > 2600000000) { state.value = undefined }
-	if (!ArweaveStore.gatewayURL && !state.value && InterfaceStore.online) {
+	if (!ArweaveStore.gatewayURL && !state.value && navigator.onLine) {
 		const isLocal = await updateArweave(location.origin).catch(() => {})
 		const isReachable = isLocal || await testGateway(gatewayDefault).catch(async e => {
 			const isp = await fetch('http://ip-api.com/json').then(res => res.json().then(res => res?.isp as string)).catch(() => {})

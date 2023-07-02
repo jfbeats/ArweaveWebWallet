@@ -1,12 +1,11 @@
 import { reactive, computed, effectScope, Ref, ref, watch, watchEffect, WatchStopHandle, WritableComputedRef, shallowReactive } from 'vue'
-import InterfaceStore from '@/store/InterfaceStore'
 import { makeShallowRef } from '@/functions/UtilsVue'
 
 
 
 const globalClock = ref(0)
 setInterval(() => globalClock.value++, 1000)
-watch(() => InterfaceStore.windowVisible, () => globalClock.value++)
+document.addEventListener('visibilitychange', () => !document.hidden && globalClock.value++)
 
 
 
@@ -86,7 +85,7 @@ export function getAsyncData <T> (options: AsyncDataOptions<T>) {
 	const scope = effectScope()
 	scope.run(() => watch(globalClock, () => {
 		if (options.completed?.(state.value)) { return }
-		if (!InterfaceStore.windowVisible) { return }
+		if (document.hidden) { return }
 		if (queryStatus.running) { timestamp.value = Date.now(); return }
 		if (!seconds.value || !options.stale?.(state.value) && state.value != undefined && timestamp.value && Date.now() - timestamp.value < (seconds.value * 1000)) { return }
 		localClock.value++

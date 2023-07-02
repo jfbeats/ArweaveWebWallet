@@ -1,7 +1,6 @@
 import { getCurrentScope, onScopeDispose, watch, ref, effectScope, computed } from 'vue'
 import type { EffectScope, Ref, WatchStopHandle } from 'vue'
 import { useDataWrapper } from '@/functions/AsyncData'
-import InterfaceStore from '@/store/InterfaceStore'
 import type { AppSettingsInterface } from '@/store/SettingsStore'
 import type { MiningData } from '@/functions/Mining'
 
@@ -20,7 +19,6 @@ const { states } = getChannels('instanceState:')
 watch(states, () => {})
 const connectorChannels = getChannels('sharedState:')
 export { state, states, connectorChannels, appInfo }
-watch(() => state.value.updating, val => val === 'scheduled' && InterfaceStore.reload(true), { immediate: true })
 cleanHeartbeats()
 globalStorageListener()
 window.addEventListener('storage', globalStorageListener)

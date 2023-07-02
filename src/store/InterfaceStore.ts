@@ -58,6 +58,8 @@ async function reload (update?: boolean) {
 	else { location.reload() }
 }
 
+watch(() => state.value.updating, val => val === 'scheduled' && InterfaceStore.reload(true), { immediate: true })
+
 async function triggerUpdate () {
 	if (InterfaceStore.overlay) { return }
 	InterfaceStore.overlay = true
