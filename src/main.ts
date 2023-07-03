@@ -7,8 +7,8 @@ import '@/store/Cold'
 import '@/store/Telemetry'
 
 import { createApp } from 'vue'
-import App from './App.vue'
-import router from './router'
+import App from '@/App.vue'
+import router from '@/router'
 import { plugin as Slicksort } from 'vue-slicksort'
 import 'mosha-vue-toastify/dist/style.css'
 import { notify } from '@/store/NotificationStore'
@@ -27,4 +27,5 @@ if (isLocalhost || ['dev.arweave.app', 'jfbeats.github.io'].includes(location.ho
 	window.onunhandledrejection = (event) => { error('' + event.reason) }
 }
 
-app.mount('#app')
+const component = app.mount('#app')
+export default { app, component }
