@@ -83,8 +83,3 @@ async function merge (value: string[]): Promise<string> {
 	}
 	return step(fragments)
 }
-
-fragmentPassphrase('hello world hello world hello world hello world hello world hello world', 2, 3).then(res => {
-	console.log(res)
-	findAndMergeFragments(res).then(res => console.log(res))
-})
