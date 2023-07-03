@@ -27,10 +27,17 @@ export const navigator = { language: undefined }
 
 export const history = { replaceState: () => {}, pushState: () => {} }
 
-const globalWindow = { location, document, screen, navigator, history }
+const getStorage = () => ({
+	getItem (name: string) { this[name] },
+	setItem (name: string, value: string) { this[name] = value },
+	removeItem (name: string) { delete this[name] },
+} satisfies { [name: string]: any })
 
-if (window) {
-	Object.entries(globalWindow).map(([k, v]) => (window as any)[k] ??= v)
-}
+export const localStorage = getStorage()
+export const sessionStorage = getStorage()
+
+const globalWindow = { location, document, screen, navigator, history, localStorage, sessionStorage }
+
+if (window) { Object.entries(globalWindow).map(([k, v]) => (window as any)[k] ??= v) }
 
 export default globalWindow
