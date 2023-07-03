@@ -19,7 +19,7 @@ import ListContainer from '@/components/layout/ListContainer.vue'
 import TxCard from '@/components/composed/TxCard.vue'
 import List from '@/components/layout/List.vue'
 import { ref } from 'vue'
-import { arweaveQuery } from '@/store/ArweaveStore'
+import { arweaveQuery, queryAggregator } from '@/store/ArweaveStore'
 import BlockCardHeader from '@/components/composed/BlockCardHeader.vue'
 import Observer from '@/components/function/Observer.vue'
 
@@ -29,7 +29,9 @@ const props = defineProps<{
 }>()
 
 const visible = ref(false)
-const txsQuery = arweaveQuery({ block: { min: props.block.node.height, max: props.block.node.height } })
+const txsQuery = queryAggregator([arweaveQuery({ block: { min: props.block.node.height, max: props.block.node.height } })], {
+	// computed: state => state.filter(s => !s.node.bundledIn)
+})
 </script>
 
 

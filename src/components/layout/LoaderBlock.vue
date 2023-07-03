@@ -1,5 +1,5 @@
 <template>
-	<Observer ref="root" class="loader-container" @intersection="i => visible = i.isIntersecting">
+	<Observer ref="root" class="loader-block" @intersection="i => visible = i.isIntersecting">
 		<Icon v-if="visible" :icon="icon || 'loader'" />
 	</Observer>
 </template>
@@ -18,15 +18,12 @@ const props = defineProps<{
 const root = ref(undefined as undefined | HTMLElement)
 
 const visible = ref(false)
-
-const minHeightCSS = computed(() => props.minHeight ? `min(40vh, ${props.minHeight})` : `40vh`)
 </script>
 
 
 
 <style scoped>
-.loader-container {
-	min-height: v-bind(minHeightCSS);
+.loader-block {
 	display: flex;
 	align-items: center;
 	justify-content: center;

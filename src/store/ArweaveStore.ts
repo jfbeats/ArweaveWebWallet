@@ -267,7 +267,9 @@ export function arweaveQueryBlocks (options: RefMaybe<Parameters<typeof graphql[
 
 
 
-export function queryAggregator (queries: RefMaybe<ReturnType<typeof arweaveQuery>[]>) {
+export function queryAggregator (queries: RefMaybe<ReturnType<typeof arweaveQuery>[]>, options?: {
+	computed?: (state: TransactionEdge[]) => TransactionEdge[]
+}) {
 	const list = useList<TransactionEdge>({ // todo generalize
 		key: a => a.node.id,
 		sort: blockSort, // todo use txSort
@@ -337,14 +339,15 @@ export function queryAggregator (queries: RefMaybe<ReturnType<typeof arweaveQuer
 	}, handlers => handlers.map(e => e()))
 	watch(wrapper, () => {}) // always use lazy computed
 	const state = computed(() => {
-		if (!boundary.value ) { return list.state.value }
+		const processReturn = () => options?.computed ? options.computed(list.state.value) : list.state.value
+		if (!boundary.value ) { return processReturn() }
 		const pos = list.state.value?.indexOf(boundary.value as any) ?? 0
 		const slicePos = list.state.value[pos] === boundary.value ? pos + 1 : pos
 		if (slicePos < 0) { return [] }
-		if (list.state.value?.length <= slicePos + 1) { return list.state.value }
+		if (list.state.value?.length <= slicePos + 1) { return processReturn() }
 		console.warn('corrected', list.state.value?.slice(slicePos).map(e => e.node.id)) // todo figure that out
 		list.remove(list.state.value?.slice(slicePos))
-		return list.state.value
+		return processReturn()
 	})
 	const fetchQuery = getQueryManager({
 		name: 'aggregated fetch',

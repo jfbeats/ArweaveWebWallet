@@ -4,7 +4,7 @@
 		<transition-group name="fade-list-rise">
 			<component v-for="tx in txs" :[itemName]="tx.node" :key="tx.node.id" :is="component" v-bind="componentProps" class="fade-list-item" :class="[card && 'card']" />
 		</transition-group>
-		<LoaderBlock v-if="icon" :icon="icon" :minHeight="sizeCSS"  />
+		<LoaderBlock v-if="icon" :icon="icon" />
 		<Observer @intersecting="fetchQuery" class="bottom" v-show="!fetchLoading && !completedQuery" />
 	</Observer>
 </template>
@@ -37,15 +37,13 @@ const icon = computed(() => {
 const itemName = computed(() => props.itemName ?? 'tx')
 const size = ref(undefined as undefined | number)
 const setSize = (e: ResizeObserverEntry) => {
-	// resize observer loop limit exceeded?
 	const el = e.target.parentElement
 	if (!el) { return size.value = undefined }
 	const style = getComputedStyle(e.target)
 	const height = el.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom)
 	size.value = height > 0 ? height : undefined
 }
-const sizeCSS = computed(() => size.value ? `${size.value - 1}px` : undefined)
-const sizeObserversCSS = computed(() => size.value ? `${0.4 * size.value}px` : `calc(200px + 40vh)`)
+const sizeCSS = computed(() => size.value ? `${size.value * 0.8}px` : 'unset')
 </script>
 
 
@@ -62,7 +60,7 @@ const sizeObserversCSS = computed(() => size.value ? `${0.4 * size.value}px` : `
 	left: 0;
 	right: 0;
 	width: 100%;
-	height: v-bind(sizeObserversCSS);
+	height: 40px;
 	z-index: 1;
 	pointer-events: none;
 	touch-action: none;
@@ -74,10 +72,16 @@ const sizeObserversCSS = computed(() => size.value ? `${0.4 * size.value}px` : `
 	left: 0;
 	right: 0;
 	width: 100%;
-	height: v-bind(sizeObserversCSS);
+	height: 80vh;
+	max-height: v-bind(sizeCSS);
 	z-index: 1;
 	pointer-events: none;
 	touch-action: none;
+}
+
+.loader-block {
+	height: 80vh;
+	max-height: v-bind(sizeCSS);
 }
 
 .fade-list-item {

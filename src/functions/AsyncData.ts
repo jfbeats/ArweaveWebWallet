@@ -107,10 +107,7 @@ export function getQueryManager <T> (options: QueryManagerOptions<T>, stateRef?:
 		queryStatus.promise = new Promise<T>(async (resolve, reject) => {
 			if (options.awaitEffect) { await awaitEffect(() => options.awaitEffect?.()) }
 			const queryRes = options.query()
-			const process = (res: T) => {
-				const result = parentOptions.processResult ? parentOptions.processResult(res, options, stateRef?.value) as T : res
-				return result
-			}
+			const process = (res: T) => parentOptions.processResult ? parentOptions.processResult(res, options, stateRef?.value) as T : res
 			const query = queryRes.then(process)
 			query.then(resolve).catch(e => { queryStatus.error = e; reject(e) }).finally(() => queryStatus.running = false)
 			if (options.log !== false) { query.then(res => log(options, res)) }
