@@ -69,7 +69,13 @@ export default defineConfig(async (config) => {
 		base: env.BASE_URL ?? '/',
 		plugins: [
 			vue(),
-			createHtmlPlugin({ inject: { data: { VITE_META: buildMeta(env) } }, minify: true }),
+			createHtmlPlugin({ inject: { data: { VITE_META: buildMeta(env) } }, minify: {
+				ignoreCustomComments: [/<!-- \/?DATA -->/],
+				minifyCSS: true,
+				minifyJS: true,
+				collapseWhitespace: true,
+				preserveLineBreaks: true,
+			} }),
 			svgLoader({ svgoConfig: { multipass: true } }),
 			VitePWA(pwaOptions(env)),
 			singleFile,
