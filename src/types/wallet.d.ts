@@ -46,6 +46,7 @@ type MessageRunner<API extends ExternalAPI, Parent> = {
 
 type AccountMetadata = DisplayMetadata & {
 	isAddress: (address?: string, partial?: boolean) => boolean
+	isBlock: (address?: string) => boolean
 }
 
 type ProviderMetadata = AccountMetadata & {

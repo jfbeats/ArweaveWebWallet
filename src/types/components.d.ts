@@ -1,4 +1,4 @@
-type Icon = import('vue').FunctionalComponent<import('vue').SVGAttributes, {}> | string
+type Icon = import('vue').FunctionalComponent<import('vue').SVGAttributes, {}> | string | object
 
 type DisplayMetadata = {
 	name?: string
