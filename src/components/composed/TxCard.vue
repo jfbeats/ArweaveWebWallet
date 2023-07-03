@@ -1,6 +1,6 @@
 <template>
 	<div class="tx-card no-scrollbar" :class="{ verticalElement }">
-		<div class="tx-content" :class="{ 'flex-row': !verticalElement, 'flex-column': verticalElement }">
+		<div class="tx-content flex-row" style="flex-wrap: wrap;">
 			<Link class="left reset" :to="(tx.id && !options?.half) ? { name: 'Tx', params: { txId: tx.id } } : ''">
 				<TxIcon class="tx-icon" :tx="tx" :options="{ isData, isValue, direction, status }" />
 				<div class="margin" />
@@ -14,9 +14,9 @@
 			<div v-if="!options?.half" class="right">
 				<div class="right-content">
 					<div class="right-text">
-						<Address v-if="relativeAddress" class="address" :address="relativeAddress" />
+						<Address v-if="relativeAddress" :address="relativeAddress" class="ellipsis" />
 						<div v-else-if="dataSize" class="secondary-text ellipsis">Size: {{ dataSize }}</div>
-						<div class="secondary-text ellipsis">
+						<div class="secondary-text ellipsis" style="min-width: 0;">
 							<template v-if="statusText">{{ statusText }}</template>
 							<template v-else-if="options?.space">Fee: <Amount :ar="tx.fee.ar" /></template>
 							<Date v-else-if="timestamp" :timestamp="timestamp" />
@@ -44,7 +44,7 @@ import InterfaceStore from '@/store/InterfaceStore'
 import { unpackTags } from '@/functions/Transactions'
 import { computed } from 'vue'
 import { humanFileSize } from '@/functions/Utils'
-import { DataItemParams } from 'arweave-wallet-connector/lib/Arweave'
+import type { DataItemParams } from 'arweave-wallet-connector/lib/Arweave'
 
 const props = defineProps<{
 	tx: Widen<AnyTransaction | DataItemParams>
@@ -106,7 +106,7 @@ const verticalElement = computed(() => InterfaceStore.breakpoints.verticalLayout
 }
 
 .verticalElement .tx-content {
-	min-width: 256px;
+	/* min-width: 256px; */
 }
 
 .left {
@@ -116,8 +116,8 @@ const verticalElement = computed(() => InterfaceStore.breakpoints.verticalLayout
 }
 
 .right {
-	flex: 1 1 0;
-	min-width: 200px;
+	flex: 1 1 auto;
+	min-width: 0;
 	display: flex;
 	justify-content: flex-end;
 	align-items: center;
@@ -144,7 +144,7 @@ const verticalElement = computed(() => InterfaceStore.breakpoints.verticalLayout
 }
 
 .address {
-	max-width: Min(200px, 100%);
+	max-width: 200px;
 	margin-inline-start: auto;
 }
 
