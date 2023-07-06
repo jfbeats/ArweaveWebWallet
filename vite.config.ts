@@ -23,18 +23,24 @@ export default defineConfig(async (config) => {
 
 
 
-	if (mode === 'edge') { return {
+	const common = defineConfig({
 		resolve: { alias: { '@': resolve(__dirname, 'src') } },
 		define: {
 			'process.env': {},
 			'window.BASE_URL': JSON.stringify(env.BASE_URL),
 		},
+		base: env.BASE_URL ?? '/',
+	})
+
+
+
+	if (mode === 'edge') { return {
+		...common,
 		plugins: [
 			vue(),
 			VitePWA({ ...pwaOptions(env), disable: true }),
 		],
 		build: {
-			// target: 'esnext',
 			minify: false,
 			outDir: 'netlify/edge-functions/',
 			lib: {
@@ -61,12 +67,7 @@ export default defineConfig(async (config) => {
 
 
 	return {
-		resolve: { alias: { '@': resolve(__dirname, 'src') } },
-		define: {
-			'process.env': {},
-			'window.BASE_URL': JSON.stringify(env.BASE_URL),
-		},
-		base: env.BASE_URL ?? '/',
+		...common,
 		plugins: [
 			vue(),
 			createHtmlPlugin({ inject: { data: { VITE_META: buildMeta(env) } }, minify: {
