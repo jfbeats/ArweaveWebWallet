@@ -133,3 +133,6 @@ function txToOg (idLocation?: IdLocation, encode = (s?: string) => s) {
 function encodeHTML <T extends string | undefined> (f: Function): (s: T) => T {
 	return (s: T) => s == undefined ? undefined : f(s)
 }
+
+// TODO
+// <span itemprop="author" itemscope itemtype="http://schema.org/Person"><link itemprop="url" href="http://www.youtube.com/@UserName"><link itemprop="name" content="UserName"></span>
