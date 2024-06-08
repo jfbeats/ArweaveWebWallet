@@ -14,13 +14,59 @@ const ProfileStore = reactive({
 	arweaveIdStatus: {} as { [id: string]: any },
 	verification: {}  as { [id: string]: any },
 	verificationStatus: {} as { [id: string]: any },
+	ans: {} as { [id: string]: any },
+	ansStatus: {} as { [id: string]: any },
+	ansDomainLookup: {} as { [id: string]: any },
+	ansDomainLookupStatus: {} as { [id: string]: any },
 })
 
 export default ProfileStore
 
+export async function getANS (address?: string) {
+	if (!address || !ArweaveAccount.metadata.isAddress(address)) { return }
+	if ((ProfileStore.ansStatus[address] ??= {}).loading) { return }
+	ProfileStore.ansStatus[address].loading = true
+	await awaitEffect(() => InterfaceStore.windowVisible)
+	try {
+		const ANSResponse=await fetch(`https://ans-resolver.herokuapp.com/resolve/${address}`).then(res=>res.json())
+		ProfileStore.ans[address] =ANSResponse
+		if (!ProfileStore.ans[address]) { 
+			ProfileStore.ans[address] = {}
+			
+		} 
 
+		return ProfileStore.ans[address]
+	} catch (e) {
+		ProfileStore.ansStatus[address].loading = false
+		console.error(e)
+	}
+}
+export async function getANSDomain (domain?: string) {
+	if (!domain || !domain.endsWith('.ar')) { return }
+	if ((ProfileStore.ansDomainLookupStatus[domain] ??= {}).loading) {return }
+	ProfileStore.ansDomainLookupStatus[domain].loading = true
+	await awaitEffect(() => InterfaceStore.windowVisible)
+	if(ProfileStore.ansDomainLookup[domain]?.address){
+		return ProfileStore.ansDomainLookup[domain]
+	}
+	try {
+		const ANSResponse=await fetch(`https://ans-resolver.herokuapp.com/find-user/${domain.split('.')[0]}`).then(res=>res.json())
+		
+		ProfileStore.ansDomainLookup[domain] =ANSResponse
+		if (!ProfileStore.ansDomainLookup[domain]) { 
+			ProfileStore.ansDomainLookup[domain] = {}
+		} 
 
-export async function getArweaveId (address?: string) {
+		return ProfileStore.ansDomainLookup[domain]
+	} catch (e) {
+		
+		console.error(e)
+	}finally{
+		ProfileStore.ansDomainLookupStatus[domain].loading = false
+	}
+}
+
+export async function getArweaveId(address?: string) {
 	if (!address || !ArweaveAccount.metadata.isAddress(address)) { return }
 	if ((ProfileStore.arweaveIdStatus[address] ??= {}).loading) { return }
 	ProfileStore.arweaveIdStatus[address].loading = true
@@ -60,6 +106,7 @@ export async function getArweaveId (address?: string) {
 		console.error(e)
 	}
 }
+
 
 type ArweaveId = Partial<NonNullable<Awaited<ReturnType<typeof parseTags>>>>
 async function parseTags (tx?: { tags: Tag[], id: string }) {

@@ -15,6 +15,7 @@ import { computed } from 'vue'
 
 import { ICON } from '@/store/Theme'
 import { ArweaveAccount } from '@/providers/Arweave'
+import { getANSDomain } from '@/store/ProfileStore'
 
 const props = defineProps<{
 	modelValue: string
@@ -30,7 +31,22 @@ const model = computed({
 	set (value) { emit('update:modelValue', value) }
 })
 
-const maskAddress = (address: string) => ArweaveAccount.metadata.isAddress(address, true)
+const maskAddress = async (address: string) => {
+	if(address.split('.').length==2){
+		if(address.split('.')[1]=='ar'){
+		let ansDomainDetails=await getANSDomain(address);
+		if(ansDomainDetails?.address){
+			return ansDomainDetails?.address
+		}else{
+			throw new Error("Invalid ANS domain")
+		}
+		}else{
+			return true
+		}
+	}
+	
+	return ArweaveAccount.metadata.isAddress(address, true)
+}
 
 const scanAddress = async () => {
 	const result = await scan()

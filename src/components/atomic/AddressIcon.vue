@@ -16,7 +16,7 @@
 import Identicon from '@/components/atomic/Identicon.vue'
 import Icon from '@/components/atomic/Icon.vue'
 import ArweaveStore from '@/store/ArweaveStore'
-import ProfileStore, { getArweaveId } from '@/store/ProfileStore'
+import ProfileStore, { getArweaveId, getANS } from '@/store/ProfileStore'
 import { ArweaveAccount } from '@/providers/Arweave'
 import { computed, watch, ref } from 'vue'
 import { ICON } from '@/store/Theme'
@@ -34,6 +34,7 @@ const loaded = ref(false)
 watch(() => props.address, async () => {
 	loaded.value = false
 	getArweaveId(props.address)
+	getANS(props.address)
 }, { immediate: true })
 </script>
 

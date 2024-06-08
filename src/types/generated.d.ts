@@ -11,9 +11,9 @@ type SVGIcon = {
 	'label': Icon
 	'launch': Icon
 	'lock': Icon
+	'noResult': Icon
 	'northEast': Icon
 	'notification': Icon
-	'noResult': Icon
 	'person': Icon
 	'plug': Icon
 	'qr': Icon

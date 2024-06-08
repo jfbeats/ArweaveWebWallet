@@ -24,7 +24,7 @@ const props = defineProps<{
 	actions?: Action[]
 	submit?: Action
 	autocomplete?: string
-	mask?: (val: string) => boolean
+	mask?: (val: string) => Promise<boolean | string>
 }>()
 const emit = defineEmits(['update:modelValue'])
 
@@ -34,9 +34,13 @@ const model = computed({
 })
 const actions = computed(() => [...(props.actions || []), ...(props.submit ? [props.submit] : [])])
 const focus = ref(false)
-watch(() => model.value, (newVal, oldVal) => {
+watch(() => model.value,async (newVal, oldVal) => {
 	if (!props.mask) { return }
-	if (!props.mask(newVal)) { model.value = oldVal }
+	const masked=await props.mask(newVal) as any;
+	 if (!masked) { model.value = oldVal }
+	 if(typeof masked=='string'){
+		model.value=masked
+	}
 })
 
 const { runFunctions } = createAction(computed(() => props.submit))
