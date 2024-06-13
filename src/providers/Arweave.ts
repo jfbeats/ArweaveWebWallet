@@ -15,9 +15,10 @@ import type { SignatureOptions } from 'arweave/web/lib/crypto/crypto-interface'
 import type { TransactionInterface } from 'arweave/web/lib/transaction'
 import type { JWKInterface } from 'arweave/web/lib/wallet'
 // @ts-ignore
-import { getKeyPairFromMnemonic } from 'human-crypto-keys'
+import { getKeyPairFromSeed } from 'human-crypto-keys'
 import { requestExport } from '@/functions/Export'
 import { encode } from '@/functions/Encode'
+import { mnemonicToSeed } from 'bip39-web-crypto'
 
 
 
@@ -39,7 +40,9 @@ const providerMetadata: ProviderMetadata = {
 		return !!walletData.jwk // test key type
 	},
 	addPassphrase: async (passphrase) => {
-		let keyPair = await getKeyPairFromMnemonic(passphrase, { id: 'rsa', modulusLength: 4096 }, { privateKeyFormat: 'pkcs8-der' })
+		let seedBuffer = await mnemonicToSeed(passphrase)
+		let seed = Uint8Array.from(seedBuffer)
+		let keyPair = await getKeyPairFromSeed(seed, { id: 'rsa', modulusLength: 4096 }, { privateKeyFormat: 'pkcs8-der' })
 		const jwk = await pkcs8ToJwk(keyPair.privateKey) as JWKInterface
 		return { jwk }
 	},
