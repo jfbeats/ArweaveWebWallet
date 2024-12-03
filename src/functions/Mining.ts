@@ -13,7 +13,6 @@ async function get_reward_history () {
 async function getMiningData () {
 	const binaryData = await get_reward_history()
 	const parsedData = []
-	const pendingRewards = {} as { [key: string]: bigint}
 	let offset = 0
 	while(offset < binaryData.length) {
 		const addrPosition = offset
@@ -24,9 +23,9 @@ async function getMiningData () {
 		const hashRateSizeBytes = hashRateSize
 		const hashRate = binaryData.slice(hashRatePosition, hashRatePosition + hashRateSizeBytes)
 		const rewardSizePosition = hashRatePosition + hashRateSizeBytes
-		const pendingRewardSize = binaryData[rewardSizePosition]
+		const rewardSize = binaryData[rewardSizePosition]
 		const rewardPosition = rewardSizePosition + 1
-		const rewardSizeBytes = pendingRewardSize
+		const rewardSizeBytes = rewardSize
 		const reward = binaryData.slice(rewardPosition, rewardPosition + rewardSizeBytes)
 		const denominationPosition = rewardPosition + rewardSizeBytes
 		const denominationSize = 3
@@ -36,18 +35,28 @@ async function getMiningData () {
 		const addrBase64url = btoa(String.fromCharCode(...Addr)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
 		const buffer = new Uint8Array(reward)
 		const rewardBigint = BigInt(`0x${Array.from(buffer).map(b => b.toString(16).padStart(2, '0')).join('')}`)
-		if (pendingRewards[addrBase64url] == null) { pendingRewards[addrBase64url] = 0n }
-		pendingRewards[addrBase64url] += rewardBigint
 		parsedData.push({
 			Addr: addrBase64url,
 			HashRateSize: hashRateSize,
 			HashRate: hashRate,
-			pendingRewardSize: pendingRewardSize,
-			pendingReward: pendingRewards[addrBase64url].toString(),
+			RewardSize: rewardSize,
+			Reward: rewardBigint,
 			Denomination: denomination
 		})
 	}
-	return Object.fromEntries(Object.values(parsedData).map(e => [e.Addr, e]))
+
+	const pendingRewards = {} as { [key: string]: bigint }
+	const pendingHistoryLength = 21600 // after 2.8 only part of history represents pending rewards
+	const parsedDataPending = parsedData.slice(parsedData.length - pendingHistoryLength)
+
+	for (const entity of parsedDataPending) {
+		const Addr  = entity.Addr
+		const Reward = entity.Reward
+		if (pendingRewards[Addr] == null) { pendingRewards[Addr] = 0n }
+		pendingRewards[Addr] += Reward
+	}
+
+	return Object.fromEntries(Object.entries(pendingRewards).map(([k,v]) => [k, v.toString()]))
 }
 
 export type MiningData = Awaited<ReturnType<typeof getMiningData>>

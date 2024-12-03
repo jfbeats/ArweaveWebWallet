@@ -53,7 +53,7 @@ const mint = computed(() => {
 	}
 })
 
-const mining = computed(() => props.wallet.key && miningData.state.value?.[props.wallet.key]?.pendingReward.toString())
+const mining = computed(() => props.wallet.key && miningData.state.value?.[props.wallet.key])
 </script>
 
 
