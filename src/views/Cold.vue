@@ -38,17 +38,17 @@
 					<div>Always send test transactions before transferring or receiving large amounts to confirm that everything is working correctly. It is your responsibility to select the appropriate security based on the risks involved.</div>
 				</div>
 			</Link>
-			<div class="flow-item" key="6">
-				<div class="flow-item-content flex-column">
+			<!-- <div class="flow-item" key="6">
+				<div class="flow-item-content flex-column"> -->
 <!--					todo fix not responsive, breaks when going back online  -->
-					<div>Get lifetime access to the Permafrost Vault for an unlimited number of accounts and devices for {{ humanFileSize(byteSize) }} worth of arweave storage (<Amount :ar="feeManager.ar"> | </Amount>).</div>
+					<!-- <div>Get lifetime access to the Permafrost Vault for an unlimited number of accounts and devices for {{ humanFileSize(byteSize) }} worth of arweave storage (<Amount :ar="feeManager.ar"> | </Amount>).</div>
 					<Button v-bind="feeAction" :glow="true">{{ feeAction.name }}</Button>
 					<div class="cards flex-column">
 						<TxCard v-for="tx in feeManager.txs" :tx="tx.node" />
 					</div>
 				</div>
-			</div>
-			<div class="flow-item" key="7" v-if="lastPage">
+			</div> -->
+			<div class="flow-item" key="7">
 				<div class="flow-item-content flex-column" style="width: var(--popup-width);">
 					<SecurityVisual :color="coldWalletAction.color" :light="true" style="opacity: 0.75; margin: -3%; width: 90%; align-self: center" />
 					<Button v-bind="coldWalletAction" :glow="true">{{ coldWalletAction.name }}</Button>
@@ -76,7 +76,7 @@ import { coldState, getColdWalletAction, prepare } from '@/store/Cold'
 const flow = ref(undefined as undefined | InstanceType<typeof Flow>)
 const router = useRouter()
 
-const byteSize = 5 * 1024 * 1024 * 1024
+const byteSize = 500 * 1024 * 1024
 const feeManager = fee({ name: 'Cold', byteSize })
 const index = ref(undefined as undefined | number)
 watch(index, i => i != undefined && setTimeout(() => index.value = undefined))
