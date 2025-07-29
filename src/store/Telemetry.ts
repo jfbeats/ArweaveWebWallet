@@ -63,6 +63,7 @@ function init () {
 	
 	const trackingDisabled = () => !history || localStorage && localStorage.getItem('umami.disabled') || dnt && doNotTrack()
 	const collect = async (type: string, payload: object) => {
+		return // Telemetry disabled
 		if (trackingDisabled()) { return }
 		return fetch(`${root}/c`, {
 			method: 'POST',
