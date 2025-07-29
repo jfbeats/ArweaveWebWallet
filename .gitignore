@@ -5,6 +5,7 @@ build
 dist-ssr
 *.local
 .idea
+debug.log
 netlify
 # Local Netlify folder
 .netlify
