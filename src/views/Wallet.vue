@@ -40,7 +40,7 @@ const actions = [
 	{ name: 'Send', icon: ICON.northEast, text: 'Send' },
 	// { name: 'Send', icon: IconSouthWest, text: 'Receive' },
 	{ name: 'TxList', icon: ICON.swap, text: 'Transactions' },
-	// { name: 'Tokens', icon: IconCircle, text: 'Tokens' },
+	// { name: 'Tokens', icon: ICON.cloudCircle, text: 'Tokens' },
 ]
 const verticalLayout = toRef(InterfaceStore.breakpoints, 'verticalLayout')
 const route = useRoute()

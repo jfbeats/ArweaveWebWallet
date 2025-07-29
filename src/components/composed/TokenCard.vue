@@ -15,29 +15,27 @@
 	</div>
 </template>
 
-<script>
+<script setup lang="ts">
 import ArweaveStore from '@/store/ArweaveStore'
 import SmartweaveStore from '@/store/SmartweaveStore'
 import { computed } from 'vue'
 
-export default {
-	props: ['txId', 'wallet'],
-	setup (props) {
-		const token = computed(() => SmartweaveStore.contracts[props.txId])
-		const img = computed(() => {
-			if (!token.value.settings) { return }
-			for (const setting of token.value.settings) {
-				if (setting[0] === 'communityLogo') {
-					return ArweaveStore.gatewayURL + setting[1]
-				}
-			}
-		})
-		const balance = computed(() => {
-			return new Intl.NumberFormat(navigator.languages).format(token.value.balances[props.wallet.key])
-		})
-		return { token, img, balance }
-	},
-}
+const props = defineProps<{ txId: string, wallet: Wallet }>()
+
+const token = computed(() => ({}))
+const img = computed(() => {
+	if (!token.value.settings) { return }
+	for (const setting of token.value.settings) {
+		if (setting[0] === 'communityLogo') {
+			return ArweaveStore.gatewayURL + setting[1]
+		}
+	}
+})
+const balance = computed(() => {
+	return 0
+	return new Intl.NumberFormat(navigator.languages).format(token.value.balances[props.wallet.key])
+})
+
 </script>
 
 <style scoped>

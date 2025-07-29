@@ -1,7 +1,7 @@
 <template>
 	<div>
-		<div v-for="(value, key) in SmartweaveStore.contracts" :key="key">
-			<TokenCard :txId="key" :wallet="wallet" class="card" />
+		<div v-for="contract in contracts" :key="contract.id">
+			<TokenCard :txId="contract.id" :wallet="wallet" class="card" />
 		</div>
 	</div>
 </template>
@@ -11,6 +11,11 @@ import TokenCard from '@/components/composed/TokenCard.vue'
 import SmartweaveStore from '@/store/SmartweaveStore'
 
 const props = defineProps<{ wallet: Wallet }>()
+
+const contracts = [
+	{ name: 'AO', id: '0syT13r0s0tgPmIed95bJnuSqaD29HQNN8D3ElLSrsc' },
+	{ name: 'ARIO', id: 'qNvAoz0TgcH7DMg8BCVn8jF32QH5L6T29VjHxhHqqGE' }
+]
 </script>
 
 <style scoped>
