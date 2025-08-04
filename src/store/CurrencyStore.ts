@@ -39,12 +39,13 @@ export const { state: redstoneOptions } = getAsyncData({
 	query: async () => {
 		type currencyOptions = { value: { currency: string, provider: string }, text: string }[]
 		const options = [] as currencyOptions
-		const res = await fetch('https://api.redstone.finance/configs/tokens').then(r => r.json())
-		const message = ' Redstone Finance'
+		const res = await fetch('https://api.redstone.finance/prices?provider=redstone').then(r => r.json()).catch(e => {})
+		const message = ' - Redstone Finance'
 		options.push({ value: { currency: 'USD', provider: 'redstone' }, text: 'USD' + message })
+		const supportedCurrencies = Intl.supportedValuesOf('currency')
 		for (const key in res) {
-			try { new Intl.NumberFormat([...navigator.languages], { style: 'currency', currency: key }) } catch (e) { continue }
-			if (res[key].tags?.includes('currencies')) { options.push({ value: { currency: key, provider: 'redstone' }, text: key + message }) }
+			if (!supportedCurrencies.includes(key)) { continue }
+			options.push({ value: { currency: key, provider: 'redstone' }, text: key + message })
 		}
 		return options
 	},
